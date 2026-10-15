@@ -26,6 +26,20 @@ const CHARACTERS = [
     ]
   },
   {
+    id: 'theotaur',
+    name: 'Theotaur (Dark Paladin/Dragons)',
+    era: 'Universal',
+    skills: [
+      { name: 'Test', text: 'test', maxUses: null }
+    ],
+    comebacks: [
+      { name: 'Test', text: 'Requirement: Test. Test. (Once per duel).', maxUses: 1 }
+    ],
+    quests: [
+      { name: 'Test', text: 'Quest: Test. Reward: Test' }
+    ]
+  },
+  {
     id: 'yugi-dk',
     name: 'Yugi Muto',
     era: 'Duelist Kingdom',
