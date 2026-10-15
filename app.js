@@ -9,7 +9,10 @@ const defaultState = {
   selectedQuest: null,
   skillRevealed: false,
   comebackRevealed: false,
-  questRevealed: false
+  questRevealed: false,
+  skillUses: 0,
+  comebackUses: 0,
+  questUses: 0
 };
 
 // Persistent state across reloads
@@ -32,6 +35,12 @@ function getSelectedCharacter() {
   return CHARACTERS.find(c => c.id === state.characterId);
 }
 
+function formatMaxUsesBadge(maxUses, type) {
+  if (type === 'quest') return 'Quest';
+  if (maxUses === null || maxUses === undefined) return 'Unlimited';
+  return `${maxUses}x Duel`;
+}
+
 // --- NAVIGATION & ACTIONS ---
 function goToCharacters() {
   setState({
@@ -42,7 +51,10 @@ function goToCharacters() {
     selectedQuest: null,
     skillRevealed: false,
     comebackRevealed: false,
-    questRevealed: false
+    questRevealed: false,
+    skillUses: 0,
+    comebackUses: 0,
+    questUses: 0
   });
   peekState = { skill: false, comeback: false, quest: false };
 }
@@ -56,7 +68,10 @@ function selectCharacter(id) {
     selectedQuest: 0,
     skillRevealed: false,
     comebackRevealed: false,
-    questRevealed: false
+    questRevealed: false,
+    skillUses: 0,
+    comebackUses: 0,
+    questUses: 0
   });
   peekState = { skill: false, comeback: false, quest: false };
 }
@@ -83,10 +98,16 @@ function togglePeek(type) {
 }
 
 function activateAbility(type) {
-  if (type === 'skill') setState({ skillRevealed: true });
-  if (type === 'comeback') setState({ comebackRevealed: true });
-  if (type === 'quest') setState({ questRevealed: true });
+  setState({ 
+    [`${type}Revealed`]: true,
+    [`${type}Uses`]: (state[`${type}Uses`] || 0) + 1
+  });
   peekState[type] = false; 
+}
+
+function changeUses(type, delta) {
+  const current = state[`${type}Uses`] || 0;
+  setState({ [`${type}Uses`]: Math.max(0, current + delta) });
 }
 
 // --- VIEW TEMPLATES ---
@@ -149,7 +170,10 @@ function renderAbilitiesScreen(char) {
         <div class="space-y-2">
           ${char.skills.map((s, idx) => `
             <div onclick="pickAbility('skill', ${idx})" class="p-3.5 rounded-xl border transition cursor-pointer ${state.selectedSkill === idx ? 'bg-sky-950/50 border-sky-400 shadow-sm shadow-sky-500/10' : 'bg-slate-900/60 border-slate-800 opacity-75'}">
-              <div class="font-bold text-sm text-white mb-1">${s.name}</div>
+              <div class="flex items-center justify-between gap-2 mb-1">
+                <div class="font-bold text-sm text-white">${s.name}</div>
+                <span class="text-[10px] font-semibold px-1.5 py-0.5 rounded bg-slate-800 text-slate-300 border border-slate-700 shrink-0">${formatMaxUsesBadge(s.maxUses, 'skill')}</span>
+              </div>
               <div class="text-xs text-slate-300 leading-relaxed">${s.text}</div>
             </div>
           `).join('')}
@@ -164,7 +188,10 @@ function renderAbilitiesScreen(char) {
         <div class="space-y-2">
           ${char.comebacks.map((c, idx) => `
             <div onclick="pickAbility('comeback', ${idx})" class="p-3.5 rounded-xl border transition cursor-pointer ${state.selectedComeback === idx ? 'bg-rose-950/50 border-rose-400 shadow-sm shadow-rose-500/10' : 'bg-slate-900/60 border-slate-800 opacity-75'}">
-              <div class="font-bold text-sm text-white mb-1">${c.name}</div>
+              <div class="flex items-center justify-between gap-2 mb-1">
+                <div class="font-bold text-sm text-white">${c.name}</div>
+                <span class="text-[10px] font-semibold px-1.5 py-0.5 rounded bg-slate-800 text-slate-300 border border-slate-700 shrink-0">${formatMaxUsesBadge(c.maxUses, 'comeback')}</span>
+              </div>
               <div class="text-xs text-slate-300 leading-relaxed">${c.text}</div>
             </div>
           `).join('')}
@@ -179,7 +206,10 @@ function renderAbilitiesScreen(char) {
         <div class="space-y-2">
           ${char.quests.map((q, idx) => `
             <div onclick="pickAbility('quest', ${idx})" class="p-3.5 rounded-xl border transition cursor-pointer ${state.selectedQuest === idx ? 'bg-amber-950/50 border-amber-400 shadow-sm shadow-amber-500/10' : 'bg-slate-900/60 border-slate-800 opacity-75'}">
-              <div class="font-bold text-sm text-white mb-1">${q.name}</div>
+              <div class="flex items-center justify-between gap-2 mb-1">
+                <div class="font-bold text-sm text-white">${q.name}</div>
+                <span class="text-[10px] font-semibold px-1.5 py-0.5 rounded bg-slate-800 text-slate-300 border border-slate-700 shrink-0">${formatMaxUsesBadge(q.maxUses, 'quest')}</span>
+              </div>
               <div class="text-xs text-slate-300 leading-relaxed">${q.text}</div>
             </div>
           `).join('')}
@@ -196,19 +226,50 @@ function renderAbilitiesScreen(char) {
 }
 
 // Reusable component for rendering the 3 distinct states of a card
-function renderDuelCard(type, label, ability, isRevealed, isPeeking, theme) {
-  // Dynamically set wording based on whether it is a quest or an ability
+function renderDuelCard(type, label, ability, isRevealed, uses, isPeeking, theme) {
+  const maxUses = ability.maxUses; // number or null (unlimited)
+  const hasLimit = typeof maxUses === 'number';
+  const isExhausted = hasLimit && uses >= maxUses;
+
   const actionText = (type === 'quest') ? 'Complete' : 'Activate';
-  const statusText = (type === 'quest') ? 'COMPLETED' : 'ACTIVATED';
+  
+  let statusText = '';
+  if (type === 'quest') {
+    statusText = isExhausted ? 'COMPLETED' : 'IN PROGRESS';
+  } else {
+    statusText = isExhausted ? 'USED' : 'ACTIVE';
+  }
 
   if (isRevealed) {
+    const containerStyle = isExhausted 
+      ? `flex-1 rounded-2xl border border-slate-700 bg-slate-900/50 p-4 flex flex-col justify-center overflow-y-auto relative opacity-75 grayscale-[70%] transition-all` 
+      : `flex-1 rounded-2xl border ${theme.glow} bg-gradient-to-b ${theme.grad} to-slate-900/90 p-4 flex flex-col justify-center overflow-y-auto shadow-lg ${theme.shadow} transition-all`;
+      
+    const badgeStyle = isExhausted 
+      ? `bg-slate-800 text-slate-400 border-slate-700` 
+      : `${theme.bg} ${theme.text} ${theme.border}`;
+
+    const usageControlHtml = hasLimit ? `
+      <div class="flex items-center gap-1.5 bg-slate-950/80 rounded-lg p-1 border border-slate-800 shadow-inner">
+        <button onclick="changeUses('${type}', -1)" class="w-6 h-6 flex items-center justify-center rounded bg-slate-800 text-slate-400 hover:text-white hover:bg-slate-700 transition" ${uses <= 0 ? 'disabled' : ''}>-</button>
+        <span class="text-[10px] font-bold text-slate-300 w-8 text-center">${uses} / ${maxUses}</span>
+        <button onclick="changeUses('${type}', 1)" class="w-6 h-6 flex items-center justify-center rounded bg-slate-800 text-slate-400 hover:text-white hover:bg-slate-700 transition" ${isExhausted ? 'disabled' : ''}>+</button>
+      </div>
+    ` : `
+      <span class="text-[10px] font-bold text-slate-300 px-2 py-1 rounded-lg bg-slate-950/80 border border-slate-800">∞ Unlimited</span>
+    `;
+
     return `
-      <div class="flex-1 rounded-2xl border ${theme.glow} bg-gradient-to-b ${theme.grad} to-slate-900/90 p-4 flex flex-col justify-center overflow-y-auto shadow-lg ${theme.shadow}">
-        <div class="flex items-center justify-between mb-2">
-          <span class="text-[10px] font-extrabold uppercase tracking-widest px-2 py-0.5 rounded ${theme.bg} ${theme.text} ${theme.border}">${label} - ${statusText}</span>
+      <div class="${containerStyle}">
+        ${isExhausted ? '<div class="absolute inset-0 flex items-center justify-center pointer-events-none z-0 overflow-hidden"><span class="text-5xl font-black text-slate-100/5 -rotate-12 tracking-widest uppercase">' + statusText + '</span></div>' : ''}
+        <div class="relative z-10 flex flex-col h-full">
+          <div class="flex items-center justify-between mb-2">
+            <span class="text-[10px] font-extrabold uppercase tracking-widest px-2 py-0.5 rounded border ${badgeStyle}">${label} - ${statusText}</span>
+            ${usageControlHtml}
+          </div>
+          <h3 class="text-base font-bold text-white mb-1">${ability.name}</h3>
+          <p class="text-xs text-slate-200 leading-relaxed">${ability.text}</p>
         </div>
-        <h3 class="text-base font-bold text-white mb-1">${ability.name}</h3>
-        <p class="text-xs text-slate-200 leading-relaxed">${ability.text}</p>
       </div>
     `;
   }
@@ -220,6 +281,7 @@ function renderDuelCard(type, label, ability, isRevealed, isPeeking, theme) {
         <div class="relative z-10 flex flex-col h-full">
           <div class="flex items-center justify-between mb-2">
             <span class="text-[10px] font-extrabold uppercase tracking-widest px-2 py-0.5 rounded bg-slate-700 text-slate-300 border border-slate-600">Sneak Peek</span>
+            <span class="text-[10px] font-semibold px-1.5 py-0.5 rounded bg-slate-900/80 text-slate-300 border border-slate-700">${formatMaxUsesBadge(maxUses, type)}</span>
           </div>
           <h3 class="text-base font-bold text-white mb-1">${ability.name}</h3>
           <p class="text-xs text-slate-300 leading-relaxed mb-4">${ability.text}</p>
@@ -253,7 +315,6 @@ function renderDuelScreen(char) {
   const comeback = char.comebacks[state.selectedComeback ?? 0];
   const quest = char.quests[state.selectedQuest ?? 0];
 
-  // Specific Tailwind classes defined for the CDN's JIT compiler mapping
   const skyTheme = { bg: 'bg-sky-500/20', text: 'text-sky-300', border: 'border-sky-500/30', glow: 'border-sky-500/40', grad: 'from-sky-950/40', btn: 'bg-sky-600', btnHover: 'hover:bg-sky-500', shadow: 'shadow-sky-900/20' };
   const roseTheme = { bg: 'bg-rose-500/20', text: 'text-rose-300', border: 'border-rose-500/30', glow: 'border-rose-500/40', grad: 'from-rose-950/40', btn: 'bg-rose-600', btnHover: 'hover:bg-rose-500', shadow: 'shadow-rose-900/20' };
   const amberTheme = { bg: 'bg-amber-500/20', text: 'text-amber-300', border: 'border-amber-500/30', glow: 'border-amber-500/40', grad: 'from-amber-950/40', btn: 'bg-amber-600', btnHover: 'hover:bg-amber-500', shadow: 'shadow-amber-900/20' };
@@ -269,9 +330,9 @@ function renderDuelScreen(char) {
     </header>
 
     <main class="flex-1 flex flex-col gap-2.5 p-2.5 overflow-hidden">
-      ${renderDuelCard('skill', 'Skill', skill, state.skillRevealed, peekState.skill, skyTheme)}
-      ${renderDuelCard('comeback', 'Comeback', comeback, state.comebackRevealed, peekState.comeback, roseTheme)}
-      ${renderDuelCard('quest', 'Quest', quest, state.questRevealed, peekState.quest, amberTheme)}
+      ${renderDuelCard('skill', 'Skill', skill, state.skillRevealed, state.skillUses, peekState.skill, skyTheme)}
+      ${renderDuelCard('comeback', 'Comeback', comeback, state.comebackRevealed, state.comebackUses, peekState.comeback, roseTheme)}
+      ${renderDuelCard('quest', 'Quest', quest, state.questRevealed, state.questUses, peekState.quest, amberTheme)}
     </main>
   `;
 }
@@ -280,7 +341,6 @@ function renderDuelScreen(char) {
 function render() {
   const app = document.getElementById('app');
 
-  // Capture scroll position for the abilities screen before re-rendering
   let scrollPos = 0;
   const scrollContainer = document.getElementById('abilities-scroll-container');
   if (scrollContainer) {
@@ -305,7 +365,6 @@ function render() {
 
   if (state.screen === 'abilities') {
     app.innerHTML = renderAbilitiesScreen(char);
-    // Restore scroll position instantly after DOM update
     const newScrollContainer = document.getElementById('abilities-scroll-container');
     if (newScrollContainer) {
       newScrollContainer.scrollTop = scrollPos;
