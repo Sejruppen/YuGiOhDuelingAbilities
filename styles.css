@@ -1,0 +1,17 @@
+body {
+  background-color: #090d16;
+  color: #f8fafc;
+  user-select: none;
+  -webkit-tap-highlight-color: transparent;
+  font-family: system-ui, -apple-system, sans-serif;
+}
+
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
