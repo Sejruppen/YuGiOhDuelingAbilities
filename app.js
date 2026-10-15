@@ -197,11 +197,15 @@ function renderAbilitiesScreen(char) {
 
 // Reusable component for rendering the 3 distinct states of a card
 function renderDuelCard(type, label, ability, isRevealed, isPeeking, theme) {
+  // Dynamically set wording based on whether it is a quest or an ability
+  const actionText = (type === 'quest') ? 'Complete' : 'Activate';
+  const statusText = (type === 'quest') ? 'COMPLETED' : 'ACTIVATED';
+
   if (isRevealed) {
     return `
       <div class="flex-1 rounded-2xl border ${theme.glow} bg-gradient-to-b ${theme.grad} to-slate-900/90 p-4 flex flex-col justify-center overflow-y-auto shadow-lg ${theme.shadow}">
         <div class="flex items-center justify-between mb-2">
-          <span class="text-[10px] font-extrabold uppercase tracking-widest px-2 py-0.5 rounded ${theme.bg} ${theme.text} ${theme.border}">${label} - ACTIVATED</span>
+          <span class="text-[10px] font-extrabold uppercase tracking-widest px-2 py-0.5 rounded ${theme.bg} ${theme.text} ${theme.border}">${label} - ${statusText}</span>
         </div>
         <h3 class="text-base font-bold text-white mb-1">${ability.name}</h3>
         <p class="text-xs text-slate-200 leading-relaxed">${ability.text}</p>
@@ -222,7 +226,7 @@ function renderDuelCard(type, label, ability, isRevealed, isPeeking, theme) {
           
           <div class="mt-auto flex gap-2">
             <button onclick="togglePeek('${type}')" class="flex-1 py-2 rounded-lg bg-slate-700 hover:bg-slate-600 text-xs font-bold text-white transition border border-slate-600">Close</button>
-            <button onclick="activateAbility('${type}')" class="flex-1 py-2 rounded-lg ${theme.btn} ${theme.btnHover} text-xs font-bold text-white transition">Activate</button>
+            <button onclick="activateAbility('${type}')" class="flex-1 py-2 rounded-lg ${theme.btn} ${theme.btnHover} text-xs font-bold text-white transition">${actionText}</button>
           </div>
         </div>
       </div>
@@ -238,7 +242,7 @@ function renderDuelCard(type, label, ability, isRevealed, isPeeking, theme) {
       <h3 class="text-xs font-bold text-slate-400 mb-4 tracking-widest uppercase">Secret ${label}</h3>
       <div class="flex gap-2 w-full max-w-[220px]">
         <button onclick="togglePeek('${type}')" class="flex-1 py-2.5 rounded-lg bg-slate-800 hover:bg-slate-700 border border-slate-700 text-xs font-bold text-slate-300 transition">Peek</button>
-        <button onclick="activateAbility('${type}')" class="flex-1 py-2.5 rounded-lg ${theme.btn} ${theme.btnHover} text-xs font-bold text-white shadow-lg ${theme.shadow} transition">Reveal</button>
+        <button onclick="activateAbility('${type}')" class="flex-1 py-2.5 rounded-lg ${theme.btn} ${theme.btnHover} text-xs font-bold text-white shadow-lg ${theme.shadow} transition">${actionText}</button>
       </div>
     </div>
   `;
@@ -322,3 +326,4 @@ if ('serviceWorker' in navigator) {
 }
 
 render();
+
