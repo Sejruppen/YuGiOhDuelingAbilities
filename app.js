@@ -9,10 +9,9 @@ const defaultState = {
   selectedQuest: null,
   skillRevealed: false,
   comebackRevealed: false,
-  questRevealed: false,
   skillUses: 0,
   comebackUses: 0,
-  questUses: 0
+  questCompleted: false
 };
 
 // Persistent state across reloads
@@ -35,8 +34,7 @@ function getSelectedCharacter() {
   return CHARACTERS.find(c => c.id === state.characterId);
 }
 
-function formatMaxUsesBadge(maxUses, type) {
-  if (type === 'quest') return 'Quest';
+function formatMaxUsesBadge(maxUses) {
   if (maxUses === null || maxUses === undefined) return 'Unlimited';
   return `${maxUses}x Duel`;
 }
@@ -51,10 +49,9 @@ function goToCharacters() {
     selectedQuest: null,
     skillRevealed: false,
     comebackRevealed: false,
-    questRevealed: false,
     skillUses: 0,
     comebackUses: 0,
-    questUses: 0
+    questCompleted: false
   });
   peekState = { skill: false, comeback: false, quest: false };
 }
@@ -68,10 +65,9 @@ function selectCharacter(id) {
     selectedQuest: 0,
     skillRevealed: false,
     comebackRevealed: false,
-    questRevealed: false,
     skillUses: 0,
     comebackUses: 0,
-    questUses: 0
+    questCompleted: false
   });
   peekState = { skill: false, comeback: false, quest: false };
 }
@@ -98,11 +94,20 @@ function togglePeek(type) {
 }
 
 function activateAbility(type) {
-  setState({ 
-    [`${type}Revealed`]: true,
-    [`${type}Uses`]: (state[`${type}Uses`] || 0) + 1
-  });
+  if (type === 'quest') {
+    setState({ questCompleted: true });
+  } else {
+    setState({ 
+      [`${type}Revealed`]: true,
+      [`${type}Uses`]: (state[`${type}Uses`] || 0) + 1
+    });
+  }
   peekState[type] = false; 
+}
+
+function toggleQuestCompleted(completed) {
+  setState({ questCompleted: completed });
+  peekState.quest = false;
 }
 
 function changeUses(type, delta) {
@@ -172,7 +177,7 @@ function renderAbilitiesScreen(char) {
             <div onclick="pickAbility('skill', ${idx})" class="p-3.5 rounded-xl border transition cursor-pointer ${state.selectedSkill === idx ? 'bg-sky-950/50 border-sky-400 shadow-sm shadow-sky-500/10' : 'bg-slate-900/60 border-slate-800 opacity-75'}">
               <div class="flex items-center justify-between gap-2 mb-1">
                 <div class="font-bold text-sm text-white">${s.name}</div>
-                <span class="text-[10px] font-semibold px-1.5 py-0.5 rounded bg-slate-800 text-slate-300 border border-slate-700 shrink-0">${formatMaxUsesBadge(s.maxUses, 'skill')}</span>
+                <span class="text-[10px] font-semibold px-1.5 py-0.5 rounded bg-slate-800 text-slate-300 border border-slate-700 shrink-0">${formatMaxUsesBadge(s.maxUses)}</span>
               </div>
               <div class="text-xs text-slate-300 leading-relaxed">${s.text}</div>
             </div>
@@ -190,7 +195,7 @@ function renderAbilitiesScreen(char) {
             <div onclick="pickAbility('comeback', ${idx})" class="p-3.5 rounded-xl border transition cursor-pointer ${state.selectedComeback === idx ? 'bg-rose-950/50 border-rose-400 shadow-sm shadow-rose-500/10' : 'bg-slate-900/60 border-slate-800 opacity-75'}">
               <div class="flex items-center justify-between gap-2 mb-1">
                 <div class="font-bold text-sm text-white">${c.name}</div>
-                <span class="text-[10px] font-semibold px-1.5 py-0.5 rounded bg-slate-800 text-slate-300 border border-slate-700 shrink-0">${formatMaxUsesBadge(c.maxUses, 'comeback')}</span>
+                <span class="text-[10px] font-semibold px-1.5 py-0.5 rounded bg-slate-800 text-slate-300 border border-slate-700 shrink-0">${formatMaxUsesBadge(c.maxUses)}</span>
               </div>
               <div class="text-xs text-slate-300 leading-relaxed">${c.text}</div>
             </div>
@@ -206,10 +211,7 @@ function renderAbilitiesScreen(char) {
         <div class="space-y-2">
           ${char.quests.map((q, idx) => `
             <div onclick="pickAbility('quest', ${idx})" class="p-3.5 rounded-xl border transition cursor-pointer ${state.selectedQuest === idx ? 'bg-amber-950/50 border-amber-400 shadow-sm shadow-amber-500/10' : 'bg-slate-900/60 border-slate-800 opacity-75'}">
-              <div class="flex items-center justify-between gap-2 mb-1">
-                <div class="font-bold text-sm text-white">${q.name}</div>
-                <span class="text-[10px] font-semibold px-1.5 py-0.5 rounded bg-slate-800 text-slate-300 border border-slate-700 shrink-0">${formatMaxUsesBadge(q.maxUses, 'quest')}</span>
-              </div>
+              <div class="font-bold text-sm text-white mb-1">${q.name}</div>
               <div class="text-xs text-slate-300 leading-relaxed">${q.text}</div>
             </div>
           `).join('')}
@@ -225,22 +227,68 @@ function renderAbilitiesScreen(char) {
   `;
 }
 
-// Reusable component for rendering the 3 distinct states of a card
-function renderDuelCard(type, label, ability, isRevealed, uses, isPeeking, theme) {
+// Reusable component for rendering the states of a card
+function renderDuelCard(type, label, ability, isRevealedOrCompleted, uses, isPeeking, theme) {
+  const isQuest = (type === 'quest');
+
+  // 1. QUEST BOOLEAN FLOW
+  if (isQuest) {
+    if (isRevealedOrCompleted) {
+      return `
+        <div class="flex-1 rounded-2xl border ${theme.glow} bg-gradient-to-b ${theme.grad} to-slate-900/90 p-4 flex flex-col justify-center overflow-y-auto shadow-lg ${theme.shadow} transition-all">
+          <div class="relative z-10 flex flex-col h-full">
+            <div class="flex items-center justify-between mb-2">
+              <span class="text-[10px] font-extrabold uppercase tracking-widest px-2 py-0.5 rounded border ${theme.bg} ${theme.text} ${theme.border}">QUEST - COMPLETED</span>
+              <button onclick="toggleQuestCompleted(false)" class="text-[10px] font-semibold text-slate-400 hover:text-white px-2 py-0.5 rounded bg-slate-950/60 border border-slate-800 transition">Undo</button>
+            </div>
+            <h3 class="text-base font-bold text-white mb-1">${ability.name}</h3>
+            <p class="text-xs text-slate-200 leading-relaxed">${ability.text}</p>
+          </div>
+        </div>
+      `;
+    }
+
+    if (isPeeking) {
+      return `
+        <div class="flex-1 rounded-2xl border border-slate-600 bg-slate-800 p-4 flex flex-col justify-center overflow-y-auto relative shadow-inner">
+          <div class="absolute inset-0 bg-slate-950/50 pointer-events-none rounded-2xl"></div>
+          <div class="relative z-10 flex flex-col h-full">
+            <div class="flex items-center justify-between mb-2">
+              <span class="text-[10px] font-extrabold uppercase tracking-widest px-2 py-0.5 rounded bg-slate-700 text-slate-300 border border-slate-600">Sneak Peek</span>
+            </div>
+            <h3 class="text-base font-bold text-white mb-1">${ability.name}</h3>
+            <p class="text-xs text-slate-300 leading-relaxed mb-4">${ability.text}</p>
+            
+            <div class="mt-auto flex gap-2">
+              <button onclick="togglePeek('quest')" class="flex-1 py-2 rounded-lg bg-slate-700 hover:bg-slate-600 text-xs font-bold text-white transition border border-slate-600">Close</button>
+              <button onclick="activateAbility('quest')" class="flex-1 py-2 rounded-lg ${theme.btn} ${theme.btnHover} text-xs font-bold text-white transition">Complete</button>
+            </div>
+          </div>
+        </div>
+      `;
+    }
+
+    return `
+      <div class="flex-1 rounded-2xl border-2 border-dashed border-slate-700 bg-slate-900/50 p-4 flex flex-col items-center justify-center text-center">
+        <div class="w-10 h-10 mb-2 rounded-full bg-slate-800 border border-slate-700 flex items-center justify-center text-slate-500 shadow-inner">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path></svg>
+        </div>
+        <h3 class="text-xs font-bold text-slate-400 mb-4 tracking-widest uppercase">Secret Quest</h3>
+        <div class="flex gap-2 w-full max-w-[220px]">
+          <button onclick="togglePeek('quest')" class="flex-1 py-2.5 rounded-lg bg-slate-800 hover:bg-slate-700 border border-slate-700 text-xs font-bold text-slate-300 transition">Peek</button>
+          <button onclick="activateAbility('quest')" class="flex-1 py-2.5 rounded-lg ${theme.btn} ${theme.btnHover} text-xs font-bold text-white shadow-lg ${theme.shadow} transition">Complete</button>
+        </div>
+      </div>
+    `;
+  }
+
+  // 2. SKILL & COMEBACK USAGE FLOW
   const maxUses = ability.maxUses; // number or null (unlimited)
   const hasLimit = typeof maxUses === 'number';
   const isExhausted = hasLimit && uses >= maxUses;
+  const statusText = isExhausted ? 'USED' : 'ACTIVE';
 
-  const actionText = (type === 'quest') ? 'Complete' : 'Activate';
-  
-  let statusText = '';
-  if (type === 'quest') {
-    statusText = isExhausted ? 'COMPLETED' : 'IN PROGRESS';
-  } else {
-    statusText = isExhausted ? 'USED' : 'ACTIVE';
-  }
-
-  if (isRevealed) {
+  if (isRevealedOrCompleted) {
     const containerStyle = isExhausted 
       ? `flex-1 rounded-2xl border border-slate-700 bg-slate-900/50 p-4 flex flex-col justify-center overflow-y-auto relative opacity-75 grayscale-[70%] transition-all` 
       : `flex-1 rounded-2xl border ${theme.glow} bg-gradient-to-b ${theme.grad} to-slate-900/90 p-4 flex flex-col justify-center overflow-y-auto shadow-lg ${theme.shadow} transition-all`;
@@ -261,7 +309,7 @@ function renderDuelCard(type, label, ability, isRevealed, uses, isPeeking, theme
 
     return `
       <div class="${containerStyle}">
-        ${isExhausted ? '<div class="absolute inset-0 flex items-center justify-center pointer-events-none z-0 overflow-hidden"><span class="text-5xl font-black text-slate-100/5 -rotate-12 tracking-widest uppercase">' + statusText + '</span></div>' : ''}
+        ${isExhausted ? '<div class="absolute inset-0 flex items-center justify-center pointer-events-none z-0 overflow-hidden"><span class="text-5xl font-black text-slate-100/5 -rotate-12 tracking-widest uppercase">USED</span></div>' : ''}
         <div class="relative z-10 flex flex-col h-full">
           <div class="flex items-center justify-between mb-2">
             <span class="text-[10px] font-extrabold uppercase tracking-widest px-2 py-0.5 rounded border ${badgeStyle}">${label} - ${statusText}</span>
@@ -281,14 +329,14 @@ function renderDuelCard(type, label, ability, isRevealed, uses, isPeeking, theme
         <div class="relative z-10 flex flex-col h-full">
           <div class="flex items-center justify-between mb-2">
             <span class="text-[10px] font-extrabold uppercase tracking-widest px-2 py-0.5 rounded bg-slate-700 text-slate-300 border border-slate-600">Sneak Peek</span>
-            <span class="text-[10px] font-semibold px-1.5 py-0.5 rounded bg-slate-900/80 text-slate-300 border border-slate-700">${formatMaxUsesBadge(maxUses, type)}</span>
+            <span class="text-[10px] font-semibold px-1.5 py-0.5 rounded bg-slate-900/80 text-slate-300 border border-slate-700">${formatMaxUsesBadge(maxUses)}</span>
           </div>
           <h3 class="text-base font-bold text-white mb-1">${ability.name}</h3>
           <p class="text-xs text-slate-300 leading-relaxed mb-4">${ability.text}</p>
           
           <div class="mt-auto flex gap-2">
             <button onclick="togglePeek('${type}')" class="flex-1 py-2 rounded-lg bg-slate-700 hover:bg-slate-600 text-xs font-bold text-white transition border border-slate-600">Close</button>
-            <button onclick="activateAbility('${type}')" class="flex-1 py-2 rounded-lg ${theme.btn} ${theme.btnHover} text-xs font-bold text-white transition">${actionText}</button>
+            <button onclick="activateAbility('${type}')" class="flex-1 py-2 rounded-lg ${theme.btn} ${theme.btnHover} text-xs font-bold text-white transition">Activate</button>
           </div>
         </div>
       </div>
@@ -304,7 +352,7 @@ function renderDuelCard(type, label, ability, isRevealed, uses, isPeeking, theme
       <h3 class="text-xs font-bold text-slate-400 mb-4 tracking-widest uppercase">Secret ${label}</h3>
       <div class="flex gap-2 w-full max-w-[220px]">
         <button onclick="togglePeek('${type}')" class="flex-1 py-2.5 rounded-lg bg-slate-800 hover:bg-slate-700 border border-slate-700 text-xs font-bold text-slate-300 transition">Peek</button>
-        <button onclick="activateAbility('${type}')" class="flex-1 py-2.5 rounded-lg ${theme.btn} ${theme.btnHover} text-xs font-bold text-white shadow-lg ${theme.shadow} transition">${actionText}</button>
+        <button onclick="activateAbility('${type}')" class="flex-1 py-2.5 rounded-lg ${theme.btn} ${theme.btnHover} text-xs font-bold text-white shadow-lg ${theme.shadow} transition">Activate</button>
       </div>
     </div>
   `;
@@ -332,7 +380,7 @@ function renderDuelScreen(char) {
     <main class="flex-1 flex flex-col gap-2.5 p-2.5 overflow-hidden">
       ${renderDuelCard('skill', 'Skill', skill, state.skillRevealed, state.skillUses, peekState.skill, skyTheme)}
       ${renderDuelCard('comeback', 'Comeback', comeback, state.comebackRevealed, state.comebackUses, peekState.comeback, roseTheme)}
-      ${renderDuelCard('quest', 'Quest', quest, state.questRevealed, state.questUses, peekState.quest, amberTheme)}
+      ${renderDuelCard('quest', 'Quest', quest, state.questCompleted, 0, peekState.quest, amberTheme)}
     </main>
   `;
 }
@@ -385,4 +433,3 @@ if ('serviceWorker' in navigator) {
 }
 
 render();
-

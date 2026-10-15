@@ -18,11 +18,11 @@ const CHARACTERS = [
       { name: 'The Equalizer', text: 'Requirement: Your opponent has 3 or more cards in their hand than you. Draw cards until you have the same number of cards in your hand as your opponent.', maxUses: 1 }
     ],
     quests: [
-      { name: 'The Attacker', text: 'Quest: Inflict battle damage to your opponent in 3 different battles. Reward: Draw 1 card.', maxUses: 1 },
-      { name: 'The Defender', text: 'Quest: Successfully activate and resolve 3 Trap Cards during the duel. Reward: Gain 2000 Life Points.', maxUses: 1 },
-      { name: 'Master Summoner', text: 'Quest: Special Summon 5 or more monsters during the same turn. Reward: Add 1 card of your choice from your deck to your hand.', maxUses: 1 },
-      { name: 'The Survivor', text: 'Quest: Have your Life Points reduced to under 1000, and survive until the start of your next turn. Reward: Destroy 1 card of your choice on the field.', maxUses: 1 },
-      { name: 'Resource Gatherer', text: 'Quest: Have 5 or more cards in your hand at the end of your turn. Reward: You can look at the opponent\'s hand and send 1 card from it to the Graveyard.', maxUses: 1 }
+      { name: 'The Attacker', text: 'Quest: Inflict battle damage to your opponent in 3 different battles. Reward: Draw 1 card.' },
+      { name: 'The Defender', text: 'Quest: Successfully activate and resolve 3 Trap Cards during the duel. Reward: Gain 2000 Life Points.' },
+      { name: 'Master Summoner', text: 'Quest: Special Summon 5 or more monsters during the same turn. Reward: Add 1 card of your choice from your deck to your hand.' },
+      { name: 'The Survivor', text: 'Quest: Have your Life Points reduced to under 1000, and survive until the start of your next turn. Reward: Destroy 1 card of your choice on the field.' },
+      { name: 'Resource Gatherer', text: 'Quest: Have 5 or more cards in your hand at the end of your turn. Reward: You can look at the opponent\'s hand and send 1 card from it to the Graveyard.' }
     ]
   },
   {
@@ -40,9 +40,9 @@ const CHARACTERS = [
       { name: '(Magic) Mystic Swap', text: 'Requirement: Your field is empty, the opponent has monsters. Destroy the opponent\'s strongest monster and Special Summon a Spellcaster from your hand.', maxUses: 1 }
     ],
     quests: [
-      { name: '(Faith) Soul of the Duelist', text: 'Quest: Survive 3 turns without losing LP. Reward: You draw 2 cards in your Draw Phase instead of 1.', maxUses: 1 },
-      { name: '(Friendship) Unity', text: 'Quest: Have 3 monsters of different Types in your Graveyard. Reward: All your monsters gain a permanent +400 ATK.', maxUses: 1 },
-      { name: '(Magic) Master\'s Call', text: 'Quest: Get "Dark Magician" on the field. Reward: Your Spellcasters cannot be targeted by your opponent\'s Trap Cards.', maxUses: 1 }
+      { name: '(Faith) Soul of the Duelist', text: 'Quest: Survive 3 turns without losing LP. Reward: You draw 2 cards in your Draw Phase instead of 1.' },
+      { name: '(Friendship) Unity', text: 'Quest: Have 3 monsters of different Types in your Graveyard. Reward: All your monsters gain a permanent +400 ATK.' },
+      { name: '(Magic) Master\'s Call', text: 'Quest: Get "Dark Magician" on the field. Reward: Your Spellcasters cannot be targeted by your opponent\'s Trap Cards.' }
     ]
   },
   {
@@ -60,9 +60,9 @@ const CHARACTERS = [
       { name: '(Master) Dark Magic', text: 'Requirement: The opponent has at least 3 cards on the field, you have 0. Banish one Spell Card from your Graveyard to destroy all cards on the opponent\'s field.', maxUses: 1 }
     ],
     quests: [
-      { name: '(Divine) Arrival of God', text: 'Quest: Have 5 or more cards in your hand at the end of your turn. Reward: Your Level 7 or higher monsters cannot be destroyed by card effects.', maxUses: 1 },
-      { name: '(Synergy) United Strength', text: 'Quest: Have 3 monsters on the field at the same time. Reward: Once per turn, your monsters cannot be destroyed in battle.', maxUses: 1 },
-      { name: '(Master) Mastery of Magic', text: 'Quest: Activate 3 Spell Cards in one turn. Reward: The opponent takes 300 damage every time you activate a Spell Card.', maxUses: 1 }
+      { name: '(Divine) Arrival of God', text: 'Quest: Have 5 or more cards in your hand at the end of your turn. Reward: Your Level 7 or higher monsters cannot be destroyed by card effects.' },
+      { name: '(Synergy) United Strength', text: 'Quest: Have 3 monsters on the field at the same time. Reward: Once per turn, your monsters cannot be destroyed in battle.' },
+      { name: '(Master) Mastery of Magic', text: 'Quest: Activate 3 Spell Cards in one turn. Reward: The opponent takes 300 damage every time you activate a Spell Card.' }
     ]
   },
   {
@@ -80,9 +80,9 @@ const CHARACTERS = [
       { name: '(Psychology) Total Meltdown', text: 'Requirement: You have 0 cards in your hand and under 1500 LP. The opponent must discard their entire hand to the Graveyard.', maxUses: 1 }
     ],
     quests: [
-      { name: '(Resources) Monopoly', text: 'Quest: Force the opponent to have 0 cards in their hand. Reward: The opponent can only Set 1 card per turn.', maxUses: 1 },
-      { name: '(Dragons) Ultimate Dragon Lord', text: 'Quest: Have two "Blue-Eyes White Dragon" (or monsters with 3000+ ATK) on the field. Reward: Your dragons inflict piercing damage.', maxUses: 1 },
-      { name: '(Psychology) Dominance', text: 'Quest: Destroy 3 of the opponent\'s monsters in battle. Reward: Every time the opponent Normal Summons, they lose 500 LP.', maxUses: 1 }
+      { name: '(Resources) Monopoly', text: 'Quest: Force the opponent to have 0 cards in their hand. Reward: The opponent can only Set 1 card per turn.' },
+      { name: '(Dragons) Ultimate Dragon Lord', text: 'Quest: Have two "Blue-Eyes White Dragon" (or monsters with 3000+ ATK) on the field. Reward: Your dragons inflict piercing damage.' },
+      { name: '(Psychology) Dominance', text: 'Quest: Destroy 3 of the opponent\'s monsters in battle. Reward: Every time the opponent Normal Summons, they lose 500 LP.' }
     ]
   },
   {
@@ -100,9 +100,9 @@ const CHARACTERS = [
       { name: '(Divine) Fist of Fury', text: 'Requirement: You are under 1000 LP. Destroy all monsters on the opponent\'s side of the field.', maxUses: 1 }
     ],
     quests: [
-      { name: '(Destruction) Systematic Breakdown', text: 'Quest: Send 10 of the opponent\'s cards to the Graveyard. Reward: The opponent cannot draw a card in their Draw Phase unless they pay 500 LP.', maxUses: 1 },
-      { name: '(Technology) The Perfect Machine', text: 'Quest: Get a Fusion- or Boss-monster on the field. Reward: Your Machine-monsters are immune to Traps.', maxUses: 1 },
-      { name: '(Divine) Absolute Power', text: 'Quest: Tribute 3 monsters during the duel. Reward: The opponent cannot activate effects in the Battle Phase.', maxUses: 1 }
+      { name: '(Destruction) Systematic Breakdown', text: 'Quest: Send 10 of the opponent\'s cards to the Graveyard. Reward: The opponent cannot draw a card in their Draw Phase unless they pay 500 LP.' },
+      { name: '(Technology) The Perfect Machine', text: 'Quest: Get a Fusion- or Boss-monster on the field. Reward: Your Machine-monsters are immune to Traps.' },
+      { name: '(Divine) Absolute Power', text: 'Quest: Tribute 3 monsters during the duel. Reward: The opponent cannot activate effects in the Battle Phase.' }
     ]
   },
   {
@@ -120,9 +120,9 @@ const CHARACTERS = [
       { name: '(Grit) Get Up!', text: 'Requirement: You have under 500 LP. Draw 3 cards. You can Normal Summon twice this turn.', maxUses: 1 }
     ],
     quests: [
-      { name: '(Luck) Jackpot', text: 'Quest: Get two successful coin tosses/die rolls. Reward: Every time you Normal Summon, flip a coin. If Heads, draw a card.', maxUses: 1 },
-      { name: '(Warriors) True Warrior', text: 'Quest: Have 3 Warrior-monsters in your Graveyard. Reward: Your Warriors gain +400 ATK.', maxUses: 1 },
-      { name: '(Grit) Never Surrender', text: 'Quest: Take damage in 3 consecutive turns without losing. Reward: Your monsters can attack directly for half damage.', maxUses: 1 }
+      { name: '(Luck) Jackpot', text: 'Quest: Get two successful coin tosses/die rolls. Reward: Every time you Normal Summon, flip a coin. If Heads, draw a card.' },
+      { name: '(Warriors) True Warrior', text: 'Quest: Have 3 Warrior-monsters in your Graveyard. Reward: Your Warriors gain +400 ATK.' },
+      { name: '(Grit) Never Surrender', text: 'Quest: Take damage in 3 consecutive turns without losing. Reward: Your monsters can attack directly for half damage.' }
     ]
   },
   {
@@ -140,9 +140,9 @@ const CHARACTERS = [
       { name: '(Traps) Graverobber', text: 'Requirement: The opponent has at least two Spells/Traps, and you have 0. Activate one Trap- or Spell Card directly from the opponent\'s Graveyard as if it were your own.', maxUses: 1 }
     ],
     quests: [
-      { name: '(Red-Eyes) Power of Potential', text: 'Quest: Equip a monster with an Equip Spell twice. Reward: Your equipped monsters inflict double battle damage.', maxUses: 1 },
-      { name: '(Gambling) High Roller', text: 'Quest: Roll a 5 or 6 on a die (or get two Heads in a row). Reward: Every time you roll a die, you may choose the result instead.', maxUses: 1 },
-      { name: '(Traps) Presence of Jinzo', text: 'Quest: Destroy 3 of the opponent\'s Trap Cards. Reward: The opponent cannot activate Traps in the Battle Phase.', maxUses: 1 }
+      { name: '(Red-Eyes) Power of Potential', text: 'Quest: Equip a monster with an Equip Spell twice. Reward: Your equipped monsters inflict double battle damage.' },
+      { name: '(Gambling) High Roller', text: 'Quest: Roll a 5 or 6 on a die (or get two Heads in a row). Reward: Every time you roll a die, you may choose the result instead.' },
+      { name: '(Traps) Presence of Jinzo', text: 'Quest: Destroy 3 of the opponent\'s Trap Cards. Reward: The opponent cannot activate Traps in the Battle Phase.' }
     ]
   },
   {
@@ -160,9 +160,9 @@ const CHARACTERS = [
       { name: '(Scouting) Mirror Wall', text: 'Requirement: One of your monsters is attacked. Permanently halve the ATK of all the opponent\'s current monsters on the field.', maxUses: 1 }
     ],
     quests: [
-      { name: '(Harpies) Air Supremacy', text: 'Quest: Have 3 WIND monsters on the field. Reward: WIND monsters can attack the opponent directly for half damage.', maxUses: 1 },
-      { name: '(Amazons) Tribe\'s Honor', text: 'Quest: Your monsters survive 3 battles. Reward: All battle damage you take from battles involving your monsters is inflicted to the opponent instead.', maxUses: 1 },
-      { name: '(Scouting) Foresight', text: 'Quest: Guess the top card of your deck correctly during your Draw Phase. Reward: You may look at the opponent\'s hand once per turn.', maxUses: 1 }
+      { name: '(Harpies) Air Supremacy', text: 'Quest: Have 3 WIND monsters on the field. Reward: WIND monsters can attack the opponent directly for half damage.' },
+      { name: '(Amazons) Tribe\'s Honor', text: 'Quest: Your monsters survive 3 battles. Reward: All battle damage you take from battles involving your monsters is inflicted to the opponent instead.' },
+      { name: '(Scouting) Foresight', text: 'Quest: Guess the top card of your deck correctly during your Draw Phase. Reward: You may look at the opponent\'s hand once per turn.' }
     ]
   },
   {
@@ -180,9 +180,9 @@ const CHARACTERS = [
       { name: '(Assassination) Whirlpool', text: 'Requirement: Your field is empty. Return up to 2 of the opponent\'s monsters to their hand.', maxUses: 1 }
     ],
     quests: [
-      { name: '(The Sea) Ruler of the Seas', text: 'Quest: Have Umi active on the field for 3 consecutive turns. Reward: Your WATER-monsters gain +500 ATK and DEF.', maxUses: 1 },
-      { name: '(Fish) The Big Catch', text: 'Quest: Destroy a monster with 2500+ ATK in battle. Reward: Every time you destroy a monster, draw a card.', maxUses: 1 },
-      { name: '(Assassination) Terror of the Deep', text: 'Quest: Perform 2 successful direct attacks. Reward: The opponent must discard a card every time they take battle damage.', maxUses: 1 }
+      { name: '(The Sea) Ruler of the Seas', text: 'Quest: Have Umi active on the field for 3 consecutive turns. Reward: Your WATER-monsters gain +500 ATK and DEF.' },
+      { name: '(Fish) The Big Catch', text: 'Quest: Destroy a monster with 2500+ ATK in battle. Reward: Every time you destroy a monster, draw a card.' },
+      { name: '(Assassination) Terror of the Deep', text: 'Quest: Perform 2 successful direct attacks. Reward: The opponent must discard a card every time they take battle damage.' }
     ]
   },
   {
@@ -200,9 +200,9 @@ const CHARACTERS = [
       { name: '(Destruction) Soul Thief', text: 'Requirement: The opponent declares an attack, and you are behind on LP. Banish 5 cards from the opponent\'s Graveyard. You gain 300 LP per card.', maxUses: 1 }
     ],
     quests: [
-      { name: '(Occult) Power of the Millennium Ring', text: 'Quest: The opponent must have over 10 cards in their Graveyard. Reward: You can look at the opponent\'s Set cards at any time.', maxUses: 1 },
-      { name: '(Zombies) Necro-Lord', text: 'Quest: Have 5 monsters in your Graveyard. Reward: Your Zombie/Fiend-monsters can tribute the opponent\'s LP instead of their own ATK when attacking (burn instead of battle).', maxUses: 1 },
-      { name: '(Destruction) Total Purge', text: 'Quest: Get the opponent\'s deck under 15 cards. Reward: During the opponent\'s Standby Phase, they must send the top card of their deck to the Graveyard.', maxUses: 1 }
+      { name: '(Occult) Power of the Millennium Ring', text: 'Quest: The opponent must have over 10 cards in their Graveyard. Reward: You can look at the opponent\'s Set cards at any time.' },
+      { name: '(Zombies) Necro-Lord', text: 'Quest: Have 5 monsters in your Graveyard. Reward: Your Zombie/Fiend-monsters can tribute the opponent\'s LP instead of their own ATK when attacking (burn instead of battle).' },
+      { name: '(Destruction) Total Purge', text: 'Quest: Get the opponent\'s deck under 15 cards. Reward: During the opponent\'s Standby Phase, they must send the top card of their deck to the Graveyard.' }
     ]
   },
   {
@@ -220,9 +220,9 @@ const CHARACTERS = [
       { name: '(Absorption) Relinquished\'s Hunger', text: 'Requirement: The opponent has at least 2 boss monsters. Take control of the opponent\'s strongest monster and equip it to one of your monsters (your monster gains its ATK).', maxUses: 1 }
     ],
     quests: [
-      { name: '(Cartoons) Creator\'s Masterpiece', text: 'Quest: Have 2 Toon-monsters on the field at the same time. Reward: Your Toon-monsters do not require LP to attack and cannot be targeted.', maxUses: 1 },
-      { name: '(Mind Reading) Perfect Prediction', text: 'Quest: Guess a type of hidden card (Spell/Trap/Monster) correctly 2 times. Reward: The opponent must announce out loud what they draw in their Draw Phase for the rest of the game.', maxUses: 1 },
-      { name: '(Absorption) Soul Eater', text: 'Quest: Have "Relinquished" (or an Illusion-monster) survive for 2 turns. Reward: The opponent takes all battle damage that your monsters would normally take.', maxUses: 1 }
+      { name: '(Cartoons) Creator\'s Masterpiece', text: 'Quest: Have 2 Toon-monsters on the field at the same time. Reward: Your Toon-monsters do not require LP to attack and cannot be targeted.' },
+      { name: '(Mind Reading) Perfect Prediction', text: 'Quest: Guess a type of hidden card (Spell/Trap/Monster) correctly 2 times. Reward: The opponent must announce out loud what they draw in their Draw Phase for the rest of the game.' },
+      { name: '(Absorption) Soul Eater', text: 'Quest: Have "Relinquished" (or an Illusion-monster) survive for 2 turns. Reward: The opponent takes all battle damage that your monsters would normally take.' }
     ]
   },
   {
@@ -240,9 +240,9 @@ const CHARACTERS = [
       { name: '(Endurance) Sandstorm', text: 'Requirement: The opponent has 3+ monsters, you have 0. Change all of the opponent\'s monsters to Defense Position and permanently halve their DEF.', maxUses: 1 }
     ],
     quests: [
-      { name: '(Traps) The Labyrinth', text: 'Quest: Activate 4 Trap Cards during the duel. Reward: Every time you activate a Trap, you gain 500 LP.', maxUses: 1 },
-      { name: '(Temple) The Sacred Beast', text: 'Quest: Special Summon a Trap-monster. Reward: Your Trap-monsters cannot be destroyed in battle.', maxUses: 1 },
-      { name: '(Endurance) Unwavering', text: 'Quest: Survive an attack with under 500 LP remaining. Reward: You take no effect damage (burn damage) for the rest of the game.', maxUses: 1 }
+      { name: '(Traps) The Labyrinth', text: 'Quest: Activate 4 Trap Cards during the duel. Reward: Every time you activate a Trap, you gain 500 LP.' },
+      { name: '(Temple) The Sacred Beast', text: 'Quest: Special Summon a Trap-monster. Reward: Your Trap-monsters cannot be destroyed in battle.' },
+      { name: '(Endurance) Unwavering', text: 'Quest: Survive an attack with under 500 LP remaining. Reward: You take no effect damage (burn damage) for the rest of the game.' }
     ]
   },
   {
@@ -260,9 +260,9 @@ const CHARACTERS = [
       { name: '(Reversal) Exchange of the Spirit', text: 'Requirement: Both players have at least 10 cards in their Graveyard, and you are behind on LP. Both players swap their deck with their Graveyard (shuffled).', maxUses: 1 }
     ],
     quests: [
-      { name: '(Future) The Seer', text: 'Quest: Accurately predict which card the opponent will draw in their next Draw Phase (announce it during your turn). Reward: The opponent must play with their hand revealed.', maxUses: 1 },
-      { name: '(Gravekeepers) Guardian of the Valley', text: 'Quest: Have "Necrovalley" and at least one Gravekeeper on the field. Reward: Cards in the Graveyards cannot be affected or moved by the opponent at all.', maxUses: 1 },
-      { name: '(Reversal) Karma', text: 'Quest: Lose at least 2000 LP via card effects. Reward: All effect damage you take is reflected back to the opponent\'s LP.', maxUses: 1 }
+      { name: '(Future) The Seer', text: 'Quest: Accurately predict which card the opponent will draw in their next Draw Phase (announce it during your turn). Reward: The opponent must play with their hand revealed.' },
+      { name: '(Gravekeepers) Guardian of the Valley', text: 'Quest: Have "Necrovalley" and at least one Gravekeeper on the field. Reward: Cards in the Graveyards cannot be affected or moved by the opponent at all.' },
+      { name: '(Reversal) Karma', text: 'Quest: Lose at least 2000 LP via card effects. Reward: All effect damage you take is reflected back to the opponent\'s LP.' }
     ]
   },
   {
@@ -280,9 +280,9 @@ const CHARACTERS = [
       { name: '(Ra) Wrath of the Sun God', text: 'Requirement: You are under 1000 LP. Pay all your LP except 1. Destroy the opponent\'s entire field, and the opponent takes 1000 damage for each destroyed card.', maxUses: 1 }
     ],
     quests: [
-      { name: '(Torture) Master of Pain', text: 'Quest: Inflict effect damage to the opponent 3 times in one turn. Reward: The opponent loses 500 LP in their Standby Phase.', maxUses: 1 },
-      { name: '(Slime) The Impenetrable Wall', text: 'Quest: Have a Slime-Token or Revival Jam survive 3 battles. Reward: Your monsters cannot be destroyed in battle.', maxUses: 1 },
-      { name: '(Ra) Divine Sacrifice', text: 'Quest: Tribute 3 monsters for one Tribute Summon. Reward: The monster you summoned is unaffected by Spells and Traps.', maxUses: 1 }
+      { name: '(Torture) Master of Pain', text: 'Quest: Inflict effect damage to the opponent 3 times in one turn. Reward: The opponent loses 500 LP in their Standby Phase.' },
+      { name: '(Slime) The Impenetrable Wall', text: 'Quest: Have a Slime-Token or Revival Jam survive 3 battles. Reward: Your monsters cannot be destroyed in battle.' },
+      { name: '(Ra) Divine Sacrifice', text: 'Quest: Tribute 3 monsters for one Tribute Summon. Reward: The monster you summoned is unaffected by Spells and Traps.' }
     ]
   },
   {
@@ -300,9 +300,9 @@ const CHARACTERS = [
       { name: '(Evolution) Perfect Moth Awakening', text: 'Requirement: You have under 1500 LP and an empty field. Special Summon your strongest Insect-monster directly from your deck (ignores "Petit Moth" rules).', maxUses: 1 }
     ],
     quests: [
-      { name: '(Insects) The Hive', text: 'Quest: Have 5 Insect-monsters on the field/in the Graveyard. Reward: Your Insect-monsters gain +500 ATK.', maxUses: 1 },
-      { name: '(Parasite) Curse of the Forest', text: 'Quest: The opponent draws and plays a card you have infected (or an Insect). Reward: All monsters on the field become Insect-type, and you draw 2 cards.', maxUses: 1 },
-      { name: '(Evolution) The Final Stage', text: 'Quest: Have an Insect survive 4 consecutive turns. Reward: You can destroy a card on the field for free once per turn.', maxUses: 1 }
+      { name: '(Insects) The Hive', text: 'Quest: Have 5 Insect-monsters on the field/in the Graveyard. Reward: Your Insect-monsters gain +500 ATK.' },
+      { name: '(Parasite) Curse of the Forest', text: 'Quest: The opponent draws and plays a card you have infected (or an Insect). Reward: All monsters on the field become Insect-type, and you draw 2 cards.' },
+      { name: '(Evolution) The Final Stage', text: 'Quest: Have an Insect survive 4 consecutive turns. Reward: You can destroy a card on the field for free once per turn.' }
     ]
   },
   {
@@ -320,9 +320,9 @@ const CHARACTERS = [
       { name: '(Gambling) All or Nothing', text: 'Requirement: You have 0 cards in your hand. Draw 3 cards. If you do not win this turn, you automatically lose in the End Phase.', maxUses: 1 }
     ],
     quests: [
-      { name: '(Cheating) Bandit King', text: 'Quest: Take control of one of the opponent\'s monsters. Reward: You may look at the top card of the opponent\'s deck at any time.', maxUses: 1 },
-      { name: '(Machines) Arms Race', text: 'Quest: Equip a Machine-monster with 2 Equip Cards. Reward: Your Machines inflict piercing damage and cannot be targeted.', maxUses: 1 },
-      { name: '(Gambling) Blessing in Disguise', text: 'Quest: Lose LP from your own card effects 3 times. Reward: Every time the opponent draws a card outside their Draw Phase, they take 800 damage.', maxUses: 1 }
+      { name: '(Cheating) Bandit King', text: 'Quest: Take control of one of the opponent\'s monsters. Reward: You may look at the top card of the opponent\'s deck at any time.' },
+      { name: '(Machines) Arms Race', text: 'Quest: Equip a Machine-monster with 2 Equip Cards. Reward: Your Machines inflict piercing damage and cannot be targeted.' },
+      { name: '(Gambling) Blessing in Disguise', text: 'Quest: Lose LP from your own card effects 3 times. Reward: Every time the opponent draws a card outside their Draw Phase, they take 800 damage.' }
     ]
   }
 ];
