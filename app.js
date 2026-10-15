@@ -6,10 +6,21 @@ const defaultState = {
   characterId: null,
   selectedSkill: null,
   selectedComeback: null,
-  selectedQuest: null
+  selectedQuest: null,
+  skillRevealed: false,
+  comebackRevealed: false,
+  questRevealed: false
 };
 
+// Persistent state across reloads
 let state = JSON.parse(localStorage.getItem(STORAGE_KEY)) || { ...defaultState };
+
+// Transient state (resets if the browser reloads)
+let peekState = {
+  skill: false,
+  comeback: false,
+  quest: false
+};
 
 function setState(patch) {
   state = { ...state, ...patch };
@@ -28,8 +39,12 @@ function goToCharacters() {
     characterId: null,
     selectedSkill: null,
     selectedComeback: null,
-    selectedQuest: null
+    selectedQuest: null,
+    skillRevealed: false,
+    comebackRevealed: false,
+    questRevealed: false
   });
+  peekState = { skill: false, comeback: false, quest: false };
 }
 
 function selectCharacter(id) {
@@ -38,8 +53,12 @@ function selectCharacter(id) {
     characterId: id,
     selectedSkill: 0,
     selectedComeback: 0,
-    selectedQuest: 0
+    selectedQuest: 0,
+    skillRevealed: false,
+    comebackRevealed: false,
+    questRevealed: false
   });
+  peekState = { skill: false, comeback: false, quest: false };
 }
 
 function pickAbility(type, index) {
@@ -54,6 +73,20 @@ function startDuel() {
 
 function resetApp() {
   setState({ ...defaultState });
+  peekState = { skill: false, comeback: false, quest: false };
+}
+
+// --- IN-DUEL CARD ACTIONS ---
+function togglePeek(type) {
+  peekState[type] = !peekState[type];
+  render();
+}
+
+function activateAbility(type) {
+  if (type === 'skill') setState({ skillRevealed: true });
+  if (type === 'comeback') setState({ comebackRevealed: true });
+  if (type === 'quest') setState({ questRevealed: true });
+  peekState[type] = false; 
 }
 
 // --- VIEW TEMPLATES ---
@@ -162,10 +195,64 @@ function renderAbilitiesScreen(char) {
   `;
 }
 
+// Reusable component for rendering the 3 distinct states of a card
+function renderDuelCard(type, label, ability, isRevealed, isPeeking, theme) {
+  if (isRevealed) {
+    return `
+      <div class="flex-1 rounded-2xl border ${theme.glow} bg-gradient-to-b ${theme.grad} to-slate-900/90 p-4 flex flex-col justify-center overflow-y-auto shadow-lg ${theme.shadow}">
+        <div class="flex items-center justify-between mb-2">
+          <span class="text-[10px] font-extrabold uppercase tracking-widest px-2 py-0.5 rounded ${theme.bg} ${theme.text} ${theme.border}">${label} - ACTIVATED</span>
+        </div>
+        <h3 class="text-base font-bold text-white mb-1">${ability.name}</h3>
+        <p class="text-xs text-slate-200 leading-relaxed">${ability.text}</p>
+      </div>
+    `;
+  }
+
+  if (isPeeking) {
+    return `
+      <div class="flex-1 rounded-2xl border border-slate-600 bg-slate-800 p-4 flex flex-col justify-center overflow-y-auto relative shadow-inner">
+        <div class="absolute inset-0 bg-slate-950/50 pointer-events-none rounded-2xl"></div>
+        <div class="relative z-10 flex flex-col h-full">
+          <div class="flex items-center justify-between mb-2">
+            <span class="text-[10px] font-extrabold uppercase tracking-widest px-2 py-0.5 rounded bg-slate-700 text-slate-300 border border-slate-600">Sneak Peek</span>
+          </div>
+          <h3 class="text-base font-bold text-white mb-1">${ability.name}</h3>
+          <p class="text-xs text-slate-300 leading-relaxed mb-4">${ability.text}</p>
+          
+          <div class="mt-auto flex gap-2">
+            <button onclick="togglePeek('${type}')" class="flex-1 py-2 rounded-lg bg-slate-700 hover:bg-slate-600 text-xs font-bold text-white transition border border-slate-600">Close</button>
+            <button onclick="activateAbility('${type}')" class="flex-1 py-2 rounded-lg ${theme.btn} ${theme.btnHover} text-xs font-bold text-white transition">Activate</button>
+          </div>
+        </div>
+      </div>
+    `;
+  }
+
+  // Hidden State
+  return `
+    <div class="flex-1 rounded-2xl border-2 border-dashed border-slate-700 bg-slate-900/50 p-4 flex flex-col items-center justify-center text-center">
+      <div class="w-10 h-10 mb-2 rounded-full bg-slate-800 border border-slate-700 flex items-center justify-center text-slate-500 shadow-inner">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path></svg>
+      </div>
+      <h3 class="text-xs font-bold text-slate-400 mb-4 tracking-widest uppercase">Secret ${label}</h3>
+      <div class="flex gap-2 w-full max-w-[220px]">
+        <button onclick="togglePeek('${type}')" class="flex-1 py-2.5 rounded-lg bg-slate-800 hover:bg-slate-700 border border-slate-700 text-xs font-bold text-slate-300 transition">Peek</button>
+        <button onclick="activateAbility('${type}')" class="flex-1 py-2.5 rounded-lg ${theme.btn} ${theme.btnHover} text-xs font-bold text-white shadow-lg ${theme.shadow} transition">Reveal</button>
+      </div>
+    </div>
+  `;
+}
+
 function renderDuelScreen(char) {
   const skill = char.skills[state.selectedSkill ?? 0];
   const comeback = char.comebacks[state.selectedComeback ?? 0];
   const quest = char.quests[state.selectedQuest ?? 0];
+
+  // Specific Tailwind classes defined for the CDN's JIT compiler mapping
+  const skyTheme = { bg: 'bg-sky-500/20', text: 'text-sky-300', border: 'border-sky-500/30', glow: 'border-sky-500/40', grad: 'from-sky-950/40', btn: 'bg-sky-600', btnHover: 'hover:bg-sky-500', shadow: 'shadow-sky-900/20' };
+  const roseTheme = { bg: 'bg-rose-500/20', text: 'text-rose-300', border: 'border-rose-500/30', glow: 'border-rose-500/40', grad: 'from-rose-950/40', btn: 'bg-rose-600', btnHover: 'hover:bg-rose-500', shadow: 'shadow-rose-900/20' };
+  const amberTheme = { bg: 'bg-amber-500/20', text: 'text-amber-300', border: 'border-amber-500/30', glow: 'border-amber-500/40', grad: 'from-amber-950/40', btn: 'bg-amber-600', btnHover: 'hover:bg-amber-500', shadow: 'shadow-amber-900/20' };
 
   return `
     <header class="px-4 py-2.5 border-b border-slate-800 flex items-center justify-between bg-slate-900 shrink-0">
@@ -177,34 +264,10 @@ function renderDuelScreen(char) {
       <button onclick="resetApp()" class="text-xs text-rose-400 border border-rose-500/30 bg-rose-950/30 rounded-lg px-2.5 py-1">End</button>
     </header>
 
-    <!-- 3 VERTICAL SECTIONS -->
     <main class="flex-1 flex flex-col gap-2.5 p-2.5 overflow-hidden">
-      <!-- SECTION 1: SKILL -->
-      <div class="flex-1 rounded-2xl border border-sky-500/40 bg-gradient-to-b from-sky-950/40 to-slate-900/90 p-4 flex flex-col justify-center overflow-y-auto">
-        <div class="flex items-center justify-between mb-1.5">
-          <span class="text-[10px] font-extrabold uppercase tracking-widest px-2 py-0.5 rounded bg-sky-500/20 text-sky-300 border border-sky-500/30">Skill</span>
-        </div>
-        <h3 class="text-base font-bold text-white mb-1">${skill.name}</h3>
-        <p class="text-xs text-slate-200 leading-relaxed">${skill.text}</p>
-      </div>
-
-      <!-- SECTION 2: COMEBACK -->
-      <div class="flex-1 rounded-2xl border border-rose-500/40 bg-gradient-to-b from-rose-950/40 to-slate-900/90 p-4 flex flex-col justify-center overflow-y-auto">
-        <div class="flex items-center justify-between mb-1.5">
-          <span class="text-[10px] font-extrabold uppercase tracking-widest px-2 py-0.5 rounded bg-rose-500/20 text-rose-300 border border-rose-500/30">Comeback</span>
-        </div>
-        <h3 class="text-base font-bold text-white mb-1">${comeback.name}</h3>
-        <p class="text-xs text-slate-200 leading-relaxed">${comeback.text}</p>
-      </div>
-
-      <!-- SECTION 3: QUEST -->
-      <div class="flex-1 rounded-2xl border border-amber-500/40 bg-gradient-to-b from-amber-950/40 to-slate-900/90 p-4 flex flex-col justify-center overflow-y-auto">
-        <div class="flex items-center justify-between mb-1.5">
-          <span class="text-[10px] font-extrabold uppercase tracking-widest px-2 py-0.5 rounded bg-amber-500/20 text-amber-300 border border-amber-500/30">Quest</span>
-        </div>
-        <h3 class="text-base font-bold text-white mb-1">${quest.name}</h3>
-        <p class="text-xs text-slate-200 leading-relaxed">${quest.text}</p>
-      </div>
+      ${renderDuelCard('skill', 'Skill', skill, state.skillRevealed, peekState.skill, skyTheme)}
+      ${renderDuelCard('comeback', 'Comeback', comeback, state.comebackRevealed, peekState.comeback, roseTheme)}
+      ${renderDuelCard('quest', 'Quest', quest, state.questRevealed, peekState.quest, amberTheme)}
     </main>
   `;
 }
