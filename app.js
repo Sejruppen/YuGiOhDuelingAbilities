@@ -140,7 +140,7 @@ function renderAbilitiesScreen(char) {
       <div class="w-16"></div>
     </header>
 
-    <div class="flex-1 overflow-y-auto p-4 space-y-6 no-scrollbar">
+    <div id="abilities-scroll-container" class="flex-1 overflow-y-auto p-4 space-y-6 no-scrollbar">
       <!-- SKILLS -->
       <section>
         <div class="flex items-center gap-2 mb-2.5">
@@ -276,6 +276,13 @@ function renderDuelScreen(char) {
 function render() {
   const app = document.getElementById('app');
 
+  // Capture scroll position for the abilities screen before re-rendering
+  let scrollPos = 0;
+  const scrollContainer = document.getElementById('abilities-scroll-container');
+  if (scrollContainer) {
+    scrollPos = scrollContainer.scrollTop;
+  }
+
   if (state.screen === 'start') {
     app.innerHTML = renderStartScreen();
     return;
@@ -294,6 +301,11 @@ function render() {
 
   if (state.screen === 'abilities') {
     app.innerHTML = renderAbilitiesScreen(char);
+    // Restore scroll position instantly after DOM update
+    const newScrollContainer = document.getElementById('abilities-scroll-container');
+    if (newScrollContainer) {
+      newScrollContainer.scrollTop = scrollPos;
+    }
     return;
   }
 
