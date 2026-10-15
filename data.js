@@ -325,3 +325,4 @@ const CHARACTERS = [
       { name: '(Gambling) Blessing in Disguise', text: 'Quest: Lose LP from your own card effects 3 times. Reward: Every time the opponent draws a card outside their Draw Phase, they take 800 damage.' }
     ]
   }
+];
