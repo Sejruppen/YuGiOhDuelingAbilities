@@ -84,7 +84,6 @@ function pickAbility(type, index) {
 }
 
 function startDuel() {
-  // Always start at 8000 LP when entering a new duel
   setState({
     screen: 'duel',
     lp: 8000
@@ -92,7 +91,6 @@ function startDuel() {
 }
 
 function resetApp() {
-  // Preserve preferred LP side across duels
   const currentSide = state.lpSide || 'left';
   setState({ ...defaultState, lpSide: currentSide });
   peekState = { skill: false, comeback: false, quest: false };
@@ -136,13 +134,6 @@ function toggleLpSide(event) {
 function openLpEditor() {
   lpModalOpen = true;
   render();
-  setTimeout(() => {
-    const input = document.getElementById('lp-input');
-    if (input) {
-      input.focus();
-      input.select();
-    }
-  }, 20);
 }
 
 function closeLpEditor() {
@@ -150,34 +141,14 @@ function closeLpEditor() {
   render();
 }
 
-function saveLpFromInput(event) {
-  if (event) event.preventDefault();
-  const input = document.getElementById('lp-input');
-  if (input) {
-    const parsed = parseInt(input.value, 10);
-    if (!isNaN(parsed)) {
-      lpModalOpen = false;
-      setState({ lp: Math.max(0, parsed) });
-      return;
-    }
-  }
-  closeLpEditor();
-}
-
 function adjustLpQuick(delta) {
   const current = state.lp ?? 8000;
-  const next = Math.max(0, current + delta);
-  const input = document.getElementById('lp-input');
-  if (input) input.value = next;
-  setState({ lp: next });
+  setState({ lp: Math.max(0, current + delta) });
 }
 
 function halveLpQuick() {
   const current = state.lp ?? 8000;
-  const next = Math.ceil(current / 2);
-  const input = document.getElementById('lp-input');
-  if (input) input.value = next;
-  setState({ lp: next });
+  setState({ lp: Math.ceil(current / 2) });
 }
 
 // --- VIEW TEMPLATES ---
@@ -427,10 +398,8 @@ function renderDuelCard(type, label, ability, isRevealedOrCompleted, uses, isPee
 function renderLpBar() {
   const currentLp = state.lp ?? 8000;
   const isLeft = state.lpSide !== 'right';
-  // Rotate -90deg on left side, +90deg on right side to match the outward-facing orientation
   const rotationClass = isLeft ? '-rotate-90' : 'rotate-90';
 
-// Color shifts based on remaining LP
   let lpColor = 'text-emerald-400 border-emerald-500/30 from-emerald-950/30';
   if (currentLp <= 2000) {
     lpColor = 'text-rose-400 border-rose-500/40 from-rose-950/40';
@@ -459,7 +428,7 @@ function renderLpBar() {
   `;
 }
 
-// Modal for editing LP when the vertical bar is clicked
+// Button-only Modal for editing LP (No Keyboard!)
 function renderLpModal() {
   if (!lpModalOpen) return '';
   const currentLp = state.lp ?? 8000;
@@ -472,25 +441,38 @@ function renderLpModal() {
           <button onclick="closeLpEditor()" class="text-slate-400 hover:text-white text-sm font-bold px-2 py-0.5 rounded bg-slate-800 border border-slate-700">✕</button>
         </div>
 
-        <form onsubmit="saveLpFromInput(event)" class="space-y-4">
-          <input id="lp-input" type="number" inputmode="numeric" value="${currentLp}" class="w-full text-center text-3xl font-black font-mono py-3 rounded-xl bg-slate-950 border border-slate-700 text-white focus:border-amber-400 focus:outline-none" />
-
-          <!-- Quick Adjust Buttons -->
-          <div class="grid grid-cols-4 gap-1.5">
-            <button type="button" onclick="adjustLpQuick(-1000)" class="py-2 rounded-lg bg-rose-950/60 border border-rose-500/30 text-rose-300 text-xs font-bold active:scale-95">-1000</button>
-            <button type="button" onclick="adjustLpQuick(-500)" class="py-2 rounded-lg bg-rose-950/60 border border-rose-500/30 text-rose-300 text-xs font-bold active:scale-95">-500</button>
-            <button type="button" onclick="adjustLpQuick(-100)" class="py-2 rounded-lg bg-rose-950/60 border border-rose-500/30 text-rose-300 text-xs font-bold active:scale-95">-100</button>
-            <button type="button" onclick="halveLpQuick()" class="py-2 rounded-lg bg-indigo-950/60 border border-indigo-500/30 text-indigo-300 text-xs font-bold active:scale-95">÷2</button>
-            <button type="button" onclick="adjustLpQuick(1000)" class="py-2 rounded-lg bg-emerald-950/60 border border-emerald-500/30 text-emerald-300 text-xs font-bold active:scale-95">+1000</button>
-            <button type="button" onclick="adjustLpQuick(500)" class="py-2 rounded-lg bg-emerald-950/60 border border-emerald-500/30 text-emerald-300 text-xs font-bold active:scale-95">+500</button>
-            <button type="button" onclick="adjustLpQuick(100)" class="py-2 rounded-lg bg-emerald-950/60 border border-emerald-500/30 text-emerald-300 text-xs font-bold active:scale-95">+100</button>
-            <button type="button" onclick="document.getElementById('lp-input').value = 8000; setState({ lp: 8000 });" class="py-2 rounded-lg bg-slate-800 border border-slate-700 text-slate-300 text-xs font-bold active:scale-95">8000</button>
+        <div class="space-y-4">
+          <!-- Static LP Display -->
+          <div class="w-full text-center text-4xl font-black font-mono py-3.5 rounded-xl bg-slate-950 border border-slate-800 text-white shadow-inner select-none">
+            ${currentLp}
           </div>
 
-          <button type="submit" class="w-full py-3 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold text-sm shadow-lg shadow-amber-500/20">
-            Save LP
+          <!-- Subtract Buttons -->
+          <div class="grid grid-cols-4 gap-1.5">
+            <button type="button" onclick="adjustLpQuick(-1000)" class="py-2.5 rounded-lg bg-rose-950/60 border border-rose-500/30 text-rose-300 text-xs font-bold active:scale-95 transition">-1000</button>
+            <button type="button" onclick="adjustLpQuick(-500)" class="py-2.5 rounded-lg bg-rose-950/60 border border-rose-500/30 text-rose-300 text-xs font-bold active:scale-95 transition">-500</button>
+            <button type="button" onclick="adjustLpQuick(-100)" class="py-2.5 rounded-lg bg-rose-950/60 border border-rose-500/30 text-rose-300 text-xs font-bold active:scale-95 transition">-100</button>
+            <button type="button" onclick="adjustLpQuick(-50)" class="py-2.5 rounded-lg bg-rose-950/60 border border-rose-500/30 text-rose-300 text-xs font-bold active:scale-95 transition">-50</button>
+          </div>
+
+          <!-- Add Buttons -->
+          <div class="grid grid-cols-4 gap-1.5">
+            <button type="button" onclick="adjustLpQuick(1000)" class="py-2.5 rounded-lg bg-emerald-950/60 border border-emerald-500/30 text-emerald-300 text-xs font-bold active:scale-95 transition">+1000</button>
+            <button type="button" onclick="adjustLpQuick(500)" class="py-2.5 rounded-lg bg-emerald-950/60 border border-emerald-500/30 text-emerald-300 text-xs font-bold active:scale-95 transition">+500</button>
+            <button type="button" onclick="adjustLpQuick(100)" class="py-2.5 rounded-lg bg-emerald-950/60 border border-emerald-500/30 text-emerald-300 text-xs font-bold active:scale-95 transition">+100</button>
+            <button type="button" onclick="adjustLpQuick(50)" class="py-2.5 rounded-lg bg-emerald-950/60 border border-emerald-500/30 text-emerald-300 text-xs font-bold active:scale-95 transition">+50</button>
+          </div>
+
+          <!-- Utility Row -->
+          <div class="grid grid-cols-2 gap-1.5">
+            <button type="button" onclick="halveLpQuick()" class="py-2.5 rounded-lg bg-indigo-950/60 border border-indigo-500/30 text-indigo-300 text-xs font-bold active:scale-95 transition">÷2 (Halve)</button>
+            <button type="button" onclick="setState({ lp: 8000 })" class="py-2.5 rounded-lg bg-slate-800 border border-slate-700 text-slate-300 text-xs font-bold active:scale-95 transition">Reset (8000)</button>
+          </div>
+
+          <button type="button" onclick="closeLpEditor()" class="w-full py-3 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold text-sm shadow-lg shadow-amber-500/20 transition">
+            Done
           </button>
-        </form>
+        </div>
       </div>
     </div>
   `;
@@ -517,7 +499,6 @@ function renderDuelScreen(char) {
       <button onclick="resetApp()" class="text-xs text-rose-400 border border-rose-500/30 bg-rose-950/30 rounded-lg px-2.5 py-1">End</button>
     </header>
 
-    <!-- HORIZONTAL WRAPPER: Places LP Bar on Left or Right of the 3 Cards -->
     <main class="flex-1 flex ${isLeft ? 'flex-row' : 'flex-row-reverse'} gap-2.5 p-2.5 overflow-hidden">
       ${renderLpBar()}
 
@@ -577,17 +558,7 @@ if ('serviceWorker' in navigator) {
   window.addEventListener('load', () => {
     navigator.serviceWorker.register('./sw.js').catch(() => {});
   });
-}
 
-render();
-
-// --- INITIALIZE & PWA SERVICE WORKER ---
-if ('serviceWorker' in navigator) {
-  window.addEventListener('load', () => {
-    navigator.serviceWorker.register('./sw.js').catch(() => {});
-  });
-
-  // Automatically reload the installed PWA when a new sw.js takes control
   let refreshing = false;
   navigator.serviceWorker.addEventListener('controllerchange', () => {
     if (!refreshing) {
@@ -597,3 +568,4 @@ if ('serviceWorker' in navigator) {
   });
 }
 
+render();
