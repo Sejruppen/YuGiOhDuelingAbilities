@@ -27,16 +27,16 @@ const CHARACTERS = [
   },
   {
     id: 'theotaur',
-    name: 'Theotaur (Dark Paladin/Dragons)',
-    era: 'Universal',
+    name: 'Theotaur',
+    era: 'Dark Paladin and Dragons',
     skills: [
-      { name: 'Test', text: 'test', maxUses: null }
+      { name: 'Quick summon', text: 'Summon a level 5 or higher monster without paying tribues', maxUses: 1 }
     ],
     comebacks: [
-      { name: 'Test', text: 'Requirement: Test. Test. (Once per duel).', maxUses: 1 }
+      { name: 'Get help!', text: 'Requirement: 1000 or lower LP. Special summon Dark Magician or Buster Blader from the deck', maxUses: 1 }
     ],
     quests: [
-      { name: 'Test', text: 'Quest: Test. Reward: Test' }
+      { name: 'Ultimate power!', text: 'Quest: Summon Dark Paladin. Reward: Dragons on your side of the field gain 500 ATK' }
     ]
   },
   {
