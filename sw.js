@@ -1,11 +1,12 @@
-const CACHE_NAME = 'ygo-skills-mvp-v5';
+const CACHE_NAME = 'ygo-skills-mvp-v6';
 const ASSETS = [
   './',
   './index.html',
   './styles.css',
   './data.js',
   './app.js',
-  './manifest.json'
+  './manifest.json',
+  './icon.jpg'
 ];
 
 self.addEventListener('install', (event) => {
