@@ -1,4 +1,6 @@
-html { font-size: 18px; }
+html {
+  font-size: 18px !important;
+}
 
 body {
   background-color: #090d16;
