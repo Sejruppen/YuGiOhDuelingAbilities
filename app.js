@@ -580,3 +580,20 @@ if ('serviceWorker' in navigator) {
 }
 
 render();
+
+// --- INITIALIZE & PWA SERVICE WORKER ---
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('./sw.js').catch(() => {});
+  });
+
+  // Automatically reload the installed PWA when a new sw.js takes control
+  let refreshing = false;
+  navigator.serviceWorker.addEventListener('controllerchange', () => {
+    if (!refreshing) {
+      refreshing = true;
+      window.location.reload();
+    }
+  });
+}
+
