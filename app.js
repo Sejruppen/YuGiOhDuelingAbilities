@@ -11,11 +11,14 @@ const defaultState = {
   comebackRevealed: false,
   skillUses: 0,
   comebackUses: 0,
-  questCompleted: false
+  questCompleted: false,
+  // LP Counter State
+  lp: 8000,
+  lpSide: 'left' // 'left' | 'right'
 };
 
 // Persistent state across reloads
-let state = JSON.parse(localStorage.getItem(STORAGE_KEY)) || { ...defaultState };
+let state = { ...defaultState, ...(JSON.parse(localStorage.getItem(STORAGE_KEY)) || {}) };
 
 // Transient state (resets if the browser reloads)
 let peekState = {
@@ -23,6 +26,8 @@ let peekState = {
   comeback: false,
   quest: false
 };
+
+let lpModalOpen = false;
 
 function setState(patch) {
   state = { ...state, ...patch };
@@ -79,12 +84,19 @@ function pickAbility(type, index) {
 }
 
 function startDuel() {
-  setState({ screen: 'duel' });
+  // Always start at 8000 LP when entering a new duel
+  setState({
+    screen: 'duel',
+    lp: 8000
+  });
 }
 
 function resetApp() {
-  setState({ ...defaultState });
+  // Preserve preferred LP side across duels
+  const currentSide = state.lpSide || 'left';
+  setState({ ...defaultState, lpSide: currentSide });
   peekState = { skill: false, comeback: false, quest: false };
+  lpModalOpen = false;
 }
 
 // --- IN-DUEL CARD ACTIONS ---
@@ -113,6 +125,59 @@ function toggleQuestCompleted(completed) {
 function changeUses(type, delta) {
   const current = state[`${type}Uses`] || 0;
   setState({ [`${type}Uses`]: Math.max(0, current + delta) });
+}
+
+// --- LP COUNTER ACTIONS ---
+function toggleLpSide(event) {
+  if (event) event.stopPropagation();
+  setState({ lpSide: state.lpSide === 'left' ? 'right' : 'left' });
+}
+
+function openLpEditor() {
+  lpModalOpen = true;
+  render();
+  setTimeout(() => {
+    const input = document.getElementById('lp-input');
+    if (input) {
+      input.focus();
+      input.select();
+    }
+  }, 20);
+}
+
+function closeLpEditor() {
+  lpModalOpen = false;
+  render();
+}
+
+function saveLpFromInput(event) {
+  if (event) event.preventDefault();
+  const input = document.getElementById('lp-input');
+  if (input) {
+    const parsed = parseInt(input.value, 10);
+    if (!isNaN(parsed)) {
+      lpModalOpen = false;
+      setState({ lp: Math.max(0, parsed) });
+      return;
+    }
+  }
+  closeLpEditor();
+}
+
+function adjustLpQuick(delta) {
+  const current = state.lp ?? 8000;
+  const next = Math.max(0, current + delta);
+  const input = document.getElementById('lp-input');
+  if (input) input.value = next;
+  setState({ lp: next });
+}
+
+function halveLpQuick() {
+  const current = state.lp ?? 8000;
+  const next = Math.ceil(current / 2);
+  const input = document.getElementById('lp-input');
+  if (input) input.value = next;
+  setState({ lp: next });
 }
 
 // --- VIEW TEMPLATES ---
@@ -358,6 +423,79 @@ function renderDuelCard(type, label, ability, isRevealedOrCompleted, uses, isPee
   `;
 }
 
+// Side Vertical Life Points Bar
+function renderLpBar() {
+  const currentLp = state.lp ?? 8000;
+  const isLeft = state.lpSide !== 'right';
+  // Rotate -90deg on left side, +90deg on right side to match the outward-facing orientation
+  const rotationClass = isLeft ? '-rotate-90' : 'rotate-90';
+
+// Color shifts based on remaining LP
+  let lpColor = 'text-emerald-400 border-emerald-500/30 from-emerald-950/30';
+  if (currentLp <= 2000) {
+    lpColor = 'text-rose-400 border-rose-500/40 from-rose-950/40';
+  } else if (currentLp <= 4000) {
+    lpColor = 'text-amber-400 border-amber-500/40 from-amber-950/40';
+  }
+
+  return `
+    <div onclick="openLpEditor()" class="w-14 shrink-0 rounded-2xl border ${lpColor} bg-gradient-to-b to-slate-900/90 flex flex-col items-center justify-between py-3 cursor-pointer active:scale-[0.98] transition select-none relative overflow-hidden shadow-lg">
+      <!-- Switch Side Button -->
+      <button onclick="toggleLpSide(event)" title="Switch LP Side" class="z-10 w-9 h-8 rounded-lg bg-slate-800/90 hover:bg-slate-700 border border-slate-700 flex items-center justify-center text-slate-300 text-xs font-bold shadow transition">
+        ⇄
+      </button>
+
+      <!-- Vertical Rotated LP Number -->
+      <div class="flex-1 flex items-center justify-center">
+        <div class="${rotationClass} whitespace-nowrap flex items-baseline gap-2">
+          <span class="text-[11px] font-extrabold uppercase tracking-widest text-slate-400">LP</span>
+          <span class="text-3xl font-black tracking-wider font-mono">${currentLp}</span>
+        </div>
+      </div>
+
+      <!-- Tap Hint -->
+      <span class="text-[9px] font-bold uppercase tracking-widest text-slate-500">Edit</span>
+    </div>
+  `;
+}
+
+// Modal for editing LP when the vertical bar is clicked
+function renderLpModal() {
+  if (!lpModalOpen) return '';
+  const currentLp = state.lp ?? 8000;
+
+  return `
+    <div onclick="closeLpEditor()" class="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
+      <div onclick="event.stopPropagation()" class="w-full max-w-xs rounded-2xl border border-slate-700 bg-slate-900 p-5 shadow-2xl">
+        <div class="flex items-center justify-between mb-4">
+          <h3 class="text-sm font-extrabold uppercase tracking-wider text-amber-400">Life Points</h3>
+          <button onclick="closeLpEditor()" class="text-slate-400 hover:text-white text-sm font-bold px-2 py-0.5 rounded bg-slate-800 border border-slate-700">✕</button>
+        </div>
+
+        <form onsubmit="saveLpFromInput(event)" class="space-y-4">
+          <input id="lp-input" type="number" inputmode="numeric" value="${currentLp}" class="w-full text-center text-3xl font-black font-mono py-3 rounded-xl bg-slate-950 border border-slate-700 text-white focus:border-amber-400 focus:outline-none" />
+
+          <!-- Quick Adjust Buttons -->
+          <div class="grid grid-cols-4 gap-1.5">
+            <button type="button" onclick="adjustLpQuick(-1000)" class="py-2 rounded-lg bg-rose-950/60 border border-rose-500/30 text-rose-300 text-xs font-bold active:scale-95">-1000</button>
+            <button type="button" onclick="adjustLpQuick(-500)" class="py-2 rounded-lg bg-rose-950/60 border border-rose-500/30 text-rose-300 text-xs font-bold active:scale-95">-500</button>
+            <button type="button" onclick="adjustLpQuick(-100)" class="py-2 rounded-lg bg-rose-950/60 border border-rose-500/30 text-rose-300 text-xs font-bold active:scale-95">-100</button>
+            <button type="button" onclick="halveLpQuick()" class="py-2 rounded-lg bg-indigo-950/60 border border-indigo-500/30 text-indigo-300 text-xs font-bold active:scale-95">÷2</button>
+            <button type="button" onclick="adjustLpQuick(1000)" class="py-2 rounded-lg bg-emerald-950/60 border border-emerald-500/30 text-emerald-300 text-xs font-bold active:scale-95">+1000</button>
+            <button type="button" onclick="adjustLpQuick(500)" class="py-2 rounded-lg bg-emerald-950/60 border border-emerald-500/30 text-emerald-300 text-xs font-bold active:scale-95">+500</button>
+            <button type="button" onclick="adjustLpQuick(100)" class="py-2 rounded-lg bg-emerald-950/60 border border-emerald-500/30 text-emerald-300 text-xs font-bold active:scale-95">+100</button>
+            <button type="button" onclick="document.getElementById('lp-input').value = 8000; setState({ lp: 8000 });" class="py-2 rounded-lg bg-slate-800 border border-slate-700 text-slate-300 text-xs font-bold active:scale-95">8000</button>
+          </div>
+
+          <button type="submit" class="w-full py-3 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold text-sm shadow-lg shadow-amber-500/20">
+            Save LP
+          </button>
+        </form>
+      </div>
+    </div>
+  `;
+}
+
 function renderDuelScreen(char) {
   const skill = char.skills[state.selectedSkill ?? 0];
   const comeback = char.comebacks[state.selectedComeback ?? 0];
@@ -366,6 +504,8 @@ function renderDuelScreen(char) {
   const skyTheme = { bg: 'bg-sky-500/20', text: 'text-sky-300', border: 'border-sky-500/30', glow: 'border-sky-500/40', grad: 'from-sky-950/40', btn: 'bg-sky-600', btnHover: 'hover:bg-sky-500', shadow: 'shadow-sky-900/20' };
   const roseTheme = { bg: 'bg-rose-500/20', text: 'text-rose-300', border: 'border-rose-500/30', glow: 'border-rose-500/40', grad: 'from-rose-950/40', btn: 'bg-rose-600', btnHover: 'hover:bg-rose-500', shadow: 'shadow-rose-900/20' };
   const amberTheme = { bg: 'bg-amber-500/20', text: 'text-amber-300', border: 'border-amber-500/30', glow: 'border-amber-500/40', grad: 'from-amber-950/40', btn: 'bg-amber-600', btnHover: 'hover:bg-amber-500', shadow: 'shadow-amber-900/20' };
+
+  const isLeft = state.lpSide !== 'right';
 
   return `
     <header class="px-4 py-2.5 border-b border-slate-800 flex items-center justify-between bg-slate-900 shrink-0">
@@ -377,11 +517,18 @@ function renderDuelScreen(char) {
       <button onclick="resetApp()" class="text-xs text-rose-400 border border-rose-500/30 bg-rose-950/30 rounded-lg px-2.5 py-1">End</button>
     </header>
 
-    <main class="flex-1 flex flex-col gap-2.5 p-2.5 overflow-hidden">
-      ${renderDuelCard('skill', 'Skill', skill, state.skillRevealed, state.skillUses, peekState.skill, skyTheme)}
-      ${renderDuelCard('comeback', 'Comeback', comeback, state.comebackRevealed, state.comebackUses, peekState.comeback, roseTheme)}
-      ${renderDuelCard('quest', 'Quest', quest, state.questCompleted, 0, peekState.quest, amberTheme)}
+    <!-- HORIZONTAL WRAPPER: Places LP Bar on Left or Right of the 3 Cards -->
+    <main class="flex-1 flex ${isLeft ? 'flex-row' : 'flex-row-reverse'} gap-2.5 p-2.5 overflow-hidden">
+      ${renderLpBar()}
+
+      <div class="flex-1 flex flex-col gap-2.5 overflow-hidden">
+        ${renderDuelCard('skill', 'Skill', skill, state.skillRevealed, state.skillUses, peekState.skill, skyTheme)}
+        ${renderDuelCard('comeback', 'Comeback', comeback, state.comebackRevealed, state.comebackUses, peekState.comeback, roseTheme)}
+        ${renderDuelCard('quest', 'Quest', quest, state.questCompleted, 0, peekState.quest, amberTheme)}
+      </div>
     </main>
+
+    ${renderLpModal()}
   `;
 }
 
