@@ -1,9 +1,11 @@
-const CACHE_NAME = 'ygo-skills-mvp-v13';
+const CACHE_NAME = 'ygo-skills-mvp-v14';
 const ASSETS = [
   './',
   './index.html',
   './styles.css',
   './data.js',
+  './src/config/tailwind-config.js',
+  './src/config/app-themes.js',
   './src/config/constants.js',
   './src/config/ability-types.js',
   './src/state/store.js',

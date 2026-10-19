@@ -2,9 +2,16 @@ html {
   font-size: 20px !important;
 }
 
+/* Theme surface colours (RGB triplets). Utility colours are themed through the
+   --c-* variables consumed by src/config/tailwind-config.js. */
+:root {
+  --app-bg: 9 13 22;
+  --app-fg: 248 250 252;
+}
+
 body {
-  background-color: #090d16;
-  color: #f8fafc;
+  background-color: rgb(var(--app-bg));
+  color: rgb(var(--app-fg));
   user-select: none;
   -webkit-tap-highlight-color: transparent;
   font-family: system-ui, -apple-system, sans-serif;
@@ -19,4 +26,267 @@ body {
 .no-scrollbar {
   -ms-overflow-style: none;
   scrollbar-width: none;
+}
+
+/* ===================================================================== */
+/* LIGHT THEME                                                           */
+/* Slate scale is inverted (dark surfaces -> light, light text -> dark)  */
+/* and the accent text/tint shades are flipped to stay readable.         */
+/* ===================================================================== */
+html[data-theme="light"] {
+  --app-bg: 241 245 249;
+  --app-fg: 15 23 42;
+
+  --c-white: 15 23 42;
+
+  --c-slate-50: 2 6 23;
+  --c-slate-100: 30 41 59;
+  --c-slate-200: 51 65 85;
+  --c-slate-300: 71 85 105;
+  --c-slate-400: 100 116 139;
+  --c-slate-500: 148 163 184;
+  --c-slate-600: 148 163 184;
+  --c-slate-700: 203 213 225;
+  --c-slate-800: 226 232 240;
+  --c-slate-900: 255 255 255;
+  --c-slate-950: 241 245 249;
+
+  --c-sky-100: 12 74 110;
+  --c-sky-200: 7 89 133;
+  --c-sky-300: 3 105 161;
+  --c-sky-400: 2 132 199;
+  --c-sky-900: 186 230 253;
+  --c-sky-950: 224 242 254;
+
+  --c-rose-100: 136 19 55;
+  --c-rose-200: 159 18 57;
+  --c-rose-300: 190 18 60;
+  --c-rose-400: 225 29 72;
+  --c-rose-900: 254 205 211;
+  --c-rose-950: 255 228 230;
+
+  --c-amber-100: 69 26 3;
+  --c-amber-200: 120 53 15;
+  --c-amber-300: 146 64 14;
+  --c-amber-400: 180 83 9;
+  --c-amber-900: 253 230 138;
+  --c-amber-950: 254 243 199;
+
+  --c-emerald-100: 6 78 59;
+  --c-emerald-200: 6 95 70;
+  --c-emerald-300: 6 95 70;
+  --c-emerald-400: 4 120 87;
+  --c-emerald-900: 167 243 208;
+  --c-emerald-950: 209 250 229;
+
+  --c-indigo-100: 49 46 129;
+  --c-indigo-200: 55 48 163;
+  --c-indigo-300: 67 56 202;
+  --c-indigo-400: 79 70 229;
+  --c-indigo-900: 199 210 254;
+  --c-indigo-950: 224 231 255;
+}
+
+/* Saturated action buttons keep white labels. */
+html[data-theme="light"] .bg-sky-600,
+html[data-theme="light"] .bg-rose-600,
+html[data-theme="light"] .bg-amber-600 {
+  color: #fff;
+}
+
+/* Primary (amber) buttons keep their original look: amber with dark label. */
+html[data-theme="light"] .bg-amber-500 {
+  color: rgb(2 6 23);
+}
+
+html[data-theme="light"] .hover\:bg-amber-400:hover {
+  background-color: rgb(251 191 36);
+}
+
+html[data-theme="light"] .start-screen {
+  background-image: linear-gradient(to bottom, #ffffff, #f1f5f9, #e2e8f0);
+}
+
+/* ===================================================================== */
+/* POWER OF CHAOS THEME                                                  */
+/* Inspired by "Yu-Gi-Oh! Power of Chaos": papyrus parchment, brown ink, */
+/* gold trim, lapis blue, card-back vortexes and marble LP tablets.      */
+/* ===================================================================== */
+html[data-theme="poc"] {
+  --app-bg: 227 197 140;
+  --app-fg: 46 28 12;
+
+  --c-white: 46 28 12;
+  --c-black: 36 20 6;
+
+  /* Parchment surfaces (900/950/800) and brown ink (white..400). */
+  --c-slate-50: 40 24 10;
+  --c-slate-100: 52 32 14;
+  --c-slate-200: 66 42 18;
+  --c-slate-300: 84 56 26;
+  --c-slate-400: 112 78 40;
+  --c-slate-500: 140 104 58;
+  --c-slate-600: 160 116 60;
+  --c-slate-700: 184 142 84;
+  --c-slate-800: 224 198 144;
+  --c-slate-900: 246 232 196;
+  --c-slate-950: 238 219 176;
+
+  /* Skill: Egyptian lapis blue */
+  --c-sky-100: 14 32 80;
+  --c-sky-200: 18 42 100;
+  --c-sky-300: 22 52 120;
+  --c-sky-400: 30 68 150;
+  --c-sky-500: 40 86 170;
+  --c-sky-600: 30 68 150;
+  --c-sky-900: 120 155 205;
+  --c-sky-950: 150 180 220;
+
+  /* Comeback: trap-card crimson */
+  --c-rose-100: 80 12 44;
+  --c-rose-200: 100 16 54;
+  --c-rose-300: 118 20 64;
+  --c-rose-400: 140 28 78;
+  --c-rose-500: 170 40 96;
+  --c-rose-600: 140 28 78;
+  --c-rose-900: 200 120 150;
+  --c-rose-950: 220 150 175;
+
+  /* Quest: pharaoh gold */
+  --c-amber-100: 72 42 6;
+  --c-amber-200: 92 54 8;
+  --c-amber-300: 112 66 8;
+  --c-amber-400: 128 78 12;
+  --c-amber-500: 222 162 48;
+  --c-amber-600: 170 108 22;
+  --c-amber-900: 222 175 85;
+  --c-amber-950: 236 196 110;
+
+  /* Spell-card green */
+  --c-emerald-300: 18 86 62;
+  --c-emerald-400: 22 100 72;
+  --c-emerald-500: 34 130 96;
+  --c-emerald-600: 26 110 80;
+  --c-emerald-900: 120 180 140;
+  --c-emerald-950: 150 200 165;
+
+  /* Dark Magician purple */
+  --c-indigo-300: 74 44 120;
+  --c-indigo-400: 88 56 140;
+  --c-indigo-500: 106 70 160;
+  --c-indigo-600: 88 56 140;
+  --c-indigo-900: 170 145 205;
+  --c-indigo-950: 190 170 220;
+}
+
+html[data-theme="poc"] body {
+  font-family: Georgia, 'Times New Roman', serif;
+  background-color: rgb(var(--app-bg));
+  background-image:
+    radial-gradient(ellipse at center, transparent 55%, rgba(92, 58, 23, 0.55) 100%),
+    repeating-linear-gradient(90deg, rgba(120, 80, 30, 0.07) 0 2px, transparent 2px 7px),
+    repeating-linear-gradient(0deg, rgba(120, 80, 30, 0.05) 0 1px, transparent 1px 5px),
+    linear-gradient(160deg, #f0d9a4, #d9b273);
+}
+
+html[data-theme="poc"] h1,
+html[data-theme="poc"] h2,
+html[data-theme="poc"] h3,
+html[data-theme="poc"] button {
+  font-family: 'Cinzel', Georgia, serif;
+}
+
+html[data-theme="poc"] .brand-title {
+  font-family: 'Cinzel Decorative', 'Cinzel', Georgia, serif;
+  color: #f5c542;
+  -webkit-text-stroke: 1.5px #4a2c0e;
+  text-shadow: 3px 3px 0 #4a2c0e, 0 0 18px rgba(255, 210, 110, 0.6);
+}
+
+html[data-theme="poc"] .start-screen {
+  background-image: radial-gradient(circle at 50% 35%, rgba(255, 236, 180, 0.7), transparent 60%);
+}
+
+html[data-theme="poc"] .start-screen img {
+  border: 4px solid #c99a3c;
+  box-shadow: 0 0 0 3px #4a2c0e, 0 0 24px rgba(201, 154, 60, 0.7);
+}
+
+html[data-theme="poc"] header {
+  background-image: linear-gradient(to bottom, #f1dcaa, #dcbb7c);
+  border-bottom: 3px double #5c3a17;
+  box-shadow: 0 2px 6px rgba(74, 44, 14, 0.35);
+}
+
+html[data-theme="poc"] footer {
+  border-top: 3px double #5c3a17;
+}
+
+/* Coloured action buttons: cream lettering, gilded inner edge. */
+html[data-theme="poc"] .bg-sky-600,
+html[data-theme="poc"] .bg-rose-600,
+html[data-theme="poc"] .bg-amber-600 {
+  color: #fbefd2;
+  text-shadow: 0 1px 0 rgba(0, 0, 0, 0.45);
+  box-shadow: inset 0 0 0 1px rgba(245, 197, 66, 0.55);
+}
+
+/* Primary buttons: engraved gold plaque. */
+html[data-theme="poc"] .bg-amber-500 {
+  background-image: linear-gradient(to bottom, #f9e08e, #e0aa45 55%, #b07a23);
+  border: 2px solid #5c3a17;
+  color: #2e1c0c;
+  text-shadow: 0 1px 0 rgba(255, 240, 200, 0.6);
+}
+
+html[data-theme="poc"] .hover\:bg-amber-400:hover {
+  filter: brightness(1.07);
+}
+
+/* Hidden ability = face-down card with the classic swirling card back. */
+html[data-theme="poc"] .duel-card-hidden {
+  border: 4px solid #5c3a17;
+  background-color: #2a1206;
+  background-image:
+    radial-gradient(ellipse at 50% 50%, #000 0 10%, transparent 35%),
+    repeating-radial-gradient(ellipse at 50% 50%, #2a1206 0 7px, #6e3210 10px, #c0661e 12px, #6e3210 14px, #2a1206 17px);
+  box-shadow: inset 0 0 0 3px #b8863f, inset 0 0 40px rgba(0, 0, 0, 0.85);
+}
+
+html[data-theme="poc"] .duel-card-hidden h3 {
+  color: #f8dc8c;
+  text-shadow: 0 2px 3px #000;
+}
+
+html[data-theme="poc"] .duel-card-hidden .lock-medallion {
+  background-image: linear-gradient(to bottom, #f9e08e, #b07a23);
+  border-color: #4a2c0e;
+  color: #4a2c0e;
+}
+
+/* Life Points on a marble tablet. */
+html[data-theme="poc"] .lp-bar {
+  border: 3px solid #8a6a3c;
+  background-image:
+    linear-gradient(115deg, transparent 38%, rgba(80, 90, 100, 0.22) 39%, transparent 41%),
+    linear-gradient(65deg, transparent 62%, rgba(80, 90, 100, 0.18) 63%, transparent 64.5%),
+    linear-gradient(160deg, transparent 20%, rgba(80, 90, 100, 0.12) 21%, transparent 22.5%),
+    linear-gradient(to bottom, #f6f4ee, #d4cfc4);
+  box-shadow: inset 0 0 12px rgba(0, 0, 0, 0.25), 0 3px 8px rgba(74, 44, 14, 0.4);
+}
+
+html[data-theme="poc"] .lp-value {
+  font-family: 'Cinzel', Georgia, serif;
+  text-shadow: 0 1px 0 rgba(255, 255, 255, 0.8);
+}
+
+html[data-theme="poc"] .lp-bar .lp-value {
+  font-size: 1.85rem;
+  letter-spacing: 0;
+}
+
+html[data-theme="poc"] .modal-panel {
+  border: 4px double #5c3a17;
+  background-image: linear-gradient(160deg, #f8ebc8, #e6c88c);
+  box-shadow: 0 0 0 2px #c99a3c, 0 20px 40px rgba(0, 0, 0, 0.6);
 }

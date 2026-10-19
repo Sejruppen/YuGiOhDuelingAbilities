@@ -21,7 +21,7 @@ function renderLpModal() {
     </div>
 
     <div class="space-y-4">
-      <div class="w-full text-center text-5xl font-black font-mono py-4 rounded-xl bg-slate-950 border border-slate-800 text-white shadow-inner select-none">
+      <div class="lp-value w-full text-center text-5xl font-black font-mono py-4 rounded-xl bg-slate-950 border border-slate-800 text-white shadow-inner select-none">
         ${getCurrentLp()}
       </div>
 
