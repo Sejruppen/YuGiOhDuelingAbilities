@@ -16,7 +16,7 @@ function renderDuelCard(abilityType, ability, { isActive, uses, isPeeking }) {
 
 function renderHiddenCard({ type, label, actionLabel, theme }) {
   return `
-    <div class="duel-card-hidden flex-1 rounded-2xl border-2 border-dashed border-slate-700 bg-slate-900/50 p-4 flex flex-col items-center justify-center text-center">
+    <div data-fx-card="${type}" class="duel-card-hidden fx-c-${type} flex-1 rounded-2xl border-2 border-dashed border-slate-700 bg-slate-900/50 p-4 flex flex-col items-center justify-center text-center">
       <div class="lock-medallion w-11 h-11 mb-2 rounded-full bg-slate-800 border border-slate-700 flex items-center justify-center text-slate-400 shadow-inner">
         ${LOCK_ICON}
       </div>
@@ -35,7 +35,7 @@ function renderPeekCard({ type, hasUses, actionLabel, theme }, ability) {
     : '';
 
   return `
-    <div class="flex-1 rounded-2xl border border-slate-600 bg-slate-800 p-3.5 flex flex-col justify-center overflow-y-auto relative shadow-inner">
+    <div data-fx-card="${type}" class="duel-card-peek fx-c-${type} flex-1 rounded-2xl border border-slate-600 bg-slate-800 p-3.5 flex flex-col justify-center overflow-y-auto relative shadow-inner">
       <div class="absolute inset-0 bg-slate-950/50 pointer-events-none rounded-2xl"></div>
       <div class="relative z-10 flex flex-col h-full">
         <div class="flex items-center justify-between mb-1.5">
@@ -54,8 +54,9 @@ function renderPeekCard({ type, hasUses, actionLabel, theme }, ability) {
   `;
 }
 
-function renderCompletedQuestCard({ label, theme }, ability) {
+function renderCompletedQuestCard({ type, label, theme }, ability) {
   return renderActiveCard({
+    type,
     containerClass: getActiveContainerClass(theme),
     badgeClass: `${theme.bg} ${theme.text} ${theme.border}`,
     badgeText: `${label} - Completed`,
@@ -70,8 +71,9 @@ function renderRevealedAbilityCard({ type, label, theme }, ability, uses) {
   const isExhausted = hasLimit && uses >= maxUses;
 
   return renderActiveCard({
+    type,
     containerClass: isExhausted
-      ? 'flex-1 rounded-2xl border border-slate-700 bg-slate-900/50 p-3.5 flex flex-col justify-center overflow-y-auto relative opacity-75 grayscale-[70%] transition-all'
+      ? 'duel-card-exhausted flex-1 rounded-2xl border border-slate-700 bg-slate-900/50 p-3.5 flex flex-col justify-center overflow-y-auto relative opacity-75 grayscale-[70%] transition-all'
       : getActiveContainerClass(theme),
     badgeClass: isExhausted
       ? 'bg-slate-800 text-slate-400 border-slate-700'
@@ -84,12 +86,12 @@ function renderRevealedAbilityCard({ type, label, theme }, ability, uses) {
 }
 
 function getActiveContainerClass(theme) {
-  return `flex-1 rounded-2xl border ${theme.glow} bg-gradient-to-b ${theme.grad} to-slate-900/90 p-3.5 flex flex-col justify-center overflow-y-auto shadow-lg ${theme.shadow} transition-all`;
+  return `duel-card-active flex-1 rounded-2xl border ${theme.glow} bg-gradient-to-b ${theme.grad} to-slate-900/90 p-3.5 flex flex-col justify-center overflow-y-auto shadow-lg ${theme.shadow} transition-all`;
 }
 
-function renderActiveCard({ containerClass, badgeClass, badgeText, controlsHtml, watermarkHtml = '', ability }) {
+function renderActiveCard({ type, containerClass, badgeClass, badgeText, controlsHtml, watermarkHtml = '', ability }) {
   return `
-    <div class="${containerClass}">
+    <div data-fx-card="${type}" class="fx-c-${type} ${containerClass}">
       ${watermarkHtml}
       <div class="relative z-10 flex flex-col h-full">
         <div class="flex items-center justify-between mb-1.5">
@@ -107,7 +109,7 @@ function renderUsageCounter(type, uses, maxUses, isExhausted) {
   return `
     <div class="flex items-center gap-1.5 bg-slate-950/80 rounded-lg p-1 border border-slate-800 shadow-inner">
       <button onclick="changeUses('${type}', -1)" class="w-7 h-7 flex items-center justify-center rounded bg-slate-800 text-slate-300 hover:text-white hover:bg-slate-700 text-sm font-bold transition" ${uses <= 0 ? 'disabled' : ''}>-</button>
-      <span class="text-xs font-bold text-slate-200 w-9 text-center">${uses} / ${maxUses}</span>
+      <span class="uses-count text-xs font-bold text-slate-200 w-9 text-center">${uses} / ${maxUses}</span>
       <button onclick="changeUses('${type}', 1)" class="w-7 h-7 flex items-center justify-center rounded bg-slate-800 text-slate-300 hover:text-white hover:bg-slate-700 text-sm font-bold transition" ${isExhausted ? 'disabled' : ''}>+</button>
     </div>
   `;
@@ -118,5 +120,5 @@ function renderUnlimitedBadge() {
 }
 
 function renderUsedWatermark() {
-  return `<div class="absolute inset-0 flex items-center justify-center pointer-events-none z-0 overflow-hidden"><span class="text-6xl font-black text-slate-100/5 -rotate-12 tracking-widest uppercase">USED</span></div>`;
+  return `<div class="absolute inset-0 flex items-center justify-center pointer-events-none z-0 overflow-hidden"><span class="used-watermark text-6xl font-black text-slate-100/5 -rotate-12 tracking-widest uppercase">USED</span></div>`;
 }

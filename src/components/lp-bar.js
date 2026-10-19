@@ -8,9 +8,10 @@ function getLpColorClasses(lp) {
 function renderLpBar() {
   const currentLp = getCurrentLp();
   const rotationClass = isLpOnLeft() ? '-rotate-90' : 'rotate-90';
+  const criticalClass = currentLp > 0 && currentLp <= 2000 ? 'lp-critical' : '';
 
   return `
-    <div onclick="openLpEditor()" class="lp-bar w-16 shrink-0 rounded-2xl border ${getLpColorClasses(currentLp)} bg-gradient-to-b to-slate-900/90 flex flex-col items-center justify-between py-3.5 cursor-pointer active:scale-[0.98] transition select-none relative overflow-hidden shadow-lg">
+    <div onclick="openLpEditor()" class="lp-bar ${criticalClass} w-16 shrink-0 rounded-2xl border ${getLpColorClasses(currentLp)} bg-gradient-to-b to-slate-900/90 flex flex-col items-center justify-between py-3.5 cursor-pointer active:scale-[0.98] transition select-none relative overflow-hidden shadow-lg">
       <button onclick="toggleLpSide(event)" title="Switch LP Side" class="z-10 w-10 h-9 rounded-lg bg-slate-800/90 hover:bg-slate-700 border border-slate-700 flex items-center justify-center text-slate-200 text-sm font-bold shadow transition">
         ⇄
       </button>

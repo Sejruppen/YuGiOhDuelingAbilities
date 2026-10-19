@@ -5,6 +5,7 @@ A mobile-first Progressive Web App (PWA) built to manage custom **Skills**, **Co
 ## Project Structure
 - `index.html`: App shell and script/style imports.
 - `styles.css`: Custom global styles, mobile touch adjustments and the app themes (Dark, Light, Power of Chaos).
+- `effects.css`: Per-theme animations and effects (neon for Dark, soft/springy for Light, card flips, gold dust and "Battle Phase" banners for Power of Chaos). Honours "reduce motion".
 - `data.js`: Complete dataset of all 15 anime characters + Neutral custom deck abilities (`Skills`, `Comebacks`, and `Quests`).
 - `app.js`: Entry point — renders the view for the current screen and boots the app.
 - `src/config/`: Constants (screens, starting LP, storage key), ability type definitions, app themes and the Tailwind palette config (colours are routed through CSS variables so themes can recolour them).
@@ -12,6 +13,7 @@ A mobile-first Progressive Web App (PWA) built to manage custom **Skills**, **Co
 - `src/actions/`: Navigation, in-duel and Life Point actions triggered from the UI.
 - `src/components/`: Reusable UI pieces (duel card, ability picker, LP bar, modals).
 - `src/views/`: One file per screen (start, character, abilities, duel).
+- `src/effects/effects.js`: Theme-agnostic effects engine — compares state before/after each render and adds `fx-*` classes or spawns particles, banners and overlays that `effects.css` animates.
 - `src/utils/`: Small formatting helpers.
 - `src/service-worker-registration.js`: Registers the service worker and reloads on update.
 - `manifest.json`: Web App Manifest for Android standalone full-screen installation.

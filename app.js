@@ -31,6 +31,7 @@ function render() {
 
   // Keep the abilities list scroll position when re-rendering after a selection.
   const scrollTop = document.getElementById(ABILITIES_SCROLL_CONTAINER_ID)?.scrollTop ?? 0;
+  const beforeFx = beforeRenderEffects(app);
 
   renderCurrentView(app);
 
@@ -38,6 +39,8 @@ function render() {
   if (scrollContainer) {
     scrollContainer.scrollTop = scrollTop;
   }
+
+  afterRenderEffects(app, beforeFx);
 }
 
 registerServiceWorker();

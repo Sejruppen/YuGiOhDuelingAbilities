@@ -1,8 +1,9 @@
-const CACHE_NAME = 'ygo-skills-mvp-v14';
+const CACHE_NAME = 'ygo-skills-mvp-v16';
 const ASSETS = [
   './',
   './index.html',
   './styles.css',
+  './effects.css',
   './data.js',
   './src/config/tailwind-config.js',
   './src/config/app-themes.js',
@@ -23,6 +24,7 @@ const ASSETS = [
   './src/views/character-view.js',
   './src/views/abilities-view.js',
   './src/views/duel-view.js',
+  './src/effects/effects.js',
   './src/service-worker-registration.js',
   './app.js',
   './manifest.json',

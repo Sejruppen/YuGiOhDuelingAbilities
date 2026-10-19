@@ -27,7 +27,7 @@ function renderDuelView(char) {
     <main class="flex-1 flex ${isLpOnLeft() ? 'flex-row' : 'flex-row-reverse'} gap-2.5 p-2.5 overflow-hidden">
       ${renderLpBar()}
 
-      <div class="flex-1 flex flex-col gap-2.5 overflow-hidden">
+      <div class="duel-cards fx-stagger flex-1 flex flex-col gap-2.5 overflow-hidden">
         ${renderDuelCard(skill, getSelectedAbility(char, skill), {
           isActive: state.skillRevealed,
           uses: state.skillUses,

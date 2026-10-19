@@ -21,7 +21,7 @@ function renderCharacterView() {
       <h2 class="text-lg font-bold text-white">Choose Character</h2>
       <div class="w-14"></div>
     </header>
-    <div class="flex-1 overflow-y-auto p-4 space-y-3 no-scrollbar">
+    <div class="fx-stagger flex-1 overflow-y-auto p-4 space-y-3 no-scrollbar">
       ${CHARACTERS.map(renderCharacterOption).join('')}
     </div>
   `;

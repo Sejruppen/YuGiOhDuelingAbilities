@@ -16,7 +16,7 @@ function renderAbilityPickerSection(abilityType, abilities, step, extraClass = '
 
 function renderAbilityOption(abilityType, ability, index, isSelected) {
   const { type, theme, hasUses } = abilityType;
-  const stateClass = isSelected ? theme.selected : 'bg-slate-900/60 border-slate-800 opacity-75';
+  const stateClass = isSelected ? `is-selected ${theme.selected}` : 'bg-slate-900/60 border-slate-800 opacity-75';
 
   const titleHtml = hasUses
     ? `
@@ -28,7 +28,7 @@ function renderAbilityOption(abilityType, ability, index, isSelected) {
     : `<div class="font-bold text-base text-white mb-1.5">${ability.name}</div>`;
 
   return `
-    <div onclick="pickAbility('${type}', ${index})" class="p-4 rounded-xl border transition cursor-pointer ${stateClass}">
+    <div onclick="pickAbility('${type}', ${index})" data-fx-pick="${type}-${index}" class="fx-c-${type} p-4 rounded-xl border transition cursor-pointer ${stateClass}">
       ${titleHtml}
       <div class="text-sm text-slate-200 leading-relaxed">${ability.text}</div>
     </div>

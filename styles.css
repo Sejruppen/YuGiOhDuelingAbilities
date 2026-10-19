@@ -200,7 +200,7 @@ html[data-theme="poc"] .brand-title {
   font-family: 'Cinzel Decorative', 'Cinzel', Georgia, serif;
   color: #f5c542;
   -webkit-text-stroke: 1.5px #4a2c0e;
-  text-shadow: 3px 3px 0 #4a2c0e, 0 0 18px rgba(255, 210, 110, 0.6);
+  filter: drop-shadow(3px 3px 0 #4a2c0e) drop-shadow(0 0 14px rgba(255, 210, 110, 0.6));
 }
 
 html[data-theme="poc"] .start-screen {

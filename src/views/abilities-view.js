@@ -13,7 +13,7 @@ function renderAbilitiesView(char) {
       <div class="w-20"></div>
     </header>
 
-    <div id="${ABILITIES_SCROLL_CONTAINER_ID}" class="flex-1 overflow-y-auto p-4 space-y-6 no-scrollbar">
+    <div id="${ABILITIES_SCROLL_CONTAINER_ID}" class="fx-stagger flex-1 overflow-y-auto p-4 space-y-6 no-scrollbar">
       ${ABILITY_TYPE_ORDER.map((abilityType, idx) =>
         renderAbilityPickerSection(abilityType, char[abilityType.listKey], idx + 1, idx === lastIndex ? 'pb-4' : '')
       ).join('')}

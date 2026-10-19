@@ -29,8 +29,19 @@ function setAppTheme(id) {
   try {
     localStorage.setItem(THEME_STORAGE_KEY, theme.id);
   } catch {}
-  applyAppTheme(theme);
-  render();
+
+  const apply = () => {
+    applyAppTheme(theme);
+    render();
+  };
+
+  // Each theme defines its own entrance via ::view-transition-new(root) in styles.css.
+  const reduceMotion = window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
+  if (document.startViewTransition && !reduceMotion) {
+    document.startViewTransition(apply);
+  } else {
+    apply();
+  }
 }
 
 applyAppTheme(getAppTheme());

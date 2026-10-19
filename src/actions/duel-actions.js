@@ -37,6 +37,7 @@ function closeResetConfirm() {
 
 function resetDuel() {
   resetPeek();
+  queueEffect('duel-reset');
   ui.lpModalOpen = false;
   ui.resetModalOpen = false;
   setState({
