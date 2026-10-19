@@ -28,6 +28,7 @@ let peekState = {
 };
 
 let lpModalOpen = false;
+let resetModalOpen = false;
 
 function setState(patch) {
   state = { ...state, ...patch };
@@ -87,6 +88,30 @@ function startDuel() {
   setState({
     screen: 'duel',
     lp: 8000
+  });
+}
+
+function openResetConfirm() {
+  resetModalOpen = true;
+  render();
+}
+
+function closeResetConfirm() {
+  resetModalOpen = false;
+  render();
+}
+
+function resetDuel() {
+  peekState = { skill: false, comeback: false, quest: false };
+  lpModalOpen = false;
+  resetModalOpen = false;
+  setState({
+    lp: 8000,
+    skillRevealed: false,
+    comebackRevealed: false,
+    skillUses: 0,
+    comebackUses: 0,
+    questCompleted: false
   });
 }
 
@@ -494,7 +519,10 @@ function renderDuelScreen(char) {
         <div class="text-base font-bold text-white leading-tight">${char.name}</div>
         <div class="text-xs text-amber-400 leading-tight">${char.era}</div>
       </div>
-      <button onclick="resetApp()" class="text-sm font-medium text-rose-400 border border-rose-500/30 bg-rose-950/30 rounded-lg px-3 py-1">End</button>
+      <div class="flex items-center gap-1.5">
+        <button onclick="openResetConfirm()" class="text-sm font-medium text-amber-300 border border-amber-500/30 bg-amber-950/30 rounded-lg px-3 py-1">Reset</button>
+        <button onclick="resetApp()" class="text-sm font-medium text-rose-400 border border-rose-500/30 bg-rose-950/30 rounded-lg px-3 py-1">End</button>
+      </div>
     </header>
 
     <main class="flex-1 flex ${isLeft ? 'flex-row' : 'flex-row-reverse'} gap-2.5 p-2.5 overflow-hidden">
@@ -508,6 +536,24 @@ function renderDuelScreen(char) {
     </main>
 
     ${renderLpModal()}
+    ${renderResetModal()}
+  `;
+}
+
+function renderResetModal() {
+  if (!resetModalOpen) return '';
+
+  return `
+    <div onclick="closeResetConfirm()" class="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
+      <div onclick="event.stopPropagation()" class="w-full max-w-xs rounded-2xl border border-slate-700 bg-slate-900 p-5 shadow-2xl">
+        <h3 class="text-base font-extrabold uppercase tracking-wider text-amber-400 mb-2">Reset Duel?</h3>
+        <p class="text-sm text-slate-200 leading-relaxed mb-5">LP will be set to 8000 and all abilities will be hidden and unused.</p>
+        <div class="flex gap-2">
+          <button type="button" onclick="closeResetConfirm()" class="flex-1 py-3 rounded-xl bg-slate-800 border border-slate-700 text-slate-200 font-bold text-sm transition">Cancel</button>
+          <button type="button" onclick="resetDuel()" class="flex-1 py-3 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold text-sm shadow-lg shadow-amber-500/20 transition">Reset</button>
+        </div>
+      </div>
+    </div>
   `;
 }
 
