@@ -1,9 +1,27 @@
-const CACHE_NAME = 'ygo-skills-mvp-v12';
+const CACHE_NAME = 'ygo-skills-mvp-v13';
 const ASSETS = [
   './',
   './index.html',
   './styles.css',
   './data.js',
+  './src/config/constants.js',
+  './src/config/ability-types.js',
+  './src/state/store.js',
+  './src/utils/format.js',
+  './src/actions/navigation-actions.js',
+  './src/actions/duel-actions.js',
+  './src/actions/life-point-actions.js',
+  './src/components/modal.js',
+  './src/components/ability-picker.js',
+  './src/components/duel-card.js',
+  './src/components/lp-bar.js',
+  './src/components/lp-modal.js',
+  './src/components/reset-modal.js',
+  './src/views/start-view.js',
+  './src/views/character-view.js',
+  './src/views/abilities-view.js',
+  './src/views/duel-view.js',
+  './src/service-worker-registration.js',
   './app.js',
   './manifest.json',
   './icon.jpg'

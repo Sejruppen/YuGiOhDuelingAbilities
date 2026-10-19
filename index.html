@@ -19,7 +19,26 @@
   <div id="app" class="flex-1 min-h-0 w-full flex flex-col overflow-hidden"></div>
 
   <!-- SCRIPTS -->
+  <!-- Order matters: config & data -> state -> utils -> actions -> components -> views -> entry -->
   <script src="data.js"></script>
+  <script src="src/config/constants.js"></script>
+  <script src="src/config/ability-types.js"></script>
+  <script src="src/state/store.js"></script>
+  <script src="src/utils/format.js"></script>
+  <script src="src/actions/navigation-actions.js"></script>
+  <script src="src/actions/duel-actions.js"></script>
+  <script src="src/actions/life-point-actions.js"></script>
+  <script src="src/components/modal.js"></script>
+  <script src="src/components/ability-picker.js"></script>
+  <script src="src/components/duel-card.js"></script>
+  <script src="src/components/lp-bar.js"></script>
+  <script src="src/components/lp-modal.js"></script>
+  <script src="src/components/reset-modal.js"></script>
+  <script src="src/views/start-view.js"></script>
+  <script src="src/views/character-view.js"></script>
+  <script src="src/views/abilities-view.js"></script>
+  <script src="src/views/duel-view.js"></script>
+  <script src="src/service-worker-registration.js"></script>
   <script src="app.js"></script>
 </body>
 </html>
