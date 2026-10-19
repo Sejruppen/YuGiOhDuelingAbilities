@@ -33,6 +33,7 @@ function setAppTheme(id) {
   const apply = () => {
     applyAppTheme(theme);
     render();
+    if (typeof playSound === 'function') playSound({ name: 'theme' });
   };
 
   // Each theme defines its own entrance via ::view-transition-new(root) in styles.css.

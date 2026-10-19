@@ -30,6 +30,7 @@ function renderStartView() {
         Start Duel Setup
       </button>
       ${renderThemePicker()}
+      ${renderSoundToggle()}
     </div>
   `;
 }

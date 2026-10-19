@@ -14,6 +14,7 @@ A mobile-first Progressive Web App (PWA) built to manage custom **Skills**, **Co
 - `src/components/`: Reusable UI pieces (duel card, ability picker, LP bar, modals).
 - `src/views/`: One file per screen (start, character, abilities, duel).
 - `src/effects/effects.js`: Theme-agnostic effects engine — compares state before/after each render and adds `fx-*` classes or spawns particles, banners and overlays that `effects.css` animates.
+- `src/effects/sounds.js`: Per-theme sound effects synthesised with the Web Audio API (no audio files). Triggered by the same events as the animations; can be muted from the start screen or the duel header (saved on the device).
 - `src/utils/`: Small formatting helpers.
 - `src/service-worker-registration.js`: Registers the service worker and reloads on update.
 - `manifest.json`: Web App Manifest for Android standalone full-screen installation.

@@ -147,6 +147,8 @@ function playEffect(app, event) {
   const card = event.type ? app.querySelector(`[data-fx-card="${event.type}"]`) : null;
   const lpBar = app.querySelector('.lp-bar');
 
+  playSound(event);
+
   switch (event.name) {
     case 'screen-enter':
       restartClass(app, `fx-screen-${event.direction}`, 900);
@@ -252,6 +254,7 @@ function playLpChange(app, lpBar, { from, to, silent }) {
 // The closing modal is already gone from the DOM, so re-attach its old node
 // as a non-interactive "ghost" just long enough to animate it out.
 function playModalExit(modalNode) {
+  playSound({ name: 'modal-close' });
   if (prefersReducedMotion()) return;
   modalNode.classList.remove('fx-modal-in');
   modalNode.classList.add('fx-modal-out');
