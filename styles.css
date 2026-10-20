@@ -1,5 +1,6 @@
 html {
-  font-size: 18px !important;
+  /* --ui-scale is set by src/config/ui-scale.js (start screen "Size" picker). */
+  font-size: calc(18px * var(--ui-scale, 1)) !important;
 }
 
 /* Theme surface colours (RGB triplets). Utility colours are themed through the
