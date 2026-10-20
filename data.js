@@ -5,7 +5,7 @@ const CHARACTERS = [
     theme: 'Freestyle',
     skills: [
       { name: 'Tactical Rearrangement', text: 'You can shuffle 1 card from your hand into your deck, then draw 1 new card.', maxUses: 3 },
-      { name: 'Vitality', text: 'Start the duel with 3000 extra Life Points.', null },
+      { name: 'Vitality', text: 'Start the duel with 3000 extra Life Points.', maxUses: null },
       { name: 'Field Dominance', text: 'If your opponent controls a monster and you control none: Special Summon 1 Level 4 or lower monster from your hand.', maxUses: 1 },
       { name: 'Recycle', text: 'You can add 1 Spell or Trap Card from your Graveyard to your hand.', maxUses: 1 },
       { name: 'Adrenaline Rush', text: 'Target 1 face-up monster you control; it gains 500 ATK until the end of the turn.', maxUses: 3 }
