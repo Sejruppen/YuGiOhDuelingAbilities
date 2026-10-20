@@ -8,7 +8,7 @@ function renderAbilitiesView(char) {
       <button onclick="goToCharacters()" class="text-slate-300 text-base font-medium px-2 py-1">← Characters</button>
       <div class="text-center">
         <h2 class="text-base font-bold text-white leading-tight">${char.name}</h2>
-        <p class="text-xs text-amber-400 leading-tight mt-0.5">${char.era}</p>
+        <p class="text-xs text-amber-400 leading-tight mt-0.5">${char.theme}</p>
       </div>
       <div class="w-20"></div>
     </header>

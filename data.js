@@ -2,20 +2,20 @@ const CHARACTERS = [
   {
     id: 'neutral',
     name: 'Neutral (Custom Deck)',
-    era: 'Universal',
+    theme: 'Freestyle',
     skills: [
-      { name: 'Tactical Rearrangement', text: 'Once per turn: You can shuffle 1 card from your hand into your deck, then draw 1 new card.', maxUses: null },
-      { name: 'Vitality', text: 'Start the duel with 1000 extra Life Points.', maxUses: 1 },
-      { name: 'Field Dominance', text: 'Once per duel, if your opponent controls a monster and you control none: Special Summon 1 Level 4 or lower monster from your hand.', maxUses: 1 },
-      { name: 'Recycle', text: 'Once per duel: You can add 1 Spell or Trap Card from your Graveyard to your hand.', maxUses: 1 },
-      { name: 'Adrenaline Rush', text: 'Once per turn: Target 1 face-up monster you control; it gains 500 ATK until the end of the turn.', maxUses: null }
+      { name: 'Tactical Rearrangement', text: 'You can shuffle 1 card from your hand into your deck, then draw 1 new card.', maxUses: 3 },
+      { name: 'Vitality', text: 'Start the duel with 3000 extra Life Points.', null },
+      { name: 'Field Dominance', text: 'If your opponent controls a monster and you control none: Special Summon 1 Level 4 or lower monster from your hand.', maxUses: 1 },
+      { name: 'Recycle', text: 'You can add 1 Spell or Trap Card from your Graveyard to your hand.', maxUses: 1 },
+      { name: 'Adrenaline Rush', text: 'Target 1 face-up monster you control; it gains 500 ATK until the end of the turn.', maxUses: 3 }
     ],
     comebacks: [
-      { name: 'Desperate Draw', text: 'Requirement: You have 2000 or fewer Life Points. Draw 2 cards. (Once per duel).', maxUses: 1 },
-      { name: 'The Turning Point', text: 'Requirement: Your opponent controls 3 or more monsters and you control 0. Destroy all monsters on the opponent\'s side of the field.', maxUses: 1 },
-      { name: 'Miracle Rebirth', text: 'Requirement: Your Life Points are less than half of your opponent\'s. Special Summon 1 monster from either player\'s Graveyard to your side of the field.', maxUses: 1 },
-      { name: 'Shield of Hope', text: 'Requirement: You would take battle damage that would reduce your Life Points to 0. Your Life Points become 100 instead, and the Battle Phase ends immediately.', maxUses: 1 },
-      { name: 'The Equalizer', text: 'Requirement: Your opponent has 3 or more cards in their hand than you. Draw cards until you have the same number of cards in your hand as your opponent.', maxUses: 1 }
+      { name: 'Desperate Draw', text: 'Requirement: You have 2000 or fewer Life Points. Draw 2 cards.' },
+      { name: 'The Turning Point', text: 'Requirement: Your opponent controls 3 or more monsters and you control 0. Destroy all monsters on the opponent\'s side of the field.' },
+      { name: 'Miracle Rebirth', text: 'Requirement: Your Life Points are less than half of your opponent\'s. Special Summon 1 monster from either player\'s Graveyard to your side of the field.' },
+      { name: 'Shield of Hope', text: 'Requirement: You would take battle damage that would reduce your Life Points to 0. Your Life Points become 100 instead, and the Battle Phase ends immediately.' },
+      { name: 'The Equalizer', text: 'Requirement: Your opponent has 3 or more cards in their hand than you. Draw cards until you have the same number of cards in your hand as your opponent.' }
     ],
     quests: [
       { name: 'The Attacker', text: 'Quest: Inflict battle damage to your opponent in 3 different battles. Reward: Draw 1 card.' },
@@ -28,30 +28,36 @@ const CHARACTERS = [
   {
     id: 'theotaur',
     name: 'Theotaur',
-    era: 'Dark Paladin and Dragons',
+    theme: 'Dark Paladin\'s Legion',
     skills: [
-      { name: 'Quick summon', text: 'Summon a level 5 or higher monster without paying tribues', maxUses: 1 }
+      { name: '(Fusion) The Masters Apprentice', text: 'You can discard 1 card; add 1 "Polymerization" card from your Deck to your hand or reveal 1 Fusion monster in your Extra Deck; Add 1 of the Fusion Materials whose name is specifically listed on that monster from your Deck to your hand', maxUses: 1 },
+      { name: '(Bond of Dragon) The dragontamers call', text: 'Discard 1 Dragon monster; Draw 1 card.', maxUses: 3 },
+      { name: '(Illusion) Magical Transformation', text: 'Choose 1 monster on your side of the field. The monsters name is treated as either "Dark Magician" or "Buster Blader" until the end of the turn.', maxUses: 1 }
     ],
     comebacks: [
-      { name: 'Get help!', text: 'Requirement: 1000 or lower LP. Special summon Dark Magician or Buster Blader from the deck', maxUses: 1 }
+      { name: '(Miracle) Ultimate Magical Fusion', text: 'Requirement: Your LP is 2000 or lower and your opponent has a monster with the highest ATK on the field. Special Summon "Dark Paladin" by Banishing the Fusion Materials needed from your GY' },
+      { name: '(Revenge) Dragonslayers Wrath', text: 'Requirement: Your opponent declares an attack that will make you lose 2000 or more LP. Negate the attack. Destroy all your opponents monsters with the same Type as the attacking monster and Special Summon Buster Blader from your Hand or GY.' },
+      { name: '(Grit) The Paladin\'s Last Bastion', text: 'Requirement: Your LP are lower than your opponent\'s LP and your opponent activates a Spell or Trap card that would destroy 1 or more of your monsters. Discard 1 card; Negate and destroy the activated card. For the rest of the turn you take no battle damage.' }
     ],
     quests: [
-      { name: 'Ultimate power!', text: 'Quest: Summon Dark Paladin. Reward: Dragons on your side of the field gain 500 ATK' }
+      { name: '(Magic Guardian) The Perfect Counterspell', text: 'Quest: Negate the activation of 2 Spell cards (e.g. with the effect of "Dark Paladin"). Reward: Every time you activate a spell card; gain 500 LP' },
+      { name: '(The Dragonslayers Heir) Slaying the Beast', text: 'Quest: Destroy 3 of your opponent\'s monsters by battle with a Warrior or Spellcaster monster. Reward: Attacks from Dragons and Fusion monsters on your side of the field inflicts Piercing Damage' },
+      { name: '(Trinity) The Three Pillars', text: 'Quest: Have at least 1 monster of each of these 3 types in your GY: Dragon, Spellcaster and Warrior at the same time. Reward: Level 7 or higher monsters on your side of the field cannot be targeted by card effects' }
     ]
   },
   {
     id: 'yugi-dk',
-    name: 'Yugi Muto',
-    era: 'Duelist Kingdom',
+    name: 'Yugi Muto (Duelist Kingdom)',
+    theme: 'Heart of the Cards',
     skills: [
-      { name: '(Faith) Heart of the Cards', text: '1x per duel. Draw a card of your choice from your deck instead of a random one.', maxUses: 1 },
-      { name: '(Friendship) Kuriboh\'s Shield', text: '1x per duel. Discard one card from your hand to halve all battle damage for one turn.', maxUses: 1 },
-      { name: '(Magic) Magical Dimension', text: '1x per duel. Return one Spell Card from your Graveyard to your hand.', maxUses: 1 }
+      { name: '(Faith) Heart of the Cards', text: 'Draw a card of your choice from your deck instead of a random one.', maxUses: 3 },
+      { name: '(Friendship) Kuriboh\'s Shield', text: 'Discard one card from your hand to halve all battle damage for one turn.', maxUses: 1 },
+      { name: '(Magic) Magical Dimension', text: 'Return one Spell Card from your Graveyard to your hand.', maxUses: 1 }
     ],
     comebacks: [
-      { name: '(Faith) Pharaoh\'s Wrath', text: 'Requirement: Under 1000 LP. Cancel a direct attack and draw 2 cards.', maxUses: 1 },
-      { name: '(Friendship) Bonds of Friendship', text: 'Requirement: You are behind on LP and have an empty field. Special Summon a Level 4 or lower monster from your deck. It cannot be destroyed this turn.', maxUses: 1 },
-      { name: '(Magic) Mystic Swap', text: 'Requirement: Your field is empty, the opponent has monsters. Destroy the opponent\'s strongest monster and Special Summon a Spellcaster from your hand.', maxUses: 1 }
+      { name: '(Faith) Pharaoh\'s Wrath', text: 'Requirement: You have 2000 or lower LP. Cancel a direct attack and draw 2 cards.' },
+      { name: '(Friendship) Bonds of Friendship', text: 'Requirement: You are behind on LP and have an empty field. Special Summon a Level 4 or lower monster from your deck. It cannot be destroyed this turn.' },
+      { name: '(Magic) Ritualistic Demise', text: 'Requirement: Your opponent has 3000 LP more than you. Add 1 Ritual monster or 1 Ritual spell card from your deck to your hand.' }
     ],
     quests: [
       { name: '(Faith) Soul of the Duelist', text: 'Quest: Survive 3 turns without losing LP. Reward: You draw 2 cards in your Draw Phase instead of 1.' },
@@ -61,37 +67,43 @@ const CHARACTERS = [
   },
   {
     id: 'yugi-bc',
-    name: 'Yugi Muto',
-    era: 'Battle City',
+    name: 'Yugi Muto (Battle City)',
+    theme: 'Magician\'s Force',
     skills: [
-      { name: '(Divine) Wrath of the Heavens', text: '1x per duel. Force one of the opponent\'s monsters into Defense Position.', maxUses: 1 },
-      { name: '(Synergy) Magnetic Pull', text: '1x per duel. Add a Level 4 or lower Rock- or Warrior-monster from your deck to your hand.', maxUses: 1 },
-      { name: '(Master) Apprentice\'s Call', text: '1x per duel. Send a card from your hand to the Graveyard to Special Summon "Dark Magician Girl" from your hand.', maxUses: 1 }
+      { name: '(Magnet) Magnetic Attraction', text: 'When you Normal Summon "Alpha", "Beta" or "Gamma the Magnet Warrior": Add 1 Magnet Warrior with a different name from your Deck to your hand.', maxUses: 2 },
+      { name: '(Knights) Royal Summons', text: 'Add 1 "Queen\'s Knight" or "King\'s Knight" from your Deck to your hand.', maxUses: 2 },
+      { name: '(Magic) Master and Apprentice', text: 'Reveal "Dark Magician" or "Dark Magician Girl" in your hand; add the other one from your Deck to your hand.', maxUses: 1 },
+      { name: '(Mythic) Unholy Pact', text: 'You can Special Summon 1 Level 5 or 6 Fiend monster in Defense Position.', maxUses: 2 },
+      { name: '(Divine) Tribute to the Gods', text: 'You can Tribute Summon a monster that requires 3 Tributes using only 2.', maxUses: 1 },
     ],
     comebacks: [
-      { name: '(Divine) Awakening of Thunder', text: 'Requirement: You are under 2000 LP. Draw cards until you have 5 cards in your hand. Skip your next Draw Phase.', maxUses: 1 },
-      { name: '(Synergy) Magnetic Shield', text: 'Requirement: The opponent attacks for game. Cancel the attack and Special Summon up to 2 Normal Monsters from your Graveyard in Defense Position.', maxUses: 1 },
-      { name: '(Master) Dark Magic', text: 'Requirement: The opponent has at least 3 cards on the field, you have 0. Banish one Spell Card from your Graveyard to destroy all cards on the opponent\'s field.', maxUses: 1 }
+      { name: '(Magnet) Magna Assembly', text: 'Requirement: You have 2000 or less LP and "Alpha", "Beta" and "Gamma the Magnet Warrior" are in your GY. Shuffle them into your Deck; Special Summon "Valkyrion the Magna Warrior" from your hand or Deck ignoring it\'s Summoning condition.' },
+      { name: '(Knights) Avenging Blade', text: 'Requirement: You have 2000 or less LP and a monster you control is destroyed by battle. Special Summon "Jack\'s Knight" from your Deck or GY; it gains ATK equal to the destroyed monster\'s ATK until the end of your next turn.' },
+      { name: '(Magic) Dragon Slayer\'s Edge', text: 'Requirement: Your LP is lower than your opponent\'s and they control a monster with higher ATK than all of yours. Add "Buster Blader" from your Deck or GY to your hand; you can Normal Summon it without Tributing this turn.' },
+      { name: '(Mythic) Rise of the Chimera', text: 'Requirement: You have 2000 or less LP and "Berfomet" and "Gazelle the King of Mythical Beasts" are in your GY. Banish them; Special Summon "Chimera the Flying Mythical Beast" from your Extra Deck.' },
+      { name: '(Divine) Call of the Sky Dragon', text: 'Requirement: You have 2000 or less LP, control no monsters and have "Slifer the Sky Dragon" in your hand. Special Summon it, ignoring its Summoning conditions. It cannot attack this turn.' },
     ],
     quests: [
-      { name: '(Divine) Arrival of God', text: 'Quest: Have 5 or more cards in your hand at the end of your turn. Reward: Your Level 7 or higher monsters cannot be destroyed by card effects.' },
-      { name: '(Synergy) United Strength', text: 'Quest: Have 3 monsters on the field at the same time. Reward: Once per turn, your monsters cannot be destroyed in battle.' },
-      { name: '(Master) Mastery of Magic', text: 'Quest: Activate 3 Spell Cards in one turn. Reward: The opponent takes 300 damage every time you activate a Spell Card.' }
+      { name: '(Magnet) Unbreakable Wall', text: 'Quest: Summon 3 different "Magnet Warrior" monsters. Reward: Your Rock Type monsters gain 300 ATK and DEF.' },
+      { name: '(Knights) Loyal Court', text: 'Quest: Control 3 Warrior monsters at the same time. Reward: Your Warrior monsters cannot be destroyed by battle.' },
+      { name: '(Magic) The Paladin\'s Oath', text: 'Quest: Fusion Summon "Dark Paladin". Reward: Once per turn, "Dark Paladin" can negate a Spell Card without discarding.' },
+      { name: '(Mythic) The Beast Reborn', text: 'Quest: Resolve the effect of "Chimera the Flying Mythical Beast" after it is destroyed. Reward: Once per turn, when a Fiend or Beast you control is destroyed by battle, inflict 500 damage to your opponent.' },
+      { name: '(Divine) Infinite Power', text: 'Quest: "Slifer the Sky Dragon" reaches 5000 or more ATK. Reward: You have no hand size limit, and you draw 2 cards in your Draw Phase instead of 1.' },
     ]
   },
   {
     id: 'kaiba-dk',
-    name: 'Seto Kaiba',
-    era: 'Duelist Kingdom',
+    name: 'Seto Kaiba (Duelist Kingdom)',
+    theme: 'Legend of Blue Eyes',
     skills: [
-      { name: '(Resources) Money is Power', text: '1x per duel. Draw 2 cards. You cannot attack this turn.', maxUses: 1 },
-      { name: '(Dragons) Dragon Call', text: '1x per duel. Normal Summon a Dragon-monster without paying Tribute.', maxUses: 1 },
-      { name: '(Psychology) Intimidation', text: '1x per duel. The opponent must play with their hand revealed during their next turn.', maxUses: 1 }
+      { name: '(Resources) Money is Power', text: 'Draw 1 cards. You cannot attack this turn.', maxUses: 3 },
+      { name: '(Dragons) Dragon Call', text: 'Normal Summon a Dragon-monster without paying Tribute.', maxUses: 1 },
+      { name: '(Psychology) Intimidation', text: 'The opponent must play with their hand revealed during their next turn.', maxUses: 2 }
     ],
     comebacks: [
-      { name: '(Resources) Ruthless Buyout', text: 'Requirement: You are behind by 4000+ LP. Take control of the opponent\'s strongest monster for the rest of the duel.', maxUses: 1 },
-      { name: '(Dragons) Wrath of the White Dragon', text: 'Requirement: The opponent attacks you directly. Special Summon "Blue-Eyes White Dragon" from your deck.', maxUses: 1 },
-      { name: '(Psychology) Total Meltdown', text: 'Requirement: You have 0 cards in your hand and under 1500 LP. The opponent must discard their entire hand to the Graveyard.', maxUses: 1 }
+      { name: '(Resources) Ruthless Buyout', text: 'Requirement: You are behind by 4000 or more LP. Take control of the opponent\'s strongest monster for the rest of the duel.' },
+      { name: '(Dragons) Wrath of the White Dragon', text: 'Requirement: The opponent attacks you directly. After the damage step; Special Summon "Blue-Eyes White Dragon" from your deck.' },
+      { name: '(Psychology) Total Meltdown', text: 'Requirement: You have 0 cards in your hand and under 3000 LP. The opponent must discard their entire hand to the Graveyard.' }
     ],
     quests: [
       { name: '(Resources) Monopoly', text: 'Quest: Force the opponent to have 0 cards in their hand. Reward: The opponent can only Set 1 card per turn.' },
@@ -101,77 +113,83 @@ const CHARACTERS = [
   },
   {
     id: 'kaiba-bc',
-    name: 'Seto Kaiba',
-    era: 'Battle City',
+    name: 'Seto Kaiba (Battle City)',
+    theme: 'Obelisk\'s Arsenal',
     skills: [
-      { name: '(Destruction) Virus Infection', text: '1x per duel. Destroy a random card in the opponent\'s hand.', maxUses: 1 },
-      { name: '(Technology) XYZ-Combination', text: '1x per duel. Equip a Machine-monster with another Machine-monster from your hand to give it +500 ATK.', maxUses: 1 },
-      { name: '(Divine) Shadow of the Obelisk', text: '1x per duel. One of your monsters gains +1000 ATK until the end of the turn, but is then destroyed.', maxUses: 1 }
+      { name: '(Destruction) Virus Infection', text: 'Once per turn: Destroy a random card in the opponent\'s hand.', maxUses: 2 },
+      { name: '(Technology) XYZ-Combination', text: 'Equip a Machine-monster with another Machine-monster from your GY to give it +500 ATK.', maxUses: 2 },
+      { name: '(Divine) Shadow of the Obelisk', text: 'One of your monsters gains +1000 ATK until the end of the turn, but is then destroyed.', maxUses: 2 }
     ],
     comebacks: [
-      { name: '(Destruction) Shattered Deck', text: 'Requirement: You take 2000+ damage in one turn. The opponent must send the top 5 cards of their deck to the Graveyard.', maxUses: 1 },
-      { name: '(Technology) Emergency Fusion System', text: 'Requirement: Your field is empty. Special Summon 2 Level 4 Machine-monsters from your Graveyard.', maxUses: 1 },
-      { name: '(Divine) Fist of Fury', text: 'Requirement: You are under 1000 LP. Destroy all monsters on the opponent\'s side of the field.', maxUses: 1 }
+      { name: '(Destruction) Shattered Deck', text: 'Requirement: You take 2000+ damage in one turn. The opponent must send the top 5 cards of their deck to the Graveyard.' },
+      { name: '(Technology) Emergency Fusion System', text: 'Requirement: Your field is empty. Special Summon 2 Level 4 Machine-monsters from your Graveyard.' },
+      { name: '(Divine) Fist of Fury', text: 'Requirement: You are under 1000 LP. Destroy all monsters in Attack Position on the opponent\'s side of the field.' }
     ],
     quests: [
       { name: '(Destruction) Systematic Breakdown', text: 'Quest: Send 10 of the opponent\'s cards to the Graveyard. Reward: The opponent cannot draw a card in their Draw Phase unless they pay 500 LP.' },
-      { name: '(Technology) The Perfect Machine', text: 'Quest: Get a Fusion- or Boss-monster on the field. Reward: Your Machine-monsters are immune to Traps.' },
+      { name: '(Technology) The Perfect Machine', text: 'Quest: Get a Fusion monster on the field. Reward: Your Machine type monsters are immune to Traps.' },
       { name: '(Divine) Absolute Power', text: 'Quest: Tribute 3 monsters during the duel. Reward: The opponent cannot activate effects in the Battle Phase.' }
     ]
   },
   {
     id: 'joey-dk',
-    name: 'Joey Wheeler',
-    era: 'Duelist Kingdom',
+    name: 'Joey Wheeler (Duelist Kingdom)',
+    theme: 'Brooklyn Underdog',
     skills: [
-      { name: '(Luck) Stroke of Luck', text: '1x per duel. Reroll a die roll or a coin toss.', maxUses: 1 },
-      { name: '(Warriors) Flaming Will', text: '1x per duel. A Warrior-monster gains +500 ATK for one turn.', maxUses: 1 },
-      { name: '(Grit) Brooklyn Guts', text: '1x per duel. If you would take battle damage, you take 0 instead.', maxUses: 1 }
+      { name: '(Luck) Stroke of Luck', text: 'Reroll a die roll or a coin toss.', maxUses: 1 },
+      { name: '(Warriors) Flaming Will', text: 'Once per turn: Lose 500 LP; a Warrior monster gains +500 ATK for one turn.', maxUses: 3 },
+      { name: '(Grit) Brooklyn Guts', text: 'If you would take battle damage, you take 0 instead.', maxUses: 3 }
     ],
     comebacks: [
-      { name: '(Luck) All on Red', text: 'Requirement: The opponent attacks for game. Flip a coin. Heads: You win the duel! Tails: You lose.', maxUses: 1 },
-      { name: '(Warriors) Comrade\'s Shield', text: 'Requirement: Your field is empty. Special Summon "Flame Swordsman" (or your strongest Level 4/5 monster) from the Graveyard in Defense Position.', maxUses: 1 },
-      { name: '(Grit) Get Up!', text: 'Requirement: You have under 500 LP. Draw 3 cards. You can Normal Summon twice this turn.', maxUses: 1 }
+      { name: '(Luck) All on Red', text: 'Requirement: The opponent attacks for game and you have 10 or more cards in your GY. Roll a die. 1: You lose the duel. 2-3: Negate the attack. 4-5: Negate the attack and destroy the attacking monster. 6: You win the duel!' },
+      { name: '(Warriors) Comrade\'s Shield', text: 'Requirement: Your field is empty and your opponent have 3 or more monsters. Special Summon "Flame Swordsman" from your Extra Deck' },
+      { name: '(Grit) Get Up!', text: 'Requirement: You have under 2000 LP. Draw 3 cards. You can Normal Summon thrice this turn.' }
     ],
     quests: [
-      { name: '(Luck) Jackpot', text: 'Quest: Get two successful coin tosses/die rolls. Reward: Every time you Normal Summon, flip a coin. If Heads, draw a card.' },
-      { name: '(Warriors) True Warrior', text: 'Quest: Have 3 Warrior-monsters in your Graveyard. Reward: Your Warriors gain +400 ATK.' },
-      { name: '(Grit) Never Surrender', text: 'Quest: Take damage in 3 consecutive turns without losing. Reward: Your monsters can attack directly for half damage.' }
+      { name: '(Luck) Jackpot', text: 'Quest: Get two of either successful coin tosses or die rolls of 5 or 6. Reward: Every time you Normal Summon, flip a coin. If Heads, draw a card.' },
+      { name: '(Warriors) True Warrior', text: 'Quest: Have 3 Warrior-monsters in your Graveyard. Reward: "Special Summon "Giltia the D. Knight" from your Extra Deck.' },
+      { name: '(Grit) Never Surrender', text: 'Quest: Take damage in 3 different turns without losing. Reward: Your monsters can attack directly for half damage.' }
     ]
   },
   {
     id: 'joey-bc',
-    name: 'Joey Wheeler',
-    era: 'Battle City',
+    name: 'Joey Wheeler (Battle City)',
+    theme: 'Red-Eyes Gamble',
     skills: [
-      { name: '(Red-Eyes) Black Dragon Call', text: '1x per duel. Send a "Red-Eyes" card from your deck to the Graveyard to draw a card.', maxUses: 1 },
-      { name: '(Gambling) Dice Roll', text: '1x per duel. Roll a die. Multiply the result by 100 and give it as ATK to a monster for the rest of the turn.', maxUses: 1 },
-      { name: '(Traps) Psycho-Shock', text: '1x per duel. Force the opponent to flip a face-down Trap Card (if possible, it is not activated, but sent to the Graveyard).', maxUses: 1 }
+      { name: '(Fusion) Dragon Nursery', text: 'Reveal "Thousand Dragon" or "Alligator\'s Sword Dragon" in your Extra Deck; add 1 fusion material listed on the Fusion monster from your Deck to your hand.', maxUses: 2 },
+      { name: '(Warriors) Battle Formation', text: 'If you control a Warrior or Beast-Warrior: Special Summon 1 Level 4 or lower Warrior or Beast-Warrior from your hand.', maxUses: 2 },
+      { name: '(Luck) Stroke of Luck', text: 'Reroll a die roll or a coin toss.', maxUses: 1 },
+      { name: '(Red-Eyes) Black Dragon Bond', text: 'Send 1 card from your hand to the GY; add "Red-Eyes Black Dragon" from your Deck to your hand.', maxUses: 1 },
+      { name: '(Jinzo) Trap Sacrifice', text: 'You can Tribute 1 face-down Trap Card you control instead of a monster to Tribute Summon "Jinzo".', maxUses: 1 }
     ],
     comebacks: [
-      { name: '(Red-Eyes) Rebirth of the Dragon', text: 'Requirement: You have fewer LP than the opponent. Special Summon "Red-Eyes Black Dragon" from your Graveyard.', maxUses: 1 },
-      { name: '(Gambling) Desperation of the Lucky Blacksmith', text: 'Requirement: You are under 1000 LP. Roll a die. Destroy cards on the opponent\'s field equal to the roll divided by 2 (rounded down).', maxUses: 1 },
-      { name: '(Traps) Graverobber', text: 'Requirement: The opponent has at least two Spells/Traps, and you have 0. Activate one Trap- or Spell Card directly from the opponent\'s Graveyard as if it were your own.', maxUses: 1 }
+      { name: '(Fusion) Swamp Ambush', text: 'Requirement: Your opponent controls more monsters than you, and you control "Baby Dragon" or "Alligator\'s Sword". Send it and the other Fusion Material from your hand or Deck to the GY; Special Summon "Alligator\'s Sword Dragon" from your Extra Deck. It can attack directly this turn.' },
+      { name: '(Warriors) Iron Resolve', text: 'Requirement: You have 1500 or less LP and your opponent controls a monster with higher ATK than all of yours. Special Summon "Gearfried the Iron Knight" from your hand, Deck or GY. It gains 1000 ATK and cannot be destroyed by battle until the end of the turn.' },
+      { name: '(Luck) Lady Luck\'s Favor', text: 'Requirement: You have 1000 or less LP. Your next coin tosses is Heads, and your next die roll is 6.' },
+      { name: '(Red-Eyes) Dragon\'s Awakening', text: 'Requirement: You control no monsters and your opponent controls 2 or more. Special Summon "Red-Eyes Black Dragon" from your hand or GY. It gains 400 ATK for each monster your opponent controls until the end of the turn.' },
+      { name: '(Jinzo) Hidden Arsenal', text: 'Requirement: You have 1500 or less LP and 2 or more Trap Cards in your GY. Set 1 Trap Card from your GY. It can be activated this turn.' }
     ],
     quests: [
-      { name: '(Red-Eyes) Power of Potential', text: 'Quest: Equip a monster with an Equip Spell twice. Reward: Your equipped monsters inflict double battle damage.' },
-      { name: '(Gambling) High Roller', text: 'Quest: Roll a 5 or 6 on a die (or get two Heads in a row). Reward: Every time you roll a die, you may choose the result instead.' },
-      { name: '(Traps) Presence of Jinzo', text: 'Quest: Destroy 3 of the opponent\'s Trap Cards. Reward: The opponent cannot activate Traps in the Battle Phase.' }
+      { name: '(Fusion) Master of Time', text: 'Quest: Get Heads on the effect of "Time Wizard". Reward: Special Summon "Thousand Dragon" from your Extra Deck' },
+      { name: '(Warriors) Band of Brothers', text: 'Quest: Control 3 Warrior or Beast-Warrior monsters at the same time. Reward: Your Warriors and Beast-Warriors gain 200 ATK for each other Warrior or Beast-Warrior you control.' },
+      { name: '(Luck) Snake Eyes', text: 'Quest: Roll a 1 on a die. Reward: Whenever you roll a 1, 2 or a 3, you can treat it as a 6.' },
+      { name: '(Red-Eyes) Underdog Dragon', text: 'Quest: Summon "Red-Eyes Black Dragon" while your LP is lower than your opponent\'s. Reward: While your LP is lower than your opponent\'s, "Red-Eyes Black Dragon" gains ATK equal to the difference (max 1500).' },
+      { name: '(Jinzo) Psychic Dominion', text: 'Quest: Keep "Jinzo" on the field for 3 of your turns. Reward: Your opponent cannot Set Trap Cards.' },
     ]
   },
   {
     id: 'mai',
     name: 'Mai Valentine',
-    era: 'Character Deck',
+    theme: 'Harpie Hunting Ground',
     skills: [
-      { name: '(Harpies) Harpie Swarm', text: '1x per duel. Draw a card for each "Harpie" (or WIND-monster) on the field.', maxUses: 1 },
-      { name: '(Amazons) Amazon\'s Pride', text: '1x per duel. Force two monsters to battle (even in your Main Phase).', maxUses: 1 },
-      { name: '(Scouting) Perfume Tactics', text: '1x per duel. Look at the top two cards of the opponent\'s deck and return them in any order.', maxUses: 1 }
+      { name: '(Harpies) Harpie Swarm', text: 'Draw a card for each "Harpie" (or WIND-monster) on the field.', maxUses: 1 },
+      { name: '(Amazons) Amazon\'s Pride', text: 'Force two monsters to battle (even in your Main Phase).', maxUses: 1 },
+      { name: '(Scouting) Perfume Tactics', text: 'Look at the top two cards of the opponent\'s deck and return them in any order.', maxUses: 1 }
     ],
     comebacks: [
-      { name: '(Harpies) Feather Storm', text: 'Requirement: You receive a direct attack. Cancel the attack and return all of the opponent\'s Spells/Traps to their hand.', maxUses: 1 },
-      { name: '(Amazons) Ambush', text: 'Requirement: You are under 1500 LP. Special Summon 2 WIND/EARTH monsters from your hand.', maxUses: 1 },
-      { name: '(Scouting) Mirror Wall', text: 'Requirement: One of your monsters is attacked. Permanently halve the ATK of all the opponent\'s current monsters on the field.', maxUses: 1 }
+      { name: '(Harpies) Feather Storm', text: 'Requirement: You receive a direct attack. Cancel the attack and return all of the opponent\'s Spells/Traps to their hand.' },
+      { name: '(Amazons) Ambush', text: 'Requirement: You are under 1500 LP. Special Summon 2 WIND/EARTH monsters from your hand.' },
+      { name: '(Scouting) Mirror Wall', text: 'Requirement: One of your monsters is attacked. Permanently halve the ATK of all the opponent\'s current monsters on the field.' }
     ],
     quests: [
       { name: '(Harpies) Air Supremacy', text: 'Quest: Have 3 WIND monsters on the field. Reward: WIND monsters can attack the opponent directly for half damage.' },
@@ -182,16 +200,16 @@ const CHARACTERS = [
   {
     id: 'mako',
     name: 'Mako Tsunami',
-    era: 'Character Deck',
+    theme: 'Ruler of the Deep',
     skills: [
-      { name: '(The Sea) The Tide', text: '1x per duel. Add "Umi" (or a variant) from your deck to your hand.', maxUses: 1 },
-      { name: '(Fish) Fisherman\'s Patience', text: '1x per duel. Make a WATER-monster immune to battle destruction for one turn.', maxUses: 1 },
-      { name: '(Assassination) Stealth Attack', text: '1x per duel. A WATER-monster can attack directly this turn, but the battle damage is halved.', maxUses: 1 }
+      { name: '(The Sea) The Tide', text: 'Add "Umi" (or a variant) from your deck to your hand.', maxUses: 1 },
+      { name: '(Fish) Fisherman\'s Patience', text: 'Make a WATER-monster immune to battle destruction for one turn.', maxUses: 1 },
+      { name: '(Assassination) Stealth Attack', text: 'A WATER-monster can attack directly this turn, but the battle damage is halved.', maxUses: 1 }
     ],
     comebacks: [
-      { name: '(The Sea) Tsunami', text: 'Requirement: You are under 2000 LP and Umi is on the field. Destroy all monsters on the field (except WATER-monsters).', maxUses: 1 },
-      { name: '(Fish) The Legendary Fisherman', text: 'Requirement: The opponent attacks for game. Special Summon your strongest WATER-monster from your deck.', maxUses: 1 },
-      { name: '(Assassination) Whirlpool', text: 'Requirement: Your field is empty. Return up to 2 of the opponent\'s monsters to their hand.', maxUses: 1 }
+      { name: '(The Sea) Tsunami', text: 'Requirement: You are under 2000 LP and Umi is on the field. Destroy all monsters on the field (except WATER-monsters).' },
+      { name: '(Fish) The Legendary Fisherman', text: 'Requirement: The opponent attacks for game. Special Summon your strongest WATER-monster from your deck.' },
+      { name: '(Assassination) Whirlpool', text: 'Requirement: Your field is empty. Return up to 2 of the opponent\'s monsters to their hand.' }
     ],
     quests: [
       { name: '(The Sea) Ruler of the Seas', text: 'Quest: Have Umi active on the field for 3 consecutive turns. Reward: Your WATER-monsters gain +500 ATK and DEF.' },
@@ -202,16 +220,16 @@ const CHARACTERS = [
   {
     id: 'bakura',
     name: 'Bakura',
-    era: 'Character Deck',
+    theme: 'Shadow Realm Occult',
     skills: [
-      { name: '(Occult) Pact of the Shadow Realm', text: '1x per duel. Swap Life Points with the opponent if theirs are higher (You can swap a maximum difference of 2000 LP).', maxUses: 1 },
-      { name: '(Zombies) Return of the Undead', text: '1x per duel. Special Summon a Zombie/Fiend-monster from your Graveyard with its effects negated.', maxUses: 1 },
-      { name: '(Destruction) Dark Temptation', text: '1x per duel. Send the top 3 cards from both players\' decks to the Graveyard.', maxUses: 1 }
+      { name: '(Occult) Pact of the Shadow Realm', text: 'Swap Life Points with the opponent if theirs are higher (You can swap a maximum difference of 2000 LP).', maxUses: 1 },
+      { name: '(Zombies) Return of the Undead', text: 'Special Summon a Zombie/Fiend-monster from your Graveyard with its effects negated.', maxUses: 1 },
+      { name: '(Destruction) Dark Temptation', text: 'Send the top 3 cards from both players\' decks to the Graveyard.', maxUses: 1 }
     ],
     comebacks: [
-      { name: '(Occult) Shadow of the Destiny Board', text: 'Requirement: You are under 1000 LP. The opponent now has exactly 3 turns to win. If they fail, you automatically win the duel.', maxUses: 1 },
-      { name: '(Zombies) Mass Resurrection', text: 'Requirement: Your field is empty. Special Summon as many Zombie/Fiend-monsters from your Graveyard as possible in Defense Position. They are discarded in the End Phase.', maxUses: 1 },
-      { name: '(Destruction) Soul Thief', text: 'Requirement: The opponent declares an attack, and you are behind on LP. Banish 5 cards from the opponent\'s Graveyard. You gain 300 LP per card.', maxUses: 1 }
+      { name: '(Occult) Shadow of the Destiny Board', text: 'Requirement: You are under 1000 LP. The opponent now has exactly 3 turns to win. If they fail, you automatically win the duel.' },
+      { name: '(Zombies) Mass Resurrection', text: 'Requirement: Your field is empty. Special Summon as many Zombie/Fiend-monsters from your Graveyard as possible in Defense Position. They are discarded in the End Phase.' },
+      { name: '(Destruction) Soul Thief', text: 'Requirement: The opponent declares an attack, and you are behind on LP. Banish 5 cards from the opponent\'s Graveyard. You gain 300 LP per card.' }
     ],
     quests: [
       { name: '(Occult) Power of the Millennium Ring', text: 'Quest: The opponent must have over 10 cards in their Graveyard. Reward: You can look at the opponent\'s Set cards at any time.' },
@@ -222,36 +240,36 @@ const CHARACTERS = [
   {
     id: 'pegasus',
     name: 'Maximillion Pegasus',
-    era: 'Character Deck',
+    theme: 'Toon Kingdom',
     skills: [
-      { name: '(Cartoons) Toon World', text: '1x per duel. Add "Toon World" (or a Toon-monster) from your deck to your hand.', maxUses: 1 },
-      { name: '(Mind Reading) Millennium Eye', text: '1x per duel. Force the opponent to reveal their hand until your next End Phase.', maxUses: 1 },
-      { name: '(Absorption) Illusionist\'s Grip', text: '1x per duel. Render one of the opponent\'s monsters unable to attack during their next turn.', maxUses: 1 }
+      { name: '(Cartoons) Toon World', text: 'Add "Toon World" (or a Toon-monster) from your deck to your hand.', maxUses: 1 },
+      { name: '(Mind Reading) Millennium Eye', text: 'Force the opponent to reveal their hand until your next End Phase.', maxUses: 1 },
+      { name: '(Absorption) Illusionist\'s Grip', text: 'Render one of the opponent\'s monsters unable to attack during their next turn.', maxUses: 1 }
     ],
     comebacks: [
-      { name: '(Cartoons) The Great Spectacle', text: 'Requirement: The opponent attacks one of your monsters. Turn the attack into a direct attack, then draw 2 cards.', maxUses: 1 },
-      { name: '(Mind Reading) Delusion', text: 'Requirement: The opponent activates a lethal effect or attack. Guess which card they drew at the start of the turn. If you guess correctly, the move is canceled and the card is destroyed.', maxUses: 1 },
-      { name: '(Absorption) Relinquished\'s Hunger', text: 'Requirement: The opponent has at least 2 boss monsters. Take control of the opponent\'s strongest monster and equip it to one of your monsters (your monster gains its ATK).', maxUses: 1 }
+      { name: '(Cartoons) The Great Spectacle', text: 'Requirement: The opponent attacks one of your monsters. Turn the attack into a direct attack, then draw 2 cards.' },
+      { name: '(Mind Reading) Delusion', text: 'Requirement: The opponent activates a lethal effect or attack. Guess which card they drew at the start of the turn. If you guess correctly, the move is canceled and the card is destroyed.' },
+      { name: '(Absorption) Relinquished\'s Hunger', text: 'Requirement: The opponent has at least 2 boss monsters. Take control of the opponent\'s strongest monster and equip it to one of your monsters (your monster gains its ATK).' }
     ],
     quests: [
       { name: '(Cartoons) Creator\'s Masterpiece', text: 'Quest: Have 2 Toon-monsters on the field at the same time. Reward: Your Toon-monsters do not require LP to attack and cannot be targeted.' },
-      { name: '(Mind Reading) Perfect Prediction', text: 'Quest: Guess a type of hidden card (Spell/Trap/Monster) correctly 2 times. Reward: The opponent must announce out loud what they draw in their Draw Phase for the rest of the game.' },
+      { name: '(Mind Reading) Perfect Prediction', text: 'Quest: Guess a type of hidden card (Spell/Trap/monster) correctly 2 times. Reward: The opponent must announce out loud what they draw in their Draw Phase for the rest of the game.' },
       { name: '(Absorption) Soul Eater', text: 'Quest: Have "Relinquished" (or an Illusion-monster) survive for 2 turns. Reward: The opponent takes all battle damage that your monsters would normally take.' }
     ]
   },
   {
     id: 'odion',
     name: 'Odion',
-    era: 'Character Deck',
+    theme: 'Temple of Traps',
     skills: [
-      { name: '(Traps) Trap Master', text: '1x per duel. Set a Trap Card from your Graveyard. It is banished when it leaves the field.', maxUses: 1 },
-      { name: '(Temple) King\'s Protection', text: '1x per duel. Your Trap Cards cannot be destroyed by the opponent\'s effects for one turn.', maxUses: 1 },
-      { name: '(Endurance) Stamina', text: '1x per duel. Gain 1000 Life Points.', maxUses: 1 }
+      { name: '(Traps) Trap Master', text: 'Set a Trap Card from your Graveyard. It is banished when it leaves the field.', maxUses: 1 },
+      { name: '(Temple) King\'s Protection', text: 'Your Trap Cards cannot be destroyed by the opponent\'s effects for one turn.', maxUses: 1 },
+      { name: '(Endurance) Stamina', text: 'Gain 1000 Life Points.', maxUses: 1 }
     ],
     comebacks: [
-      { name: '(Traps) Trap Hell', text: 'Requirement: The opponent attacks directly. Activate all Trap Cards in your Graveyard that can stop or affect the attack, as if they were on the field.', maxUses: 1 },
-      { name: '(Temple) Serket\'s Wrath', text: 'Requirement: You are under 1000 LP. Special Summon 2 Trap-monsters directly from your deck.', maxUses: 1 },
-      { name: '(Endurance) Sandstorm', text: 'Requirement: The opponent has 3+ monsters, you have 0. Change all of the opponent\'s monsters to Defense Position and permanently halve their DEF.', maxUses: 1 }
+      { name: '(Traps) Trap Hell', text: 'Requirement: The opponent attacks directly. Activate all Trap Cards in your Graveyard that can stop or affect the attack, as if they were on the field.' },
+      { name: '(Temple) Serket\'s Wrath', text: 'Requirement: You are under 1000 LP. Special Summon 2 Trap-monsters directly from your deck.' },
+      { name: '(Endurance) Sandstorm', text: 'Requirement: The opponent has 3+ monsters, you have 0. Change all of the opponent\'s monsters to Defense Position and permanently halve their DEF.' }
     ],
     quests: [
       { name: '(Traps) The Labyrinth', text: 'Quest: Activate 4 Trap Cards during the duel. Reward: Every time you activate a Trap, you gain 500 LP.' },
@@ -262,16 +280,16 @@ const CHARACTERS = [
   {
     id: 'ishizu',
     name: 'Ishizu Ishtar',
-    era: 'Character Deck',
+    theme: 'Gravekeeper\'s Prophecy',
     skills: [
-      { name: '(Future) Millennium Necklace', text: '1x per duel. Look at the top 3 cards of the opponent\'s deck. Rearrange them however you like.', maxUses: 1 },
-      { name: '(Gravekeepers) Gravekeeper\'s Call', text: '1x per duel. Add "Necrovalley" or a "Gravekeeper\'s" card from your deck to your hand.', maxUses: 1 },
-      { name: '(Reversal) Twist of Fate', text: '1x per duel. If the opponent gains LP, you gain the same amount.', maxUses: 1 }
+      { name: '(Future) Millennium Necklace', text: 'Look at the top 3 cards of the opponent\'s deck. Rearrange them however you like.', maxUses: 1 },
+      { name: '(Gravekeepers) Gravekeeper\'s Call', text: 'Add "Necrovalley" or a "Gravekeeper\'s" card from your deck to your hand.', maxUses: 1 },
+      { name: '(Reversal) Twist of Fate', text: 'If the opponent gains LP, you gain the same amount.', maxUses: 1 }
     ],
     comebacks: [
-      { name: '(Future) Foreseen Doom', text: 'Requirement: The opponent declares an attack that will win the game. Cancel the attack. Then swap your hand with the top 5 cards of your deck.', maxUses: 1 },
-      { name: '(Gravekeepers) Pharaoh\'s Curse', text: 'Requirement: You have 0 LP. (Activates as a Death-save). You survive with 100 LP, and the opponent\'s entire Graveyard is banished.', maxUses: 1 },
-      { name: '(Reversal) Exchange of the Spirit', text: 'Requirement: Both players have at least 10 cards in their Graveyard, and you are behind on LP. Both players swap their deck with their Graveyard (shuffled).', maxUses: 1 }
+      { name: '(Future) Foreseen Doom', text: 'Requirement: The opponent declares an attack that will win the game. Cancel the attack. Then swap your hand with the top 5 cards of your deck.' },
+      { name: '(Gravekeepers) Pharaoh\'s Curse', text: 'Requirement: You have 0 LP. (Activates as a Death-save). You survive with 100 LP, and the opponent\'s entire Graveyard is banished.' },
+      { name: '(Reversal) Exchange of the Spirit', text: 'Requirement: Both players have at least 10 cards in their Graveyard, and you are behind on LP. Both players swap their deck with their Graveyard (shuffled).' }
     ],
     quests: [
       { name: '(Future) The Seer', text: 'Quest: Accurately predict which card the opponent will draw in their next Draw Phase (announce it during your turn). Reward: The opponent must play with their hand revealed.' },
@@ -282,16 +300,16 @@ const CHARACTERS = [
   {
     id: 'marik',
     name: 'Marik Ishtar',
-    era: 'Character Deck',
+    theme: 'Wrath of the Sun God',
     skills: [
-      { name: '(Torture) Shadow Game', text: '1x per duel. The opponent takes 500 damage for each card they have in their hand.', maxUses: 1 },
-      { name: '(Slime) Immortal Mass', text: '1x per duel. Create one "Slime Token" (Aqua/WATER/Level 1/ATK 500/DEF 500) in Defense Position.', maxUses: 1 },
-      { name: '(Mind Control) Brainwash', text: '1x per duel. Take control of a Level 4 or lower monster from the opponent until the End Phase.', maxUses: 1 }
+      { name: '(Torture) Shadow Game', text: 'The opponent takes 500 damage for each card they have in their hand.', maxUses: 1 },
+      { name: '(Slime) Immortal Mass', text: 'Create one "Slime Token" (Aqua/WATER/Level 1/ATK 500/DEF 500) in Defense Position.', maxUses: 1 },
+      { name: '(Mind Control) Brainwash', text: 'Take control of a Level 4 or lower monster from the opponent until the End Phase.', maxUses: 1 }
     ],
     comebacks: [
-      { name: '(Torture) Hidden Pain', text: 'Requirement: You take battle damage. The opponent takes twice the amount of damage you just took.', maxUses: 1 },
-      { name: '(Slime) Reconstruction', text: 'Requirement: The opponent destroys your strongest monster. Special Summon "Revival Jam" (or a Slime-monster) and draw 2 cards.', maxUses: 1 },
-      { name: '(Ra) Wrath of the Sun God', text: 'Requirement: You are under 1000 LP. Pay all your LP except 1. Destroy the opponent\'s entire field, and the opponent takes 1000 damage for each destroyed card.', maxUses: 1 }
+      { name: '(Torture) Hidden Pain', text: 'Requirement: You take battle damage. The opponent takes twice the amount of damage you just took.' },
+      { name: '(Slime) Reconstruction', text: 'Requirement: The opponent destroys your strongest monster. Special Summon "Revival Jam" (or a Slime-monster) and draw 2 cards.' },
+      { name: '(Ra) Wrath of the Sun God', text: 'Requirement: You are under 1000 LP. Pay all your LP except 1. Destroy the opponent\'s entire field, and the opponent takes 1000 damage for each destroyed card.' }
     ],
     quests: [
       { name: '(Torture) Master of Pain', text: 'Quest: Inflict effect damage to the opponent 3 times in one turn. Reward: The opponent loses 500 LP in their Standby Phase.' },
@@ -302,16 +320,16 @@ const CHARACTERS = [
   {
     id: 'weevil',
     name: 'Weevil Underwood',
-    era: 'Character Deck',
+    theme: 'Insect Plague',
     skills: [
-      { name: '(Insects) The Swarm', text: '1x per duel. Special Summon a Level 3 or lower Insect-monster from your hand.', maxUses: 1 },
-      { name: '(Parasite) Infection', text: '1x per duel. Shuffle "Parasite Paracide" (or another Insect) from your deck into the opponent\'s deck.', maxUses: 1 },
-      { name: '(Evolution) Pupation', text: '1x per duel. Swap an Insect-monster on the field with an Insect-monster from your deck that is 1 Level higher.', maxUses: 1 }
+      { name: '(Insects) The Swarm', text: 'Special Summon a Level 3 or lower Insect-monster from your hand.', maxUses: 1 },
+      { name: '(Parasite) Infection', text: 'Shuffle "Parasite Paracide" (or another Insect) from your deck into the opponent\'s deck.', maxUses: 1 },
+      { name: '(Evolution) Pupation', text: 'Swap an Insect-monster on the field with an Insect-monster from your deck that is 1 Level higher.', maxUses: 1 }
     ],
     comebacks: [
-      { name: '(Insects) Pest Invasion', text: 'Requirement: You receive a direct attack. The opponent takes 300 damage for each Insect-monster in your Graveyard. The attack does not stop, but the damage might kill the opponent first.', maxUses: 1 },
-      { name: '(Parasite) Disease Outbreak', text: 'Requirement: The opponent Normal Summons a Boss-monster. Equip the monster with an Insect from your hand. The monster loses 1000 ATK and cannot attack.', maxUses: 1 },
-      { name: '(Evolution) Perfect Moth Awakening', text: 'Requirement: You have under 1500 LP and an empty field. Special Summon your strongest Insect-monster directly from your deck (ignores "Petit Moth" rules).', maxUses: 1 }
+      { name: '(Insects) Pest Invasion', text: 'Requirement: You receive a direct attack. The opponent takes 300 damage for each Insect-monster in your Graveyard. The attack does not stop, but the damage might kill the opponent first.' },
+      { name: '(Parasite) Disease Outbreak', text: 'Requirement: The opponent Normal Summons a Boss-monster. Equip the monster with an Insect from your hand. The monster loses 1000 ATK and cannot attack.' },
+      { name: '(Evolution) Perfect Moth Awakening', text: 'Requirement: You have under 1500 LP and an empty field. Special Summon your strongest Insect-monster directly from your deck (ignores "Petit Moth" rules).' }
     ],
     quests: [
       { name: '(Insects) The Hive', text: 'Quest: Have 5 Insect-monsters on the field/in the Graveyard. Reward: Your Insect-monsters gain +500 ATK.' },
@@ -322,16 +340,16 @@ const CHARACTERS = [
   {
     id: 'keith',
     name: 'Bandit Keith',
-    era: 'Character Deck',
+    theme: 'Heavy Metal Raiders',
     skills: [
-      { name: '(Cheating) Card up the Sleeve', text: '1x per duel. Swap a card in your hand with the bottom card of your deck.', maxUses: 1 },
-      { name: '(Machines) Heavy Arsenal', text: '1x per duel. A Machine-monster gains +700 ATK this turn, but cannot attack directly.', maxUses: 1 },
-      { name: '(Gambling) Russian Roulette', text: '1x per duel. Target a card on the opponent\'s field. Roll a die. 1-4: Destroy the card. 5-6: You take 1000 damage.', maxUses: 1 }
+      { name: '(Cheating) Card up the Sleeve', text: 'Swap a card in your hand with the bottom card of your deck.', maxUses: 1 },
+      { name: '(Machines) Heavy Arsenal', text: 'A Machine-monster gains +700 ATK this turn, but cannot attack directly.', maxUses: 1 },
+      { name: '(Gambling) Russian Roulette', text: 'Target a card on the opponent\'s field. Roll a die. 1-4: Destroy the card. 5-6: You take 1000 damage.', maxUses: 1 }
     ],
     comebacks: [
-      { name: '(Cheating) Ambush Steal', text: 'Requirement: The opponent activates a crucial Spell/Trap Card. Cancel the activation and take the card into your own hand.', maxUses: 1 },
-      { name: '(Machines) Slot Machine Emergency Spin', text: 'Requirement: You take a direct attack. Special Summon 3 "Coin Tokens" in Defense Position. If they are destroyed, you draw one card per token.', maxUses: 1 },
-      { name: '(Gambling) All or Nothing', text: 'Requirement: You have 0 cards in your hand. Draw 3 cards. If you do not win this turn, you automatically lose in the End Phase.', maxUses: 1 }
+      { name: '(Cheating) Ambush Steal', text: 'Requirement: The opponent activates a crucial Spell/Trap Card. Cancel the activation and take the card into your own hand.' },
+      { name: '(Machines) Slot Machine Emergency Spin', text: 'Requirement: You take a direct attack. Special Summon 3 "Coin Tokens" in Defense Position. If they are destroyed, you draw one card per token.' },
+      { name: '(Gambling) All or Nothing', text: 'Requirement: You have 0 cards in your hand. Draw 3 cards. If you do not win this turn, you automatically lose in the End Phase.' }
     ],
     quests: [
       { name: '(Cheating) Bandit King', text: 'Quest: Take control of one of the opponent\'s monsters. Reward: You may look at the top card of the opponent\'s deck at any time.' },

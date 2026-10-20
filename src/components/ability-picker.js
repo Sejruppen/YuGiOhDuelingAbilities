@@ -22,7 +22,7 @@ function renderAbilityOption(abilityType, ability, index, isSelected) {
     ? `
       <div class="flex items-center justify-between gap-2 mb-1.5">
         <div class="font-bold text-base text-white">${ability.name}</div>
-        <span class="text-xs font-semibold px-2 py-0.5 rounded bg-slate-800 text-slate-300 border border-slate-700 shrink-0">${formatMaxUsesBadge(ability.maxUses)}</span>
+        <span class="text-xs font-semibold px-2 py-0.5 rounded bg-slate-800 text-slate-300 border border-slate-700 shrink-0">${formatMaxUsesBadge(getMaxUses(abilityType, ability))}</span>
       </div>
     `
     : `<div class="font-bold text-base text-white mb-1.5">${ability.name}</div>`;

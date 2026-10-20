@@ -1,13 +1,13 @@
 function renderCharacterOption(char) {
   const isNeutral = char.id === NEUTRAL_CHARACTER_ID;
   const cardClass = isNeutral ? 'bg-indigo-950/40 border-indigo-500/40' : 'bg-slate-900/90 border-slate-800';
-  const eraClass = isNeutral ? 'text-indigo-300' : 'text-amber-400/90';
+  const themeClass = isNeutral ? 'text-indigo-300' : 'text-amber-400/90';
 
   return `
     <button onclick="selectCharacter('${char.id}')" class="w-full text-left p-4 rounded-xl border ${cardClass} hover:border-amber-500/50 active:scale-[0.99] transition flex items-center justify-between">
       <div>
         <div class="font-bold text-white text-lg">${char.name}</div>
-        <div class="text-sm ${eraClass} mt-0.5">${char.era}</div>
+        <div class="text-sm ${themeClass} mt-0.5">${char.theme}</div>
       </div>
       <span class="text-slate-400 text-xl">→</span>
     </button>

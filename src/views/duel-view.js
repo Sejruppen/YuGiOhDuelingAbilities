@@ -11,7 +11,7 @@ function renderDuelHeader(char) {
       </div>
       <div class="text-center">
         <div class="text-base font-bold text-white leading-tight">${char.name}</div>
-        <div class="text-xs text-amber-400 leading-tight">${char.era}</div>
+        <div class="text-xs text-amber-400 leading-tight">${char.theme}</div>
       </div>
       <div class="flex items-center gap-1.5">
         <button onclick="openResetConfirm()" class="text-sm font-medium text-amber-300 border border-amber-500/30 bg-amber-950/30 rounded-lg px-3 py-1">Reset</button>

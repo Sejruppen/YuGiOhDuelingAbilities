@@ -52,6 +52,7 @@ const ABILITY_TYPES = {
     listKey: 'comebacks',
     selectionKey: 'selectedComeback',
     hasUses: true,
+    maxUses: 1,
     actionLabel: 'Activate',
     theme: THEMES.rose
   },
@@ -67,3 +68,8 @@ const ABILITY_TYPES = {
 };
 
 const ABILITY_TYPE_ORDER = [ABILITY_TYPES.skill, ABILITY_TYPES.comeback, ABILITY_TYPES.quest];
+
+// A type-level maxUses (e.g. comebacks) overrides the per-ability value.
+function getMaxUses(abilityType, ability) {
+  return 'maxUses' in abilityType ? abilityType.maxUses : ability?.maxUses;
+}

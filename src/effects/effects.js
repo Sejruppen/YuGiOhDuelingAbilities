@@ -37,7 +37,7 @@ function captureFxSnapshot() {
     const ability = char?.[listKey]?.[state[selectionKey] ?? 0];
     const uses = state[`${type}Uses`] || 0;
     const active = hasUses ? !!state[`${type}Revealed`] : !!state.questCompleted;
-    const maxUses = ability?.maxUses;
+    const maxUses = getMaxUses(abilityType, ability);
 
     abilities[type] = {
       active,

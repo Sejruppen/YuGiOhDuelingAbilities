@@ -29,9 +29,10 @@ function renderHiddenCard({ type, label, actionLabel, theme }) {
   `;
 }
 
-function renderPeekCard({ type, hasUses, actionLabel, theme }, ability) {
+function renderPeekCard(abilityType, ability) {
+  const { type, hasUses, actionLabel, theme } = abilityType;
   const usesBadge = hasUses
-    ? `<span class="text-xs font-semibold px-2 py-0.5 rounded bg-slate-900/80 text-slate-200 border border-slate-700">${formatMaxUsesBadge(ability.maxUses)}</span>`
+    ? `<span class="text-xs font-semibold px-2 py-0.5 rounded bg-slate-900/80 text-slate-200 border border-slate-700">${formatMaxUsesBadge(getMaxUses(abilityType, ability))}</span>`
     : '';
 
   return `
@@ -65,8 +66,9 @@ function renderCompletedQuestCard({ type, label, theme }, ability) {
   });
 }
 
-function renderRevealedAbilityCard({ type, label, theme }, ability, uses) {
-  const maxUses = ability.maxUses; // number or null (unlimited)
+function renderRevealedAbilityCard(abilityType, ability, uses) {
+  const { type, label, theme } = abilityType;
+  const maxUses = getMaxUses(abilityType, ability); // number or null (unlimited)
   const hasLimit = typeof maxUses === 'number';
   const isExhausted = hasLimit && uses >= maxUses;
 
