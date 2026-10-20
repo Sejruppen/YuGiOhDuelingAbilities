@@ -215,6 +215,9 @@ function coinClink(t, gain = 0.05) {
 
 const POC_HARP_UP = [62, 65, 67, 69, 72, 74, 77, 79, 81, 84];
 
+// Logo easter egg: each tap in a row climbs a semitone to build tension.
+const logoNote = (base, combo) => base + Math.min(combo - 1, 24);
+
 // ---------------------------------------------------------------------------
 // Theme kits
 // ---------------------------------------------------------------------------
@@ -297,6 +300,35 @@ const SOUND_KITS = {
     defeat: t => {
       tone({ t, freq: 440, to: 50, dur: 1.5, type: 'sawtooth', gain: 0.08, filter: [3000, 150] });
       chord({ t: t + 0.2, notes: [45, 48, 52], dur: 2, gain: 0.04, filter: [1200, 200] });
+    },
+    'logo-tap': (t, e) => {
+      const f = midi(logoNote(60, e.combo));
+      tone({ t, freq: f, dur: 0.12, type: 'square', gain: 0.04, filter: 4000 });
+      tone({ t, freq: f * 2, to: f * 1.5, dur: 0.08, type: 'sawtooth', gain: 0.02, filter: 5000 });
+    },
+    'logo-piece': (t, e) => {
+      const root = 60 + e.piece * 2;
+      arpeggio(t, [root, root + 4, root + 7, root + 12], 0.05, (at, n) => tone({ t: at, freq: midi(n), dur: 0.16, type: 'square', gain: 0.035, filter: 4000 }));
+      chord({ t: t + 0.2, notes: [root, root + 7, root + 12], dur: 0.6, gain: 0.04, filter: [3000, 800] });
+    },
+    'logo-scatter': t => tone({ t, freq: 800, to: 120, dur: 0.4, type: 'sawtooth', gain: 0.05, filter: [3000, 300] }),
+    // Exodia (timeline matches effects.css): darkness 0s, he rises 0.9s,
+    // charges 2.3s, blasts 3.8s, the world returns 6.6s.
+    'logo-obliterate': t => {
+      tone({ t, freq: 220, to: 55, dur: 1, type: 'sawtooth', gain: 0.06, filter: [2000, 200] });
+      noise({ t, dur: 0.9, gain: 0.08, type: 'lowpass', freq: 3000, to: 150 });
+      const rise = t + 0.9;
+      boom(rise, 0.7);
+      chord({ t: rise, notes: [33, 40, 45, 48], dur: 3, gain: 0.05, attack: 0.8, filter: [200, 1800] });
+      const charge = t + 2.3;
+      tone({ t: charge, freq: 90, to: 1800, slide: 1.5, dur: 1.55, type: 'sawtooth', gain: 0.07, filter: [400, 6000] });
+      noise({ t: charge, dur: 1.5, gain: 0.1, freq: 300, to: 8000, q: 2, attack: 1.2 });
+      const blast = t + 3.8;
+      boom(blast, 1.4);
+      noise({ t: blast, dur: 2.8, gain: 0.3, type: 'lowpass', freq: 6000, to: 200, attack: 0.02 });
+      tone({ t: blast, freq: 2400, to: 60, dur: 2, type: 'sawtooth', gain: 0.07, filter: [6000, 200] });
+      chord({ t: blast, notes: [57, 64, 69, 73, 76], dur: 2.8, gain: 0.04, filter: [5000, 600] });
+      arpeggio(t + 6.6, [69, 73, 76, 81], 0.09, (at, n) => tone({ t: at, freq: midi(n), dur: 0.5, gain: 0.04 }));
     }
   },
 
@@ -345,7 +377,31 @@ const SOUND_KITS = {
       noise({ t, dur: 0.4, gain: 0.05, type: 'highpass', freq: 1500, to: 6000, attack: 0.1 });
       arpeggio(t + 0.3, [84, 79, 76, 72], 0.06, (at, n) => marimba({ t: at, note: n, gain: 0.09 }));
     },
-    defeat: t => arpeggio(t, [67, 66, 65, 64], 0.32, (at, n) => tone({ t: at, freq: midi(n), dur: 0.4, type: 'triangle', gain: 0.1, attack: 0.03 }))
+    defeat: t => arpeggio(t, [67, 66, 65, 64], 0.32, (at, n) => tone({ t: at, freq: midi(n), dur: 0.4, type: 'triangle', gain: 0.1, attack: 0.03 })),
+    'logo-tap': (t, e) => {
+      marimba({ t, note: logoNote(67, e.combo), gain: 0.13, dur: 0.35 });
+      bubble({ t, from: 500, to: 1100, dur: 0.05, gain: 0.05 });
+    },
+    'logo-piece': (t, e) => {
+      const root = 72 + e.piece * 2;
+      arpeggio(t, [root, root + 4, root + 7, root + 12], 0.06, (at, n) => marimba({ t: at, note: n, gain: 0.12 }));
+      bell({ t: t + 0.25, freq: midi(root + 24), dur: 0.8, gain: 0.03 });
+    },
+    'logo-scatter': t => arpeggio(t, [79, 74, 70, 67], 0.06, (at, n) => marimba({ t: at, note: n, gain: 0.08 })),
+    'logo-obliterate': t => {
+      arpeggio(t, [72, 67, 63, 60, 55], 0.16, (at, n) => marimba({ t: at, note: n, gain: 0.1, dur: 0.6 }));
+      const rise = t + 0.9;
+      marimba({ t: rise, note: 36, gain: 0.35, dur: 1.4 });
+      [48, 55, 60, 63].forEach((n, i) => bell({ t: rise + i * 0.25, freq: midi(n), dur: 2, gain: 0.06 }));
+      const charge = t + 2.3;
+      for (let i = 0; i < 24; i++) bubble({ t: charge + i * 0.0625, from: 250 + i * 50, to: 600 + i * 110, dur: 0.06, gain: 0.07 });
+      const blast = t + 3.8;
+      boom(blast, 0.9);
+      noise({ t: blast, dur: 2.6, gain: 0.12, type: 'highpass', freq: 1500, to: 8000, attack: 0.05 });
+      arpeggio(blast, [72, 76, 79, 84, 88, 91, 96, 100], 0.045, (at, n) => marimba({ t: at, note: n, gain: 0.12 }));
+      [84, 88, 91, 96].forEach(n => bell({ t: blast + 0.4, freq: midi(n), dur: 2.4, gain: 0.04 }));
+      arpeggio(t + 6.6, [79, 84, 88], 0.08, (at, n) => marimba({ t: at, note: n, gain: 0.08 }));
+    }
   },
 
   poc: {
@@ -446,6 +502,38 @@ const SOUND_KITS = {
       bell({ t, freq: 73, dur: 3, gain: 0.3 });
       boom(t, 0.8);
       brass({ t: t + 0.4, notes: [50, 53, 57], dur: 1.8, gain: 0.03 });
+    },
+    'logo-tap': (t, e) => {
+      pluck({ t, note: logoNote(62, e.combo), gain: 0.09 });
+      cardFlip(t, 0.05, 3200);
+    },
+    'logo-piece': (t, e) => {
+      cardFlip(t);
+      bell({ t, freq: midi(74 + e.piece * 2), dur: 1.2, gain: 0.06 });
+      brass({ t: t + 0.08, notes: [50 + e.piece * 2, 57 + e.piece * 2], dur: 0.45, gain: 0.03 });
+    },
+    'logo-scatter': t => {
+      for (let i = 0; i < 4; i++) cardFlip(t + i * 0.07, 0.07, 2200 - i * 250);
+    },
+    // Gong and rumble as Exodia rises, harp charge, double impact and fanfare.
+    'logo-obliterate': t => {
+      noise({ t, dur: 1, gain: 0.12, freq: 2000, to: 200, q: 0.8 });
+      tone({ t, freq: 150, to: 45, dur: 1, gain: 0.15 });
+      const rise = t + 0.9;
+      boom(rise, 0.8);
+      bell({ t: rise, freq: 65, dur: 3, gain: 0.25 });
+      noise({ t: rise, dur: 2.9, gain: 0.25, type: 'lowpass', freq: 160, to: 320, attack: 1 });
+      brass({ t: rise + 0.3, notes: [38, 45, 50], dur: 1.6, gain: 0.04 });
+      const charge = t + 2.3;
+      noise({ t: charge, dur: 1.5, gain: 0.14, freq: 400, to: 4000, q: 3, attack: 1.2 });
+      arpeggio(charge, POC_HARP_UP, 0.13, (at, n) => pluck({ t: at, note: n, gain: 0.06 }));
+      const blast = t + 3.8;
+      boom(blast, 1.4);
+      boom(blast + 0.3, 0.8);
+      noise({ t: blast, dur: 2.8, gain: 0.28, type: 'lowpass', freq: 5000, to: 200 });
+      brass({ t: blast + 0.1, notes: [50, 57, 62, 66, 69], dur: 2.2, gain: 0.045 });
+      bell({ t: blast, freq: 110, dur: 3, gain: 0.2 });
+      arpeggio(t + 6.6, POC_HARP_UP.slice(4), 0.05, (at, n) => pluck({ t: at, note: n, gain: 0.06 }));
     }
   }
 };

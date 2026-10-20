@@ -1,4 +1,4 @@
-const CACHE_NAME = 'ygo-skills-mvp-v26';
+const CACHE_NAME = 'ygo-skills-mvp-v30';
 const ASSETS = [
   './',
   './index.html',
@@ -28,6 +28,7 @@ const ASSETS = [
   './src/views/duel-view.js',
   './src/effects/sounds.js',
   './src/effects/effects.js',
+  './src/effects/logo-easter-egg.js',
   './src/service-worker-registration.js',
   './app.js',
   './manifest.json',
