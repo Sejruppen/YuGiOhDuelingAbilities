@@ -98,7 +98,7 @@ function summonExodia(logo) {
       <div class="exo-scene">
         <div class="exo-black"></div>
         <div class="exo-fire"></div>
-        <div class="exo-figure-wrap">${EXODIA_SVG}</div>
+        <div class="exo-figure-wrap"><div class="exo-body">${EXODIA_SVG}</div></div>
                 <div class="exo-vignette"></div>        <div class="exo-logo"><img src="./logo.jpg" alt="" /></div>
         <div class="exo-orb"></div>
       </div>
@@ -187,8 +187,17 @@ const EXODIA_TEETH = [-3, -2, -1, 0, 1, 2, 3].map(i => {
   return `<path d="M${x0} 252 L${x0} ${bottom - 2} Q${x0 + 2.3} ${bottom + 1.5} ${x1} ${bottom - 2} L${x1} 252 Z" fill="#fff" stroke-width="1.2"/>`;
 }).join('');
 
+// Glowing eyes (a soft blurred copy under a crisp one).
+function exodiaEyes(fill, filterId) {
+  const eyes = `<path d="M177 228 Q186 227 195 236 Q187 239 179 235 Z"/><path d="M223 228 Q214 227 205 236 Q213 239 221 235 Z"/>`;
+  return `<g fill="${fill}"><g filter="url(#${filterId})" opacity="0.9">${eyes}</g>${eyes}</g>`;
+}
+
 // Exodia, the Forbidden One, cupping the energy ball at (200, 400) — which
-// lines up with EXODIA_ORB_Y on screen (see .exo-figure-wrap).
+// lines up with EXODIA_ORB_Y on screen (see .exo-figure-wrap). The SVG itself
+// is static so the phone's GPU only has to rasterize it once; the pulsing
+// white-hot eyes and the ball's glow are separate layers that only animate
+// opacity (cheap, compositor-only).
 const EXODIA_SVG = `
 <svg class="exo-figure" viewBox="0 0 400 600" aria-hidden="true">
   <defs>
@@ -214,11 +223,6 @@ const EXODIA_SVG = `
     <filter id="exoEyeGlow" x="-100%" y="-200%" width="300%" height="500%">
       <feGaussianBlur stdDeviation="2.5"/>
     </filter>
-    <radialGradient id="exoGlow">
-      <stop offset="0" stop-color="#fff" stop-opacity="0.95"/>
-      <stop offset="0.3" stop-color="#fde047" stop-opacity="0.65"/>
-      <stop offset="1" stop-color="#f59e0b" stop-opacity="0"/>
-    </radialGradient>
     <pattern id="exoStripesL" width="18" height="18" patternUnits="userSpaceOnUse" patternTransform="rotate(35)">
       <rect width="18" height="18" fill="#7e22ce"/>
       <rect width="9" height="18" fill="#f9c6e3"/>
@@ -275,17 +279,18 @@ const EXODIA_SVG = `
   </g>
   <circle cx="200" cy="177" r="4" fill="#ef4444" stroke="#3b1d04" stroke-width="1.5"/>
   <circle cx="198.7" cy="175.7" r="1.3" fill="#fecaca"/>
-  <g>
-    <g filter="url(#exoEyeGlow)" opacity="0.9">
-      <path class="exo-eye" d="M177 228 Q186 227 195 236 Q187 239 179 235 Z"/>
-      <path class="exo-eye" d="M223 228 Q214 227 205 236 Q213 239 221 235 Z"/>
-    </g>
-    <path class="exo-eye" d="M177 228 Q186 227 195 236 Q187 239 179 235 Z"/>
-    <path class="exo-eye" d="M223 228 Q214 227 205 236 Q213 239 221 235 Z"/>
-  </g>
+  ${exodiaEyes('#f59e0b', 'exoEyeGlow')}
   <g stroke="#3b1d04" stroke-width="3" stroke-linejoin="round">
     <use href="#exoHand"/>
     <use href="#exoHand" transform="translate(400 0) scale(-1 1)"/>
   </g>
-  <circle class="exo-glow" cx="200" cy="400" r="200" fill="url(#exoGlow)"/>
-</svg>`;
+</svg>
+<svg class="exo-eyes-hot" viewBox="0 0 400 600" aria-hidden="true">
+  <defs>
+    <filter id="exoEyeGlowHot" x="-100%" y="-200%" width="300%" height="500%">
+      <feGaussianBlur stdDeviation="2.5"/>
+    </filter>
+  </defs>
+  ${exodiaEyes('#fffbe6', 'exoEyeGlowHot')}
+</svg>
+<div class="exo-glow"></div>`;
