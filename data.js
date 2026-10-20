@@ -183,18 +183,18 @@ const CHARACTERS = [
     theme: 'Harpie Hunting Ground',
     skills: [
       { name: '(Harpies) Harpie Swarm', text: 'Draw a card for each "Harpie" (or WIND-monster) on the field.', maxUses: 1 },
-      { name: '(Amazons) Amazon\'s Pride', text: 'Force two monsters to battle (even in your Main Phase).', maxUses: 1 },
-      { name: '(Scouting) Perfume Tactics', text: 'Look at the top two cards of the opponent\'s deck and return them in any order.', maxUses: 1 }
+      { name: '(Amazons) Amazon\'s Pride', text: 'Force two monsters to battle (even in your Main Phase).', maxUses: 2 },
+      { name: '(Scouting) Perfume Tactics', text: 'Once per turn: Look at the top two cards of your deck and return them in any order.', maxUses: 6 }
     ],
     comebacks: [
-      { name: '(Harpies) Feather Storm', text: 'Requirement: You receive a direct attack. Cancel the attack and return all of the opponent\'s Spells/Traps to their hand.' },
+      { name: '(Harpies) Feather Storm', text: 'Requirement: You receive a direct attack. Cancel the attack and destroy all of the Spells/Traps on the opponents side of the field' },
       { name: '(Amazons) Ambush', text: 'Requirement: You are under 1500 LP. Special Summon 2 WIND/EARTH monsters from your hand.' },
       { name: '(Scouting) Mirror Wall', text: 'Requirement: One of your monsters is attacked. Permanently halve the ATK of all the opponent\'s current monsters on the field.' }
     ],
     quests: [
       { name: '(Harpies) Air Supremacy', text: 'Quest: Have 3 WIND monsters on the field. Reward: WIND monsters can attack the opponent directly for half damage.' },
-      { name: '(Amazons) Tribe\'s Honor', text: 'Quest: Your monsters survive 3 battles. Reward: All battle damage you take from battles involving your monsters is inflicted to the opponent instead.' },
-      { name: '(Scouting) Foresight', text: 'Quest: Guess the top card of your deck correctly during your Draw Phase. Reward: You may look at the opponent\'s hand once per turn.' }
+      { name: '(Amazons) Tribe\'s Honor', text: 'Quest: Thrice a monster you control has survived a battle. Reward: All battle damage you take from battles involving your monsters is inflicted to the opponent instead.' },
+      { name: '(Scouting) Perfect Setup', text: 'Quest: Use the "Perfume Tactics" thrice. Reward: "Perfume Tactics" looks at the top 3 cards instead of 2.' },
     ]
   },
   {
@@ -203,18 +203,18 @@ const CHARACTERS = [
     theme: 'Ruler of the Deep',
     skills: [
       { name: '(The Sea) The Tide', text: 'Add "Umi" (or a variant) from your deck to your hand.', maxUses: 1 },
-      { name: '(Fish) Fisherman\'s Patience', text: 'Make a WATER-monster immune to battle destruction for one turn.', maxUses: 1 },
-      { name: '(Assassination) Stealth Attack', text: 'A WATER-monster can attack directly this turn, but the battle damage is halved.', maxUses: 1 }
+      { name: '(Fish) Fisherman\'s Patience', text: 'Make a WATER-monster immune to battle destruction for one turn.', maxUses: 2 },
+      { name: '(Assassination) Stealth Attack', text: 'A WATER-monster can attack directly this turn, but the battle damage is halved.', maxUses: 3 }
     ],
     comebacks: [
-      { name: '(The Sea) Tsunami', text: 'Requirement: You are under 2000 LP and Umi is on the field. Destroy all monsters on the field (except WATER-monsters).' },
+      { name: '(The Sea) Tsunami', text: 'Requirement: You are under 2000 LP and Umi is on the field. Destroy all monsters on the field except WATER monsters.' },
       { name: '(Fish) The Legendary Fisherman', text: 'Requirement: The opponent attacks for game. Special Summon your strongest WATER-monster from your deck.' },
       { name: '(Assassination) Whirlpool', text: 'Requirement: Your field is empty. Return up to 2 of the opponent\'s monsters to their hand.' }
     ],
     quests: [
       { name: '(The Sea) Ruler of the Seas', text: 'Quest: Have Umi active on the field for 3 consecutive turns. Reward: Your WATER-monsters gain +500 ATK and DEF.' },
       { name: '(Fish) The Big Catch', text: 'Quest: Destroy a monster with 2500+ ATK in battle. Reward: Every time you destroy a monster, draw a card.' },
-      { name: '(Assassination) Terror of the Deep', text: 'Quest: Perform 2 successful direct attacks. Reward: The opponent must discard a card every time they take battle damage.' }
+      { name: '(Assassination) Shadows in the Water', text: 'Quest: Your opponent attacks a face-down WATER monster 3 times. Reward: Reward: Once per turn, take all WATER monsters you control in Attack Position, shuffle them and Set them face-down in Attack Position. Then do the same with your WATER monsters in Defense Position. Your opponent can\'t look at them, and they\'re flipped face-up when they attack or are attacked.' },
     ]
   },
   {
