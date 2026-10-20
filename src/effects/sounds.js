@@ -3,6 +3,7 @@
 // - Dark:           synth zaps, glitches and neon sweeps.
 // - Light:          soft marimba notes, bubbly pops and chimes.
 // - Power of Chaos: card flips, golden bells, harp, brass fanfares and booms.
+// The logo / Exodia easter egg shares one sinister set across all themes.
 // effects.js calls playSound(event) for the same events that drive the
 // animations. Sound is on by default and can be muted (saved on the device).
 const SOUND_STORAGE_KEY = 'ygo_sound';
@@ -119,8 +120,9 @@ function makeFilter(t, type, freq, to, dur, q = 1) {
   return filter;
 }
 
-// filter: cutoff in Hz, or [from, to] for a lowpass sweep.
-function tone({ t, freq, to, slide, dur = 0.2, type = 'sine', gain = 0.2, attack = 0.005, filter, q = 1, detune = 0 }) {
+// filter: cutoff in Hz, or [from, to] for a lowpass sweep. out: node to play
+// into (defaults to the master output).
+function tone({ t, freq, to, slide, dur = 0.2, type = 'sine', gain = 0.2, attack = 0.005, filter, q = 1, detune = 0, out = sfxOut }) {
   const osc = sfxCtx.createOscillator();
   const amp = sfxCtx.createGain();
   osc.type = type;
@@ -134,7 +136,7 @@ function tone({ t, freq, to, slide, dur = 0.2, type = 'sine', gain = 0.2, attack
     const [from, end] = Array.isArray(filter) ? filter : [filter, null];
     node = node.connect(makeFilter(t, 'lowpass', from, end, dur, q));
   }
-  node.connect(amp).connect(sfxOut);
+  node.connect(amp).connect(out);
   osc.start(t);
   osc.stop(t + dur + 0.05);
 }
@@ -148,13 +150,13 @@ function getNoiseBuffer() {
   return sfxNoiseBuffer;
 }
 
-function noise({ t, dur = 0.2, gain = 0.2, type = 'bandpass', freq = 1000, to, q = 1, attack = 0.005 }) {
+function noise({ t, dur = 0.2, gain = 0.2, type = 'bandpass', freq = 1000, to, q = 1, attack = 0.005, out = sfxOut }) {
   const src = sfxCtx.createBufferSource();
   const amp = sfxCtx.createGain();
   src.buffer = getNoiseBuffer();
   src.loop = true;
   envelope(amp.gain, t, gain, attack, dur);
-  src.connect(makeFilter(t, type, freq, to, dur, q)).connect(amp).connect(sfxOut);
+  src.connect(makeFilter(t, type, freq, to, dur, q)).connect(amp).connect(out);
   src.start(t, Math.random());
   src.stop(t + dur + 0.05);
 }
@@ -167,9 +169,9 @@ function chord({ t, notes, dur = 1, gain = 0.06, type = 'sawtooth', attack = 0.0
 }
 
 // Struck-metal bell: slightly inharmonic partials with longer low tails.
-function bell({ t, freq, dur = 1.4, gain = 0.1 }) {
+function bell({ t, freq, dur = 1.4, gain = 0.1, out }) {
   [[1, 1], [2.01, 0.5], [3.02, 0.28], [4.17, 0.16], [5.43, 0.1]].forEach(([ratio, level], i) => {
-    tone({ t, freq: freq * ratio, dur: dur / (1 + i * 0.7), gain: gain * level, attack: 0.002 });
+    tone({ t, freq: freq * ratio, dur: dur / (1 + i * 0.7), gain: gain * level, attack: 0.002, out });
   });
 }
 
@@ -197,9 +199,9 @@ function cardFlip(t, gain = 0.14, freq = 2600) {
   noise({ t: t + 0.04, dur: 0.05, gain: gain * 0.7, freq: freq * 0.8, to: freq * 0.35, q: 0.9 });
 }
 
-function boom(t, strength = 1) {
-  tone({ t, freq: 95, to: 32, dur: 0.9, gain: 0.4 * strength, attack: 0.003 });
-  noise({ t, dur: 0.6, gain: 0.22 * strength, type: 'lowpass', freq: 600, to: 70, attack: 0.002 });
+function boom(t, strength = 1, out) {
+  tone({ t, freq: 95, to: 32, dur: 0.9, gain: 0.4 * strength, attack: 0.003, out });
+  noise({ t, dur: 0.6, gain: 0.22 * strength, type: 'lowpass', freq: 600, to: 70, attack: 0.002, out });
 }
 
 function brass({ t, notes, dur = 0.5, gain = 0.07 }) {
@@ -217,6 +219,161 @@ const POC_HARP_UP = [62, 65, 67, 69, 72, 74, 77, 79, 81, 84];
 
 // Logo easter egg: each tap in a row climbs a semitone to build tension.
 const logoNote = (base, combo) => base + Math.min(combo - 1, 24);
+
+// ---------------------------------------------------------------------------
+// Exodia easter egg (shared by all themes): sinister, cavernous and long.
+// ---------------------------------------------------------------------------
+
+let sfxDarkSpace = null;
+
+// A long cavernous reverb plus a dark echo that repeats and fades out over
+// ~5s, both mixed into the master output.
+function getDarkSpace() {
+  if (sfxDarkSpace) return sfxDarkSpace;
+  const rate = sfxCtx.sampleRate;
+  const length = rate * 5;
+  const impulse = sfxCtx.createBuffer(2, length, rate);
+  for (let ch = 0; ch < 2; ch++) {
+    const data = impulse.getChannelData(ch);
+    for (let i = 0; i < length; i++) data[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / length, 3);
+  }
+  const reverb = sfxCtx.createGain();
+  const convolver = sfxCtx.createConvolver();
+  convolver.buffer = impulse;
+  reverb.connect(convolver).connect(sfxOut);
+
+  const echo = sfxCtx.createGain();
+  const delay = sfxCtx.createDelay(2);
+  delay.delayTime.value = 0.42;
+  const feedback = sfxCtx.createGain();
+  feedback.gain.value = 0.58;
+  const damp = sfxCtx.createBiquadFilter();
+  damp.type = 'lowpass';
+  damp.frequency.value = 1400;
+  echo.connect(delay).connect(damp).connect(feedback).connect(delay);
+  damp.connect(sfxOut);
+  damp.connect(reverb);
+
+  sfxDarkSpace = { reverb, echo };
+  return sfxDarkSpace;
+}
+
+// An output that plays dry plus the given amounts of reverb and echo.
+function darkBus({ reverb = 0.5, echo = 0 } = {}) {
+  const space = getDarkSpace();
+  const bus = sfxCtx.createGain();
+  bus.connect(sfxOut);
+  [[reverb, space.reverb], [echo, space.echo]].forEach(([amount, dest]) => {
+    if (!amount) return;
+    const send = sfxCtx.createGain();
+    send.gain.value = amount;
+    bus.connect(send).connect(dest);
+  });
+  return bus;
+}
+
+// A laser beam charging: detuned sawtooths sweeping up through an opening
+// resonant filter, with a wobble that speeds up, swelling until it's cut off
+// at t + dur.
+function laserCharge({ t, dur, from = 70, to = 2600, gain = 0.08, out = sfxOut }) {
+  const end = t + dur;
+  const amp = sfxCtx.createGain();
+  amp.gain.setValueAtTime(0.0001, t);
+  amp.gain.exponentialRampToValueAtTime(gain, end);
+  amp.gain.linearRampToValueAtTime(0, end + 0.04);
+
+  const wobble = sfxCtx.createGain();
+  const lfo = sfxCtx.createOscillator();
+  const depth = sfxCtx.createGain();
+  depth.gain.value = 0.5;
+  lfo.frequency.setValueAtTime(3, t);
+  lfo.frequency.exponentialRampToValueAtTime(48, end);
+  lfo.connect(depth).connect(wobble.gain);
+
+  const filter = makeFilter(t, 'lowpass', 250, 9000, dur, 5);
+  [0, 14, -11].forEach(detune => {
+    const osc = sfxCtx.createOscillator();
+    osc.type = 'sawtooth';
+    osc.detune.value = detune;
+    osc.frequency.setValueAtTime(from, t);
+    osc.frequency.exponentialRampToValueAtTime(to, end);
+    osc.connect(filter);
+    osc.start(t);
+    osc.stop(end + 0.1);
+  });
+  filter.connect(wobble).connect(amp).connect(out);
+  lfo.start(t);
+  lfo.stop(end + 0.1);
+}
+
+// Dissonant low notes (tritones and minor seconds) through the dark space.
+function darkCluster({ t, notes, dur, gain, attack = 0.3, filter = [300, 1200], out }) {
+  notes.forEach((n, i) => {
+    tone({ t, freq: midi(n), dur, type: 'sawtooth', gain, attack, filter, detune: -7 + i * 5, out });
+    tone({ t, freq: midi(n), dur, type: 'sawtooth', gain: gain * 0.6, attack, filter, detune: 9 - i * 4, out });
+  });
+}
+
+const heartbeat = (t, gain = 0.3) => {
+  tone({ t, freq: 62, to: 36, dur: 0.22, gain, attack: 0.004 });
+  tone({ t: t + 0.16, freq: 55, to: 32, dur: 0.2, gain: gain * 0.6, attack: 0.004 });
+};
+
+const EXODIA_SOUNDS = {
+  // A heartbeat and a low tritone that creeps up a semitone per tap.
+  'logo-tap': (t, e) => {
+    const n = logoNote(36, e.combo);
+    const out = darkBus({ reverb: 0.4 });
+    heartbeat(t, 0.22);
+    tone({ t, freq: midi(n), dur: 0.6, type: 'sawtooth', gain: 0.045, filter: [900, 180], out });
+    tone({ t, freq: midi(n + 6), dur: 0.6, type: 'sawtooth', gain: 0.025, filter: [700, 180], detune: 8, out });
+  },
+  // A piece of Exodia: a deep gong, a dissonant swell and a whisper.
+  'logo-piece': (t, e) => {
+    const root = 38 + e.piece * 2;
+    const out = darkBus({ reverb: 0.8 });
+    bell({ t, freq: midi(root - 12), dur: 2.8, gain: 0.2, out });
+    darkCluster({ t: t + 0.05, notes: [root + 12, root + 13, root + 18], dur: 1.8, gain: 0.025, attack: 0.25, filter: [300, 1500], out });
+    noise({ t, dur: 1.3, gain: 0.05, freq: 900, to: 300, q: 5, attack: 0.3, out });
+  },
+  // The pieces scatter: a detuned groan sinking into the dark.
+  'logo-scatter': t => {
+    const out = darkBus({ reverb: 0.6 });
+    tone({ t, freq: 220, to: 35, dur: 1.1, type: 'sawtooth', gain: 0.06, filter: [1500, 150], out });
+    tone({ t, freq: 233, to: 37, dur: 1.1, type: 'sawtooth', gain: 0.04, filter: [1500, 150], detune: 12, out });
+  },
+  // Timeline matches effects.css: darkness 0s, he rises 0.9s, the laser
+  // charges from 1.6s (heart pounding faster), the blast hits at 3.8s and its
+  // echo rolls on through the whiteout until the world returns (~9s).
+  'logo-obliterate': t => {
+    const cave = darkBus({ reverb: 0.7 });
+    const blastBus = darkBus({ reverb: 0.9, echo: 0.8 });
+
+    darkCluster({ t, notes: [28, 29], dur: 4, gain: 0.06, attack: 1.4, filter: [120, 400], out: cave });
+    noise({ t, dur: 1.1, gain: 0.1, type: 'lowpass', freq: 200, to: 1400, attack: 0.9, out: cave });
+
+    const rise = t + 0.9;
+    boom(rise, 0.9, cave);
+    bell({ t: rise, freq: 41, dur: 4, gain: 0.25, out: cave });
+    darkCluster({ t: rise, notes: [40, 46, 47], dur: 3, gain: 0.03, attack: 1, filter: [150, 900], out: cave });
+
+    const charge = t + 1.6;
+    const chargeDur = 2.2;
+    laserCharge({ t: charge, dur: chargeDur, gain: 0.09, out: darkBus({ reverb: 0.3 }) });
+    tone({ t: charge, freq: 500, to: 7000, dur: chargeDur, gain: 0.025, attack: chargeDur - 0.05 });
+    noise({ t: charge, dur: chargeDur, gain: 0.12, freq: 300, to: 9000, q: 6, attack: chargeDur - 0.1 });
+    [0, 0.6, 1.05, 1.4, 1.65, 1.85, 2.0].forEach(at => heartbeat(charge + at, 0.32));
+
+    const blast = t + 3.8;
+    boom(blast, 1.6, blastBus);
+    tone({ t: blast, freq: 120, to: 22, slide: 3, dur: 4, gain: 0.45, attack: 0.003 });
+    noise({ t: blast, dur: 0.3, gain: 0.3, type: 'highpass', freq: 2500, to: 800, attack: 0.001, out: blastBus });
+    noise({ t: blast, dur: 3.5, gain: 0.35, type: 'lowpass', freq: 8000, to: 120, attack: 0.01, out: blastBus });
+    tone({ t: blast, freq: 1800, to: 160, slide: 2.5, dur: 2.6, type: 'sawtooth', gain: 0.06, filter: [7000, 400], out: blastBus });
+    darkCluster({ t: blast + 1.2, notes: [28, 34, 35], dur: 4, gain: 0.035, attack: 1.2, filter: [400, 150], out: cave });
+    bell({ t: t + 6.6, freq: 36.7, dur: 4, gain: 0.22, out: cave });
+  }
+};
 
 // ---------------------------------------------------------------------------
 // Theme kits
@@ -301,35 +458,7 @@ const SOUND_KITS = {
       tone({ t, freq: 440, to: 50, dur: 1.5, type: 'sawtooth', gain: 0.08, filter: [3000, 150] });
       chord({ t: t + 0.2, notes: [45, 48, 52], dur: 2, gain: 0.04, filter: [1200, 200] });
     },
-    'logo-tap': (t, e) => {
-      const f = midi(logoNote(60, e.combo));
-      tone({ t, freq: f, dur: 0.12, type: 'square', gain: 0.04, filter: 4000 });
-      tone({ t, freq: f * 2, to: f * 1.5, dur: 0.08, type: 'sawtooth', gain: 0.02, filter: 5000 });
-    },
-    'logo-piece': (t, e) => {
-      const root = 60 + e.piece * 2;
-      arpeggio(t, [root, root + 4, root + 7, root + 12], 0.05, (at, n) => tone({ t: at, freq: midi(n), dur: 0.16, type: 'square', gain: 0.035, filter: 4000 }));
-      chord({ t: t + 0.2, notes: [root, root + 7, root + 12], dur: 0.6, gain: 0.04, filter: [3000, 800] });
-    },
-    'logo-scatter': t => tone({ t, freq: 800, to: 120, dur: 0.4, type: 'sawtooth', gain: 0.05, filter: [3000, 300] }),
-    // Exodia (timeline matches effects.css): darkness 0s, he rises 0.9s,
-    // charges 2.3s, blasts 3.8s, the world returns 6.6s.
-    'logo-obliterate': t => {
-      tone({ t, freq: 220, to: 55, dur: 1, type: 'sawtooth', gain: 0.06, filter: [2000, 200] });
-      noise({ t, dur: 0.9, gain: 0.08, type: 'lowpass', freq: 3000, to: 150 });
-      const rise = t + 0.9;
-      boom(rise, 0.7);
-      chord({ t: rise, notes: [33, 40, 45, 48], dur: 3, gain: 0.05, attack: 0.8, filter: [200, 1800] });
-      const charge = t + 2.3;
-      tone({ t: charge, freq: 90, to: 1800, slide: 1.5, dur: 1.55, type: 'sawtooth', gain: 0.07, filter: [400, 6000] });
-      noise({ t: charge, dur: 1.5, gain: 0.1, freq: 300, to: 8000, q: 2, attack: 1.2 });
-      const blast = t + 3.8;
-      boom(blast, 1.4);
-      noise({ t: blast, dur: 2.8, gain: 0.3, type: 'lowpass', freq: 6000, to: 200, attack: 0.02 });
-      tone({ t: blast, freq: 2400, to: 60, dur: 2, type: 'sawtooth', gain: 0.07, filter: [6000, 200] });
-      chord({ t: blast, notes: [57, 64, 69, 73, 76], dur: 2.8, gain: 0.04, filter: [5000, 600] });
-      arpeggio(t + 6.6, [69, 73, 76, 81], 0.09, (at, n) => tone({ t: at, freq: midi(n), dur: 0.5, gain: 0.04 }));
-    }
+    ...EXODIA_SOUNDS
   },
 
   light: {
@@ -378,30 +507,7 @@ const SOUND_KITS = {
       arpeggio(t + 0.3, [84, 79, 76, 72], 0.06, (at, n) => marimba({ t: at, note: n, gain: 0.09 }));
     },
     defeat: t => arpeggio(t, [67, 66, 65, 64], 0.32, (at, n) => tone({ t: at, freq: midi(n), dur: 0.4, type: 'triangle', gain: 0.1, attack: 0.03 })),
-    'logo-tap': (t, e) => {
-      marimba({ t, note: logoNote(67, e.combo), gain: 0.13, dur: 0.35 });
-      bubble({ t, from: 500, to: 1100, dur: 0.05, gain: 0.05 });
-    },
-    'logo-piece': (t, e) => {
-      const root = 72 + e.piece * 2;
-      arpeggio(t, [root, root + 4, root + 7, root + 12], 0.06, (at, n) => marimba({ t: at, note: n, gain: 0.12 }));
-      bell({ t: t + 0.25, freq: midi(root + 24), dur: 0.8, gain: 0.03 });
-    },
-    'logo-scatter': t => arpeggio(t, [79, 74, 70, 67], 0.06, (at, n) => marimba({ t: at, note: n, gain: 0.08 })),
-    'logo-obliterate': t => {
-      arpeggio(t, [72, 67, 63, 60, 55], 0.16, (at, n) => marimba({ t: at, note: n, gain: 0.1, dur: 0.6 }));
-      const rise = t + 0.9;
-      marimba({ t: rise, note: 36, gain: 0.35, dur: 1.4 });
-      [48, 55, 60, 63].forEach((n, i) => bell({ t: rise + i * 0.25, freq: midi(n), dur: 2, gain: 0.06 }));
-      const charge = t + 2.3;
-      for (let i = 0; i < 24; i++) bubble({ t: charge + i * 0.0625, from: 250 + i * 50, to: 600 + i * 110, dur: 0.06, gain: 0.07 });
-      const blast = t + 3.8;
-      boom(blast, 0.9);
-      noise({ t: blast, dur: 2.6, gain: 0.12, type: 'highpass', freq: 1500, to: 8000, attack: 0.05 });
-      arpeggio(blast, [72, 76, 79, 84, 88, 91, 96, 100], 0.045, (at, n) => marimba({ t: at, note: n, gain: 0.12 }));
-      [84, 88, 91, 96].forEach(n => bell({ t: blast + 0.4, freq: midi(n), dur: 2.4, gain: 0.04 }));
-      arpeggio(t + 6.6, [79, 84, 88], 0.08, (at, n) => marimba({ t: at, note: n, gain: 0.08 }));
-    }
+    ...EXODIA_SOUNDS
   },
 
   poc: {
@@ -503,37 +609,6 @@ const SOUND_KITS = {
       boom(t, 0.8);
       brass({ t: t + 0.4, notes: [50, 53, 57], dur: 1.8, gain: 0.03 });
     },
-    'logo-tap': (t, e) => {
-      pluck({ t, note: logoNote(62, e.combo), gain: 0.09 });
-      cardFlip(t, 0.05, 3200);
-    },
-    'logo-piece': (t, e) => {
-      cardFlip(t);
-      bell({ t, freq: midi(74 + e.piece * 2), dur: 1.2, gain: 0.06 });
-      brass({ t: t + 0.08, notes: [50 + e.piece * 2, 57 + e.piece * 2], dur: 0.45, gain: 0.03 });
-    },
-    'logo-scatter': t => {
-      for (let i = 0; i < 4; i++) cardFlip(t + i * 0.07, 0.07, 2200 - i * 250);
-    },
-    // Gong and rumble as Exodia rises, harp charge, double impact and fanfare.
-    'logo-obliterate': t => {
-      noise({ t, dur: 1, gain: 0.12, freq: 2000, to: 200, q: 0.8 });
-      tone({ t, freq: 150, to: 45, dur: 1, gain: 0.15 });
-      const rise = t + 0.9;
-      boom(rise, 0.8);
-      bell({ t: rise, freq: 65, dur: 3, gain: 0.25 });
-      noise({ t: rise, dur: 2.9, gain: 0.25, type: 'lowpass', freq: 160, to: 320, attack: 1 });
-      brass({ t: rise + 0.3, notes: [38, 45, 50], dur: 1.6, gain: 0.04 });
-      const charge = t + 2.3;
-      noise({ t: charge, dur: 1.5, gain: 0.14, freq: 400, to: 4000, q: 3, attack: 1.2 });
-      arpeggio(charge, POC_HARP_UP, 0.13, (at, n) => pluck({ t: at, note: n, gain: 0.06 }));
-      const blast = t + 3.8;
-      boom(blast, 1.4);
-      boom(blast + 0.3, 0.8);
-      noise({ t: blast, dur: 2.8, gain: 0.28, type: 'lowpass', freq: 5000, to: 200 });
-      brass({ t: blast + 0.1, notes: [50, 57, 62, 66, 69], dur: 2.2, gain: 0.045 });
-      bell({ t: blast, freq: 110, dur: 3, gain: 0.2 });
-      arpeggio(t + 6.6, POC_HARP_UP.slice(4), 0.05, (at, n) => pluck({ t: at, note: n, gain: 0.06 }));
-    }
+    ...EXODIA_SOUNDS
   }
 };
