@@ -5,8 +5,8 @@
 // - Power of Chaos: card flips, golden bells, harp, brass fanfares and booms.
 // The logo / Exodia easter egg shares one sinister set across all themes, the
 // 30000 LP "Full Heal!" easter egg one joyful fanfare, the rare Shadow Realm
-// defeat one ghostly howl, and the 25 LP "Unstoppable" easter egg one pounding
-// heartbeat.
+// defeat one ghostly howl, the 25 LP "Unstoppable" easter egg one pounding
+// heartbeat, and "Believe in the heart of the cards!" one heavenly draw.
 // effects.js calls playSound(event) for the same events that drive the
 // animations. Sound is on by default and can be muted (saved on the device).
 const SOUND_STORAGE_KEY = 'ygo_sound';
@@ -516,6 +516,38 @@ const LAST_STAND_SOUNDS = {
 };
 
 // ---------------------------------------------------------------------------
+// "Heart of the cards" easter egg (shared by all themes): heavenly build-up,
+// a drumroll, and a triumphant "ta-da!" for a deeply unimpressive card.
+// ---------------------------------------------------------------------------
+
+const HEART_SOUNDS = {
+  // Timeline matches effects.css: a choir swells (0s), a chime per quote word
+  // (0.3s + 0.28s each), the card whooshes up (1s), a drumroll builds
+  // (1.9-2.6s), and the card flips with a "ta-da!" at 2.6s.
+  'heart-of-the-cards': t => {
+    const hall = darkBus({ reverb: 0.6 });
+
+    healPad({ t, notes: [55, 62, 67, 71, 74], dur: 2.6, gain: 0.025, attack: 0.8, out: hall });
+    [67, 69, 71, 72, 74, 76, 79].forEach((n, i) => bell({ t: t + 0.3 + i * 0.28, freq: midi(n + 12), dur: 0.8, gain: 0.04, out: hall }));
+
+    noise({ t: t + 1, dur: 0.7, gain: 0.07, freq: 400, to: 5000, q: 1.5, attack: 0.5, out: hall });
+    tone({ t: t + 1, freq: 200, to: 800, dur: 0.7, type: 'triangle', gain: 0.03, attack: 0.5, out: hall });
+
+    for (let i = 0; i < 22; i++) {
+      const at = t + 1.9 + i * 0.032;
+      noise({ t: at, dur: 0.04, gain: 0.03 + i * 0.004, type: 'bandpass', freq: 1800, q: 1.2, attack: 0.002 });
+    }
+
+    const flip = t + 2.6;
+    cardFlip(flip, 0.2);
+    noise({ t: flip, dur: 1.6, gain: 0.1, type: 'highpass', freq: 6000, to: 3500, attack: 0.005, out: hall });
+    brass({ t: flip + 0.05, notes: [60, 64, 67, 72], dur: 0.18, gain: 0.05 });
+    brass({ t: flip + 0.3, notes: [65, 69, 72, 77], dur: 1.1, gain: 0.05 });
+    healSparkles(flip + 0.2, 1.4, 8, hall);
+  }
+};
+
+// ---------------------------------------------------------------------------
 // Theme kits
 // ---------------------------------------------------------------------------
 
@@ -601,7 +633,8 @@ const SOUND_KITS = {
     ...EXODIA_SOUNDS,
     ...HEAL_SOUNDS,
     ...SHADOW_SOUNDS,
-    ...LAST_STAND_SOUNDS
+    ...LAST_STAND_SOUNDS,
+    ...HEART_SOUNDS
   },
 
   light: {
@@ -653,7 +686,8 @@ const SOUND_KITS = {
     ...EXODIA_SOUNDS,
     ...HEAL_SOUNDS,
     ...SHADOW_SOUNDS,
-    ...LAST_STAND_SOUNDS
+    ...LAST_STAND_SOUNDS,
+    ...HEART_SOUNDS
   },
 
   poc: {
@@ -758,6 +792,7 @@ const SOUND_KITS = {
     ...EXODIA_SOUNDS,
     ...HEAL_SOUNDS,
     ...SHADOW_SOUNDS,
-    ...LAST_STAND_SOUNDS
+    ...LAST_STAND_SOUNDS,
+    ...HEART_SOUNDS
   }
 };

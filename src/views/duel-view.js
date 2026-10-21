@@ -9,7 +9,7 @@ function renderDuelHeader(char) {
         <button onclick="editLoadout()" class="text-sm font-medium text-slate-300 border border-slate-700 rounded-lg px-3 py-1">← Edit</button>
         ${renderSoundIconButton()}
       </div>
-      <div class="text-center">
+      <div class="heart-press text-center" title="Hold to believe..." onpointerdown="startHeartPress(this)" onpointerup="cancelHeartPress(this)" onpointerleave="cancelHeartPress(this)" onpointercancel="cancelHeartPress(this)" oncontextmenu="return false">
         <div class="text-base font-bold text-white leading-tight">${char.name}</div>
         <div class="text-xs text-amber-400 leading-tight">${char.theme}</div>
       </div>

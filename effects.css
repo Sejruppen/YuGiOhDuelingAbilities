@@ -1534,6 +1534,191 @@ html[data-theme] .logo-egg:active { transform: none; filter: var(--logo-glow); }
 }
 
 /* =========================================================================
+   HEART OF THE CARDS EASTER EGG (src/effects/heart-of-the-cards-easter-egg.js)
+   All themes. Long-pressing the character name charges a golden glow (0.9s).
+   Then: dim + golden rays (0-0.5s), the quote pops in word by word (0.3s +
+   0.28s each), a card rises (1-1.6s), trembles to a drumroll (1.9-2.6s),
+   flips with a flash to reveal the draw (2.6-3s), holds, and fades (to 6s).
+   ========================================================================= */
+
+.heart-press {
+  padding: 0.125rem 0.5rem;
+  border-radius: 0.5rem;
+  cursor: pointer;
+  user-select: none;
+  -webkit-user-select: none;
+  -webkit-touch-callout: none;
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+}
+.heart-press.heart-charging { animation: heart-charge 0.9s ease-in both; }
+@keyframes heart-charge {
+  from { transform: scale(1); filter: drop-shadow(0 0 0 rgb(251 191 36 / 0)); }
+  to { transform: scale(1.1); filter: drop-shadow(0 0 6px rgb(253 230 138)) drop-shadow(0 0 16px rgb(245 158 11)) brightness(1.4); }
+}
+
+.fx-heart { position: fixed; inset: 0; z-index: 5; overflow: hidden; pointer-events: auto; }
+
+.heart-dim {
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(circle at 50% 58%, rgb(69 26 3 / 0.55), rgb(2 6 23 / 0.88) 70%);
+  animation: heart-fade 6s linear both;
+}
+@keyframes heart-fade {
+  0% { opacity: 0; }
+  8%, 86.7% { opacity: 1; }
+  100% { opacity: 0; }
+}
+
+.heart-rays {
+  position: absolute;
+  left: 50%;
+  top: 58%;
+  width: 160vmax;
+  height: 160vmax;
+  margin: -80vmax 0 0 -80vmax;
+  background: repeating-conic-gradient(from 0deg, rgb(253 230 138 / 0.35) 0deg 6deg, rgb(253 230 138 / 0) 6deg 18deg);
+  -webkit-mask: radial-gradient(circle, #000 0, rgb(0 0 0 / 0.6) 20%, rgb(0 0 0 / 0) 45%);
+  mask: radial-gradient(circle, #000 0, rgb(0 0 0 / 0.6) 20%, rgb(0 0 0 / 0) 45%);
+  animation: heart-fade 6s linear both, fx-spin 14s linear infinite;
+}
+
+.heart-quote {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 11%;
+  padding: 0 1rem;
+  text-align: center;
+  font-family: 'Cinzel Decorative', 'Cinzel', serif;
+  font-weight: 900;
+  font-size: clamp(1.6rem, 8.5vw, 3rem);
+  line-height: 1.2;
+  color: #fef3c7;
+  text-shadow: 0 0 10px rgb(251 191 36 / 0.9), 0 0 26px rgb(217 119 6 / 0.8), 0 3px 0 #78350f;
+  animation: heart-fade 6s linear both;
+}
+.heart-word {
+  display: inline-block;
+  opacity: 0;
+  animation: heart-word 0.45s cubic-bezier(0.3, 1.7, 0.5, 1) calc(0.3s + var(--i) * 0.28s) both;
+}
+@keyframes heart-word {
+  from { opacity: 0; transform: translateY(14px) scale(0.4); }
+  to { opacity: 1; transform: none; }
+}
+
+.heart-card-wrap {
+  position: absolute;
+  left: 50%;
+  top: 58%;
+  width: 9.5rem;
+  height: 13.75rem;
+  margin: -6.875rem 0 0 -4.75rem;
+  perspective: 900px;
+  animation: heart-fade 6s linear both;
+}
+.heart-card {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  transform-style: preserve-3d;
+  will-change: transform;
+  animation: heart-card 6s linear both;
+}
+@keyframes heart-card {
+  0%, 16.7% { transform: translateY(110vh) rotate(0deg) rotateY(0deg) scale(0.8); }
+  25% { transform: translateY(-12px) rotate(0deg) rotateY(0deg) scale(1.05); animation-timing-function: ease-out; }
+  28% { transform: translateY(0) rotate(0deg) rotateY(0deg) scale(1); }
+  31.7% { transform: translateY(0) rotate(0deg) rotateY(0deg) scale(1); }
+  33.5% { transform: translateY(0) rotate(-2deg) rotateY(0deg) scale(1.01); }
+  35.3% { transform: translateY(0) rotate(2deg) rotateY(0deg) scale(1.02); }
+  37.1% { transform: translateY(0) rotate(-3deg) rotateY(0deg) scale(1.03); }
+  38.9% { transform: translateY(0) rotate(3deg) rotateY(0deg) scale(1.04); }
+  40.7% { transform: translateY(0) rotate(-4deg) rotateY(0deg) scale(1.05); }
+  43.3% { transform: translateY(0) rotate(0deg) rotateY(0deg) scale(1.08); animation-timing-function: cubic-bezier(0.3, 0, 0.3, 1); }
+  50% { transform: translateY(0) rotate(0deg) rotateY(180deg) scale(1.15); }
+  53% { transform: translateY(0) rotate(0deg) rotateY(180deg) scale(1.05); }
+  100% { transform: translateY(0) rotate(0deg) rotateY(180deg) scale(1.08); }
+}
+.heart-card-back,
+.heart-card-front {
+  position: absolute;
+  inset: 0;
+  border-radius: 0.5rem;
+  -webkit-backface-visibility: hidden;
+  backface-visibility: hidden;
+  box-shadow: 0 0 24px 4px rgb(251 191 36 / 0.7), 0 12px 30px rgb(0 0 0 / 0.5);
+}
+.heart-card-back {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: radial-gradient(ellipse at center, #7c2d12, #431407 70%);
+  border: 6px solid #78350f;
+}
+.heart-card-back span {
+  width: 65%;
+  height: 72%;
+  border-radius: 50%;
+  background: repeating-radial-gradient(ellipse, #1c0a03 0 6px, #9a3412 6px 9px, #fbbf24 9px 10px);
+  box-shadow: 0 0 14px rgb(251 191 36 / 0.6);
+}
+.heart-card-front {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  padding: 0.45rem;
+  transform: rotateY(180deg);
+  background: linear-gradient(160deg, #f59e0b, #b45309);
+  border: 4px solid #451a03;
+}
+.heart-card-name {
+  padding: 0.15rem 0.3rem;
+  font-family: 'Cinzel', serif;
+  font-weight: 700;
+  font-size: 0.62rem;
+  line-height: 1.15;
+  color: #1c1917;
+  background: rgb(254 243 199 / 0.85);
+  border: 1px solid #78350f;
+  border-radius: 0.2rem;
+}
+.heart-card-art {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 3rem;
+  background: radial-gradient(circle, #fef9c3, #a16207);
+  border: 2px solid #451a03;
+}
+.heart-card-text {
+  min-height: 2.6rem;
+  padding: 0.2rem 0.3rem;
+  font-size: 0.58rem;
+  font-style: italic;
+  line-height: 1.25;
+  color: #1c1917;
+  background: rgb(254 243 199 / 0.9);
+  border: 1px solid #78350f;
+}
+
+.heart-flash {
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(circle at 50% 58%, #fffbeb 0, rgb(253 230 138 / 0.8) 25%, rgb(253 230 138 / 0) 60%);
+  opacity: 0;
+  animation: heart-flash 6s linear both;
+}
+@keyframes heart-flash {
+  0%, 44% { opacity: 0; }
+  46% { opacity: 1; }
+  56%, 100% { opacity: 0; }
+}
+
+/* =========================================================================
    THEME SWITCH (View Transitions API)
    ========================================================================= */
 
