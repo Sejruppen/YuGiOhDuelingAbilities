@@ -226,21 +226,24 @@ const CHARACTERS = [
       { name: '(Zombies) Return of the Undead', text: 'Special Summon a Zombie/Fiend-monster from your Graveyard with its effects negated.', maxUses: 2 },
       { name: '(Destruction) Dark Temptation', text: 'Once per turn: Send the top 3 cards from both players\' decks to the Graveyard.', maxUses: 5 },
       { name: '(Necrofear) Dark Sanctuary Rite', text: 'Banish 1 Fiend monster from your Graveyard; add "Dark Necrofear" from your Deck to your hand.', maxUses: 1 },
-      { name: '(Possession) Change of Heart', text: 'Take control of 1 monster your opponent controls until the End Phase. You cannot attack your opponents\'s LP directly this turn.', maxUses: 1 }
+      { name: '(Possession) Change of Heart', text: 'Take control of 1 monster your opponent controls until the End Phase. You cannot attack your opponents\'s LP directly this turn.', maxUses: 1 },
+      { name: '(Millennium Ring) Contract with the Dark Master', text: 'Send 1 Fiend monster from your hand or Deck to the Graveyard; add "Dark Master - Zorc" or "Contract with the Dark Master" from your Deck to your hand.', maxUses: 1 },
     ],
     comebacks: [
       { name: '(Occult) Shadow of the Destiny Board', text: 'Requirement: You are under 1000 LP. The opponent now has exactly 3 turns to win. If they fail, you automatically win the duel.' },
       { name: '(Zombies) Mass Resurrection', text: 'Requirement: Your field is empty. Special Summon as many Zombie/Fiend-monsters from your Graveyard as possible in Defense Position. They are sent to the GY in the End Phase.' },
       { name: '(Destruction) Soul Thief', text: 'Requirement: The opponent declares an attack, and you are behind on LP. Banish up to 5 cards from the opponent\'s Graveyard. You gain 300 LP per card.' },
       { name: '(Necrofear) Vengeful Possession', text: 'Requirement: A Fiend monster you control is destroyed by your opponents card. Take control of 1 face-up monster your opponent controls until the end of their next turn.' },
-      { name: '(Possession) Soul Figurine', text: 'Requirement: Your opponent initiates an attack that would reduce your LP to 0. Negate the attack and banish the attacking monster and all copies on your opponent\'s side of the field, their Deck and GY.' }
+      { name: '(Possession) Soul Figurine', text: 'Requirement: Your opponent initiates an attack that would reduce your LP to 0. Negate the attack and banish the attacking monster and all copies on your opponent\'s side of the field, their Deck and GY.' },
+      { name: '(Millennium Ring) Descent of the Dark Master', text: 'Requirement: You have 2000 or less LP and your opponent controls 2 or more monsters. Banish Fiend monsters from your Graveyard whose total Levels equal 8 or more; Ritual Summon "Dark Master - Zorc" from your hand or Graveyard.' },
     ],
     quests: [
       { name: '(Occult) Fading Souls', text: 'Quest: Destroy 3 of the opponent\'s monsters in battle. Reward: Whenever your opponent\'s monsters are destroyed in battle banish them instead of sending them to the GY.' },
       { name: '(Zombies) Necro-Lord', text: 'Quest: Have 5 monsters in your Graveyard. Reward: Once per turn; your Zombie and Fiend monsters can be tributed to inflict their ATK as damage to your opponent\'s LP.' },
       { name: '(Destruction) Total Purge', text: 'Quest: Get the opponent\'s deck under 15 cards. Reward: During the opponent\'s Standby Phase, they must send the top card of their deck to the Graveyard.' },
       { name: '(Necrofear) Three Fiends\' Offering', text: 'Quest: Banish 3 Fiend monsters from your Graveyard during the duel. Reward: Your opponent takes 500 damage whenever a Fiend monster you control is destroyed.' },
-      { name: '(Possession) Monster World', text: 'Quest: Take control of your opponent\'s monsters 2 times during the duel. Reward: Once per turn, when your opponent declares an attack, roll a die. On a 1 or 2, the attack is negated and the attacking monster loses 500 ATK permanently.' }
+      { name: '(Possession) Monster World', text: 'Quest: Take control of your opponent\'s monsters 2 times during the duel. Reward: Once per turn, when your opponent declares an attack, roll a die. On a 1 or 2, the attack is negated and the attacking monster loses 500 ATK permanently.' },
+      { name: '(Millennium Ring) Master of the Monster World', text: 'Quest: Ritual Summon "Dark Master - Zorc" and resolve its die roll effect 2 times. Reward: When you roll a 6 for the effect of "Dark Master - Zorc", treat it as a 3 instead.' }
     ]
   },
   {
@@ -248,19 +251,19 @@ const CHARACTERS = [
     name: 'Maximillion Pegasus',
     theme: 'Toon Kingdom',
     skills: [
-      { name: '(Cartoons) Toon World', text: 'Add "Toon World" (or a Toon-monster) from your deck to your hand.', maxUses: 1 },
-      { name: '(Mind Reading) Millennium Eye', text: 'Force the opponent to reveal their hand until your next End Phase.', maxUses: 1 },
-      { name: '(Absorption) Illusionist\'s Grip', text: 'Render one of the opponent\'s monsters unable to attack during their next turn.', maxUses: 1 }
+      { name: '(Cartoons) Toon World', text: 'Activate Toon world without paying LP.', maxUses: 2 },
+      { name: '(Millennium Eye) Mind Reading', text: 'Your opponent play with their hand revealed', maxUses: null },
+      { name: '(Absorption) Illusionist\'s Grip', text: 'Render the opponent\'s monsters unable to attack during their next turn.', maxUses: 1 }
     ],
     comebacks: [
-      { name: '(Cartoons) The Great Spectacle', text: 'Requirement: The opponent attacks one of your monsters. Turn the attack into a direct attack, then draw 2 cards.' },
-      { name: '(Mind Reading) Delusion', text: 'Requirement: The opponent activates a lethal effect or attack. Guess which card they drew at the start of the turn. If you guess correctly, the move is canceled and the card is destroyed.' },
-      { name: '(Absorption) Relinquished\'s Hunger', text: 'Requirement: The opponent has at least 2 boss monsters. Take control of the opponent\'s strongest monster and equip it to one of your monsters (your monster gains its ATK).' }
+      { name: '(Cartoons) The Great Spectacle', text: 'Requirement: The opponent attacks one of your monsters. Turn the attack into a direct attack, then draw a card.' },
+      { name: '(Millennium Eye) Penalty Game: Sealed Tape', text: 'Requirement: Your opponent declares an attack that would reduce your LP to 0. Negate the attack, banish the attacking monster face-down and end the Battle Phase. Return it to your opponent\'s field during the End Phase of your next turn.' },
+      { name: '(Absorption) Relinquished\'s Hunger', text: 'Requirement: The opponent has at least 2 level 5 or higher monsters. Take control of one of the opponent\'s monster and equip it to one of your monsters (your monster gains its ATK). The equipped monster cannot attack' }
     ],
     quests: [
-      { name: '(Cartoons) Creator\'s Masterpiece', text: 'Quest: Have 2 Toon-monsters on the field at the same time. Reward: Your Toon-monsters do not require LP to attack and cannot be targeted.' },
-      { name: '(Mind Reading) Perfect Prediction', text: 'Quest: Guess a type of hidden card (Spell/Trap/monster) correctly 2 times. Reward: The opponent must announce out loud what they draw in their Draw Phase for the rest of the game.' },
-      { name: '(Absorption) Soul Eater', text: 'Quest: Have "Relinquished" (or an Illusion-monster) survive for 2 turns. Reward: The opponent takes all battle damage that your monsters would normally take.' }
+      { name: '(Cartoons) Creator\'s Masterpiece', text: 'Quest: Have 3 Toon-monsters on the field at the same time. Reward: Your Toon-monsters can attack the turn they are summoned' },
+      { name: '(Millennium Eye) Penalty Game', text: 'Quest: Your opponent\'s LP is half or less of yours. Reward: Monsters your opponent controls that would be destroyed are banished face-down instead.' },
+      { name: '(Absorption) Soul Eater', text: 'Quest: Have "Relinquished" (or an Illusion-monster) survive for 2 turns. Reward: Whenever your monsters are destroyed by battle your opponent takes the battle damage instead of you (Does not include direct attacks).' }
     ]
   },
   {
@@ -268,19 +271,25 @@ const CHARACTERS = [
     name: 'Odion',
     theme: 'Temple of Traps',
     skills: [
-      { name: '(Traps) Trap Master', text: 'Set a Trap Card from your Graveyard. It is banished when it leaves the field.', maxUses: 1 },
-      { name: '(Temple) King\'s Protection', text: 'Your Trap Cards cannot be destroyed by the opponent\'s effects for one turn.', maxUses: 1 },
-      { name: '(Endurance) Stamina', text: 'Gain 1000 Life Points.', maxUses: 1 }
+      { name: '(Trap Monsters) Living Traps', text: 'Once per turn: Discard 1 card; add 1 "Embodiment of Apophis" from your deck or GY to your hand.', maxUses: 3 },
+      { name: '(Temple of the Kings) Keeper of the Temple', text: 'Add "Temple of the Kings" from your Deck or Graveyard to your hand.', maxUses: 1 },
+      { name: '(Anubis) Jackal\'s Calling', text: 'Discard 1 card; add 1 "Anubis" card from your Deck to your hand.', maxUses: 1 },
+      { name: '(Continuous) Eternal Ruling', text: 'Add 1 Continuous Spell or Continuous Trap Card from your Graveyard to your hand.', maxUses: 2 },
+      { name: '(Divine Punishment) Imitation of the Divine', text: 'Tribute 3 monsters; Deal damage to your opponent equal to the combined original ATK of the Tributed monsters. During the End Phase Lose 3000 LP', maxUses: 1 },
     ],
     comebacks: [
-      { name: '(Traps) Trap Hell', text: 'Requirement: The opponent attacks directly. Activate all Trap Cards in your Graveyard that can stop or affect the attack, as if they were on the field.' },
-      { name: '(Temple) Serket\'s Wrath', text: 'Requirement: You are under 1000 LP. Special Summon 2 Trap-monsters directly from your deck.' },
-      { name: '(Endurance) Sandstorm', text: 'Requirement: The opponent has 3+ monsters, you have 0. Change all of the opponent\'s monsters to Defense Position and permanently halve their DEF.' }
+      { name: '(Trap Monsters) Wall of Living Stone', text: 'Requirement: Your opponent declares an attack while you control no monsters. Special Summon up to 2 Trap Monster cards from your GY in Defense Position.' },
+      { name: '(Temple of the Kings) Serket Awakens', text: 'Requirement: You have 2000 or less LP, and you control "Temple of the Kings". Special Summon "Mystical Beast of Serket" from your hand, Deck or Graveyard. It cannot be destroyed by battle this turn. During the End Phase, destroy "Mystical Beast of Serket".' },
+      { name: '(Anubis) Scales of Judgment', text: 'Requirement: Your opponent activates an effect (Either Monster, Spell or Trap) that would destroy 1 or more of your cards. Negate and destroy it.' },
+      { name: '(Continuous) Unbreakable Laws', text: 'Requirement: Your opponent activates a card or effect that would destroy 2 or more Continuous Spell/Trap Cards you control. Negate it. Your Continuous Spell/Trap Cards cannot be destroyed until the end of your next turn.' },
+      { name: '(Divine Punishment) Wrath of the Heavens', text: 'Requirement: Your opponent declares an attack that would reduce your LP to 0. Destroy all monsters on the field, then halve your LP.' },
     ],
     quests: [
-      { name: '(Traps) The Labyrinth', text: 'Quest: Activate 4 Trap Cards during the duel. Reward: Every time you activate a Trap, you gain 500 LP.' },
-      { name: '(Temple) The Sacred Beast', text: 'Quest: Special Summon a Trap-monster. Reward: Your Trap-monsters cannot be destroyed in battle.' },
-      { name: '(Endurance) Unwavering', text: 'Quest: Survive an attack with under 500 LP remaining. Reward: You take no effect damage (burn damage) for the rest of the game.' }
+      { name: '(Trap Monsters) Army of the Ancients', text: 'Quest: Special Summon 3 Trap Monsters during the duel. Reward: Your Trap Monsters gain 500 ATK and DEF and cannot be targeted by your opponent\'s monster effects.' },
+      { name: '(Temple of the Kings) The Scorpion\'s Feast', text: 'Quest: Have "Mystical Beast of Serket" destroy 2 monsters by battle. Reward: "Mystical Beast of Serket" is no longer shuffled into the Deck when you do not control "Temple of the Kings", and cannot be targeted by Spell Cards.' },
+      { name: '(Anubis) Weighing of the Heart', text: 'Quest: Activate 3 "Anubis" cards during the duel. Reward: Your opponent cannot activate the effects of cards in their Graveyard.' },
+      { name: '(Continuous) Fortress of Decrees', text: 'Quest: Control 3 face-up Continuous Spell/Trap Cards at the same time. Reward: Monsters you control gain 200 ATK for each face-up Continuous Spell/Trap Card you control.' },
+      { name: '(Divine Punishment) Struck by Lightning', text: 'Quest: Have 1000 or less LP. Reward: During your Standby Phase your opponent loses 500 LP.' },
     ]
   },
   {
@@ -304,7 +313,27 @@ const CHARACTERS = [
     ]
   },
   {
-    id: 'marik',
+    id: 'marik-1',
+    name: 'Marik Ishtar',
+    theme: 'Sadistic Slimes',
+    skills: [
+      { name: '(Torture) Shadow Game', text: 'The opponent takes 500 damage for each card they have in their hand.', maxUses: 1 },
+      { name: '(Slime) Immortal Mass', text: 'Create one "Slime Token" (Aqua/WATER/Level 1/ATK 500/DEF 500) in Defense Position.', maxUses: 1 },
+      { name: '(Mind Control) Brainwash', text: 'Take control of a Level 4 or lower monster from the opponent until the End Phase.', maxUses: 1 }
+    ],
+    comebacks: [
+      { name: '(Torture) Hidden Pain', text: 'Requirement: You take battle damage. The opponent takes twice the amount of damage you just took.' },
+      { name: '(Slime) Reconstruction', text: 'Requirement: The opponent destroys your strongest monster. Special Summon "Revival Jam" (or a Slime-monster) and draw 2 cards.' },
+      { name: '(Ra) Wrath of the Sun God', text: 'Requirement: You are under 1000 LP. Pay all your LP except 1. Destroy the opponent\'s entire field, and the opponent takes 1000 damage for each destroyed card.' }
+    ],
+    quests: [
+      { name: '(Torture) Master of Pain', text: 'Quest: Inflict effect damage to the opponent 3 times in one turn. Reward: The opponent loses 500 LP in their Standby Phase.' },
+      { name: '(Slime) The Impenetrable Wall', text: 'Quest: Have a Slime-Token or Revival Jam survive 3 battles. Reward: Your monsters cannot be destroyed in battle.' },
+      { name: '(Ra) Divine Sacrifice', text: 'Quest: Tribute 3 monsters for one Tribute Summon. Reward: The monster you summoned is unaffected by Spells and Traps.' }
+    ]
+  },
+  {
+    id: 'marik-2',
     name: 'Marik Ishtar',
     theme: 'Wrath of the Sun God',
     skills: [
