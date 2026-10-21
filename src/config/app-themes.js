@@ -26,6 +26,7 @@ function applyAppTheme(theme) {
 function setAppTheme(id) {
   const theme = APP_THEMES.find(t => t.id === id);
   if (!theme) return;
+  const changed = theme.id !== document.documentElement.dataset.theme;
   try {
     localStorage.setItem(THEME_STORAGE_KEY, theme.id);
   } catch {}
@@ -34,6 +35,7 @@ function setAppTheme(id) {
     applyAppTheme(theme);
     render();
     if (typeof playSound === 'function') playSound({ name: 'theme' });
+    if (changed && typeof countThemeSwitch === 'function') countThemeSwitch();
   };
 
   // Each theme defines its own entrance via ::view-transition-new(root) in styles.css.

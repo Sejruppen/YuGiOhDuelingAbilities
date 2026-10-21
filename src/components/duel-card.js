@@ -83,6 +83,7 @@ function renderRevealedAbilityCard(abilityType, ability, uses) {
     badgeText: `${label} - ${isExhausted ? 'Used' : 'Active'}`,
     controlsHtml: hasLimit ? renderUsageCounter(type, uses, maxUses, isExhausted) : renderUnlimitedBadge(),
     watermarkHtml: isExhausted ? renderUsedWatermark() : '',
+    cardAttrs: isExhausted ? `onclick="tapUsedCard('${type}', event)"` : '',
     ability
   });
 }
@@ -91,9 +92,9 @@ function getActiveContainerClass(theme) {
   return `duel-card-active flex-1 rounded-2xl border ${theme.glow} bg-gradient-to-b ${theme.grad} to-slate-900/90 p-3.5 flex flex-col justify-center overflow-y-auto shadow-lg ${theme.shadow} transition-all`;
 }
 
-function renderActiveCard({ type, containerClass, badgeClass, badgeText, controlsHtml, watermarkHtml = '', ability }) {
+function renderActiveCard({ type, containerClass, badgeClass, badgeText, controlsHtml, watermarkHtml = '', cardAttrs = '', ability }) {
   return `
-    <div data-fx-card="${type}" class="fx-c-${type} ${containerClass}">
+    <div data-fx-card="${type}" class="fx-c-${type} ${containerClass}" ${cardAttrs}>
       ${watermarkHtml}
       <div class="relative z-10 flex flex-col h-full">
         <div class="flex items-center justify-between mb-1.5">

@@ -33,6 +33,7 @@ function editLoadout() {
 }
 
 function startDuel() {
+  resetHeartOverload();
   setState({
     screen: SCREENS.DUEL,
     lp: STARTING_LP,

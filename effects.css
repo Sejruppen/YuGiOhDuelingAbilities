@@ -1428,6 +1428,68 @@ html[data-theme] .logo-egg:active { transform: none; filter: var(--logo-glow); }
   100% { transform: scale(1) rotate(0deg); filter: none; opacity: 1; }
 }
 
+/* Shadow Realm escape: tapping fast during the fade-back shatters the dark
+   (flash + shards, 0-0.8s), the duel snaps back, and the defiant line slams
+   in and fades (to 2.6s). */
+.fx-shadow-escape { position: fixed; inset: 0; z-index: 5; overflow: hidden; pointer-events: none; }
+.escape-flash {
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(circle, #fff 0, #f5d0fe 30%, rgb(168 85 247 / 0.6) 60%, rgb(46 16 101 / 0.9) 100%);
+  animation: escape-flash 0.6s ease-out both;
+}
+@keyframes escape-flash { from { opacity: 1; } to { opacity: 0; } }
+
+.escape-shards { position: absolute; left: 50%; top: 50%; }
+.escape-shard {
+  position: absolute;
+  width: var(--ss);
+  height: var(--ss);
+  margin: calc(var(--ss) / -2) 0 0 calc(var(--ss) / -2);
+  background: linear-gradient(135deg, #581c87, #12021f);
+  box-shadow: inset 0 0 0 1px rgb(216 180 254 / 0.6);
+  clip-path: polygon(50% 0, 100% 70%, 20% 100%);
+  will-change: transform, opacity;
+  animation: escape-shard 0.8s cubic-bezier(0.2, 0.7, 0.4, 1) both;
+}
+@keyframes escape-shard {
+  from { transform: translate(0, 0) rotate(0deg) scale(1.4); opacity: 1; }
+  to { transform: translate(var(--sx), var(--sy)) rotate(var(--sr)) scale(0.6); opacity: 0; }
+}
+
+.escape-text {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 1rem;
+  animation: escape-text 2.6s linear both;
+}
+.escape-text span {
+  font-family: 'Cinzel Decorative', 'Cinzel', serif;
+  font-weight: 900;
+  font-size: clamp(1.5rem, 7.5vw, 2.75rem);
+  line-height: 1.2;
+  text-align: center;
+  color: #fff;
+  text-shadow: 0 0 10px #c084fc, 0 0 26px #fbbf24, 0 3px 0 #3b0764;
+}
+@keyframes escape-text {
+  0% { opacity: 0; transform: scale(2.6) rotate(-6deg); }
+  8% { opacity: 1; transform: scale(0.94) rotate(-3deg); }
+  13% { transform: scale(1.04) rotate(-3deg); }
+  17% { transform: scale(1) rotate(-3deg); }
+  78% { opacity: 1; transform: scale(1.03) rotate(-3deg); }
+  100% { opacity: 0; transform: scale(1.1) rotate(-3deg); }
+}
+
+#app.fx-shadow-snap { animation: shadow-snap 0.7s cubic-bezier(0.3, 1.5, 0.5, 1) both; }
+@keyframes shadow-snap {
+  from { transform: scale(0.85); filter: brightness(2) saturate(0); }
+  to { transform: scale(1); filter: none; }
+}
+
 /* =========================================================================
    UNSTOPPABLE EASTER EGG (src/effects/last-stand-easter-egg.js) — all themes
    Surviving on exactly 25 LP (LAST_STAND_LP): a hard shake (0-1.2s), the screen edges pulse
@@ -1716,6 +1778,522 @@ html[data-theme] .logo-egg:active { transform: none; filter: var(--logo-glow); }
   0%, 44% { opacity: 0; }
   46% { opacity: 1; }
   56%, 100% { opacity: 0; }
+}
+
+/* Overload (5th draw in a duel, .heart-overload): after the flip, Exodia
+   charges up on the card art (3.3-3.8s), then fires a tiny beam with a tiny
+   whiteout (3.8s), the art recoils, and a deadpan "pew." hangs around. */
+.heart-overload .heart-card-name { font-size: 0.55rem; }
+.heart-overload .heart-card-art {
+  background: radial-gradient(circle, #fef9c3, #b45309 55%, #451a03);
+  animation: mini-recoil 6s linear both;
+}
+@keyframes mini-recoil {
+  0%, 55% { transform: none; }
+  58% { transform: scale(1.06) rotate(-2deg); }
+  61% { transform: scale(1.1) rotate(2deg); }
+  63.33% { transform: scale(0.9) translateY(4px); }
+  66% { transform: scale(1.04); }
+  68%, 100% { transform: none; }
+}
+
+.heart-mini-blast {
+  position: absolute;
+  left: 50%;
+  top: calc(58% - 0.6rem);
+  width: 0;
+  height: 0;
+}
+.mini-charge {
+  position: absolute;
+  width: 3rem;
+  height: 3rem;
+  margin: -1.5rem 0 0 -1.5rem;
+  border-radius: 50%;
+  background: radial-gradient(circle, #fff 0, #fde68a 35%, rgb(251 191 36 / 0) 70%);
+  opacity: 0;
+  animation: mini-charge 6s linear both;
+}
+@keyframes mini-charge {
+  0%, 55% { opacity: 0; transform: scale(0.2); }
+  62% { opacity: 1; transform: scale(1.2); }
+  63.33% { opacity: 1; transform: scale(0.6); }
+  68%, 100% { opacity: 0; transform: scale(0.2); }
+}
+.mini-beam {
+  position: absolute;
+  bottom: 0;
+  left: -5px;
+  width: 10px;
+  height: 70vh;
+  border-radius: 5px;
+  background: linear-gradient(to top, #fff, #fef3c7 40%, rgb(253 230 138 / 0));
+  box-shadow: 0 0 12px 3px rgb(251 191 36 / 0.8);
+  transform-origin: bottom center;
+  opacity: 0;
+  animation: mini-beam 6s linear both;
+}
+@keyframes mini-beam {
+  0%, 63.32% { opacity: 0; transform: scaleY(0); }
+  63.33% { opacity: 1; transform: scaleY(0.1); }
+  65% { opacity: 1; transform: scaleY(1); }
+  71% { opacity: 0.8; transform: scaleY(1) scaleX(0.6); }
+  75%, 100% { opacity: 0; transform: scaleY(1) scaleX(0); }
+}
+.mini-whiteout {
+  position: absolute;
+  width: 50vmin;
+  height: 50vmin;
+  margin: -25vmin 0 0 -25vmin;
+  border-radius: 50%;
+  background: radial-gradient(circle, #fff 0, rgb(255 255 255 / 0.8) 35%, rgb(255 255 255 / 0) 70%);
+  opacity: 0;
+  animation: mini-whiteout 6s linear both;
+}
+@keyframes mini-whiteout {
+  0%, 63.32% { opacity: 0; transform: scale(0.3); }
+  64% { opacity: 1; transform: scale(1); }
+  72%, 100% { opacity: 0; transform: scale(1.2); }
+}
+.mini-pew {
+  position: absolute;
+  left: 5.5rem;
+  top: -5rem;
+  font-family: 'Cinzel', serif;
+  font-style: italic;
+  font-weight: 700;
+  font-size: 1.1rem;
+  white-space: nowrap;
+  color: #fef3c7;
+  text-shadow: 0 0 8px rgb(251 191 36 / 0.9), 0 2px 0 #78350f;
+  opacity: 0;
+  animation: mini-pew 6s linear both;
+}
+@keyframes mini-pew {
+  0%, 64% { opacity: 0; transform: scale(0.3) rotate(12deg); }
+  67% { opacity: 1; transform: scale(1.15) rotate(8deg); }
+  69%, 86.7% { opacity: 1; transform: scale(1) rotate(8deg); }
+  100% { opacity: 0; transform: scale(1) rotate(8deg); }
+}
+
+/* =========================================================================
+   SCREW THE RULES EASTER EGG (src/effects/screw-the-rules-easter-egg.js)
+   All themes. Taps on a used-up card shake it (.fx-used-deny). On the 5th:
+   the stamp slams in (0-0.15s), coins rain (0.1-3.3s), the USED stamp is
+   kicked off the card (0.9s, .fx-used-kick), and it all fades (to 3.6s).
+   ========================================================================= */
+
+html[data-theme] [data-fx-card].fx-used-deny { animation: used-deny 0.4s ease-out; }
+@keyframes used-deny {
+  0%, 100% { transform: translateX(0); }
+  15% { transform: translateX(-8px) rotate(-1deg); }
+  35% { transform: translateX(7px) rotate(1deg); }
+  55% { transform: translateX(-5px); }
+  75% { transform: translateX(3px); }
+}
+html[data-theme] .used-watermark.fx-used-nudge { animation: used-nudge 0.4s ease-out; }
+@keyframes used-nudge {
+  0% { transform: rotate(-12deg) scale(1); }
+  30% { transform: rotate(-16deg) scale(1.2); color: rgb(241 245 249 / 0.35); }
+  100% { transform: rotate(-12deg) scale(1); }
+}
+
+.fx-screw { position: fixed; inset: 0; z-index: 5; overflow: hidden; pointer-events: none; }
+
+.screw-stamp {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  will-change: transform, opacity;
+  animation: screw-stamp 3.6s linear both;
+}
+.screw-stamp span {
+  padding: 0.6rem 1.1rem;
+  border: 6px solid #dc2626;
+  border-radius: 0.75rem;
+  font-family: 'Cinzel', serif;
+  font-weight: 900;
+  font-size: clamp(1.4rem, 7.5vw, 2.6rem);
+  line-height: 1.15;
+  text-align: center;
+  text-transform: uppercase;
+  color: #ef4444;
+  background: rgb(254 242 242 / 0.92);
+  box-shadow: inset 0 0 0 3px rgb(254 242 242 / 0.92), inset 0 0 0 6px #dc2626, 0 12px 40px rgb(0 0 0 / 0.5);
+  text-shadow: 0 1px 0 rgb(127 29 29 / 0.4);
+}
+@keyframes screw-stamp {
+  0% { opacity: 0; transform: scale(4) rotate(-20deg); }
+  4% { opacity: 1; transform: scale(0.92) rotate(-8deg); }
+  7% { transform: scale(1.04) rotate(-8deg); }
+  10% { transform: scale(1) rotate(-8deg); }
+  78% { opacity: 1; transform: scale(1.03) rotate(-8deg); }
+  100% { opacity: 0; transform: scale(1.1) rotate(-8deg); }
+}
+
+.screw-coins { position: absolute; inset: 0; }
+.screw-coin {
+  position: absolute;
+  left: var(--cx);
+  top: 0;
+  width: var(--cs);
+  height: var(--cs);
+  margin-left: calc(var(--cs) / -2);
+  will-change: transform;
+  animation: screw-coin-fall var(--cd) cubic-bezier(0.4, 0, 0.9, 0.6) var(--cdelay) both;
+}
+.screw-coin span {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  font-weight: 900;
+  font-size: calc(var(--cs) * 0.55);
+  color: #92400e;
+  background: radial-gradient(circle at 35% 30%, #fef9c3 0, #fbbf24 40%, #d97706 75%, #92400e 100%);
+  box-shadow: inset 0 0 0 2px #b45309, 0 0 8px rgb(251 191 36 / 0.7);
+  animation: screw-coin-flip var(--cflip) linear infinite alternate;
+}
+@keyframes screw-coin-fall {
+  from { transform: translate(0, -15vh); }
+  to { transform: translate(var(--cdx), 110vh); }
+}
+@keyframes screw-coin-flip {
+  from { transform: scaleX(1); }
+  to { transform: scaleX(0.15); }
+}
+
+/* The USED stamp, kicked off the card and spinning away off-screen. */
+.fx-used-kick {
+  position: fixed;
+  left: var(--kx);
+  top: var(--ky);
+  pointer-events: none;
+  animation: used-kick 1.4s cubic-bezier(0.2, 0.6, 0.4, 1) both;
+}
+.fx-used-kick span {
+  display: block;
+  color: rgb(241 245 249 / 0.7);
+  text-shadow: 0 2px 10px rgb(0 0 0 / 0.6);
+}
+@keyframes used-kick {
+  0% { transform: translate(-50%, -50%) rotate(-12deg) scale(1, 1); }
+  8% { transform: translate(-50%, -50%) rotate(-12deg) scale(0.75, 1.2); }
+  100% { transform: translate(calc(-50% + 70vw), calc(-50% - 85vh)) rotate(700deg) scale(0.6, 0.6); }
+}
+
+/* =========================================================================
+   MIND CRUSH EASTER EGG (src/effects/mind-crush-easter-egg.js) — all themes
+   Spamming Peek: dim + the Millennium Eye fades in and opens (0-0.4s), its
+   pupil glances around while the quote appears (0.5-2.2s), it winks with a
+   sparkle (2.3-2.6s), then everything fades (2.8-3.4s). Doesn't block taps.
+   ========================================================================= */
+
+.fx-mind-crush { position: fixed; inset: 0; z-index: 5; pointer-events: none; }
+
+.crush-dim {
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(circle at 50% 45%, rgb(30 27 75 / 0.55), rgb(2 6 23 / 0.85) 70%);
+  animation: crush-fade 3.4s linear both;
+}
+@keyframes crush-fade {
+  0% { opacity: 0; }
+  12%, 82% { opacity: 1; }
+  100% { opacity: 0; }
+}
+
+.crush-stage {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 1.25rem;
+  animation: crush-stage 3.4s linear both;
+}
+@keyframes crush-stage {
+  0% { opacity: 0; transform: scale(0.85); filter: blur(6px); }
+  12% { opacity: 1; transform: scale(1); filter: blur(0); }
+  82% { opacity: 1; transform: scale(1.03); filter: blur(0); }
+  100% { opacity: 0; transform: scale(1.1); filter: blur(4px); }
+}
+
+.crush-eye {
+  width: min(55vw, 240px);
+  overflow: visible;
+  filter: drop-shadow(0 0 10px rgb(251 191 36 / 0.8)) drop-shadow(0 0 30px rgb(217 119 6 / 0.6));
+}
+.crush-iris {
+  transform-box: view-box;
+  animation: crush-glance 3.4s ease-in-out both;
+}
+@keyframes crush-glance {
+  0%, 15% { transform: translate(0, 0); }
+  25%, 35% { transform: translate(-16px, 2px); }
+  45%, 55% { transform: translate(16px, 2px); }
+  63%, 100% { transform: translate(0, 0); }
+}
+.crush-lid {
+  transform-box: fill-box;
+  transform-origin: 50% 0;
+  animation: crush-lid 3.4s linear both;
+}
+@keyframes crush-lid {
+  0% { transform: scaleY(1); }
+  12% { transform: scaleY(0); }
+  67.6% { transform: scaleY(0); animation-timing-function: ease-in; }
+  71% { transform: scaleY(1); }
+  73.5% { transform: scaleY(1); animation-timing-function: ease-out; }
+  77%, 100% { transform: scaleY(0); }
+}
+
+.crush-sparkle {
+  position: absolute;
+  left: calc(50% + min(20vw, 88px));
+  top: calc(50% - min(20vw, 96px));
+  font-size: 1.75rem;
+  color: #fef3c7;
+  text-shadow: 0 0 8px #fbbf24, 0 0 18px #f59e0b;
+  opacity: 0;
+  animation: crush-sparkle 3.4s linear both;
+}
+@keyframes crush-sparkle {
+  0%, 70% { opacity: 0; transform: scale(0) rotate(0deg); }
+  74% { opacity: 1; transform: scale(1.4) rotate(90deg); }
+  82% { opacity: 1; transform: scale(1) rotate(160deg); }
+  90%, 100% { opacity: 0; transform: scale(0.4) rotate(220deg); }
+}
+
+.crush-text {
+  padding: 0 1.25rem;
+  font-family: 'Cinzel', serif;
+  font-weight: 700;
+  font-style: italic;
+  font-size: clamp(1.1rem, 5.5vw, 1.75rem);
+  line-height: 1.3;
+  text-align: center;
+  color: #fef3c7;
+  text-shadow: 0 0 8px rgb(251 191 36 / 0.7), 0 2px 0 rgb(0 0 0 / 0.6);
+  opacity: 0;
+  animation: crush-text 3.4s linear both;
+}
+@keyframes crush-text {
+  0%, 14% { opacity: 0; transform: translateY(8px); letter-spacing: 0.15em; }
+  26% { opacity: 1; transform: translateY(0); letter-spacing: 0.02em; }
+  100% { opacity: 1; transform: translateY(0); letter-spacing: 0.02em; }
+}
+
+/* =========================================================================
+   THEME ROULETTE EASTER EGG (src/effects/theme-dizzy-easter-egg.js)
+   All themes. Switching themes 6 times quickly: #app wobbles seasickly and
+   settles (0-3.2s), cartoon stars orbit over the logo, and a toast pops up
+   (0.25s) and slides away at the end.
+   ========================================================================= */
+
+#app.fx-dizzy { animation: dizzy-wobble 3.2s ease-in-out both; }
+@keyframes dizzy-wobble {
+  0% { transform: none; }
+  8% { transform: rotate(-4deg) skewX(5deg) translateX(-10px); }
+  18% { transform: rotate(3.5deg) skewX(-4deg) translateX(9px); }
+  29% { transform: rotate(-3deg) skewX(3.5deg) translateX(-7px); }
+  40% { transform: rotate(2.5deg) skewX(-3deg) translateX(6px); }
+  52% { transform: rotate(-1.8deg) skewX(2deg) translateX(-4px); }
+  64% { transform: rotate(1.2deg) skewX(-1.2deg) translateX(3px); }
+  76% { transform: rotate(-0.6deg) skewX(0.6deg) translateX(-1px); }
+  88%, 100% { transform: none; }
+}
+
+.dizzy-stars {
+  position: absolute;
+  left: 50%;
+  top: 0;
+  width: 0;
+  height: 0;
+  pointer-events: none;
+  animation: dizzy-stars 3.2s linear both;
+}
+@keyframes dizzy-stars {
+  0% { opacity: 0; transform: translateY(6px); }
+  8%, 88% { opacity: 1; transform: translateY(0); }
+  100% { opacity: 0; transform: translateY(-6px); }
+}
+.dizzy-star {
+  position: absolute;
+  left: -0.5em;
+  top: -0.5em;
+  font-size: 20px;
+  line-height: 1;
+  color: #fde047;
+  text-shadow: 0 0 6px rgb(250 204 21 / 0.9), 0 1px 0 #a16207;
+  animation: dizzy-orbit 1s linear calc(var(--i) * -0.2s) infinite;
+}
+@keyframes dizzy-orbit {
+  0% { transform: translate(70px, 0) scale(0.9); opacity: 0.9; }
+  12.5% { transform: translate(49.5px, 12.7px) scale(1.05); opacity: 1; }
+  25% { transform: translate(0, 18px) scale(1.15); opacity: 1; }
+  37.5% { transform: translate(-49.5px, 12.7px) scale(1.05); opacity: 1; }
+  50% { transform: translate(-70px, 0) scale(0.9); opacity: 0.9; }
+  62.5% { transform: translate(-49.5px, -12.7px) scale(0.75); opacity: 0.6; }
+  75% { transform: translate(0, -18px) scale(0.7); opacity: 0.55; }
+  87.5% { transform: translate(49.5px, -12.7px) scale(0.75); opacity: 0.6; }
+  100% { transform: translate(70px, 0) scale(0.9); opacity: 0.9; }
+}
+
+.fx-dizzy-toast {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 9%;
+  display: flex;
+  justify-content: center;
+  pointer-events: none;
+  animation: dizzy-toast 3.2s linear both;
+}
+.fx-dizzy-toast span {
+  padding: 0.7rem 1.2rem;
+  border-radius: 9999px;
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: #f8fafc;
+  background: rgb(15 23 42 / 0.92);
+  border: 1px solid rgb(148 163 184 / 0.35);
+  box-shadow: 0 10px 30px rgb(0 0 0 / 0.4);
+}
+@keyframes dizzy-toast {
+  0%, 7% { opacity: 0; transform: translateY(30px) scale(0.8); }
+  12% { opacity: 1; transform: translateY(-4px) scale(1.05); }
+  16% { transform: translateY(0) scale(1); }
+  20% { transform: translateY(0) rotate(-3deg); }
+  24% { transform: translateY(0) rotate(3deg); }
+  28%, 86% { opacity: 1; transform: translateY(0) rotate(0deg); }
+  100% { opacity: 0; transform: translateY(30px) rotate(0deg); }
+}
+
+/* =========================================================================
+   PHARAOH'S NAP EASTER EGG (src/effects/pharaoh-nap-easter-egg.js)
+   All themes. After 2 idle minutes on the duel screen: the screen slowly
+   dims (0-6s), a sleeping Kuriboh drifts across on a loop (26s) with rising
+   Zzz's and a snot bubble that swells with each 4s snore. Any tap wakes it
+   (.nap-waking, 1.8s): Kuriboh freezes, the bubble pops, he jolts up with a
+   shocked face and a "!" (0-0.4s), trembles, then everything fades (1.1-1.8s).
+   The first 0.5s of taps are swallowed by the overlay.
+   ========================================================================= */
+
+.fx-nap { position: fixed; inset: 0; z-index: 5; overflow: hidden; pointer-events: auto; }
+.fx-nap.nap-waking { animation: nap-wake 1.8s linear both; }
+@keyframes nap-wake {
+  0%, 61% { opacity: 1; }
+  100% { opacity: 0; }
+}
+
+.nap-face-awake,
+.nap-shock { display: none; }
+.nap-waking .nap-face-asleep,
+.nap-waking .nap-zzz { display: none; }
+.nap-waking .nap-face-awake { display: inline; }
+.nap-waking .nap-kuriboh-bob { animation: nap-startle 1.8s linear both; }
+@keyframes nap-startle {
+  0% { transform: translateY(0) scale(1); }
+  10% { transform: translateY(-38px) scale(1.18, 1.1); }
+  20% { transform: translateY(0) scale(1.08, 0.94); }
+  25% { transform: translateY(0) scale(1); }
+  30%, 40%, 50% { transform: translateX(-3px) scale(1.04); }
+  35%, 45%, 55% { transform: translateX(3px) scale(1.04); }
+  61%, 100% { transform: none; }
+}
+.nap-waking .nap-shock {
+  display: block;
+  position: absolute;
+  left: 50%;
+  top: -3.2rem;
+  width: 2rem;
+  margin-left: -1rem;
+  text-align: center;
+  font-family: 'Cinzel', serif;
+  font-weight: 900;
+  font-size: 2.6rem;
+  line-height: 1;
+  color: #fde047;
+  text-shadow: 0 0 10px rgb(250 204 21 / 0.9), 0 3px 0 #a16207;
+  animation: nap-shock 0.4s cubic-bezier(0.3, 1.8, 0.5, 1) 0.08s both;
+}
+@keyframes nap-shock {
+  from { opacity: 0; transform: scale(0.2) rotate(-20deg); }
+  to { opacity: 1; transform: scale(1) rotate(8deg); }
+}
+
+.nap-dim {
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(circle at 50% 40%, rgb(30 27 75 / 0.7), rgb(2 6 23 / 0.94) 75%);
+  animation: nap-dim 6s ease-in both;
+}
+@keyframes nap-dim { from { opacity: 0; } to { opacity: 1; } }
+
+/* Kuriboh only drifts in once the screen has fully dimmed (6s). */
+.nap-kuriboh {
+  position: absolute;
+  left: 0;
+  top: 32%;
+  will-change: transform;
+  animation: nap-drift 26s linear 6s infinite both;
+}
+@keyframes nap-drift {
+  from { transform: translateX(-140px); }
+  to { transform: translateX(calc(100vw + 20px)); }
+}
+.nap-kuriboh-bob { position: relative; animation: nap-bob 4s ease-in-out infinite alternate; }
+@keyframes nap-bob {
+  from { transform: translateY(-14px) rotate(-6deg); }
+  to { transform: translateY(14px) rotate(6deg); }
+}
+.nap-kuriboh-svg {
+  display: block;
+  width: 110px;
+  height: auto;
+  filter: drop-shadow(0 6px 10px rgb(0 0 0 / 0.45));
+}
+.nap-bubble {
+  transform-box: fill-box;
+  transform-origin: 0% 50%;
+  animation: nap-bubble 4s ease-in-out infinite;
+}
+@keyframes nap-bubble {
+  0%, 35% { transform: scale(0.3); opacity: 0.6; }
+  70% { transform: scale(1.6); opacity: 1; }
+  80% { transform: scale(1.7); opacity: 1; }
+  92%, 100% { transform: scale(0.3); opacity: 0.6; }
+}
+
+.nap-zzz {
+  position: absolute;
+  left: 72px;
+  top: -6px;
+  width: 0;
+  height: 0;
+}
+.nap-zzz span {
+  position: absolute;
+  font-family: 'Cinzel', serif;
+  font-weight: 700;
+  color: #e0e7ff;
+  text-shadow: 0 0 8px rgb(165 180 252 / 0.9);
+  opacity: 0;
+  animation: nap-z 3s ease-out infinite;
+}
+.nap-zzz span:nth-child(1) { font-size: 1.6rem; }
+.nap-zzz span:nth-child(2) { font-size: 1.2rem; animation-delay: 1s; }
+.nap-zzz span:nth-child(3) { font-size: 0.9rem; animation-delay: 2s; }
+@keyframes nap-z {
+  0% { opacity: 0; transform: translate(0, 0) rotate(-10deg) scale(0.5); }
+  20% { opacity: 1; }
+  100% { opacity: 0; transform: translate(34px, -70px) rotate(15deg) scale(1.1); }
 }
 
 /* =========================================================================

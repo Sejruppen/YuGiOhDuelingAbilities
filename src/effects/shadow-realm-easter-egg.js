@@ -4,13 +4,22 @@
 // and swallows the whole duel, the Millennium Eye glares out of the darkness
 // with "Banished to the Shadow Realm...", and then the fog lifts and the duel
 // drifts back. A sinister howl plays along (see 'shadow-realm' in sounds.js).
+//
+// Escape: tap the screen SHADOW_ESCAPE_TAPS times in a row (each within
+// SHADOW_ESCAPE_GAP_MS of the last) any time during the Shadow Realm and your
+// soul refuses to stay banished — the darkness shatters, the duel snaps back
+// early and a rebellious power chord plays ('shadow-escape').
 const SHADOW_REALM_CHANCE = 0.1;
 // Keep in sync with the `shadow-*` timings in effects.css.
 const SHADOW_VORTEX_GONE_MS = 3700;
+const SHADOW_ESCAPE_FROM_MS = 0; // e.g. 1200 = vortex opens, 3300 = banish text shows
 const SHADOW_TOTAL_MS = 7500;
 const SHADOW_MOTE_COUNT = 28;
+const SHADOW_ESCAPE_TAPS = 10;
+const SHADOW_ESCAPE_GAP_MS = 700;
+const SHADOW_ESCAPE_TOTAL_MS = 2600;
 
-const shadowEgg = { busy: false };
+const shadowEgg = { busy: false, startedAt: 0, taps: [] };
 
 function rollShadowRealm() {
   return !shadowEgg.busy && !prefersReducedMotion() && Math.random() < SHADOW_REALM_CHANCE;
@@ -49,12 +58,55 @@ function triggerShadowRealm(app) {
   if (!overlay) return;
 
   shadowEgg.busy = true;
+  shadowEgg.startedAt = performance.now();
+  shadowEgg.taps = [];
+  overlay.addEventListener('pointerdown', () => tapShadowRealm(app, overlay));
   restartClass(app, 'fx-shadow-absorb', SHADOW_TOTAL_MS);
   setTimeout(() => {
     // The duel is gone: stop the infinite spin so the fade-back stays smooth.
     overlay.querySelectorAll('.shadow-vortex, .shadow-motes').forEach(el => el.remove());
   }, SHADOW_VORTEX_GONE_MS);
   setTimeout(() => { shadowEgg.busy = false; }, SHADOW_TOTAL_MS);
+}
+
+// Taps count from SHADOW_ESCAPE_FROM_MS on, and they have to keep coming.
+function tapShadowRealm(app, overlay) {
+  const now = performance.now();
+  if (now - shadowEgg.startedAt < SHADOW_ESCAPE_FROM_MS) return;
+
+  const last = shadowEgg.taps[shadowEgg.taps.length - 1];
+  shadowEgg.taps = last !== undefined && now - last <= SHADOW_ESCAPE_GAP_MS ? [...shadowEgg.taps, now] : [now];
+  if (shadowEgg.taps.length >= SHADOW_ESCAPE_TAPS) escapeShadowRealm(app, overlay);
+}
+
+function escapeShadowRealm(app, overlay) {
+  shadowEgg.taps = [];
+  overlay.remove();
+  app.classList.remove('fx-shadow-absorb');
+  restartClass(app, 'fx-shadow-snap', 700);
+  playSound({ name: 'shadow-escape' });
+  spawnFx('fx-shadow-escape', SHADOW_ESCAPE_TOTAL_MS + 100, {
+    html: `
+      <div class="escape-flash"></div>
+      <div class="escape-shards">${renderEscapeShards()}</div>
+      <div class="escape-text"><span>Your soul refuses<br>to stay banished!</span></div>
+    `
+  });
+}
+
+// Shards of the shattered darkness flying outwards from the middle.
+function renderEscapeShards() {
+  return Array.from({ length: 16 }, (_, i) => {
+    const angle = (i / 16) * Math.PI * 2 + rand(-0.15, 0.15);
+    const distance = rand(0.45, 0.75) * Math.hypot(window.innerWidth, window.innerHeight);
+    const vars = [
+      `--sx: ${(Math.cos(angle) * distance).toFixed(0)}px`,
+      `--sy: ${(Math.sin(angle) * distance).toFixed(0)}px`,
+      `--sr: ${rand(-360, 360).toFixed(0)}deg`,
+      `--ss: ${rand(30, 70).toFixed(0)}px`
+    ].join('; ');
+    return `<span class="escape-shard" style="${vars}"></span>`;
+  }).join('');
 }
 
 // The Millennium Eye: a gold Eye of Horus with a glowing pupil.

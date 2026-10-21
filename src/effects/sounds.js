@@ -6,7 +6,9 @@
 // The logo / Exodia easter egg shares one sinister set across all themes, the
 // 30000 LP "Full Heal!" easter egg one joyful fanfare, the rare Shadow Realm
 // defeat one ghostly howl, the 25 LP "Unstoppable" easter egg one pounding
-// heartbeat, and "Believe in the heart of the cards!" one heavenly draw.
+// heartbeat, "Believe in the heart of the cards!" one heavenly draw,
+// "Screw the rules" one cash-register fanfare, "Mind Crush" one eerie wink,
+// the theme roulette one dizzy slide whistle, and Pharaoh's Nap one snore.
 // effects.js calls playSound(event) for the same events that drive the
 // animations. Sound is on by default and can be muted (saved on the device).
 const SOUND_STORAGE_KEY = 'ygo_sound';
@@ -230,6 +232,8 @@ const logoNote = (base, combo) => base + Math.min(combo - 1, 24);
 // ---------------------------------------------------------------------------
 
 let sfxDarkSpace = null;
+// The Shadow Realm's bus, so an escape can cut its remaining howl short.
+let sfxShadowCave = null;
 
 // A long cavernous reverb plus a dark echo that repeats and fades out over
 // ~5s, both mixed into the master output.
@@ -454,6 +458,7 @@ const SHADOW_SOUNDS = {
   // away as the duel drifts back (~7.5s).
   'shadow-realm': t => {
     const cave = darkBus({ reverb: 0.8, echo: 0.3 });
+    sfxShadowCave = cave;
 
     darkCluster({ t, notes: [33, 34, 39], dur: 3.6, gain: 0.04, attack: 1, filter: [150, 700], out: cave });
     shadowWind({ t, dur: 3.4, gain: 0.07, freqs: [300, 700, 450, 1100, 600, 1500], out: cave });
@@ -477,6 +482,27 @@ const SHADOW_SOUNDS = {
 
     shadowWind({ t: t + 5, dur: 2.5, gain: 0.05, freqs: [900, 500, 300], out: cave });
     shadowWhispers(t + 5, 1.5, 4, cave);
+  },
+  // Escaping early: silence the rest of the Shadow Realm, shatter the dark
+  // like glass, and slam out a rebellious rock power chord (E5).
+  'shadow-escape': t => {
+    sfxShadowCave?.gain.setTargetAtTime(0, t, 0.04);
+    sfxShadowCave = null;
+    const room = darkBus({ reverb: 0.4 });
+
+    noise({ t, dur: 0.5, gain: 0.25, type: 'highpass', freq: 3500, to: 1500, attack: 0.002, out: room });
+    for (let i = 0; i < 8; i++) bell({ t: t + rnd(0, 0.35), freq: rnd(2500, 5000), dur: 0.4, gain: 0.03, out: room });
+    boom(t, 1.2, room);
+
+    const riff = [[0.05, 0.12], [0.2, 0.12], [0.38, 1.6]];
+    riff.forEach(([at, dur]) => {
+      [40, 47, 52, 59].forEach((n, i) => {
+        tone({ t: t + at, freq: midi(n), dur, type: 'sawtooth', gain: 0.06, attack: 0.004, filter: [3500, 1200], q: 3, detune: -8 + i * 4, out: room });
+        tone({ t: t + at, freq: midi(n), dur, type: 'square', gain: 0.03, attack: 0.004, filter: 2200, detune: 9, out: room });
+      });
+      noise({ t: t + at, dur: 0.06, gain: 0.12, type: 'lowpass', freq: 900, attack: 0.002 });
+    });
+    noise({ t: t + 0.38, dur: 1.8, gain: 0.08, type: 'highpass', freq: 6000, to: 3500, attack: 0.005, out: room });
   }
 };
 
@@ -544,6 +570,154 @@ const HEART_SOUNDS = {
     brass({ t: flip + 0.05, notes: [60, 64, 67, 72], dur: 0.18, gain: 0.05 });
     brass({ t: flip + 0.3, notes: [65, 69, 72, 77], dur: 1.1, gain: 0.05 });
     healSparkles(flip + 0.2, 1.4, 8, hall);
+  },
+  // The fifth draw in a duel: the usual fanfare, then a tiny Exodia blast
+  // (charge 3.3s, "pew" at 3.8s) — a toy-sized echo of 'logo-obliterate'.
+  'heart-overload': t => {
+    HEART_SOUNDS['heart-of-the-cards'](t);
+
+    const charge = t + 3.3;
+    const room = darkBus({ reverb: 0.4, echo: 0.3 });
+    laserCharge({ t: charge, dur: 0.5, from: 300, to: 4000, gain: 0.04, out: room });
+    [0, 0.22, 0.38].forEach(at => heartbeat(charge + at, 0.12));
+
+    const blast = t + 3.8;
+    boom(blast, 0.3, room);
+    tone({ t: blast, freq: 2200, to: 260, dur: 0.22, type: 'square', gain: 0.05, filter: 3500, attack: 0.002, out: room });
+    noise({ t: blast, dur: 0.25, gain: 0.08, type: 'highpass', freq: 3000, to: 1200, attack: 0.002, out: room });
+    tone({ t: blast + 0.45, freq: 520, to: 260, dur: 0.5, type: 'triangle', gain: 0.04, attack: 0.01 });
+  }
+};
+
+// ---------------------------------------------------------------------------
+// "Screw the rules" easter egg (shared by all themes): a denied buzzer, then
+// Kaiba's stamp, a cash register, raining coins and a hefty kick.
+// ---------------------------------------------------------------------------
+
+const SCREW_SOUNDS = {
+  // Tapping a used-up card: a short "nope" buzzer that climbs with each tap.
+  'used-deny': (t, e) => {
+    const f = 110 * Math.pow(2, (e.combo - 1) / 6);
+    tone({ t, freq: f, dur: 0.16, type: 'square', gain: 0.05, filter: 1400 });
+    tone({ t, freq: f * 1.06, dur: 0.16, type: 'square', gain: 0.035, filter: 1400 });
+  },
+  // Timeline matches effects.css: the stamp slams down (0s) with a cash
+  // register "ka-ching", coins clink down (0.1-2.4s), the USED stamp is
+  // kicked off (0.9s) and whistles away, and a smug brass fanfare plays.
+  'screw-the-rules': t => {
+    const room = darkBus({ reverb: 0.35 });
+
+    boom(t, 1.1, room);
+    noise({ t, dur: 0.15, gain: 0.2, type: 'lowpass', freq: 1800, attack: 0.002 });
+    bell({ t: t + 0.12, freq: 2637, dur: 0.6, gain: 0.08 });
+    bell({ t: t + 0.22, freq: 3520, dur: 0.9, gain: 0.08 });
+    noise({ t: t + 0.1, dur: 0.12, gain: 0.08, type: 'highpass', freq: 4000, attack: 0.002 });
+
+    for (let i = 0; i < 22; i++) coinClink(t + 0.1 + rnd(0, 2.3), 0.045);
+
+    const kick = t + 0.9;
+    tone({ t: kick, freq: 160, to: 60, dur: 0.18, gain: 0.3, attack: 0.002 });
+    noise({ t: kick, dur: 0.1, gain: 0.2, type: 'lowpass', freq: 2500, to: 400, attack: 0.001 });
+    tone({ t: kick + 0.05, freq: 1800, to: 500, dur: 0.9, gain: 0.04, attack: 0.02, out: room });
+
+    brass({ t: t + 1.3, notes: [62, 66, 69], dur: 0.16, gain: 0.05 });
+    brass({ t: t + 1.5, notes: [62, 66, 69], dur: 0.16, gain: 0.05 });
+    brass({ t: t + 1.7, notes: [67, 71, 74, 79], dur: 1, gain: 0.055 });
+  }
+};
+
+// ---------------------------------------------------------------------------
+// "Mind Crush" easter egg (shared by all themes): Pegasus sees all.
+// ---------------------------------------------------------------------------
+
+const MIND_CRUSH_SOUNDS = {
+  // Timeline matches effects.css: a swelling shimmer as the eye opens (0s),
+  // an eerie low hum and whispers while he speaks (0.4-2.2s), then a cheeky
+  // "ting!" as he winks (2.35s).
+  'mind-crush': t => {
+    const cave = darkBus({ reverb: 0.7 });
+
+    noise({ t, dur: 0.6, gain: 0.06, freq: 1200, to: 6000, q: 6, attack: 0.5, out: cave });
+    tone({ t, freq: midi(83), to: midi(95), slide: 0.5, dur: 0.6, gain: 0.03, attack: 0.45, out: cave });
+    darkCluster({ t: t + 0.3, notes: [45, 46, 51], dur: 2.2, gain: 0.025, attack: 0.6, filter: [300, 900], out: cave });
+    bell({ t: t + 0.4, freq: midi(57), dur: 2.4, gain: 0.12, out: cave });
+    shadowWhispers(t + 0.5, 1.6, 5, cave);
+
+    const wink = t + 2.35;
+    bell({ t: wink, freq: midi(100), dur: 0.7, gain: 0.08, out: cave });
+    bell({ t: wink + 0.07, freq: midi(107), dur: 0.6, gain: 0.05, out: cave });
+  }
+};
+
+// ---------------------------------------------------------------------------
+// Theme roulette easter egg (shared by all themes): cartoon dizziness.
+// ---------------------------------------------------------------------------
+
+// A slide whistle with a seasick wobble, gliding through the given pitches.
+function slideWhistle({ t, freqs, dur, gain = 0.06, wobble = 7, out = sfxOut }) {
+  const osc = sfxCtx.createOscillator();
+  const amp = sfxCtx.createGain();
+  const lfo = sfxCtx.createOscillator();
+  const depth = sfxCtx.createGain();
+  const step = dur / (freqs.length - 1);
+
+  osc.frequency.setValueAtTime(freqs[0], t);
+  freqs.slice(1).forEach((f, i) => osc.frequency.exponentialRampToValueAtTime(f, t + (i + 1) * step));
+  lfo.frequency.value = wobble;
+  depth.gain.value = freqs[0] * 0.04;
+  lfo.connect(depth).connect(osc.frequency);
+  envelope(amp.gain, t, gain, 0.05, dur);
+  osc.connect(amp).connect(out);
+  osc.start(t);
+  lfo.start(t);
+  osc.stop(t + dur + 0.05);
+  lfo.stop(t + dur + 0.05);
+}
+
+// "Tweet-tweet": two quick rising chirps.
+function tweet(t, gain = 0.03, out) {
+  tone({ t, freq: 2600, to: 3600, dur: 0.06, gain, attack: 0.004, out });
+  tone({ t: t + 0.09, freq: 2700, to: 3800, dur: 0.06, gain, attack: 0.004, out });
+}
+
+const DIZZY_SOUNDS = {
+  // Timeline matches effects.css: a seasick slide whistle swoops around while
+  // the screen wobbles (0-1.6s), a "boing" as the toast pops up (0.25s), and
+  // little birds tweet as the stars circle the logo (0.5-2.9s).
+  dizzy: t => {
+    const room = darkBus({ reverb: 0.3 });
+    slideWhistle({ t, freqs: [500, 1300, 420, 1100, 360, 900, 300], dur: 1.6, gain: 0.05, out: room });
+    tone({ t: t + 0.25, freq: 180, to: 420, dur: 0.35, type: 'triangle', gain: 0.08, attack: 0.005, out: room });
+    [0.5, 0.95, 1.4, 1.85, 2.3, 2.75].forEach((at, i) => tweet(t + at, 0.03 - i * 0.003, room));
+  }
+};
+
+// ---------------------------------------------------------------------------
+// Pharaoh's Nap easter egg (shared by all themes): a soft, looping snore.
+// ---------------------------------------------------------------------------
+
+const NAP_SOUNDS = {
+  // One breath, repeated every NAP_SNORE_EVERY_MS: a rattly inhale (0-1.3s)
+  // and a whistly "pshhh" exhale (1.6-2.7s), synced with the snot bubble.
+  'nap-snore': t => {
+    const room = darkBus({ reverb: 0.25 });
+    noise({ t, dur: 1.3, gain: 0.05, freq: 350, to: 700, q: 2, attack: 1, out: room });
+    tone({ t, freq: 52, to: 62, dur: 1.3, type: 'sawtooth', gain: 0.03, filter: 320, attack: 1, out: room });
+    tone({ t, freq: 104, to: 124, dur: 1.3, type: 'square', gain: 0.008, filter: 400, attack: 1, out: room });
+
+    const exhale = t + 1.6;
+    noise({ t: exhale, dur: 1.1, gain: 0.025, freq: 2200, to: 1100, q: 1.5, attack: 0.2, out: room });
+    tone({ t: exhale, freq: 950, to: 720, dur: 1, gain: 0.01, attack: 0.3, out: room });
+  },
+  // Startled awake: the bubble pops, a quick "huh?!", and a "!" sting as he
+  // looks shocked, then a nervous little shiver (timed with effects.css).
+  'nap-wake': t => {
+    bubble({ t, from: 500, to: 1400, gain: 0.08, dur: 0.07 });
+    tone({ t: t + 0.04, freq: 260, to: 700, dur: 0.14, type: 'triangle', gain: 0.07, attack: 0.005 });
+    tone({ t: t + 0.18, freq: 420, to: 1100, dur: 0.16, type: 'triangle', gain: 0.07, attack: 0.005 });
+    bell({ t: t + 0.1, freq: 1760, dur: 0.5, gain: 0.05 });
+    bell({ t: t + 0.1, freq: 2637, dur: 0.4, gain: 0.03 });
+    tone({ t: t + 0.55, freq: 330, dur: 0.45, type: 'triangle', gain: 0.025, attack: 0.02, detune: 30 });
   }
 };
 
@@ -634,7 +808,11 @@ const SOUND_KITS = {
     ...HEAL_SOUNDS,
     ...SHADOW_SOUNDS,
     ...LAST_STAND_SOUNDS,
-    ...HEART_SOUNDS
+    ...HEART_SOUNDS,
+    ...SCREW_SOUNDS,
+    ...MIND_CRUSH_SOUNDS,
+    ...DIZZY_SOUNDS,
+    ...NAP_SOUNDS
   },
 
   light: {
@@ -687,7 +865,11 @@ const SOUND_KITS = {
     ...HEAL_SOUNDS,
     ...SHADOW_SOUNDS,
     ...LAST_STAND_SOUNDS,
-    ...HEART_SOUNDS
+    ...HEART_SOUNDS,
+    ...SCREW_SOUNDS,
+    ...MIND_CRUSH_SOUNDS,
+    ...DIZZY_SOUNDS,
+    ...NAP_SOUNDS
   },
 
   poc: {
@@ -793,6 +975,10 @@ const SOUND_KITS = {
     ...HEAL_SOUNDS,
     ...SHADOW_SOUNDS,
     ...LAST_STAND_SOUNDS,
-    ...HEART_SOUNDS
+    ...HEART_SOUNDS,
+    ...SCREW_SOUNDS,
+    ...MIND_CRUSH_SOUNDS,
+    ...DIZZY_SOUNDS,
+    ...NAP_SOUNDS
   }
 };

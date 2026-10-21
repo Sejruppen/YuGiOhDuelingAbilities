@@ -1,6 +1,7 @@
 function togglePeek(type) {
   ui.peek[type] = !ui.peek[type];
   render();
+  countPeekSpam(type);
 }
 
 function activateAbility(type) {

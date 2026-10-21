@@ -25,5 +25,6 @@ function halveLpQuick() {
 }
 
 function resetLp() {
+  resetHeartOverload();
   setState({ lp: STARTING_LP, lastStand: false });
 }

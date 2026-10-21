@@ -3,10 +3,21 @@
 // up, Yugi's quote pops in word by word, a glowing card rises, trembles to a
 // drumroll... and flips over to reveal the "perfect draw" — a random, mostly
 // useless card. The sound is 'heart-of-the-cards' in sounds.js.
+//
+// Overload: the HEART_OVERLOAD_AT-th time in one duel, the heart of the cards
+// gives up being subtle. The draw is always "Exodia Obliterate!!! (Just
+// Kidding)", and the card fires a tiny, toy-sized Exodia blast ('heart-overload').
 const HEART_PRESS_MS = 900;
 // Keep in sync with the `heart-*` timings in effects.css.
 const HEART_TOTAL_MS = 6000;
+const HEART_OVERLOAD_AT = 5;
 const HEART_QUOTE = ['Believe', 'in', 'the', 'heart', 'of', 'the', 'cards!'];
+
+const HEART_OVERLOAD_DRAW = {
+  name: 'Exodia Obliterate!!! (Just Kidding)',
+  art: '👹',
+  text: 'Deals 1 damage. Exodia is on his lunch break.'
+};
 
 const HEART_DRAWS = [
   { name: 'Pot of Greed', art: '🏺', text: 'Draw 2 cards. That\'s it. That\'s the whole card.' },
@@ -18,7 +29,12 @@ const HEART_DRAWS = [
   { name: 'Swords of Revealing Light', art: '⚔️', text: 'Hold on for 3 turns. Wait... that\'s actually good?' }
 ];
 
-const heartEgg = { timer: null, busy: false, lastDraw: -1 };
+const heartEgg = { timer: null, busy: false, lastDraw: -1, count: 0 };
+
+// Called when a new duel starts, so the overload counts per duel.
+function resetHeartOverload() {
+  heartEgg.count = 0;
+}
 
 function startHeartPress(el) {
   if (heartEgg.busy) return;
@@ -43,10 +59,21 @@ function pickHeartDraw() {
 }
 
 function triggerHeartOfTheCards() {
-  const draw = pickHeartDraw();
+  const overload = heartEgg.count + 1 === HEART_OVERLOAD_AT;
+  const draw = overload ? HEART_OVERLOAD_DRAW : pickHeartDraw();
   const words = HEART_QUOTE.map((word, i) => `<span class="heart-word" style="--i: ${i}">${word}</span>`).join(' ');
+  const miniBlast = overload
+    ? `
+      <div class="heart-mini-blast">
+        <div class="mini-charge"></div>
+        <div class="mini-beam"></div>
+        <div class="mini-whiteout"></div>
+        <div class="mini-pew">pew.</div>
+      </div>
+    `
+    : '';
 
-  const overlay = spawnFx('fx-heart', HEART_TOTAL_MS + 100, {
+  const overlay = spawnFx(overload ? 'fx-heart heart-overload' : 'fx-heart', HEART_TOTAL_MS + 100, {
     html: `
       <div class="heart-dim"></div>
       <div class="heart-rays"></div>
@@ -62,11 +89,13 @@ function triggerHeartOfTheCards() {
         </div>
       </div>
       <div class="heart-flash"></div>
+      ${miniBlast}
     `
   });
   if (!overlay) return;
 
   heartEgg.busy = true;
-  playSound({ name: 'heart-of-the-cards' });
+  heartEgg.count++;
+  playSound({ name: overload ? 'heart-overload' : 'heart-of-the-cards' });
   setTimeout(() => { heartEgg.busy = false; }, HEART_TOTAL_MS);
 }
