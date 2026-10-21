@@ -35,7 +35,8 @@ function editLoadout() {
 function startDuel() {
   setState({
     screen: SCREENS.DUEL,
-    lp: STARTING_LP
+    lp: STARTING_LP,
+    lastStand: false
   });
 }
 

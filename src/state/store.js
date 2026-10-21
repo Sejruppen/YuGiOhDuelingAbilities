@@ -3,7 +3,9 @@ const initialDuelProgress = {
   comebackRevealed: false,
   skillUses: 0,
   comebackUses: 0,
-  questCompleted: false
+  questCompleted: false,
+  // Survived on exactly LAST_STAND_LP: the LP bar pulses red for the rest of the duel.
+  lastStand: false
 };
 
 const defaultState = {

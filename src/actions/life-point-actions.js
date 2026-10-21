@@ -11,14 +11,19 @@ function closeLpEditor() {
   setUi({ lpModalOpen: false });
 }
 
+function setLp(lp) {
+  const isLastStand = lp === LAST_STAND_LP && getCurrentLp() > LAST_STAND_LP;
+  setState({ lp, ...(isLastStand ? { lastStand: true } : {}) });
+}
+
 function adjustLpQuick(delta) {
-  setState({ lp: Math.max(0, getCurrentLp() + delta) });
+  setLp(Math.max(0, getCurrentLp() + delta));
 }
 
 function halveLpQuick() {
-  setState({ lp: Math.ceil(getCurrentLp() / 2) });
+  setLp(Math.ceil(getCurrentLp() / 2));
 }
 
 function resetLp() {
-  setState({ lp: STARTING_LP });
+  setState({ lp: STARTING_LP, lastStand: false });
 }
