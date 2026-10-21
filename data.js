@@ -203,12 +203,12 @@ const CHARACTERS = [
     theme: 'Ruler of the Deep',
     skills: [
       { name: '(The Sea) The Tide', text: 'Add "Umi" (or a variant) from your deck to your hand.', maxUses: 1 },
-      { name: '(Fish) Fisherman\'s Patience', text: 'Make a WATER-monster immune to battle destruction for one turn.', maxUses: 2 },
+      { name: '(Fish) Fisherman\'s Patience', text: 'Normal Summon a level 5 or 6 Water monster without paying Tribute.', maxUses: 1 },
       { name: '(Assassination) Stealth Attack', text: 'A WATER-monster can attack directly this turn, but the battle damage is halved.', maxUses: 3 }
     ],
     comebacks: [
       { name: '(The Sea) Tsunami', text: 'Requirement: You are under 2000 LP and Umi is on the field. Destroy all monsters on the field except WATER monsters.' },
-      { name: '(Fish) The Legendary Fisherman', text: 'Requirement: The opponent attacks for game. Special Summon your strongest WATER-monster from your deck.' },
+      { name: '(Fish) The Legendary Fisherman', text: 'Requirement: The opponent attacks for game. Negate the attack and Special Summon a level 5 Water monster from your deck.' },
       { name: '(Assassination) Whirlpool', text: 'Requirement: Your field is empty. Return up to 2 of the opponent\'s monsters to their hand.' }
     ],
     quests: [
@@ -222,19 +222,25 @@ const CHARACTERS = [
     name: 'Bakura',
     theme: 'Shadow Realm Occult',
     skills: [
-      { name: '(Occult) Pact of the Shadow Realm', text: 'Swap Life Points with the opponent if theirs are higher (You can swap a maximum difference of 2000 LP).', maxUses: 1 },
-      { name: '(Zombies) Return of the Undead', text: 'Special Summon a Zombie/Fiend-monster from your Graveyard with its effects negated.', maxUses: 1 },
-      { name: '(Destruction) Dark Temptation', text: 'Send the top 3 cards from both players\' decks to the Graveyard.', maxUses: 1 }
+      { name: '(Occult) Pact of the Shadow Realm', text: 'Flip a coin; if Heads: Swap Life Points with the opponent if theirs are higher. If Tails: you loose 1000 LP', maxUses: 2 },
+      { name: '(Zombies) Return of the Undead', text: 'Special Summon a Zombie/Fiend-monster from your Graveyard with its effects negated.', maxUses: 2 },
+      { name: '(Destruction) Dark Temptation', text: 'Once per turn: Send the top 3 cards from both players\' decks to the Graveyard.', maxUses: 5 },
+      { name: '(Necrofear) Dark Sanctuary Rite', text: 'Banish 1 Fiend monster from your Graveyard; add "Dark Necrofear" from your Deck to your hand.', maxUses: 1 },
+      { name: '(Possession) Change of Heart', text: 'Take control of 1 monster your opponent controls until the End Phase. You cannot attack your opponents\'s LP directly this turn.', maxUses: 1 }
     ],
     comebacks: [
       { name: '(Occult) Shadow of the Destiny Board', text: 'Requirement: You are under 1000 LP. The opponent now has exactly 3 turns to win. If they fail, you automatically win the duel.' },
-      { name: '(Zombies) Mass Resurrection', text: 'Requirement: Your field is empty. Special Summon as many Zombie/Fiend-monsters from your Graveyard as possible in Defense Position. They are discarded in the End Phase.' },
-      { name: '(Destruction) Soul Thief', text: 'Requirement: The opponent declares an attack, and you are behind on LP. Banish 5 cards from the opponent\'s Graveyard. You gain 300 LP per card.' }
+      { name: '(Zombies) Mass Resurrection', text: 'Requirement: Your field is empty. Special Summon as many Zombie/Fiend-monsters from your Graveyard as possible in Defense Position. They are sent to the GY in the End Phase.' },
+      { name: '(Destruction) Soul Thief', text: 'Requirement: The opponent declares an attack, and you are behind on LP. Banish up to 5 cards from the opponent\'s Graveyard. You gain 300 LP per card.' },
+      { name: '(Necrofear) Vengeful Possession', text: 'Requirement: A Fiend monster you control is destroyed by your opponents card. Take control of 1 face-up monster your opponent controls until the end of their next turn.' },
+      { name: '(Possession) Soul Figurine', text: 'Requirement: Your opponent initiates an attack that would reduce your LP to 0. Negate the attack and banish the attacking monster and all copies on your opponent\'s side of the field, their Deck and GY.' }
     ],
     quests: [
-      { name: '(Occult) Power of the Millennium Ring', text: 'Quest: The opponent must have over 10 cards in their Graveyard. Reward: You can look at the opponent\'s Set cards at any time.' },
-      { name: '(Zombies) Necro-Lord', text: 'Quest: Have 5 monsters in your Graveyard. Reward: Your Zombie/Fiend-monsters can tribute the opponent\'s LP instead of their own ATK when attacking (burn instead of battle).' },
-      { name: '(Destruction) Total Purge', text: 'Quest: Get the opponent\'s deck under 15 cards. Reward: During the opponent\'s Standby Phase, they must send the top card of their deck to the Graveyard.' }
+      { name: '(Occult) Fading Souls', text: 'Quest: Destroy 3 of the opponent\'s monsters in battle. Reward: Whenever your opponent\'s monsters are destroyed in battle banish them instead of sending them to the GY.' },
+      { name: '(Zombies) Necro-Lord', text: 'Quest: Have 5 monsters in your Graveyard. Reward: Once per turn; your Zombie and Fiend monsters can be tributed to inflict their ATK as damage to your opponent\'s LP.' },
+      { name: '(Destruction) Total Purge', text: 'Quest: Get the opponent\'s deck under 15 cards. Reward: During the opponent\'s Standby Phase, they must send the top card of their deck to the Graveyard.' },
+      { name: '(Necrofear) Three Fiends\' Offering', text: 'Quest: Banish 3 Fiend monsters from your Graveyard during the duel. Reward: Your opponent takes 500 damage whenever a Fiend monster you control is destroyed.' },
+      { name: '(Possession) Monster World', text: 'Quest: Take control of your opponent\'s monsters 2 times during the duel. Reward: Once per turn, when your opponent declares an attack, roll a die. On a 1 or 2, the attack is negated and the attacking monster loses 500 ATK permanently.' }
     ]
   },
   {
