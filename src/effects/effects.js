@@ -245,6 +245,8 @@ function playLpChange(app, lpBar, { from, to, silent }) {
     spawnParticles(lpBar, { type: 'heal', mode: 'rise', count: 16 });
   }
 
+  if (isHealOverflow(from, to)) triggerHealOverflow(anchor);
+
   if (to === 0 && from > 0) {
     spawnOverlay('defeat', 'defeat', 2200);
     spawnBanner(BANNER_TEXT.defeat, 'defeat');

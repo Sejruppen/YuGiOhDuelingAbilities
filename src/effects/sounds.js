@@ -3,7 +3,8 @@
 // - Dark:           synth zaps, glitches and neon sweeps.
 // - Light:          soft marimba notes, bubbly pops and chimes.
 // - Power of Chaos: card flips, golden bells, harp, brass fanfares and booms.
-// The logo / Exodia easter egg shares one sinister set across all themes.
+// The logo / Exodia easter egg shares one sinister set across all themes, and
+// the 30000 LP "Full Heal!" easter egg one joyful fanfare.
 // effects.js calls playSound(event) for the same events that drive the
 // animations. Sound is on by default and can be muted (saved on the device).
 const SOUND_STORAGE_KEY = 'ygo_sound';
@@ -92,6 +93,7 @@ function normaliseSoundEvent(event) {
     if (event.silent) return null;
     const amount = Math.abs(event.to - event.from);
     if (event.to === 0 && event.from > 0) return { name: 'defeat', amount };
+    if (isHealOverflow(event.from, event.to)) return { name: 'heal-overflow', amount };
     return { name: event.to < event.from ? 'damage' : 'heal', amount };
   }
   if (event.name === 'use' && event.delta < 0) return { ...event, name: 'use-undo' };
@@ -376,6 +378,52 @@ const EXODIA_SOUNDS = {
 };
 
 // ---------------------------------------------------------------------------
+// "Full Heal!" easter egg (shared by all themes): long, bright and happy.
+// ---------------------------------------------------------------------------
+
+// A warm choir-like pad: soft detuned sine/triangle pairs with a slow swell.
+function healPad({ t, notes, dur, gain = 0.035, attack = 0.4, out }) {
+  notes.forEach((n, i) => {
+    tone({ t, freq: midi(n), dur, type: 'triangle', gain, attack, filter: 3200, detune: -5 + i * 2, out });
+    tone({ t, freq: midi(n), dur, gain: gain * 0.8, attack: attack * 1.2, detune: 6 - i * 2, out });
+  });
+}
+
+// Twinkling high bells, scattered at random through the given window.
+function healSparkles(t, span, count, out) {
+  const notes = [84, 88, 91, 96, 100, 103];
+  for (let i = 0; i < count; i++) {
+    bell({ t: t + rnd(0, span), freq: midi(notes[Math.floor(rnd(0, notes.length))]), dur: 0.9, gain: 0.022, out });
+  }
+}
+
+const HEAL_SOUNDS = {
+  // Timeline matches effects.css: a harp glissando sweeps up while the
+  // shockwave grows (0-0.9s), a radiant major chord bursts as the screen goes
+  // green, then a plagal "Amen" cadence (IV -> I) rings out over the fade.
+  'heal-overflow': t => {
+    const hall = darkBus({ reverb: 0.6, echo: 0.15 });
+
+    arpeggio(t, [60, 64, 67, 72, 76, 79, 84, 88, 91, 96], 0.075, (at, n) => pluck({ t: at, note: n, gain: 0.06 }));
+    noise({ t, dur: 0.9, gain: 0.06, freq: 600, to: 9000, q: 1.5, attack: 0.8, out: hall });
+    tone({ t, freq: 300, to: 2400, dur: 0.9, gain: 0.025, attack: 0.85, out: hall });
+
+    const burst = t + 0.9;
+    tone({ t: burst, freq: 180, to: 60, dur: 0.6, gain: 0.25, attack: 0.004 });
+    noise({ t: burst, dur: 1.4, gain: 0.12, type: 'highpass', freq: 5000, to: 2000, attack: 0.01, out: hall });
+    bell({ t: burst, freq: midi(72), dur: 3, gain: 0.12, out: hall });
+    healPad({ t: burst, notes: [48, 55, 60, 64, 67, 72, 76], dur: 1.9, gain: 0.03, attack: 0.08, out: hall });
+    arpeggio(burst + 0.05, [84, 88, 91, 96, 100], 0.06, (at, n) => bell({ t: at, freq: midi(n), dur: 1, gain: 0.03, out: hall }));
+
+    const amen = t + 2.7;
+    healPad({ t: amen, notes: [53, 60, 65, 69, 72, 77], dur: 1.4, gain: 0.028, out: hall });
+    healPad({ t: amen + 1.3, notes: [48, 55, 60, 64, 67, 72, 79], dur: 3.2, gain: 0.03, attack: 0.5, out: hall });
+    bell({ t: amen + 1.3, freq: midi(84), dur: 3, gain: 0.07, out: hall });
+    healSparkles(burst + 0.4, 4.2, 18, hall);
+  }
+};
+
+// ---------------------------------------------------------------------------
 // Theme kits
 // ---------------------------------------------------------------------------
 
@@ -458,7 +506,8 @@ const SOUND_KITS = {
       tone({ t, freq: 440, to: 50, dur: 1.5, type: 'sawtooth', gain: 0.08, filter: [3000, 150] });
       chord({ t: t + 0.2, notes: [45, 48, 52], dur: 2, gain: 0.04, filter: [1200, 200] });
     },
-    ...EXODIA_SOUNDS
+    ...EXODIA_SOUNDS,
+    ...HEAL_SOUNDS
   },
 
   light: {
@@ -507,7 +556,8 @@ const SOUND_KITS = {
       arpeggio(t + 0.3, [84, 79, 76, 72], 0.06, (at, n) => marimba({ t: at, note: n, gain: 0.09 }));
     },
     defeat: t => arpeggio(t, [67, 66, 65, 64], 0.32, (at, n) => tone({ t: at, freq: midi(n), dur: 0.4, type: 'triangle', gain: 0.1, attack: 0.03 })),
-    ...EXODIA_SOUNDS
+    ...EXODIA_SOUNDS,
+    ...HEAL_SOUNDS
   },
 
   poc: {
@@ -609,6 +659,7 @@ const SOUND_KITS = {
       boom(t, 0.8);
       brass({ t: t + 0.4, notes: [50, 53, 57], dur: 1.8, gain: 0.03 });
     },
-    ...EXODIA_SOUNDS
+    ...EXODIA_SOUNDS,
+    ...HEAL_SOUNDS
   }
 };
