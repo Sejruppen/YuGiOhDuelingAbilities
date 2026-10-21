@@ -4,8 +4,8 @@
 // - Light:          soft marimba notes, bubbly pops and chimes.
 // - Power of Chaos: card flips, golden bells, harp, brass fanfares and booms.
 // The logo / Exodia easter egg shares one sinister set across all themes, the
-// 30000 LP "Full Heal!" easter egg one joyful fanfare, and the rare Shadow
-// Realm defeat one ghostly howl.
+// 30000 LP "Full Heal!" easter egg one joyful fanfare, the rare Shadow Realm
+// defeat one ghostly howl, and the 25 LP easter egg one tiny sad violin.
 // effects.js calls playSound(event) for the same events that drive the
 // animations. Sound is on by default and can be muted (saved on the device).
 const SOUND_STORAGE_KEY = 'ygo_sound';
@@ -95,6 +95,7 @@ function normaliseSoundEvent(event) {
     const amount = Math.abs(event.to - event.from);
     if (event.to === 0 && event.from > 0) return { name: event.shadowRealm ? 'shadow-realm' : 'defeat', amount };
     if (isHealOverflow(event.from, event.to)) return { name: 'heal-overflow', amount };
+    if (isTinyViolin(event.from, event.to)) return { name: 'tiny-violin', amount };
     return { name: event.to < event.from ? 'damage' : 'heal', amount };
   }
   if (event.name === 'use' && event.delta < 0) return { ...event, name: 'use-undo' };
@@ -479,6 +480,64 @@ const SHADOW_SOUNDS = {
 };
 
 // ---------------------------------------------------------------------------
+// Tiny violin easter egg (shared by all themes): a sad, wobbly little solo.
+// ---------------------------------------------------------------------------
+
+// A bowed string: a sawtooth with delayed vibrato, a soft bow swell and a
+// nasal body resonance.
+function violinNote({ t, note, dur, gain = 0.05, out = sfxOut }) {
+  const osc = sfxCtx.createOscillator();
+  const amp = sfxCtx.createGain();
+  const lfo = sfxCtx.createOscillator();
+  const depth = sfxCtx.createGain();
+  const freq = midi(note);
+
+  osc.type = 'sawtooth';
+  osc.frequency.setValueAtTime(freq * 0.985, t);
+  osc.frequency.exponentialRampToValueAtTime(freq, t + 0.06);
+  lfo.frequency.value = 5.5;
+  depth.gain.setValueAtTime(0, t);
+  depth.gain.linearRampToValueAtTime(freq * 0.012, t + Math.min(0.25, dur * 0.6));
+  lfo.connect(depth).connect(osc.frequency);
+
+  amp.gain.setValueAtTime(0.0001, t);
+  amp.gain.exponentialRampToValueAtTime(gain, t + 0.08);
+  amp.gain.setValueAtTime(gain, t + dur - 0.06);
+  amp.gain.exponentialRampToValueAtTime(0.0001, t + dur + 0.08);
+
+  const body = makeFilter(t, 'bandpass', freq * 2.2, null, dur, 1.2);
+  const air = makeFilter(t, 'lowpass', 5000, null, dur, 0.7);
+  osc.connect(body).connect(air).connect(amp).connect(out);
+  osc.start(t);
+  lfo.start(t);
+  osc.stop(t + dur + 0.1);
+  lfo.stop(t + dur + 0.1);
+}
+
+const TINY_VIOLIN_MELODY = [[88, 0.45], [86, 0.3], [84, 0.3], [83, 0.6], [84, 0.3], [81, 0.95]];
+
+const VIOLIN_SOUNDS = {
+  // Timeline matches effects.css: the violin pops up, plays its lament from
+  // 0.3s, and the string snaps at 3.25s with a boing as the violin flops.
+  'tiny-violin': t => {
+    const room = darkBus({ reverb: 0.35 });
+    tone({ t, freq: 900, to: 1800, dur: 0.12, gain: 0.05 });
+
+    let at = t + 0.3;
+    TINY_VIOLIN_MELODY.forEach(([note, dur]) => {
+      violinNote({ t: at, note, dur, out: room });
+      at += dur;
+    });
+
+    const snap = t + 3.25;
+    noise({ t: snap, dur: 0.05, gain: 0.25, type: 'highpass', freq: 3000, attack: 0.001 });
+    tone({ t: snap, freq: midi(93), to: midi(105), slide: 0.04, dur: 0.08, type: 'sawtooth', gain: 0.05, filter: 6000 });
+    tone({ t: snap + 0.03, freq: 520, to: 70, dur: 0.7, type: 'triangle', gain: 0.12, attack: 0.002, out: room });
+    tone({ t: snap + 0.03, freq: 528, to: 72, dur: 0.7, type: 'triangle', gain: 0.07, attack: 0.002, out: room });
+  }
+};
+
+// ---------------------------------------------------------------------------
 // Theme kits
 // ---------------------------------------------------------------------------
 
@@ -563,7 +622,8 @@ const SOUND_KITS = {
     },
     ...EXODIA_SOUNDS,
     ...HEAL_SOUNDS,
-    ...SHADOW_SOUNDS
+    ...SHADOW_SOUNDS,
+    ...VIOLIN_SOUNDS
   },
 
   light: {
@@ -614,7 +674,8 @@ const SOUND_KITS = {
     defeat: t => arpeggio(t, [67, 66, 65, 64], 0.32, (at, n) => tone({ t: at, freq: midi(n), dur: 0.4, type: 'triangle', gain: 0.1, attack: 0.03 })),
     ...EXODIA_SOUNDS,
     ...HEAL_SOUNDS,
-    ...SHADOW_SOUNDS
+    ...SHADOW_SOUNDS,
+    ...VIOLIN_SOUNDS
   },
 
   poc: {
@@ -718,6 +779,7 @@ const SOUND_KITS = {
     },
     ...EXODIA_SOUNDS,
     ...HEAL_SOUNDS,
-    ...SHADOW_SOUNDS
+    ...SHADOW_SOUNDS,
+    ...VIOLIN_SOUNDS
   }
 };

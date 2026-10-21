@@ -1429,6 +1429,111 @@ html[data-theme] .logo-egg:active { transform: none; filter: var(--logo-glow); }
 }
 
 /* =========================================================================
+   TINY VIOLIN EASTER EGG (src/effects/tiny-violin-easter-egg.js) — all themes
+   Dropping to exactly 25 LP: the world's smallest violin pops up (0-0.3s),
+   sways through a sad tune while notes float up (0.3-3.25s), its string
+   snaps with a *twang* and it flops over (3.25-4s), then everything fades
+   (to 4.8s). It doesn't block taps.
+   ========================================================================= */
+
+.fx-tiny-violin {
+  position: fixed;
+  inset: 0;
+  z-index: 5;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+}
+.violin-stage {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 1.25rem 1.5rem 1rem;
+  border-radius: 1rem;
+  background: rgb(15 23 42 / 0.8);
+  box-shadow: 0 10px 30px rgb(0 0 0 / 0.4);
+  animation: violin-stage 4.8s linear both;
+}
+@keyframes violin-stage {
+  0% { opacity: 0; transform: translateY(12px) scale(0.9); }
+  6% { opacity: 1; transform: translateY(0) scale(1); }
+  90% { opacity: 1; transform: translateY(0) scale(1); }
+  100% { opacity: 0; transform: translateY(-8px) scale(0.97); }
+}
+
+.violin-fiddle {
+  font-size: 1.6rem;
+  line-height: 1;
+  will-change: transform;
+  animation: violin-fiddle 4.8s linear both;
+}
+@keyframes violin-fiddle {
+  0% { transform: translateY(0) rotate(0deg) scale(0); }
+  5% { transform: translateY(0) rotate(0deg) scale(1.3); }
+  7%, 67.5% { transform: translateY(0) rotate(0deg) scale(1); }
+  69% { transform: translateY(-6px) rotate(-14deg) scale(1.2); }
+  73% { transform: translateY(0) rotate(0deg) scale(1); animation-timing-function: cubic-bezier(0.5, 0, 0.8, 0.4); }
+  80% { transform: translateY(8px) rotate(105deg) scale(1); }
+  83% { transform: translateY(6px) rotate(92deg) scale(1); }
+  100% { transform: translateY(8px) rotate(100deg) scale(1); }
+}
+.violin-emoji {
+  display: inline-block;
+  transform-origin: 30% 80%;
+  animation: violin-sway 0.49s ease-in-out 0.3s 6 alternate both;
+}
+@keyframes violin-sway {
+  from { transform: rotate(-12deg); }
+  to { transform: rotate(10deg); }
+}
+
+.violin-notes { position: absolute; left: 50%; top: 1.75rem; }
+.violin-note {
+  position: absolute;
+  font-size: 1.1rem;
+  color: #e2e8f0;
+  text-shadow: 0 0 6px rgb(148 163 184 / 0.8);
+  opacity: 0;
+  animation: violin-note 1.3s ease-out calc(0.35s + var(--i) * 0.45s) both;
+}
+@keyframes violin-note {
+  0% { opacity: 0; transform: translate(0, 0) rotate(0deg) scale(0.6); }
+  20% { opacity: 1; }
+  100% { opacity: 0; transform: translate(var(--nx), -70px) rotate(20deg) scale(1.1); }
+}
+
+.violin-twang {
+  position: absolute;
+  top: -0.4rem;
+  right: -0.6rem;
+  font-weight: 900;
+  font-style: italic;
+  font-size: 1rem;
+  color: #fbbf24;
+  text-shadow: 0 2px 0 #78350f;
+  opacity: 0;
+  animation: violin-twang 4.8s linear both;
+}
+@keyframes violin-twang {
+  0%, 67.5% { opacity: 0; transform: scale(0.3) rotate(-10deg); }
+  70% { opacity: 1; transform: scale(1.3) rotate(8deg); }
+  74% { transform: scale(1) rotate(4deg); }
+  86% { opacity: 1; }
+  92%, 100% { opacity: 0; transform: scale(1) rotate(4deg); }
+}
+
+.violin-caption {
+  font-size: 0.8rem;
+  font-style: italic;
+  line-height: 1.35;
+  text-align: center;
+  color: #cbd5e1;
+}
+
+/* =========================================================================
    THEME SWITCH (View Transitions API)
    ========================================================================= */
 
