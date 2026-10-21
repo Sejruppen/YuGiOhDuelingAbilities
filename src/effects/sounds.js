@@ -3,8 +3,9 @@
 // - Dark:           synth zaps, glitches and neon sweeps.
 // - Light:          soft marimba notes, bubbly pops and chimes.
 // - Power of Chaos: card flips, golden bells, harp, brass fanfares and booms.
-// The logo / Exodia easter egg shares one sinister set across all themes, and
-// the 30000 LP "Full Heal!" easter egg one joyful fanfare.
+// The logo / Exodia easter egg shares one sinister set across all themes, the
+// 30000 LP "Full Heal!" easter egg one joyful fanfare, and the rare Shadow
+// Realm defeat one ghostly howl.
 // effects.js calls playSound(event) for the same events that drive the
 // animations. Sound is on by default and can be muted (saved on the device).
 const SOUND_STORAGE_KEY = 'ygo_sound';
@@ -92,7 +93,7 @@ function normaliseSoundEvent(event) {
   if (event.name === 'lp-change') {
     if (event.silent) return null;
     const amount = Math.abs(event.to - event.from);
-    if (event.to === 0 && event.from > 0) return { name: 'defeat', amount };
+    if (event.to === 0 && event.from > 0) return { name: event.shadowRealm ? 'shadow-realm' : 'defeat', amount };
     if (isHealOverflow(event.from, event.to)) return { name: 'heal-overflow', amount };
     return { name: event.to < event.from ? 'damage' : 'heal', amount };
   }
@@ -424,6 +425,60 @@ const HEAL_SOUNDS = {
 };
 
 // ---------------------------------------------------------------------------
+// Shadow Realm easter egg (shared by all themes): howling, swirling, ghostly.
+// ---------------------------------------------------------------------------
+
+// Howling wind: resonant noise whose pitch wanders up and down.
+function shadowWind({ t, dur, gain, freqs, out }) {
+  const step = dur / (freqs.length - 1);
+  freqs.slice(1).forEach((to, i) => {
+    noise({ t: t + i * step, dur: step * 1.4, gain, freq: freqs[i], to, q: 9, attack: step * 0.6, out });
+  });
+}
+
+// Ghostly whispers: short breathy bursts at random pitches.
+function shadowWhispers(t, span, count, out) {
+  for (let i = 0; i < count; i++) {
+    const at = t + rnd(0, span);
+    const freq = rnd(1200, 3200);
+    noise({ t: at, dur: rnd(0.25, 0.5), gain: 0.05, freq, to: freq * rnd(0.6, 1.4), q: 14, attack: 0.08, out });
+  }
+}
+
+const SHADOW_SOUNDS = {
+  // Timeline matches effects.css: fog and howling wind creep in (0-1.2s), the
+  // vortex sucks the duel in with a falling swirl (1.2-3.2s), it slams shut
+  // (3.2s), a ghostly choir hangs over the Millennium Eye, and the wind dies
+  // away as the duel drifts back (~7.5s).
+  'shadow-realm': t => {
+    const cave = darkBus({ reverb: 0.8, echo: 0.3 });
+
+    darkCluster({ t, notes: [33, 34, 39], dur: 3.6, gain: 0.04, attack: 1, filter: [150, 700], out: cave });
+    shadowWind({ t, dur: 3.4, gain: 0.07, freqs: [300, 700, 450, 1100, 600, 1500], out: cave });
+    tone({ t, freq: midi(81), to: midi(75), slide: 1.2, dur: 1.4, type: 'triangle', gain: 0.02, attack: 0.5, out: cave });
+
+    const swirl = t + 1.2;
+    tone({ t: swirl, freq: 900, to: 45, dur: 2, type: 'sawtooth', gain: 0.05, attack: 0.3, filter: [3000, 150], out: cave });
+    tone({ t: swirl, freq: 940, to: 47, dur: 2, type: 'sawtooth', gain: 0.035, attack: 0.3, filter: [3000, 150], detune: 15, out: cave });
+    noise({ t: swirl, dur: 2, gain: 0.12, freq: 4000, to: 120, q: 4, attack: 1.6, out: cave });
+    shadowWhispers(swirl, 2, 10, cave);
+    [0, 0.5, 0.9, 1.2, 1.45, 1.65, 1.82].forEach(at => heartbeat(swirl + at, 0.26));
+
+    const slam = t + 3.2;
+    boom(slam, 1.3, cave);
+    tone({ t: slam, freq: 70, to: 25, dur: 2.5, gain: 0.35, attack: 0.003 });
+    bell({ t: slam + 0.2, freq: midi(38), dur: 4, gain: 0.22, out: cave });
+    darkCluster({ t: slam + 0.3, notes: [57, 60, 63, 64], dur: 2.6, gain: 0.018, attack: 0.8, filter: [600, 2200], out: cave });
+    [69, 68, 66, 63].forEach((n, i) => {
+      tone({ t: slam + 0.4 + i * 0.5, freq: midi(n), dur: 0.9, type: 'triangle', gain: 0.03, attack: 0.25, out: cave });
+    });
+
+    shadowWind({ t: t + 5, dur: 2.5, gain: 0.05, freqs: [900, 500, 300], out: cave });
+    shadowWhispers(t + 5, 1.5, 4, cave);
+  }
+};
+
+// ---------------------------------------------------------------------------
 // Theme kits
 // ---------------------------------------------------------------------------
 
@@ -507,7 +562,8 @@ const SOUND_KITS = {
       chord({ t: t + 0.2, notes: [45, 48, 52], dur: 2, gain: 0.04, filter: [1200, 200] });
     },
     ...EXODIA_SOUNDS,
-    ...HEAL_SOUNDS
+    ...HEAL_SOUNDS,
+    ...SHADOW_SOUNDS
   },
 
   light: {
@@ -557,7 +613,8 @@ const SOUND_KITS = {
     },
     defeat: t => arpeggio(t, [67, 66, 65, 64], 0.32, (at, n) => tone({ t: at, freq: midi(n), dur: 0.4, type: 'triangle', gain: 0.1, attack: 0.03 })),
     ...EXODIA_SOUNDS,
-    ...HEAL_SOUNDS
+    ...HEAL_SOUNDS,
+    ...SHADOW_SOUNDS
   },
 
   poc: {
@@ -660,6 +717,7 @@ const SOUND_KITS = {
       brass({ t: t + 0.4, notes: [50, 53, 57], dur: 1.8, gain: 0.03 });
     },
     ...EXODIA_SOUNDS,
-    ...HEAL_SOUNDS
+    ...HEAL_SOUNDS,
+    ...SHADOW_SOUNDS
   }
 };

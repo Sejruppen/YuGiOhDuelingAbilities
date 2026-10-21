@@ -147,6 +147,11 @@ function playEffect(app, event) {
   const card = event.type ? app.querySelector(`[data-fx-card="${event.type}"]`) : null;
   const lpBar = app.querySelector('.lp-bar');
 
+  // Roll once so the sound and the visuals agree on the outcome.
+  if (event.name === 'lp-change' && !event.silent && event.to === 0 && event.from > 0) {
+    event.shadowRealm = rollShadowRealm();
+  }
+
   playSound(event);
 
   switch (event.name) {
@@ -228,7 +233,7 @@ function playEffect(app, event) {
   }
 }
 
-function playLpChange(app, lpBar, { from, to, silent }) {
+function playLpChange(app, lpBar, { from, to, silent, shadowRealm }) {
   if (silent) return;
 
   const isDamage = to < from;
@@ -240,14 +245,17 @@ function playLpChange(app, lpBar, { from, to, silent }) {
 
   if (isDamage) {
     spawnOverlay('damage', 'damage', 700);
-    restartClass(app, 'fx-shake', 600);
+    // The Shadow Realm drags #app away itself, so don't fight it with a shake.
+    if (!shadowRealm) restartClass(app, 'fx-shake', 600);
   } else {
     spawnParticles(lpBar, { type: 'heal', mode: 'rise', count: 16 });
   }
 
   if (isHealOverflow(from, to)) triggerHealOverflow(anchor);
 
-  if (to === 0 && from > 0) {
+  if (shadowRealm) {
+    triggerShadowRealm(app);
+  } else if (to === 0 && from > 0) {
     spawnOverlay('defeat', 'defeat', 2200);
     spawnBanner(BANNER_TEXT.defeat, 'defeat');
   }
