@@ -8,8 +8,9 @@
 // defeat one ghostly howl, the 25 LP "Unstoppable" easter egg one pounding
 // heartbeat, "Believe in the heart of the cards!" one heavenly draw,
 // "Screw the rules" one cash-register fanfare, "Mind Crush" one eerie wink,
-// the theme roulette one dizzy slide whistle, Pharaoh's Nap one snore, and
-// the Millennium Puzzle one ancient golden hum.
+// the theme roulette one dizzy slide whistle, Pharaoh's Nap one snore, the
+// Millennium Puzzle one ancient golden hum, and the broken speaker one sad
+// trombone.
 // effects.js calls playSound(event) for the same events that drive the
 // animations. Sound is on by default and can be muted (saved on the device).
 const SOUND_STORAGE_KEY = 'ygo_sound';
@@ -28,6 +29,8 @@ function isSoundOn() {
 }
 
 function toggleSound() {
+  // The speaker is in the Graveyard (speaker-easter-egg.js) — no touching.
+  if (speakerEgg.dead) return;
   const on = !isSoundOn();
   try {
     localStorage.setItem(SOUND_STORAGE_KEY, on ? 'on' : 'off');
@@ -36,6 +39,7 @@ function toggleSound() {
     unlockAudio();
     playSound({ name: 'sound-on' });
   }
+  if (countSoundSpam()) return;
   render();
 }
 
@@ -809,6 +813,47 @@ const PUZZLE_SOUNDS = {
 };
 
 // ---------------------------------------------------------------------------
+// Speaker easter egg (shared by all themes): strain, BANG, sad trombone,
+// and a heavenly Monster Reborn.
+// ---------------------------------------------------------------------------
+
+const SPEAKER_SOUNDS = {
+  // Each straining tap (only heard on the "on" taps): a rattly buzz that gets
+  // higher and nastier as the speaker gives up.
+  'speaker-creak': (t, e) => {
+    const f = 90 * Math.pow(2, e.strain / 5);
+    tone({ t, freq: f, to: f * 1.4, dur: 0.12, type: 'sawtooth', gain: 0.02 + e.strain * 0.005, filter: 1200 + e.strain * 300, attack: 0.004 });
+    noise({ t, dur: 0.08, gain: 0.02 + e.strain * 0.006, type: 'bandpass', freq: 2500, q: 4, attack: 0.002 });
+  },
+  // Timeline matches effects.css: the speaker blows (0s) with a crackle and
+  // fizzle, a sad trombone "wah wah wah wahhh" (0.5-2.4s), the Monster Reborn
+  // ankh floats down with a choir (2.2s), and the speaker revives (3.4s).
+  'speaker-rip': t => {
+    const room = darkBus({ reverb: 0.4 });
+    boom(t, 0.6, room);
+    noise({ t, dur: 0.12, gain: 0.25, type: 'highpass', freq: 1500, attack: 0.001 });
+    for (let i = 0; i < 10; i++) noise({ t: t + 0.05 + rnd(0, 0.5), dur: 0.03, gain: 0.06, type: 'bandpass', freq: rnd(2000, 6000), q: 3, attack: 0.001 });
+    noise({ t: t + 0.1, dur: 0.9, gain: 0.04, type: 'highpass', freq: 5000, to: 2000, attack: 0.05 });
+
+    const trombone = (at, from, to, dur) => {
+      tone({ t: t + at, freq: from, to, dur, type: 'sawtooth', gain: 0.06, attack: 0.03, filter: [1400, 600], out: room });
+      tone({ t: t + at, freq: from, to, dur, type: 'square', gain: 0.025, attack: 0.03, filter: 900, detune: 8, out: room });
+    };
+    trombone(0.5, midi(55), midi(55), 0.32);
+    trombone(0.85, midi(54), midi(54), 0.32);
+    trombone(1.2, midi(53), midi(53), 0.32);
+    trombone(1.55, midi(52), midi(49), 0.9);
+
+    const hall = darkBus({ reverb: 0.7 });
+    healPad({ t: t + 2.2, notes: [64, 68, 71, 76], dur: 1.6, gain: 0.02, attack: 0.8, out: hall });
+    const reborn = t + 3.4;
+    bell({ t: reborn, freq: midi(88), dur: 1.4, gain: 0.08, out: hall });
+    arpeggio(reborn, [64, 68, 71, 76, 80], 0.06, (at, n) => bell({ t: at, freq: midi(n + 12), dur: 0.9, gain: 0.05, out: hall }));
+    healSparkles(reborn + 0.1, 1.2, 6, hall);
+  }
+};
+
+// ---------------------------------------------------------------------------
 // Theme kits
 // ---------------------------------------------------------------------------
 
@@ -901,7 +946,8 @@ const SOUND_KITS = {
     ...MIND_CRUSH_SOUNDS,
     ...DIZZY_SOUNDS,
     ...NAP_SOUNDS,
-    ...PUZZLE_SOUNDS
+    ...PUZZLE_SOUNDS,
+    ...SPEAKER_SOUNDS
   },
 
   light: {
@@ -960,7 +1006,8 @@ const SOUND_KITS = {
     ...MIND_CRUSH_SOUNDS,
     ...DIZZY_SOUNDS,
     ...NAP_SOUNDS,
-    ...PUZZLE_SOUNDS
+    ...PUZZLE_SOUNDS,
+    ...SPEAKER_SOUNDS
   },
 
   poc: {
@@ -1072,6 +1119,7 @@ const SOUND_KITS = {
     ...MIND_CRUSH_SOUNDS,
     ...DIZZY_SOUNDS,
     ...NAP_SOUNDS,
-    ...PUZZLE_SOUNDS
+    ...PUZZLE_SOUNDS,
+    ...SPEAKER_SOUNDS
   }
 };
