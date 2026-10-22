@@ -23,6 +23,15 @@ function toggleQuestCompleted(completed) {
   setState({ questCompleted: completed });
 }
 
+// Undo an accidental activation: the card goes face-down again with no uses.
+function hideAbility(type) {
+  ui.peek[type] = false;
+  setState({
+    [`${type}Revealed`]: false,
+    [`${type}Uses`]: 0
+  });
+}
+
 function changeUses(type, delta) {
   const current = state[`${type}Uses`] || 0;
   setState({ [`${type}Uses`]: Math.max(0, current + delta) });

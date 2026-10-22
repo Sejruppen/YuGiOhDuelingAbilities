@@ -81,7 +81,12 @@ function renderRevealedAbilityCard(abilityType, ability, uses) {
       ? 'bg-slate-800 text-slate-400 border-slate-700'
       : `${theme.bg} ${theme.text} ${theme.border}`,
     badgeText: `${label} - ${isExhausted ? 'Used' : 'Active'}`,
-    controlsHtml: hasLimit ? renderUsageCounter(type, uses, maxUses, isExhausted) : renderUnlimitedBadge(),
+    controlsHtml: `
+      <div class="flex items-center gap-1.5">
+        <button onclick="hideAbility('${type}')" title="Activated by mistake? Hide it again" class="text-xs font-semibold text-slate-300 hover:text-white px-2.5 py-1 rounded bg-slate-950/60 border border-slate-800 transition">Hide</button>
+        ${hasLimit ? renderUsageCounter(type, uses, maxUses, isExhausted) : renderUnlimitedBadge()}
+      </div>
+    `,
     watermarkHtml: isExhausted ? renderUsedWatermark() : '',
     cardAttrs: isExhausted ? `onclick="tapUsedCard('${type}', event)"` : '',
     ability
