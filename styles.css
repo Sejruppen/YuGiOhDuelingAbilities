@@ -265,16 +265,25 @@ html[data-theme="poc"] .duel-card-hidden .lock-medallion {
   color: #4a2c0e;
 }
 
-/* Life Points on a marble tablet. */
+/* Life Points on the same swirling card back as the hidden abilities. */
 html[data-theme="poc"] .lp-bar {
-  border: 3px solid #8a6a3c;
+  border: 4px solid #5c3a17;
+  background-color: #2a1206;
   background-image:
-    linear-gradient(115deg, transparent 38%, rgba(80, 90, 100, 0.22) 39%, transparent 41%),
-    linear-gradient(65deg, transparent 62%, rgba(80, 90, 100, 0.18) 63%, transparent 64.5%),
-    linear-gradient(160deg, transparent 20%, rgba(80, 90, 100, 0.12) 21%, transparent 22.5%),
-    linear-gradient(to bottom, #f6f4ee, #d4cfc4);
-  box-shadow: inset 0 0 12px rgba(0, 0, 0, 0.25), 0 3px 8px rgba(74, 44, 14, 0.4);
+    radial-gradient(circle at 50% 50%, rgba(0, 0, 0, 0.9) 0 24px, transparent 90px),
+    repeating-radial-gradient(circle at 50% 50%, #2a1206 0 7px, #6e3210 10px, #c0661e 12px, #6e3210 14px, #2a1206 17px);
+  box-shadow: inset 0 0 0 3px #b8863f, inset 0 0 30px rgba(0, 0, 0, 0.85), 0 3px 8px rgba(74, 44, 14, 0.4);
 }
+
+html[data-theme="poc"] .lp-bar > span,
+html[data-theme="poc"] .lp-bar .text-slate-400 {
+  color: #f8dc8c;
+  text-shadow: 0 2px 3px #000;
+}
+
+html[data-theme="poc"] .lp-bar.text-emerald-400 { color: #9ee6b8; }
+html[data-theme="poc"] .lp-bar.text-amber-400 { color: #f5c542; }
+html[data-theme="poc"] .lp-bar.text-rose-400 { color: #ff8fa3; }
 
 html[data-theme="poc"] .lp-value {
   font-family: 'Cinzel', Georgia, serif;
@@ -284,6 +293,7 @@ html[data-theme="poc"] .lp-value {
 html[data-theme="poc"] .lp-bar .lp-value {
   font-size: 1.85rem;
   letter-spacing: 0;
+  text-shadow: 0 2px 3px #000, 0 0 8px rgba(0, 0, 0, 0.9);
 }
 
 html[data-theme="poc"] .modal-panel {

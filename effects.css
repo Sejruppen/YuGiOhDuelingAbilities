@@ -633,7 +633,7 @@ html[data-theme="poc"] .lp-bar::before {
   position: absolute;
   inset: 0;
   pointer-events: none;
-  background: linear-gradient(160deg, transparent 40%, rgba(255, 255, 255, 0.85) 50%, transparent 60%);
+  background: linear-gradient(160deg, transparent 40%, rgba(255, 220, 140, 0.35) 50%, transparent 60%);
   background-size: 100% 300%;
   animation: poc-glint 6s ease-in-out infinite;
   animation-delay: calc(var(--fx-t, 0) * -1ms);
@@ -1593,6 +1593,130 @@ html[data-theme] .logo-egg:active { transform: none; filter: var(--logo-glow); }
   22% { opacity: 0.45; }
   32% { opacity: 0.9; }
   60%, 100% { opacity: 0.25; }
+}
+
+/* =========================================================================
+   TINY VIOLIN EASTER EGG (src/effects/tiny-violin-easter-egg.js) — all themes
+   Dropping to exactly 1 LP (TINY_VIOLIN_LP): a tiny violin pops up (0-0.4s),
+   sways while sad notes drift up (0.4-3.2s), its string snaps with a
+   "*twang*" at 3.2s, it flops over at 3.5s and everything fades (to 4.8s).
+   Doesn't block taps.
+   ========================================================================= */
+
+.fx-tiny-violin {
+  position: fixed;
+  inset: 0;
+  z-index: 5;
+  pointer-events: none;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  padding-bottom: 22vh;
+}
+
+.violin-stage {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.violin-fiddle {
+  transform-origin: 50% 100%;
+  will-change: transform, opacity;
+  animation: violin-fiddle 4.8s linear both;
+}
+@keyframes violin-fiddle {
+  0% { opacity: 0; transform: scale(0); }
+  6% { opacity: 1; transform: scale(1.2); animation-timing-function: ease-out; }
+  9% { transform: scale(1); }
+  66% { transform: scale(1); }
+  67% { transform: scale(1.15) rotate(14deg); }
+  70% { transform: scale(1) rotate(-8deg); }
+  73% { transform: rotate(98deg) translateY(4px); animation-timing-function: ease-out; }
+  75.5% { transform: rotate(84deg); }
+  78% { transform: rotate(90deg); }
+  90% { opacity: 1; transform: rotate(90deg); }
+  100% { opacity: 0; transform: rotate(90deg); }
+}
+
+.violin-emoji {
+  display: inline-block;
+  font-size: 3.5rem;
+  line-height: 1;
+  filter: drop-shadow(0 3px 4px rgb(0 0 0 / 0.45));
+  animation: violin-sway 0.4s 0.4s ease-in-out 7 alternate both;
+}
+@keyframes violin-sway {
+  from { transform: rotate(-10deg); }
+  to { transform: rotate(10deg) translateY(-2px); }
+}
+
+.violin-notes {
+  position: absolute;
+  left: 50%;
+  bottom: 70%;
+  width: 0;
+  height: 0;
+}
+.violin-note {
+  position: absolute;
+  left: -0.4em;
+  bottom: 0;
+  font-size: 1.6rem;
+  color: #fff;
+  text-shadow: 0 0 6px rgb(0 0 0 / 0.7), 0 2px 2px rgb(0 0 0 / 0.5);
+  opacity: 0;
+  animation: violin-note 1.4s ease-out both;
+  animation-delay: calc(0.4s + var(--i) * 0.35s);
+}
+@keyframes violin-note {
+  0% { opacity: 0; transform: translate(0, 0) scale(0.6); }
+  15% { opacity: 1; }
+  100% { opacity: 0; transform: translate(var(--nx), -110px) rotate(-18deg) scale(1.1); }
+}
+
+.violin-twang {
+  position: absolute;
+  top: -1.2rem;
+  left: 60%;
+  font-family: 'Cinzel', Georgia, serif;
+  font-weight: 900;
+  font-style: italic;
+  font-size: 1.4rem;
+  white-space: nowrap;
+  color: #fde68a;
+  text-shadow: 0 0 6px rgb(0 0 0 / 0.8), 0 2px 0 #7c2d12;
+  opacity: 0;
+  animation: violin-twang 4.8s linear both;
+}
+@keyframes violin-twang {
+  0%, 66.4% { opacity: 0; transform: scale(0.3) rotate(-12deg); }
+  68% { opacity: 1; transform: scale(1.35) rotate(8deg); }
+  70% { transform: scale(0.95) rotate(-6deg); }
+  72% { transform: scale(1.05) rotate(3deg); }
+  74%, 86% { opacity: 1; transform: scale(1) rotate(0); }
+  94%, 100% { opacity: 0; transform: translateY(-10px); }
+}
+
+.violin-caption {
+  margin-top: 0.6rem;
+  padding: 0.35rem 0.9rem;
+  border-radius: 999px;
+  text-align: center;
+  font-size: 0.8rem;
+  font-style: italic;
+  line-height: 1.3;
+  color: #fff;
+  background: rgb(15 23 42 / 0.75);
+  box-shadow: 0 4px 12px rgb(0 0 0 / 0.35);
+  opacity: 0;
+  animation: violin-caption 4.8s linear both;
+}
+@keyframes violin-caption {
+  0%, 7% { opacity: 0; transform: translateY(8px); }
+  13%, 90% { opacity: 1; transform: translateY(0); }
+  100% { opacity: 0; }
 }
 
 /* =========================================================================

@@ -99,6 +99,7 @@ function normaliseSoundEvent(event) {
     if (event.to === 0 && event.from > 0) return { name: event.shadowRealm ? 'shadow-realm' : 'defeat', amount };
     if (isHealOverflow(event.from, event.to)) return { name: 'heal-overflow', amount };
     if (isLastStand(event.from, event.to)) return { name: 'last-stand', amount };
+    if (isTinyViolin(event.from, event.to)) return { name: 'tiny-violin', amount };
     return { name: event.to < event.from ? 'damage' : 'heal', amount };
   }
   if (event.name === 'use' && event.delta < 0) return { ...event, name: 'use-undo' };
@@ -542,6 +543,54 @@ const LAST_STAND_SOUNDS = {
 };
 
 // ---------------------------------------------------------------------------
+// Tiny violin easter egg (shared by all themes): a sad, wobbly violin tune
+// cut short by a snapping string.
+// ---------------------------------------------------------------------------
+
+// A bowed note: sawtooth through a lowpass with a slow, sobbing vibrato.
+function violinNote({ t, note, dur, gain = 0.05, out = sfxOut }) {
+  const osc = sfxCtx.createOscillator();
+  const amp = sfxCtx.createGain();
+  const lfo = sfxCtx.createOscillator();
+  const depth = sfxCtx.createGain();
+  const freq = midi(note);
+
+  osc.type = 'sawtooth';
+  osc.frequency.setValueAtTime(freq, t);
+  lfo.frequency.value = 5.5;
+  depth.gain.setValueAtTime(0, t);
+  depth.gain.linearRampToValueAtTime(freq * 0.02, t + Math.min(0.25, dur));
+  lfo.connect(depth).connect(osc.frequency);
+  envelope(amp.gain, t, gain, 0.08, dur);
+  osc.connect(makeFilter(t, 'lowpass', 2400, null, dur, 1.5)).connect(amp).connect(out);
+  osc.start(t);
+  lfo.start(t);
+  osc.stop(t + dur + 0.05);
+  lfo.stop(t + dur + 0.05);
+}
+
+const TINY_VIOLIN_SOUNDS = {
+  // Timeline matches effects.css: the violin pops up (0s), plays a drooping
+  // minor tune (0.4-3.2s), the string snaps with a *twang* at 3.2s, and the
+  // violin flops over with a little thud at 3.5s.
+  'tiny-violin': t => {
+    const room = darkBus({ reverb: 0.35 });
+    tone({ t, freq: 600, to: 1400, dur: 0.15, type: 'triangle', gain: 0.05, attack: 0.005, out: room });
+
+    [[0.4, 0.4, 76], [0.8, 0.4, 74], [1.2, 0.4, 72], [1.6, 0.8, 71], [2.4, 0.85, 69]]
+      .forEach(([at, dur, note]) => violinNote({ t: t + at, note, dur, out: room }));
+
+    const snap = t + 3.2;
+    tone({ t: snap, freq: 1800, to: 220, dur: 0.45, type: 'triangle', gain: 0.1, attack: 0.002, out: room });
+    tone({ t: snap, freq: 2400, to: 300, dur: 0.3, type: 'sawtooth', gain: 0.03, attack: 0.002, filter: 4000, out: room });
+    noise({ t: snap, dur: 0.05, gain: 0.08, type: 'highpass', freq: 4000, attack: 0.001, out: room });
+
+    tone({ t: t + 3.5, freq: 160, to: 70, dur: 0.15, gain: 0.12, attack: 0.003, out: room });
+    noise({ t: t + 3.5, dur: 0.08, gain: 0.05, type: 'lowpass', freq: 800, attack: 0.002, out: room });
+  }
+};
+
+// ---------------------------------------------------------------------------
 // "Heart of the cards" easter egg (shared by all themes): heavenly build-up,
 // a drumroll, and a triumphant "ta-da!" for a deeply unimpressive card.
 // ---------------------------------------------------------------------------
@@ -804,6 +853,7 @@ const SOUND_KITS = {
       tone({ t, freq: 440, to: 50, dur: 1.5, type: 'sawtooth', gain: 0.08, filter: [3000, 150] });
       chord({ t: t + 0.2, notes: [45, 48, 52], dur: 2, gain: 0.04, filter: [1200, 200] });
     },
+    ...TINY_VIOLIN_SOUNDS,
     ...EXODIA_SOUNDS,
     ...HEAL_SOUNDS,
     ...SHADOW_SOUNDS,
@@ -861,7 +911,8 @@ const SOUND_KITS = {
       arpeggio(t + 0.3, [84, 79, 76, 72], 0.06, (at, n) => marimba({ t: at, note: n, gain: 0.09 }));
     },
     defeat: t => arpeggio(t, [67, 66, 65, 64], 0.32, (at, n) => tone({ t: at, freq: midi(n), dur: 0.4, type: 'triangle', gain: 0.1, attack: 0.03 })),
-    ...EXODIA_SOUNDS,
+        ...TINY_VIOLIN_SOUNDS,
+        ...EXODIA_SOUNDS,
     ...HEAL_SOUNDS,
     ...SHADOW_SOUNDS,
     ...LAST_STAND_SOUNDS,
@@ -971,6 +1022,7 @@ const SOUND_KITS = {
       boom(t, 0.8);
       brass({ t: t + 0.4, notes: [50, 53, 57], dur: 1.8, gain: 0.03 });
     },
+    ...TINY_VIOLIN_SOUNDS,
     ...EXODIA_SOUNDS,
     ...HEAL_SOUNDS,
     ...SHADOW_SOUNDS,

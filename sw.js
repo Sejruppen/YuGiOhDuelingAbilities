@@ -1,4 +1,4 @@
-const CACHE_NAME = 'ygo-skills-mvp-v52';
+const CACHE_NAME = 'ygo-skills-mvp-v53';
 const ASSETS = [
   './',
   './index.html',
@@ -32,6 +32,7 @@ const ASSETS = [
   './src/effects/heal-easter-egg.js',
   './src/effects/shadow-realm-easter-egg.js',
   './src/effects/last-stand-easter-egg.js',
+  './src/effects/tiny-violin-easter-egg.js',
   './src/effects/heart-of-the-cards-easter-egg.js',
   './src/effects/screw-the-rules-easter-egg.js',
   './src/effects/mind-crush-easter-egg.js',

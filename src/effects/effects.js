@@ -253,6 +253,7 @@ function playLpChange(app, lpBar, { from, to, silent, shadowRealm }) {
 
   if (isHealOverflow(from, to)) triggerHealOverflow(anchor);
   if (isLastStand(from, to)) triggerLastStand(app);
+  if (isTinyViolin(from, to)) triggerTinyViolin();
 
   if (shadowRealm) {
     triggerShadowRealm(app);
