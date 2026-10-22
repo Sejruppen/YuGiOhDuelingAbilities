@@ -6,7 +6,6 @@ function renderDuelHeader(char) {
   return `
     <header class="px-4 py-2.5 border-b border-slate-800 flex items-center justify-between bg-slate-900 shrink-0">
       <div class="flex items-center gap-1.5">
-        <button onclick="editLoadout()" class="text-sm font-medium text-slate-300 border border-slate-700 rounded-lg px-3 py-1">← Edit</button>
         ${renderSoundIconButton()}
       </div>
       <div class="heart-press text-center" title="Hold to believe..." onpointerdown="startHeartPress(this)" onpointerup="cancelHeartPress(this)" onpointerleave="cancelHeartPress(this)" onpointercancel="cancelHeartPress(this)" oncontextmenu="return false">

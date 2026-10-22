@@ -28,10 +28,6 @@ function pickAbility(type, index) {
   setState({ [abilityType.selectionKey]: index });
 }
 
-function editLoadout() {
-  setState({ screen: SCREENS.ABILITIES });
-}
-
 function startDuel() {
   resetHeartOverload();
   setState({
