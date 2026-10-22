@@ -8,7 +8,8 @@
 // defeat one ghostly howl, the 25 LP "Unstoppable" easter egg one pounding
 // heartbeat, "Believe in the heart of the cards!" one heavenly draw,
 // "Screw the rules" one cash-register fanfare, "Mind Crush" one eerie wink,
-// the theme roulette one dizzy slide whistle, and Pharaoh's Nap one snore.
+// the theme roulette one dizzy slide whistle, Pharaoh's Nap one snore, and
+// the Millennium Puzzle one ancient golden hum.
 // effects.js calls playSound(event) for the same events that drive the
 // animations. Sound is on by default and can be muted (saved on the device).
 const SOUND_STORAGE_KEY = 'ygo_sound';
@@ -771,6 +772,43 @@ const NAP_SOUNDS = {
 };
 
 // ---------------------------------------------------------------------------
+// Millennium Puzzle easter egg (shared by all themes): ancient and golden.
+// ---------------------------------------------------------------------------
+
+// A deep, slightly beating drone with a fifth and an octave on top.
+function puzzleHum(t, dur, gain, out) {
+  [[45, 0], [45, 7], [52, -5], [57, 4]].forEach(([n, detune], i) => {
+    tone({ t, freq: midi(n), dur, type: i ? 'sine' : 'triangle', gain: i ? gain * 0.6 : gain, attack: 0.35, filter: 900, detune, out });
+  });
+}
+
+const PUZZLE_SOUNDS = {
+  // Each correct lock: a golden chime that climbs (A, C#, E).
+  'puzzle-tap': (t, e) => {
+    const n = [69, 73, 76][e.step - 1] ?? 69;
+    const out = darkBus({ reverb: 0.5 });
+    bell({ t, freq: midi(n + 12), dur: 1.2, gain: 0.07, out });
+    bell({ t, freq: midi(n), dur: 1, gain: 0.04, out });
+  },
+  // Timeline matches effects.css: the locks whoosh in (0-0.9s) with a click
+  // each, the puzzle slams together at 0.9s with a gong, then hums in pulses
+  // (every 1.2s) under a mystic shimmer while it glows.
+  'puzzle-assemble': t => {
+    const hall = darkBus({ reverb: 0.8, echo: 0.2 });
+    noise({ t, dur: 0.9, gain: 0.08, freq: 300, to: 4000, q: 2, attack: 0.8, out: hall });
+    [0.6, 0.72, 0.84].forEach(at => noise({ t: t + at, dur: 0.05, gain: 0.12, type: 'bandpass', freq: 2500, q: 3, attack: 0.002 }));
+
+    const lock = t + 0.9;
+    boom(lock, 0.7, hall);
+    bell({ t: lock, freq: midi(45), dur: 3.5, gain: 0.2, out: hall });
+    bell({ t: lock, freq: midi(69), dur: 2.5, gain: 0.08, out: hall });
+    [0, 1.2, 2.4].forEach((at, i) => puzzleHum(lock + at, 1.6, 0.06 - i * 0.012, hall));
+    healPad({ t: lock + 0.2, notes: [57, 64, 69, 76], dur: 3.4, gain: 0.018, attack: 0.9, out: hall });
+    healSparkles(lock + 0.3, 3, 8, hall);
+  }
+};
+
+// ---------------------------------------------------------------------------
 // Theme kits
 // ---------------------------------------------------------------------------
 
@@ -862,7 +900,8 @@ const SOUND_KITS = {
     ...SCREW_SOUNDS,
     ...MIND_CRUSH_SOUNDS,
     ...DIZZY_SOUNDS,
-    ...NAP_SOUNDS
+    ...NAP_SOUNDS,
+    ...PUZZLE_SOUNDS
   },
 
   light: {
@@ -920,7 +959,8 @@ const SOUND_KITS = {
     ...SCREW_SOUNDS,
     ...MIND_CRUSH_SOUNDS,
     ...DIZZY_SOUNDS,
-    ...NAP_SOUNDS
+    ...NAP_SOUNDS,
+    ...PUZZLE_SOUNDS
   },
 
   poc: {
@@ -1031,6 +1071,7 @@ const SOUND_KITS = {
     ...SCREW_SOUNDS,
     ...MIND_CRUSH_SOUNDS,
     ...DIZZY_SOUNDS,
-    ...NAP_SOUNDS
+    ...NAP_SOUNDS,
+    ...PUZZLE_SOUNDS
   }
 };

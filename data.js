@@ -30,7 +30,7 @@ const CHARACTERS = [
     name: 'Theotaur',
     theme: 'Dark Paladin\'s Legion',
     skills: [
-      { name: '(Fusion) The Masters Apprentice', text: 'You can discard 1 card; add 1 "Polymerization" card from your Deck to your hand or reveal 1 Fusion monster in your Extra Deck; Add 1 of the Fusion Materials whose name is specifically listed on that monster from your Deck to your hand', maxUses: 1 },
+      { name: '(Fusion) The Masters Apprentice', text: 'You can discard 1 card; add 1 "Polymerization" card from your Deck to your hand or reveal 1 Fusion monster in your Extra Deck; Add 1 of the Fusion Materials whose name is specifically listed on that monster from your Deck or GY to your hand', maxUses: 1 },
       { name: '(Bond of Dragon) The dragontamers call', text: 'Discard 1 Dragon monster; Draw 1 card.', maxUses: 3 },
       { name: '(Illusion) Magical Transformation', text: 'Choose 1 monster on your side of the field. The monsters name is treated as either "Dark Magician" or "Buster Blader" until the end of the turn.', maxUses: 1 }
     ],

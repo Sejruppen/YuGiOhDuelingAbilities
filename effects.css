@@ -2421,6 +2421,145 @@ html[data-theme] .used-watermark.fx-used-nudge { animation: used-nudge 0.4s ease
 }
 
 /* =========================================================================
+   MILLENNIUM PUZZLE EASTER EGG (src/effects/millennium-puzzle-easter-egg.js)
+   All themes. Each correct lock tap flares gold (.puzzle-lit, 1.2s). Then:
+   dim + rays (0-0.5s), the locks fly to the middle and spin/shrink
+   (0-0.9s), a flash as the Puzzle appears (0.9s), it glows in 1.2s pulses
+   with "The Millennium Puzzle is complete!" (1.3s), and fades (4.4-5.2s).
+   ========================================================================= */
+
+.lock-medallion { cursor: pointer; -webkit-tap-highlight-color: transparent; }
+html[data-theme] .duel-card-hidden .lock-medallion.puzzle-lit {
+  color: #fef3c7;
+  border-color: #fbbf24;
+  background-image: radial-gradient(circle, #fbbf24, #b45309);
+  animation: puzzle-lit 1.2s ease-out both;
+}
+@keyframes puzzle-lit {
+  0% { transform: scale(1); box-shadow: 0 0 0 0 rgb(251 191 36 / 0.9); }
+  15% { transform: scale(1.25); box-shadow: 0 0 18px 6px rgb(251 191 36 / 0.85); }
+  40% { transform: scale(1); }
+  100% { transform: scale(1); box-shadow: 0 0 10px 2px rgb(251 191 36 / 0.4); }
+}
+html[data-theme] .duel-card-hidden .lock-medallion.puzzle-taken { visibility: hidden; }
+
+.fx-puzzle { position: fixed; inset: 0; z-index: 5; overflow: hidden; pointer-events: auto; }
+
+.puzzle-dim {
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(circle at var(--cx) var(--cy), rgb(120 53 15 / 0.5), rgb(12 6 2 / 0.9) 70%);
+  animation: puzzle-fade 5.2s linear both;
+}
+@keyframes puzzle-fade {
+  0% { opacity: 0; }
+  10%, 84.6% { opacity: 1; }
+  100% { opacity: 0; }
+}
+
+.puzzle-rays {
+  position: absolute;
+  left: var(--cx);
+  top: var(--cy);
+  width: 160vmax;
+  height: 160vmax;
+  margin: -80vmax 0 0 -80vmax;
+  background: repeating-conic-gradient(from 0deg, rgb(253 230 138 / 0.3) 0deg 5deg, rgb(253 230 138 / 0) 5deg 15deg);
+  -webkit-mask: radial-gradient(circle, #000 0, rgb(0 0 0 / 0.5) 18%, rgb(0 0 0 / 0) 42%);
+  mask: radial-gradient(circle, #000 0, rgb(0 0 0 / 0.5) 18%, rgb(0 0 0 / 0) 42%);
+  animation: puzzle-rays 5.2s linear both, fx-spin 18s linear infinite;
+}
+@keyframes puzzle-rays {
+  0%, 17.3% { opacity: 0; }
+  22%, 84.6% { opacity: 1; }
+  100% { opacity: 0; }
+}
+
+.puzzle-flyer {
+  position: absolute;
+  left: var(--x);
+  top: var(--y);
+  width: 44px;
+  height: 44px;
+  margin: -22px 0 0 -22px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  color: #fef3c7;
+  background: radial-gradient(circle, #fbbf24, #b45309);
+  border: 1px solid #fde68a;
+  box-shadow: 0 0 16px 4px rgb(251 191 36 / 0.8);
+  will-change: transform, opacity;
+  animation: puzzle-fly 0.9s cubic-bezier(0.55, 0, 0.75, 0.4) calc(var(--i) * 0.08s) both;
+}
+@keyframes puzzle-fly {
+  0% { transform: translate(0, 0) rotate(0deg) scale(1); opacity: 1; }
+  25% { transform: translate(calc(var(--dx) * -0.08), calc(var(--dy) * -0.08 - 20px)) rotate(-30deg) scale(1.2); opacity: 1; }
+  90% { opacity: 1; }
+  100% { transform: translate(var(--dx), var(--dy)) rotate(540deg) scale(0.3); opacity: 0; }
+}
+
+.puzzle-flash {
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(circle at var(--cx) var(--cy), #fffbeb 0, rgb(253 230 138 / 0.85) 18%, rgb(253 230 138 / 0) 55%);
+  opacity: 0;
+  animation: puzzle-flash 5.2s linear both;
+}
+@keyframes puzzle-flash {
+  0%, 16.9% { opacity: 0; }
+  17.6% { opacity: 1; }
+  28%, 100% { opacity: 0; }
+}
+
+.puzzle-item {
+  position: absolute;
+  left: var(--cx);
+  top: var(--cy);
+  width: min(44vw, 190px);
+  transform: translate(-50%, -50%);
+  animation: puzzle-item 5.2s linear both;
+}
+@keyframes puzzle-item {
+  0%, 17.2% { opacity: 0; transform: translate(-50%, -50%) scale(0.2) rotate(-25deg); }
+  21% { opacity: 1; transform: translate(-50%, -50%) scale(1.18) rotate(4deg); animation-timing-function: ease-out; }
+  25% { transform: translate(-50%, -50%) scale(1) rotate(0deg); }
+  84.6% { opacity: 1; transform: translate(-50%, -50%) scale(1.04) rotate(0deg); }
+  100% { opacity: 0; transform: translate(-50%, -50%) scale(1.12) rotate(0deg); }
+}
+.puzzle-glow { animation: puzzle-glow 1.2s ease-in-out 0.9s infinite alternate both; }
+@keyframes puzzle-glow {
+  from { filter: drop-shadow(0 0 6px rgb(251 191 36 / 0.7)) drop-shadow(0 0 16px rgb(217 119 6 / 0.5)); transform: translateY(0); }
+  to { filter: drop-shadow(0 0 14px rgb(253 230 138 / 1)) drop-shadow(0 0 40px rgb(251 191 36 / 0.8)) brightness(1.15); transform: translateY(-6px); }
+}
+.puzzle-svg { display: block; width: 100%; height: auto; overflow: visible; }
+.puzzle-eye { animation: puzzle-eye 1.2s ease-in-out 0.9s infinite alternate; }
+@keyframes puzzle-eye { from { opacity: 0.75; } to { opacity: 1; } }
+
+.puzzle-text {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: calc(var(--cy) + min(26vw, 115px));
+  padding: 0 1rem;
+  text-align: center;
+  font-family: 'Cinzel Decorative', 'Cinzel', serif;
+  font-weight: 900;
+  font-size: clamp(1.25rem, 6.5vw, 2.25rem);
+  line-height: 1.2;
+  color: #fef3c7;
+  text-shadow: 0 0 10px rgb(251 191 36 / 0.9), 0 0 26px rgb(217 119 6 / 0.8), 0 3px 0 #78350f;
+  animation: puzzle-text 5.2s linear both;
+}
+@keyframes puzzle-text {
+  0%, 25% { opacity: 0; transform: translateY(16px) scale(0.85); }
+  31% { opacity: 1; transform: translateY(0) scale(1); }
+  84.6% { opacity: 1; transform: translateY(0) scale(1); }
+  100% { opacity: 0; transform: translateY(-8px) scale(1.04); }
+}
+
+/* =========================================================================
    THEME SWITCH (View Transitions API)
    ========================================================================= */
 

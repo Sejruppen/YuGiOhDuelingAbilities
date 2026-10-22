@@ -17,7 +17,7 @@ function renderDuelCard(abilityType, ability, { isActive, uses, isPeeking }) {
 function renderHiddenCard({ type, label, actionLabel, theme }) {
   return `
     <div data-fx-card="${type}" class="duel-card-hidden fx-c-${type} flex-1 rounded-2xl border-2 border-dashed border-slate-700 bg-slate-900/50 p-4 flex flex-col items-center justify-center text-center">
-      <div class="lock-medallion w-11 h-11 mb-2 rounded-full bg-slate-800 border border-slate-700 flex items-center justify-center text-slate-400 shadow-inner">
+      <div onclick="tapLockMedallion('${type}', this)" class="lock-medallion w-11 h-11 mb-2 rounded-full bg-slate-800 border border-slate-700 flex items-center justify-center text-slate-400 shadow-inner">
         ${LOCK_ICON}
       </div>
       <h3 class="text-sm font-bold text-slate-300 mb-3.5 tracking-widest uppercase">Secret ${label}</h3>
