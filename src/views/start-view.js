@@ -47,7 +47,7 @@ function renderStartView() {
           <p class="text-slate-300 text-base max-w-xs mb-10 leading-relaxed">
             Select your character deck, customize your secret loadout of Skill, Comeback, and Quest, and enter the duel.
           </p>
-          <button onclick="goToCharacters()" class="w-full max-w-xs py-4 rounded-xl bg-amber-500 hover:bg-amber-400 active:scale-98 text-slate-950 font-bold text-xl shadow-lg shadow-amber-500/20 transition">
+          <button onclick="if (diskAllowsClick()) goToCharacters()" onpointerdown="startDiskPress(this)" onpointerup="cancelDiskPress(this)" onpointerleave="cancelDiskPress(this)" onpointercancel="cancelDiskPress(this)" oncontextmenu="return false" class="disk-press w-full max-w-xs py-4 rounded-xl bg-amber-500 hover:bg-amber-400 active:scale-98 text-slate-950 font-bold text-xl shadow-lg shadow-amber-500/20 transition">
             Start Duel Setup
           </button>
           ${renderThemePicker()}

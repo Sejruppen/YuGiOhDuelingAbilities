@@ -85,7 +85,8 @@ function summonExodia(logo) {
   playSound({ name: 'logo-obliterate' });
 
   // A copy of the logo sits above the darkness, then flies to Exodia's hands.
-  const r = logo.querySelector('img').getBoundingClientRect();
+  // The Duel Disk game passes the Exodia card instead of the logo.
+  const r = (logo.querySelector('img') || logo).getBoundingClientRect();
   const overlay = spawnFx('fx-exodia', EXODIA_TOTAL_MS + 100, {
     vars: {
       '--lx': `${r.left}px`,

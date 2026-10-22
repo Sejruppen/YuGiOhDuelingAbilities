@@ -5,6 +5,11 @@ function renderCurrentView(app) {
     return;
   }
 
+  if (state.screen === SCREENS.DISK) {
+    app.innerHTML = renderDuelDiskView();
+    return;
+  }
+
   if (state.screen === SCREENS.CHARACTER) {
     app.innerHTML = renderCharacterView();
     return;

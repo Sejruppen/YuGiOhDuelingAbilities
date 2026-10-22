@@ -11,7 +11,8 @@
 // the theme roulette one dizzy slide whistle, Pharaoh's Nap one snore, the
 // Millennium Puzzle one ancient golden hum, the broken speaker one sad
 // trombone, Pot of Greed one deadpan "bonk-bonk", Trap Hole one cartoon
-// fall and boing, and Gaia the Fierce Knight one gallop and whinny.
+// fall and boing, Gaia the Fierce Knight one gallop and whinny, and the secret
+// Duel Disk mini-game a whole board's worth (DISK_SOUNDS).
 // effects.js calls playSound(event) for the same events that drive the
 // animations. Sound is on by default and can be muted (saved on the device).
 const SOUND_STORAGE_KEY = 'ygo_sound';
@@ -995,6 +996,165 @@ const GAIA_SOUNDS = {
   }
 };
 
+// --- Secret Duel Disk mini-game (src/actions/duel-disk-actions.js) ----------
+
+// Kuriboh's "kuri!": a squeaky up-down chirp.
+function kuriChirp(t, gain = 0.05, out = sfxOut) {
+  const f = rnd(1000, 1300);
+  tone({ t, freq: f, to: f * 1.4, dur: 0.07, type: 'triangle', gain, attack: 0.004, out });
+  tone({ t: t + 0.08, freq: f * 1.25, to: f * 0.8, dur: 0.1, type: 'triangle', gain, attack: 0.004, out });
+}
+
+// A big monster roar: filtered noise breath over two growling saws.
+function monsterRoar(t, gain = 0.1, out = sfxOut) {
+  noise({ t, dur: 1.1, gain: gain * 1.6, type: 'lowpass', freq: 1400, to: 250, attack: 0.08, out });
+  tone({ t, freq: 120, to: 70, dur: 1.1, type: 'sawtooth', gain, filter: [900, 300], q: 3, attack: 0.08, out });
+  tone({ t, freq: 178, to: 96, dur: 1.0, type: 'sawtooth', gain: gain * 0.7, filter: [1200, 350], q: 3, attack: 0.1, detune: 12, out });
+}
+
+// Hologram projection: a rising shimmer plus a sparkle arpeggio.
+function holoRise(t, gain, out) {
+  tone({ t, freq: 220, to: 1320, dur: 0.6, type: 'sawtooth', gain: gain * 0.4, filter: [400, 3200], q: 4, attack: 0.05, out });
+  tone({ t, freq: 440, to: 2640, dur: 0.55, gain: gain * 0.5, attack: 0.05, out });
+  arpeggio(t + 0.25, [79, 83, 86, 91], 0.05, (tt, n) => tone({ t: tt, freq: midi(n), dur: 0.25, type: 'triangle', gain: gain * 0.35, attack: 0.003, out }));
+}
+
+const DISK_SOUNDS = {
+  // The disk unfolds: a servo whirr, clacking panels, then a power-on chime.
+  'disk-boot': t => {
+    const room = darkBus({ reverb: 0.2 });
+    tone({ t, freq: 90, to: 420, dur: 0.75, type: 'sawtooth', gain: 0.04, filter: [300, 1800], q: 5, attack: 0.05, out: room });
+    noise({ t, dur: 0.75, gain: 0.03, freq: 800, to: 2400, q: 3, attack: 0.1, out: room });
+    for (let i = 0; i < 6; i++) {
+      const at = t + 0.55 + i * 0.07;
+      noise({ t: at, dur: 0.025, gain: 0.09, type: 'bandpass', freq: rnd(1800, 3200), q: 6, attack: 0.001, out: room });
+      tone({ t: at, freq: 180, to: 90, dur: 0.04, type: 'square', gain: 0.03, filter: 900, attack: 0.001, out: room });
+    }
+    arpeggio(t + 1.05, [72, 79, 84], 0.08, (tt, n) => tone({ t: tt, freq: midi(n), dur: 0.35, type: 'square', gain: 0.03, filter: 2600, attack: 0.004, out: room }));
+  },
+  'disk-draw': t => {
+    cardFlip(t, 0.12, 3000);
+    noise({ t, dur: 0.12, gain: 0.04, type: 'highpass', freq: 2500, to: 5000, attack: 0.01 });
+  },
+  'disk-shuffle': t => {
+    for (let i = 0; i < 16; i++) cardFlip(t + i * 0.035 + rnd(0, 0.01), 0.06, rnd(2200, 3600));
+    noise({ t: t + 0.6, dur: 0.08, gain: 0.08, type: 'lowpass', freq: 900, attack: 0.002 });
+  },
+  // `level` scales the boom; `voice` adds a monster's signature sound.
+  'disk-summon': (t, { level = 4, voice } = {}) => {
+    const hall = darkBus({ reverb: 0.4 });
+    noise({ t, dur: 0.06, gain: 0.08, type: 'lowpass', freq: 1200, attack: 0.002, out: hall });
+    holoRise(t + 0.05, 0.06 + level * 0.006, hall);
+    if (level >= 5) boom(t + 0.55, 0.15 + (level - 4) * 0.06, hall);
+    if (voice === 'kuri') [0.5, 0.75].forEach(o => kuriChirp(t + o, 0.05, hall));
+    if (voice === 'roar') monsterRoar(t + 0.55, 0.06 + (level - 6) * 0.02, hall);
+    if (voice === 'neigh') neigh(t + 0.5, { gain: 0.05, out: hall });
+    if (voice === 'magic') {
+      arpeggio(t + 0.55, [64, 67, 70, 73, 76, 79], 0.04, (tt, n) => tone({ t: tt, freq: midi(n), dur: 0.5, type: 'triangle', gain: 0.03, attack: 0.004, out: hall }));
+      tone({ t: t + 0.55, freq: 110, dur: 0.9, type: 'sawtooth', gain: 0.04, filter: [300, 1200], attack: 0.1, out: hall });
+    }
+  },
+  'disk-tribute': t => {
+    const hall = darkBus({ reverb: 0.5 });
+    arpeggio(t, [84, 79, 76, 72], 0.07, (tt, n) => bell({ t: tt, freq: midi(n), dur: 0.6, gain: 0.03, out: hall }));
+    noise({ t, dur: 0.5, gain: 0.03, freq: 3000, to: 600, q: 1, attack: 0.05, out: hall });
+  },
+  'disk-set': t => {
+    cardFlip(t, 0.08, 2400);
+    tone({ t: t + 0.05, freq: 170, to: 80, dur: 0.1, type: 'triangle', gain: 0.12, attack: 0.002 });
+    noise({ t: t + 0.05, dur: 0.05, gain: 0.06, type: 'lowpass', freq: 700, attack: 0.001 });
+  },
+  'disk-spell': t => {
+    const hall = darkBus({ reverb: 0.4 });
+    noise({ t, dur: 0.35, gain: 0.04, freq: 800, to: 5000, q: 1.2, attack: 0.05, out: hall });
+    arpeggio(t + 0.05, [76, 81, 85, 88, 93], 0.05, (tt, n) => bell({ t: tt, freq: midi(n), dur: 0.7, gain: 0.025, out: hall }));
+  },
+  // "TRAP CARD!": a sharp orchestral stab.
+  'disk-trap': t => {
+    const hall = darkBus({ reverb: 0.45 });
+    brass({ t, notes: [57, 60, 63, 66], dur: 0.45, gain: 0.05 });
+    noise({ t, dur: 0.2, gain: 0.12, type: 'lowpass', freq: 3000, to: 400, attack: 0.002, out: hall });
+    boom(t, 0.25, hall);
+    cardFlip(t + 0.02, 0.12, 2800);
+  },
+  'disk-attack': (t, { level = 4 } = {}) => {
+    noise({ t, dur: 0.3, gain: 0.08, freq: 400, to: 4000, q: 1.5, attack: 0.04 });
+    tone({ t: t + 0.05, freq: 300, to: 1200 + level * 100, dur: 0.25, type: 'sawtooth', gain: 0.03, filter: [800, 4000], q: 3, attack: 0.02 });
+  },
+  'disk-hit': (t, { amount = 1000 } = {}) => {
+    const strength = Math.min(1, 0.3 + amount / 4000);
+    boom(t, strength * 0.6);
+    noise({ t, dur: 0.15, gain: 0.12 * strength, type: 'bandpass', freq: 900, q: 1.5, attack: 0.001 });
+    tone({ t, freq: 520, to: 180, dur: 0.12, type: 'square', gain: 0.03, filter: 2000, attack: 0.001 });
+  },
+  // The dummy's wooden flail: a creaky wind-up, a whoosh and a thwack.
+  'disk-dummy-attack': t => {
+    tone({ t, freq: 140, to: 210, dur: 0.25, type: 'sawtooth', gain: 0.025, filter: 700, q: 6, attack: 0.02 });
+    noise({ t: t + 0.25, dur: 0.25, gain: 0.08, freq: 3000, to: 500, q: 1.5, attack: 0.05 });
+    tone({ t: t + 0.5, freq: 260, to: 120, dur: 0.08, type: 'triangle', gain: 0.12, attack: 0.001 });
+    noise({ t: t + 0.5, dur: 0.06, gain: 0.1, type: 'bandpass', freq: 1500, q: 4, attack: 0.001 });
+  },
+  'disk-hurt': t => {
+    boom(t, 0.4);
+    tone({ t, freq: 330, to: 110, dur: 0.35, type: 'sawtooth', gain: 0.04, filter: 1200, attack: 0.005 });
+  },
+  'disk-heal': t => {
+    arpeggio(t, [72, 76, 79, 84], 0.06, (tt, n) => tone({ t: tt, freq: midi(n), dur: 0.4, type: 'triangle', gain: 0.05, attack: 0.004 }));
+  },
+  'disk-graveyard': t => {
+    const crypt = darkBus({ reverb: 0.6 });
+    tone({ t, freq: 700, to: 140, dur: 0.6, gain: 0.05, attack: 0.02, out: crypt });
+    noise({ t, dur: 0.5, gain: 0.03, freq: 2000, to: 300, q: 2, attack: 0.05, out: crypt });
+  },
+  'disk-error': t => {
+    tone({ t, freq: 140, dur: 0.09, type: 'square', gain: 0.04, filter: 900 });
+    tone({ t: t + 0.12, freq: 120, dur: 0.12, type: 'square', gain: 0.04, filter: 900 });
+  },
+  'disk-turn': t => {
+    tone({ t, freq: midi(76), dur: 0.08, type: 'square', gain: 0.03, filter: 3000 });
+    tone({ t: t + 0.09, freq: midi(83), dur: 0.14, type: 'square', gain: 0.03, filter: 3000 });
+  },
+  'disk-kuriboh': t => {
+    const room = darkBus({ reverb: 0.25 });
+    for (let i = 0; i < 12; i++) kuriChirp(t + i * 0.09 + rnd(0, 0.03), 0.035, room);
+    boing(t + 1.1, { from: 200, to: 500, dur: 0.3, gain: 0.05, out: room });
+  },
+  // Time Wizard: a roulette ticking down, then a ding or a buzz (decided in
+  // the game, so this just ticks; the hit/miss follows as disk-hit/hurt).
+  'disk-roulette': t => {
+    let at = t;
+    for (let i = 0; i < 14; i++) {
+      tone({ t: at, freq: i % 2 ? 1800 : 1500, dur: 0.025, type: 'square', gain: 0.025, filter: 4000, attack: 0.001 });
+      at += 0.04 + i * 0.009;
+    }
+  },
+  'disk-negate': t => {
+    bell({ t, freq: 880, dur: 0.8, gain: 0.05 });
+    noise({ t, dur: 0.25, gain: 0.05, freq: 2500, to: 800, q: 3, attack: 0.002 });
+  },
+  'disk-fall': t => {
+    const pit = darkBus({ reverb: 0.7, echo: 0.3 });
+    slideWhistle({ t, freqs: [1400, 800, 250], dur: 0.7, gain: 0.05, wobble: 6, out: pit });
+    boom(t + 0.75, 0.3, pit);
+  },
+  'disk-climb': t => {
+    for (let i = 0; i < 4; i++) tone({ t: t + i * 0.18, freq: 200 + i * 40, to: 240 + i * 40, dur: 0.1, type: 'triangle', gain: 0.05, attack: 0.005 });
+    slideWhistle({ t: t + 0.8, freqs: [300, 160], dur: 0.35, gain: 0.03 });
+  },
+  'disk-win': t => {
+    brass({ t, notes: [60, 64, 67], dur: 0.16, gain: 0.05 });
+    brass({ t: t + 0.18, notes: [60, 64, 67], dur: 0.16, gain: 0.05 });
+    brass({ t: t + 0.36, notes: [65, 69, 72], dur: 0.16, gain: 0.05 });
+    brass({ t: t + 0.56, notes: [67, 72, 76, 79], dur: 1.1, gain: 0.05 });
+    arpeggio(t + 0.56, [84, 88, 91, 96], 0.06, (tt, n) => bell({ t: tt, freq: midi(n), dur: 1, gain: 0.025 }));
+  },
+  'disk-lose': t => {
+    const room = darkBus({ reverb: 0.5 });
+    [[62, 0], [61, 0.35], [60, 0.7]].forEach(([n, o]) => tone({ t: t + o, freq: midi(n), dur: 0.32, type: 'sawtooth', gain: 0.04, filter: 1400, attack: 0.02, out: room }));
+    slideWhistle({ t: t + 1.05, freqs: [midi(59), midi(52)], dur: 1, gain: 0.05, wobble: 5, out: room });
+  }
+};
+
 // ---------------------------------------------------------------------------
 // Theme kits
 // ---------------------------------------------------------------------------
@@ -1092,7 +1252,8 @@ const SOUND_KITS = {
     ...SPEAKER_SOUNDS,
     ...POT_SOUNDS,
     ...TRAP_SOUNDS,
-    ...GAIA_SOUNDS
+    ...GAIA_SOUNDS,
+    ...DISK_SOUNDS
   },
 
   light: {
@@ -1155,7 +1316,8 @@ const SOUND_KITS = {
     ...SPEAKER_SOUNDS,
     ...POT_SOUNDS,
     ...TRAP_SOUNDS,
-    ...GAIA_SOUNDS
+    ...GAIA_SOUNDS,
+    ...DISK_SOUNDS
   },
 
   poc: {
@@ -1271,6 +1433,7 @@ const SOUND_KITS = {
     ...SPEAKER_SOUNDS,
     ...POT_SOUNDS,
     ...TRAP_SOUNDS,
-    ...GAIA_SOUNDS
+    ...GAIA_SOUNDS,
+    ...DISK_SOUNDS
   }
 };
