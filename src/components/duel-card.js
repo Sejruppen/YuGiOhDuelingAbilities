@@ -15,6 +15,19 @@ function renderDuelCard(abilityType, ability, { isActive, uses, isPeeking }) {
 }
 
 function renderHiddenCard({ type, label, actionLabel, theme }) {
+  // Holding the Skill's Activate button summons Pot of Greed (pot-of-greed-easter-egg.js);
+  // holding the Comeback's Activate springs a Trap Hole (trap-hole-easter-egg.js);
+  // holding the Quest's Complete sends Gaia the Fierce Knight (gaia-easter-egg.js).
+  const holdEggs = {
+    skill: { press: 'pot-press', start: 'startPotPress', cancel: 'cancelPotPress', allows: 'potAllowsClick' },
+    comeback: { press: 'trap-press', start: 'startTrapPress', cancel: 'cancelTrapPress', allows: 'trapAllowsClick' },
+    quest: { press: 'gaia-press', start: 'startGaiaPress', cancel: 'cancelGaiaPress', allows: 'gaiaAllowsClick' }
+  };
+  const egg = holdEggs[type];
+  const actionAttrs = egg
+    ? `onclick="if (${egg.allows}()) activateAbility('${type}')" onpointerdown="${egg.start}(this)" onpointerup="${egg.cancel}(this)" onpointerleave="${egg.cancel}(this)" onpointercancel="${egg.cancel}(this)" oncontextmenu="return false"`
+    : `onclick="activateAbility('${type}')"`;
+  const actionClass = egg ? egg.press : '';
   return `
     <div data-fx-card="${type}" class="duel-card-hidden fx-c-${type} flex-1 rounded-2xl border-2 border-dashed border-slate-700 bg-slate-900/50 p-4 flex flex-col items-center justify-center text-center">
       <div onclick="tapLockMedallion('${type}', this)" class="lock-medallion w-11 h-11 mb-2 rounded-full bg-slate-800 border border-slate-700 flex items-center justify-center text-slate-400 shadow-inner">
@@ -23,7 +36,7 @@ function renderHiddenCard({ type, label, actionLabel, theme }) {
       <h3 class="text-sm font-bold text-slate-300 mb-3.5 tracking-widest uppercase">Secret ${label}</h3>
       <div class="flex gap-2.5 w-full max-w-[240px]">
         <button onclick="togglePeek('${type}')" class="flex-1 py-2.5 rounded-lg bg-slate-800 hover:bg-slate-700 border border-slate-700 text-sm font-bold text-slate-200 transition">Peek</button>
-        <button onclick="activateAbility('${type}')" class="flex-1 py-2.5 rounded-lg ${theme.btn} ${theme.btnHover} text-sm font-bold text-white shadow-lg ${theme.shadow} transition">${actionLabel}</button>
+        <button ${actionAttrs} class="${actionClass} flex-1 py-2.5 rounded-lg ${theme.btn} ${theme.btnHover} text-sm font-bold text-white shadow-lg ${theme.shadow} transition">${actionLabel}</button>
       </div>
     </div>
   `;

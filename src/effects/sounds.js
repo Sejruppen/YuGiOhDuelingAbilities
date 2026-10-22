@@ -9,8 +9,9 @@
 // heartbeat, "Believe in the heart of the cards!" one heavenly draw,
 // "Screw the rules" one cash-register fanfare, "Mind Crush" one eerie wink,
 // the theme roulette one dizzy slide whistle, Pharaoh's Nap one snore, the
-// Millennium Puzzle one ancient golden hum, and the broken speaker one sad
-// trombone.
+// Millennium Puzzle one ancient golden hum, the broken speaker one sad
+// trombone, Pot of Greed one deadpan "bonk-bonk", Trap Hole one cartoon
+// fall and boing, and Gaia the Fierce Knight one gallop and whinny.
 // effects.js calls playSound(event) for the same events that drive the
 // animations. Sound is on by default and can be muted (saved on the device).
 const SOUND_STORAGE_KEY = 'ygo_sound';
@@ -854,6 +855,147 @@ const SPEAKER_SOUNDS = {
 };
 
 // ---------------------------------------------------------------------------
+// Pot of Greed easter egg (shared by all themes): greedy and deadpan.
+// ---------------------------------------------------------------------------
+
+// A dull, deadpan "bonk-bonk" (two low notes going down).
+function deadpanBonk(t, out) {
+  tone({ t, freq: midi(50), dur: 0.18, type: 'triangle', gain: 0.09, attack: 0.004, filter: 900, out });
+  tone({ t: t + 0.2, freq: midi(43), dur: 0.35, type: 'triangle', gain: 0.09, attack: 0.004, filter: 700, out });
+}
+
+// A ceramic clink: a short, bright, slightly detuned pair of bells.
+function ceramicClink(t, gain = 0.06, out) {
+  bell({ t, freq: 2100, dur: 0.25, gain, out });
+  bell({ t, freq: 2930, dur: 0.18, gain: gain * 0.6, out });
+  noise({ t, dur: 0.03, gain: gain * 1.5, type: 'highpass', freq: 4000, attack: 0.001, out });
+}
+
+const POT_SOUNDS = {
+  // Timeline matches effects.css: the pot pops up (0s) with a clink, a greedy
+  // "heh-heh" chime (0.35s), line one (0.5s) + bonk (1.9s), line two (2.4s)
+  // + bonk (3.4s), then it sinks back with a ceramic clunk (3.9s).
+  'pot-of-greed': t => {
+    const room = darkBus({ reverb: 0.3 });
+    tone({ t, freq: 220, to: 660, dur: 0.18, type: 'triangle', gain: 0.07, attack: 0.004, out: room });
+    ceramicClink(t + 0.15, 0.06, room);
+
+    [0, 0.13].forEach(at => {
+      tone({ t: t + 0.35 + at, freq: midi(79), to: midi(76), dur: 0.1, type: 'square', gain: 0.025, filter: 3000, attack: 0.004, out: room });
+      bell({ t: t + 0.35 + at, freq: midi(91), dur: 0.3, gain: 0.03, out: room });
+    });
+
+    deadpanBonk(t + 1.9, room);
+    deadpanBonk(t + 3.4, room);
+
+    const sink = t + 3.9;
+    tone({ t: sink, freq: 600, to: 150, dur: 0.35, type: 'triangle', gain: 0.06, attack: 0.004, out: room });
+    noise({ t: sink + 0.3, dur: 0.12, gain: 0.15, type: 'lowpass', freq: 900, attack: 0.002, out: room });
+    ceramicClink(sink + 0.3, 0.04, room);
+  }
+};
+
+// ---------------------------------------------------------------------------
+// Trap Hole easter egg (shared by all themes): cartoon slapstick.
+// ---------------------------------------------------------------------------
+
+// A springy "boing": a rising tone with a fast wobble.
+function boing(t, { from = 150, to = 520, dur = 0.45, gain = 0.08, out } = {}) {
+  slideWhistle({ t, freqs: [from, to, to * 0.85], dur, gain, wobble: 18, out });
+  tone({ t, freq: from * 0.5, to: to * 0.5, dur: dur * 0.6, type: 'triangle', gain: gain * 0.6, attack: 0.004, out });
+}
+
+const TRAP_SOUNDS = {
+  // Timeline matches effects.css: the ground cracks open (0s), the button
+  // teeters (0.35s) and falls with a slide whistle (0.5-1.3s), a distant
+  // thud (1.5s), the sign springs up (1.0s) and ducks away (2.6s), the button
+  // is catapulted out (3.0s) and bounces back into place (3.55s, 3.75s).
+  'trap-hole': t => {
+    const room = darkBus({ reverb: 0.35 });
+    noise({ t, dur: 0.25, gain: 0.18, type: 'lowpass', freq: 2500, to: 300, attack: 0.002, out: room });
+    for (let i = 0; i < 6; i++) noise({ t: t + rnd(0, 0.25), dur: 0.03, gain: 0.08, type: 'bandpass', freq: rnd(800, 2500), q: 3, attack: 0.001 });
+    tone({ t: t + 0.35, freq: 300, to: 340, dur: 0.15, type: 'sawtooth', gain: 0.02, filter: 1200, attack: 0.01 });
+
+    slideWhistle({ t: t + 0.5, freqs: [1500, 900, 260], dur: 0.8, gain: 0.06, wobble: 6, out: room });
+    const pit = darkBus({ reverb: 0.8, echo: 0.4 });
+    boom(t + 1.5, 0.35, pit);
+    noise({ t: t + 1.5, dur: 0.2, gain: 0.1, type: 'lowpass', freq: 500, attack: 0.003, out: pit });
+
+    boing(t + 1.0, { from: 200, to: 600, dur: 0.4, gain: 0.06, out: room });
+    slideWhistle({ t: t + 2.6, freqs: [700, 300], dur: 0.3, gain: 0.04, out: room });
+
+    boing(t + 3.0, { from: 110, to: 700, dur: 0.55, gain: 0.09, out: room });
+    noise({ t: t + 3.0, dur: 0.35, gain: 0.07, freq: 400, to: 4000, q: 2, attack: 0.05, out: room });
+    tone({ t: t + 3.55, freq: 160, to: 90, dur: 0.12, type: 'triangle', gain: 0.1, attack: 0.003, out: room });
+    tone({ t: t + 3.75, freq: 180, to: 110, dur: 0.08, type: 'triangle', gain: 0.06, attack: 0.003, out: room });
+  }
+};
+
+// --- Gaia the Fierce Knight: "Gallop in, gallop out" ------------------------
+
+// One gallop stride: three quick hoof clops ("ta-da-dum"), each a dull thud
+// plus a coconut-shell knock.
+function gallopStride(t, gain, out) {
+  [0, 0.075, 0.15].forEach((o, i) => {
+    const g = gain * (i === 2 ? 1 : 0.75);
+    tone({ t: t + o, freq: 140, to: 60, dur: 0.07, type: 'triangle', gain: g, attack: 0.002, out });
+    noise({ t: t + o, dur: 0.04, gain: g * 0.8, type: 'bandpass', freq: rnd(900, 1300), q: 5, attack: 0.001, out });
+  });
+}
+
+// A synthesised horse whinny: a buzzy glide up then a shaky slide down.
+function neigh(t, { gain = 0.05, out = sfxOut } = {}) {
+  const osc = sfxCtx.createOscillator();
+  const lfo = sfxCtx.createOscillator();
+  const depth = sfxCtx.createGain();
+  const lp = sfxCtx.createBiquadFilter();
+  const amp = sfxCtx.createGain();
+  osc.type = 'sawtooth';
+  osc.frequency.setValueAtTime(480, t);
+  osc.frequency.exponentialRampToValueAtTime(950, t + 0.18);
+  osc.frequency.exponentialRampToValueAtTime(820, t + 0.45);
+  osc.frequency.exponentialRampToValueAtTime(420, t + 0.9);
+  lfo.frequency.setValueAtTime(14, t);
+  lfo.frequency.linearRampToValueAtTime(26, t + 0.9);
+  depth.gain.value = 45;
+  lp.type = 'lowpass';
+  lp.frequency.value = 2200;
+  lp.Q.value = 3;
+  lfo.connect(depth).connect(osc.frequency);
+  envelope(amp.gain, t, gain, 0.04, 0.95);
+  osc.connect(lp).connect(amp).connect(out);
+  osc.start(t);
+  lfo.start(t);
+  osc.stop(t + 1.05);
+  lfo.stop(t + 1.05);
+}
+
+const GAIA_SOUNDS = {
+  // gaia-easter-egg.js passes the moments (seconds) the lance skewers the
+  // button (`hit`) and the button is dropped back (`drop`); the passes run
+  // 0.4-1.5s and 2.1-3.2s.
+  'gaia-gallop': (t, { hit = 0.9, drop = 2.7 } = {}) => {
+    const field = darkBus({ reverb: 0.25 });
+    for (let s = 0; s < 1.6; s += 0.3) {
+      gallopStride(t + s, 0.03 + 0.11 * Math.max(0, 1 - Math.abs(s - hit) / 0.8), field);
+    }
+    noise({ t: t + hit - 0.15, dur: 0.4, gain: 0.08, freq: 600, to: 3000, q: 1.5, attack: 0.08, out: field });
+    noise({ t: t + hit, dur: 0.06, gain: 0.1, type: 'highpass', freq: 2500, attack: 0.001, out: field });
+    tone({ t: t + hit, freq: 900, to: 1400, dur: 0.08, type: 'square', gain: 0.025, filter: 2500, attack: 0.002, out: field });
+    slideWhistle({ t: t + 1.6, freqs: [950, 1500, 1100], dur: 0.45, gain: 0.035, wobble: 14, out: field });
+
+    for (let s = 2.0; s < 3.3; s += 0.3) {
+      gallopStride(t + s, 0.03 + 0.11 * Math.max(0, 1 - Math.abs(s - drop) / 0.8), field);
+    }
+    noise({ t: t + drop - 0.15, dur: 0.4, gain: 0.07, freq: 3000, to: 600, q: 1.5, attack: 0.08, out: field });
+    boing(t + drop + 0.12, { from: 140, to: 520, dur: 0.4, gain: 0.08, out: field });
+    brass({ t: t + drop + 0.4, notes: [60, 64, 67], dur: 0.14, gain: 0.05 });
+    brass({ t: t + drop + 0.58, notes: [65, 69, 72], dur: 0.6, gain: 0.05 });
+    neigh(t + 3.35, { gain: 0.045, out: field });
+  }
+};
+
+// ---------------------------------------------------------------------------
 // Theme kits
 // ---------------------------------------------------------------------------
 
@@ -947,7 +1089,10 @@ const SOUND_KITS = {
     ...DIZZY_SOUNDS,
     ...NAP_SOUNDS,
     ...PUZZLE_SOUNDS,
-    ...SPEAKER_SOUNDS
+    ...SPEAKER_SOUNDS,
+    ...POT_SOUNDS,
+    ...TRAP_SOUNDS,
+    ...GAIA_SOUNDS
   },
 
   light: {
@@ -1007,7 +1152,10 @@ const SOUND_KITS = {
     ...DIZZY_SOUNDS,
     ...NAP_SOUNDS,
     ...PUZZLE_SOUNDS,
-    ...SPEAKER_SOUNDS
+    ...SPEAKER_SOUNDS,
+    ...POT_SOUNDS,
+    ...TRAP_SOUNDS,
+    ...GAIA_SOUNDS
   },
 
   poc: {
@@ -1120,6 +1268,9 @@ const SOUND_KITS = {
     ...DIZZY_SOUNDS,
     ...NAP_SOUNDS,
     ...PUZZLE_SOUNDS,
-    ...SPEAKER_SOUNDS
+    ...SPEAKER_SOUNDS,
+    ...POT_SOUNDS,
+    ...TRAP_SOUNDS,
+    ...GAIA_SOUNDS
   }
 };

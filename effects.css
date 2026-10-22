@@ -2713,6 +2713,379 @@ html[data-theme] [data-sound-btn].speaker-reborn { animation: speaker-reborn 1s 
 }
 
 /* =========================================================================
+   POT OF GREED EASTER EGG (src/effects/pot-of-greed-easter-egg.js)
+   All themes. Holding the Skill's Activate button charges for 2s
+   (.pot-charging: wobble + green glow, growing). Then: the pot pops up out
+   of the button (0-0.45s), line one (0.5-2.2s), a smug squint, line two
+   (2.4-3.8s), and the pot sinks back into the button (3.9-4.4s).
+   ========================================================================= */
+
+.pot-press {
+  user-select: none;
+  -webkit-user-select: none;
+  -webkit-touch-callout: none;
+  touch-action: manipulation;
+}
+html[data-theme] .pot-press.pot-charging { animation: pot-charge 2s ease-in both; }
+@keyframes pot-charge {
+  0% { transform: rotate(0deg) scale(1); box-shadow: 0 0 0 0 rgb(74 222 128 / 0); }
+  20% { transform: rotate(-1deg) scale(1.01); }
+  30% { transform: rotate(1deg) scale(1.01); }
+  40% { transform: rotate(-2deg) scale(1.02); }
+  50% { transform: rotate(2deg) scale(1.03); box-shadow: 0 0 10px 2px rgb(74 222 128 / 0.5); }
+  58% { transform: rotate(-3deg) scale(1.04); }
+  66% { transform: rotate(3deg) scale(1.05); }
+  73% { transform: rotate(-4deg) scale(1.06); }
+  80% { transform: rotate(4deg) scale(1.07); }
+  86% { transform: rotate(-5deg) scale(1.08); }
+  92% { transform: rotate(5deg) scale(1.09); }
+  100% { transform: rotate(0deg) scale(1.12); box-shadow: 0 0 22px 8px rgb(74 222 128 / 0.85); filter: brightness(1.25); }
+}
+
+.fx-pot { position: fixed; inset: 0; z-index: 5; overflow: hidden; pointer-events: none; }
+
+.pot-wrap {
+  position: absolute;
+  left: var(--bx);
+  top: var(--by);
+  width: 96px;
+  margin: -112px 0 0 -48px;
+  transform-origin: 50% 100%;
+  animation: pot-wrap 4.6s linear both;
+}
+@keyframes pot-wrap {
+  0% { transform: translateY(70px) scale(0.2, 0.1); opacity: 0; }
+  5% { opacity: 1; }
+  7% { transform: translateY(-14px) scale(0.9, 1.15); animation-timing-function: ease-out; }
+  10% { transform: translateY(0) scale(1.12, 0.88); }
+  13% { transform: translateY(0) scale(1); }
+  84.8% { transform: translateY(0) scale(1); opacity: 1; animation-timing-function: ease-in; }
+  88% { transform: translateY(-10px) scale(0.95, 1.08); }
+  95.7% { transform: translateY(80px) scale(0.6); opacity: 1; }
+  100% { transform: translateY(90px) scale(0.5); opacity: 0; }
+}
+.pot-bob { animation: pot-bob 0.9s ease-in-out 0.6s infinite alternate; }
+@keyframes pot-bob {
+  from { transform: rotate(-4deg); }
+  to { transform: rotate(4deg); }
+}
+.pot-svg {
+  display: block;
+  width: 100%;
+  height: auto;
+  filter: drop-shadow(0 0 10px rgb(74 222 128 / 0.6)) drop-shadow(0 6px 10px rgb(0 0 0 / 0.5));
+}
+/* After line one: a smug squint (brows drop, pupils slide sideways). */
+.pot-brows { animation: pot-brows 4.6s linear both; }
+@keyframes pot-brows {
+  0%, 48% { transform: translateY(0); }
+  52%, 100% { transform: translateY(4px); }
+}
+.pot-pupil { animation: pot-pupil 4.6s linear both; }
+@keyframes pot-pupil {
+  0%, 48% { transform: translateX(0); }
+  52%, 100% { transform: translateX(-4px); }
+}
+
+.pot-bubble {
+  position: absolute;
+  left: clamp(0.75rem, calc(var(--bx) - 7.5rem), calc(100vw - 15.75rem));
+  bottom: var(--bubble-bottom);
+  width: 15rem;
+  padding: 0.6rem 0.9rem;
+  border-radius: 1rem;
+  font-size: 0.95rem;
+  font-weight: 700;
+  line-height: 1.25;
+  text-align: center;
+  color: #052e16;
+  background: #f0fdf4;
+  border: 2px solid #15803d;
+  box-shadow: 0 8px 24px rgb(0 0 0 / 0.45), 0 0 14px rgb(74 222 128 / 0.4);
+  opacity: 0;
+}
+.pot-bubble::after {
+  content: '';
+  position: absolute;
+  left: calc(var(--bx) - clamp(0.75rem, calc(var(--bx) - 7.5rem), calc(100vw - 15.75rem)) - 8px);
+  bottom: -9px;
+  width: 14px;
+  height: 14px;
+  background: #f0fdf4;
+  border-right: 2px solid #15803d;
+  border-bottom: 2px solid #15803d;
+  transform: rotate(45deg);
+}
+.pot-bubble-1 { animation: pot-bubble-1 4.6s linear both; }
+.pot-bubble-2 { font-style: italic; animation: pot-bubble-2 4.6s linear both; }
+@keyframes pot-bubble-1 {
+  0%, 10.8% { opacity: 0; transform: translateY(10px) scale(0.7); }
+  13.5% { opacity: 1; transform: translateY(0) scale(1.05); }
+  15.5%, 46% { opacity: 1; transform: translateY(0) scale(1); }
+  48%, 100% { opacity: 0; transform: translateY(-6px) scale(0.95); }
+}
+@keyframes pot-bubble-2 {
+  0%, 52% { opacity: 0; transform: translateY(10px) scale(0.7); }
+  55% { opacity: 1; transform: translateY(0) scale(1.05); }
+  57%, 82% { opacity: 1; transform: translateY(0) scale(1); }
+  84.8%, 100% { opacity: 0; transform: translateY(-6px) scale(0.95); }
+}
+
+/* =========================================================================
+   TRAP HOLE EASTER EGG (src/effects/trap-hole-easter-egg.js) — all themes
+   Holding the Comeback's Activate button charges for 2s (.trap-charging:
+   wobble + sinking shadow). Then the real button hides and a clone plays:
+   the pit opens (0-0.35s), the button teeters and falls in (0.35-0.9s), the
+   sign springs up (1-1.3s), wobbles, ducks away (2.6-2.9s), the button is
+   catapulted out (3-3.35s), bounces into place (3.55-3.85s), and the pit
+   closes (3.85-4.2s). .trap-clip's bottom edge is the pit's centre line.
+   ========================================================================= */
+
+.trap-press {
+  user-select: none;
+  -webkit-user-select: none;
+  -webkit-touch-callout: none;
+  touch-action: manipulation;
+}
+html[data-theme] .trap-press.trap-charging { animation: trap-charge 2s ease-in both; }
+@keyframes trap-charge {
+  0% { transform: translateY(0) rotate(0deg); box-shadow: 0 0 0 0 rgb(0 0 0 / 0); }
+  25% { transform: translateY(0) rotate(-1deg); }
+  40% { transform: translateY(1px) rotate(1.5deg); }
+  55% { transform: translateY(1px) rotate(-2deg); }
+  68% { transform: translateY(2px) rotate(2.5deg); }
+  80% { transform: translateY(2px) rotate(-3deg); }
+  90% { transform: translateY(3px) rotate(3.5deg); }
+  100% { transform: translateY(4px) rotate(0deg); box-shadow: 0 14px 18px -4px rgb(0 0 0 / 0.95), 0 6px 0 -2px rgb(0 0 0 / 0.8); }
+}
+html[data-theme] .trap-press.trap-hidden { visibility: hidden; }
+
+.fx-trap-hole { position: fixed; inset: 0; z-index: 5; overflow: hidden; pointer-events: none; }
+
+.trap-pit {
+  position: absolute;
+  left: var(--hole-x);
+  top: var(--hole-y);
+  width: var(--hole-w);
+  height: 28px;
+  margin: -14px 0 0 calc(var(--hole-w) / -2);
+  border-radius: 50%;
+  background: radial-gradient(ellipse at 50% 60%, #000 0, #0c0a09 45%, #292524 75%, #57534e 100%);
+  box-shadow: inset 0 3px 6px rgb(0 0 0 / 0.9), 0 0 0 2px rgb(68 64 60 / 0.8), 0 4px 10px rgb(0 0 0 / 0.5);
+  transform: scaleX(0);
+  animation: trap-pit 4.2s linear both;
+}
+@keyframes trap-pit {
+  0% { transform: scaleX(0) scaleY(0.4); }
+  6% { transform: scaleX(1.08) scaleY(1.1); }
+  8.33% { transform: scaleX(1) scaleY(1); }
+  91.7% { transform: scaleX(1) scaleY(1); }
+  100% { transform: scaleX(0) scaleY(0.4); }
+}
+
+.trap-clip {
+  position: absolute;
+  left: var(--clip-left);
+  top: var(--clip-top);
+  width: var(--clip-w);
+  height: var(--clip-h);
+  overflow: hidden;
+}
+
+.trap-clone {
+  position: absolute;
+  margin: 0;
+  pointer-events: none;
+  transform-origin: 50% 100%;
+  animation: trap-clone 4.2s linear both;
+}
+@keyframes trap-clone {
+  0%, 4% { transform: translateY(0) rotate(0deg); }
+  8.33% { transform: translateY(0) rotate(-4deg); }
+  10% { transform: translateY(0) rotate(3deg); }
+  11.9% { transform: translateY(0) rotate(-2deg); animation-timing-function: cubic-bezier(0.5, 0, 1, 0.6); }
+  21.4%, 71.4% { transform: translateY(calc(100% + 30px)) rotate(8deg); animation-timing-function: cubic-bezier(0, 0.6, 0.4, 1); }
+  79.8% { transform: translateY(-110px) rotate(-200deg); animation-timing-function: cubic-bezier(0.6, 0, 1, 0.5); }
+  84.5% { transform: translateY(0) rotate(-360deg) scale(1.1, 0.82); }
+  86.9% { transform: translateY(-18px) rotate(-360deg) scale(0.95, 1.08); }
+  89.3% { transform: translateY(0) rotate(-360deg) scale(1.05, 0.94); }
+  91.7%, 100% { transform: translateY(0) rotate(-360deg) scale(1); }
+}
+
+.trap-sign {
+  position: absolute;
+  left: calc(50% - var(--sign-w) / 2);
+  bottom: 0;
+  width: var(--sign-w);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  transform-origin: 50% 100%;
+  transform: translateY(110%);
+  animation: trap-sign 4.2s linear both;
+}
+@keyframes trap-sign {
+  0%, 23.8% { transform: translateY(110%) rotate(0deg); animation-timing-function: ease-out; }
+  28% { transform: translateY(-8%) rotate(0deg); }
+  31% { transform: translateY(0) rotate(0deg); }
+  36% { transform: translateY(0) rotate(-5deg); }
+  42% { transform: translateY(0) rotate(4deg); }
+  48% { transform: translateY(0) rotate(-3deg); }
+  54% { transform: translateY(0) rotate(2deg); }
+  58%, 61.9% { transform: translateY(0) rotate(0deg); animation-timing-function: ease-in; }
+  69%, 100% { transform: translateY(110%) rotate(0deg); }
+}
+.trap-sign-board {
+  width: 100%;
+  padding: 0.45rem 0.6rem 0.5rem;
+  border-radius: 0.35rem;
+  text-align: center;
+  color: #fef3c7;
+  background:
+    repeating-linear-gradient(0deg, rgb(0 0 0 / 0) 0 9px, rgb(66 32 6 / 0.35) 9px 10px),
+    linear-gradient(180deg, #b45309, #78350f);
+  border: 3px solid #451a03;
+  box-shadow: 0 6px 14px rgb(0 0 0 / 0.5);
+  text-shadow: 0 2px 0 #451a03;
+}
+.trap-sign-board strong {
+  display: block;
+  font-family: 'Cinzel', serif;
+  font-weight: 900;
+  font-size: 1.25rem;
+  letter-spacing: 0.08em;
+  line-height: 1.1;
+}
+.trap-sign-board span {
+  display: block;
+  margin-top: 0.15rem;
+  font-size: 0.78rem;
+  font-weight: 700;
+  font-style: italic;
+}
+.trap-sign-post {
+  width: 10px;
+  height: 46px;
+  background: linear-gradient(90deg, #451a03, #92400e, #451a03);
+  border-radius: 0 0 2px 2px;
+}
+
+/* =========================================================================
+   GAIA THE FIERCE KNIGHT EASTER EGG (src/effects/gaia-easter-egg.js) — all
+   themes. Holding the Quest's Complete button charges for 2s (.gaia-charging:
+   impatient hoof stamps, faster and faster). Then the real button hides and
+   a clone rides along: the knight's pass, the carried clone, the "heeelp!"
+   bubble and the toast are keyframed from JS (Web Animations API) because
+   they depend on the button's position. Here: the gallop bob, legs, dust.
+   ========================================================================= */
+
+.gaia-press {
+  user-select: none;
+  -webkit-user-select: none;
+  -webkit-touch-callout: none;
+  touch-action: manipulation;
+}
+html[data-theme] .gaia-press.gaia-charging { animation: gaia-charge 2s linear both; }
+@keyframes gaia-charge {
+  0%, 10% { transform: translateY(0); box-shadow: 0 0 0 0 rgb(244 114 182 / 0); }
+  16% { transform: translateY(-3px); }
+  22%, 38% { transform: translateY(0); }
+  43% { transform: translateY(-3px); }
+  48%, 58% { transform: translateY(0); }
+  62% { transform: translateY(-4px); }
+  66%, 72% { transform: translateY(0); }
+  75% { transform: translateY(-4px) rotate(-1deg); }
+  78%, 82% { transform: translateY(0); }
+  84% { transform: translateY(-5px) rotate(1deg); }
+  86%, 89% { transform: translateY(0); }
+  91% { transform: translateY(-5px) rotate(-1.5deg); }
+  93%, 95% { transform: translateY(0); }
+  97% { transform: translateY(-6px) rotate(1.5deg); }
+  100% { transform: translateY(0); box-shadow: 0 0 14px 3px rgb(244 114 182 / 0.75), 0 0 0 2px rgb(251 191 36 / 0.9); }
+}
+html[data-theme] .gaia-press.gaia-hidden { visibility: hidden; }
+
+.fx-gaia { position: fixed; inset: 0; z-index: 5; overflow: hidden; pointer-events: none; }
+
+.gaia-rider {
+  position: absolute;
+  left: 0;
+  top: var(--gaia-top);
+  width: 180px;
+  height: 150px;
+  z-index: 2;
+  will-change: transform;
+}
+.gaia-bob { position: relative; animation: gaia-bob 0.3s ease-in-out infinite; }
+.gaia-bob svg { display: block; overflow: visible; filter: drop-shadow(0 6px 6px rgb(0 0 0 / 0.45)); }
+@keyframes gaia-bob {
+  0%, 100% { transform: translateY(0) rotate(0deg); }
+  50% { transform: translateY(-6px) rotate(-2deg); }
+}
+.gaia-legs-a, .gaia-legs-b { transform-box: fill-box; transform-origin: 50% 0; }
+.gaia-legs-a { animation: gaia-leg 0.3s ease-in-out infinite; }
+.gaia-legs-b { animation: gaia-leg 0.3s ease-in-out infinite reverse; }
+@keyframes gaia-leg {
+  0%, 100% { transform: rotate(22deg); }
+  50% { transform: rotate(-22deg); }
+}
+.gaia-dust {
+  position: absolute;
+  left: 10px;
+  bottom: 4px;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: rgb(214 211 209 / 0.7);
+  box-shadow: -18px -6px 0 -2px rgb(214 211 209 / 0.5), -34px 2px 0 -5px rgb(214 211 209 / 0.35);
+  animation: gaia-dust 0.3s ease-out infinite;
+}
+@keyframes gaia-dust {
+  0% { transform: translateX(10px) scale(0.5); opacity: 0.9; }
+  100% { transform: translateX(-14px) scale(1.3); opacity: 0; }
+}
+
+.gaia-clone {
+  position: absolute;
+  margin: 0;
+  z-index: 1;
+  pointer-events: none;
+  will-change: transform;
+}
+
+.gaia-help {
+  position: absolute;
+  right: 0.75rem;
+  top: var(--gaia-help-y);
+  padding: 0.3rem 0.65rem;
+  border-radius: 1rem 1rem 0.2rem 1rem;
+  font-weight: 800;
+  font-style: italic;
+  color: #1f2937;
+  background: #fff;
+  box-shadow: 0 4px 12px rgb(0 0 0 / 0.4);
+  transform-origin: 100% 100%;
+  opacity: 0;
+}
+
+.gaia-toast {
+  position: absolute;
+  left: 50%;
+  bottom: calc(env(safe-area-inset-bottom, 0px) + 1.5rem);
+  max-width: calc(100vw - 2rem);
+  padding: 0.6rem 1rem;
+  border-radius: 0.75rem;
+  font-weight: 700;
+  text-align: center;
+  width: max-content;
+  color: #fdf2f8;
+  background: linear-gradient(135deg, #4c1d95, #1d4ed8);
+  border: 2px solid #fbbf24;
+  box-shadow: 0 8px 20px rgb(0 0 0 / 0.45);
+  opacity: 0;
+}
+
+/* =========================================================================
    THEME SWITCH (View Transitions API)
    ========================================================================= */
 
