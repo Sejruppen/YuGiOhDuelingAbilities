@@ -9,8 +9,11 @@ function getCharacterEgg(id) {
 
 function renderCharacterOption(char) {
   const isNeutral = char.id === NEUTRAL_CHARACTER_ID;
-  const cardClass = isNeutral ? 'bg-indigo-950/40 border-indigo-500/40' : 'bg-slate-900/90 border-slate-800';
-  const themeClass = isNeutral ? 'text-indigo-300' : 'text-amber-400/90';
+  const isCustom = char.id === CUSTOM_CHARACTER_ID;
+  const cardClass = isNeutral
+    ? 'bg-indigo-950/40 border-indigo-500/40'
+    : isCustom ? 'bg-gradient-to-r from-amber-950/50 via-fuchsia-950/40 to-sky-950/50 border-amber-500/40' : 'bg-slate-900/90 border-slate-800';
+  const themeClass = isNeutral ? 'text-indigo-300' : isCustom ? 'text-fuchsia-300' : 'text-amber-400/90';
   const egg = getCharacterEgg(char.id);
   const clickAttrs = egg
     ? `onclick="if (${egg.allows}) selectCharacter('${char.id}')" onpointerdown="${egg.start}" onpointerup="${egg.cancel}" onpointerleave="${egg.cancel}" onpointercancel="${egg.cancel}" oncontextmenu="return false"`

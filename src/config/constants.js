@@ -18,3 +18,5 @@ const LP_SIDES = {
 };
 
 const NEUTRAL_CHARACTER_ID = 'neutral';
+// Built in data.js from every other character's abilities.
+const CUSTOM_CHARACTER_ID = 'custom';

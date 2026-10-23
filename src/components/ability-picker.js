@@ -8,7 +8,13 @@ function renderAbilityPickerSection(abilityType, abilities, step, extraClass = '
         <span class="px-2.5 py-1 text-xs font-bold uppercase tracking-wider rounded ${theme.bg} ${theme.text} border ${theme.border}">${step}. Choose ${label}</span>
       </div>
       <div class="space-y-2.5">
-        ${abilities.map((ability, idx) => renderAbilityOption(abilityType, ability, idx, state[selectionKey] === idx)).join('')}
+        ${abilities.map((ability, idx) => {
+          // Custom's pool is tagged by source character: head each group.
+          const groupHeader = ability.source && ability.source !== abilities[idx - 1]?.source
+            ? `<div class="pt-2 text-xs font-bold uppercase tracking-wider text-slate-400">${ability.source}</div>`
+            : '';
+          return groupHeader + renderAbilityOption(abilityType, ability, idx, state[selectionKey] === idx);
+        }).join('')}
       </div>
     </section>
   `;

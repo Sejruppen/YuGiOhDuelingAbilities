@@ -419,3 +419,19 @@ const CHARACTERS = [
     ]
   }
 ];
+
+// "Custom": every skill, comeback and quest from every character above, each
+// tagged with the character it comes from (the picker groups them by it).
+// Built from the list, so new characters show up here automatically.
+(() => {
+  const pool = listKey => CHARACTERS.flatMap(char =>
+    char[listKey].map(ability => ({ ...ability, source: char.name })));
+  CHARACTERS.splice(1, 0, {
+    id: 'custom',
+    name: 'Custom',
+    theme: 'Mix & match every ability',
+    skills: pool('skills'),
+    comebacks: pool('comebacks'),
+    quests: pool('quests')
+  });
+})();
