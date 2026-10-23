@@ -13,8 +13,8 @@ function renderDuelHeader(char) {
         <div class="text-xs text-amber-400 leading-tight">${char.theme}</div>
       </div>
       <div class="flex items-center gap-1.5">
-        <button onclick="openResetConfirm()" class="text-sm font-medium text-amber-300 border border-amber-500/30 bg-amber-950/30 rounded-lg px-3 py-1">Reset</button>
-        <button onclick="resetApp()" class="text-sm font-medium text-rose-400 border border-rose-500/30 bg-rose-950/30 rounded-lg px-3 py-1">End</button>
+        <button onclick="if (headerEggAllowsClick()) openResetConfirm()" onpointerdown="startHeaderEggPress(this, 'reset')" onpointerup="cancelHeaderEggPress(this)" onpointerleave="cancelHeaderEggPress(this)" onpointercancel="cancelHeaderEggPress(this)" oncontextmenu="return false" class="hdr-egg-press hdr-egg-press--reset text-sm font-medium text-amber-300 border border-amber-500/30 bg-amber-950/30 rounded-lg px-3 py-1">Reset</button>
+        <button onclick="if (headerEggAllowsClick()) resetApp()" onpointerdown="startHeaderEggPress(this, 'end')" onpointerup="cancelHeaderEggPress(this)" onpointerleave="cancelHeaderEggPress(this)" onpointercancel="cancelHeaderEggPress(this)" oncontextmenu="return false" class="hdr-egg-press hdr-egg-press--end text-sm font-medium text-rose-400 border border-rose-500/30 bg-rose-950/30 rounded-lg px-3 py-1">End</button>
       </div>
     </header>
   `;

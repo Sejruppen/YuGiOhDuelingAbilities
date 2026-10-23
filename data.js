@@ -1,7 +1,7 @@
 const CHARACTERS = [
   {
     id: 'neutral',
-    name: 'Neutral (Custom Deck)',
+    name: 'Neutral',
     theme: 'Freestyle',
     skills: [
       { name: 'Tactical Rearrangement', text: 'You can shuffle 1 card from your hand into your deck, then draw 1 new card.', maxUses: 3 },
@@ -426,7 +426,7 @@ const CHARACTERS = [
 (() => {
   const pool = listKey => CHARACTERS.flatMap(char =>
     char[listKey].map(ability => ({ ...ability, source: char.name })));
-  CHARACTERS.splice(1, 0, {
+  CHARACTERS.splice(19, 0, {
     id: 'custom',
     name: 'Custom',
     theme: 'Mix & match every ability',

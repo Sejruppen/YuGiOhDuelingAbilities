@@ -11,6 +11,8 @@
 //                    that must move with it (eyes, holes, make-up...)
 //   onStart(ctx)  -> optional; may return a cleanup function
 //   toast, toastSmall -> optional punchline
+//   run(ctx)      -> instead of all the above: an interactive egg that opens
+//                    its own overlay (Yugi DK's Magical Hats mini-game)
 // Every scene is one CSS timeline of CHAR_EGG_MS (effects.css, "CHARACTER
 // EGGS"); the card gets .cegg-card--<id> for its own part. The sound is
 // 'cegg-<id>' in sounds.js (CHAR_EGG_SOUNDS).
@@ -61,6 +63,13 @@ const cePick = list => list[Math.floor(Math.random() * list.length)];
 function runCharacterEgg(card, id) {
   const recipe = CHARACTER_EGGS[id];
   if (!recipe) return;
+  // Interactive eggs (Magical Hats) open their own screen instead of a scene;
+  // they reset charEgg.busy / swallowClick when they close.
+  if (recipe.run) {
+    charEgg.swallowClick = true;
+    recipe.run({ id, card });
+    return;
+  }
   const r = card.getBoundingClientRect();
   const ctx = {
     id,

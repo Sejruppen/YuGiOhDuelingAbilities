@@ -21,52 +21,135 @@ registerCharacterEgg('neutral', {
   }
 });
 
-// --- Yugi (Duelist Kingdom): the hair takes over -----------------------------
-const YAMI_HAIR_SVG = `
-  <svg viewBox="0 0 220 200" aria-hidden="true">
-    <g stroke="#0c0a09" stroke-width="2" stroke-linejoin="round">
-      <polygon points="30,170 8,60 60,140" fill="#1c1917"/>
-      <polygon points="55,165 40,20 90,140" fill="#1c1917"/>
-      <polygon points="85,160 95,0 125,140" fill="#1c1917"/>
-      <polygon points="120,150 165,15 150,160" fill="#1c1917"/>
-      <polygon points="150,160 212,55 175,170" fill="#1c1917"/>
-      <ellipse cx="110" cy="160" rx="78" ry="30" fill="#1c1917"/>
+// --- Custom: the Frankenstein Duelist -------------------------------------------
+// A lab, two Tesla coils and a green head. Parts of other duelists fly in and
+// get stitched on, lightning strikes, it wakes up and yells everyone's
+// catchphrase at once. Uses KAIBA_COAT_SVG (below) and MILLENNIUM_EYE_SVG
+// (character-eggs-villains.js); both are only read when the scene runs.
+const FRANKEN_HAIR_SVG = `
+  <svg viewBox="0 0 130 80" aria-hidden="true">
+    <g fill="#1c1917" stroke="#0c0a09" stroke-width="2" stroke-linejoin="round">
+      <polygon points="10,70 4,20 40,60"/>
+      <polygon points="30,66 34,2 62,58"/>
+      <polygon points="56,60 72,0 86,60"/>
+      <polygon points="80,62 104,6 100,68"/>
+      <polygon points="96,70 128,24 112,74"/>
+      <ellipse cx="65" cy="66" rx="58" ry="14"/>
     </g>
     <g fill="#be185d">
-      <polygon points="8,60 13.5,87.5 21,80"/>
-      <polygon points="40,20 43.75,56.25 52.5,50"/>
-      <polygon points="95,0 92.5,40 102.5,35"/>
-      <polygon points="165,15 153.75,48.75 161.25,51.25"/>
-      <polygon points="212,55 196.5,81.25 202.75,83.75"/>
+      <polygon points="4,20 8,40 14,36"/>
+      <polygon points="34,2 36,22 42,20"/>
+      <polygon points="72,0 70,20 76,20"/>
+      <polygon points="104,6 98,24 102,26"/>
+      <polygon points="128,24 118,38 122,40"/>
     </g>
-    <g fill="#facc15" stroke="#a16207" stroke-width="1.5" stroke-linejoin="round">
-      <polygon points="70,140 52,196 80,160 74,200 100,150"/>
-      <polygon points="150,140 168,196 140,160 146,200 120,150"/>
-      <polygon points="100,145 104,190 110,160 116,190 120,145"/>
+    <g fill="#facc15" stroke="#a16207" stroke-width="1.2" stroke-linejoin="round">
+      <polygon points="44,62 36,80 52,68 50,80 62,64"/>
+      <polygon points="86,62 94,80 78,68 80,80 68,64"/>
     </g>
   </svg>`;
 
-registerCharacterEgg('yugi-dk', {
-  toast: "It's time to… wait, which one of us is driving?",
-  scene: () => `
-    <div class="ce-dim"></div>
-    <div class="ce-hair">${YAMI_HAIR_SVG}</div>
-    <div class="ce-flash ce-flash--gold"></div>
-    <div class="ce-at ce-puzzle">${PUZZLE_SVG}</div>`
+const FRANKEN_ARC_SVG = `
+  <svg viewBox="0 0 270 40" preserveAspectRatio="none" aria-hidden="true">
+    <polyline points="0,20 30,5 55,32 85,8 110,30 135,12 160,34 185,6 215,30 240,10 270,20" fill="none" stroke="#a5f3fc" stroke-width="3" stroke-linejoin="round"/>
+    <polyline points="0,20 30,5 55,32 85,8 110,30 135,12 160,34 185,6 215,30 240,10 270,20" fill="none" stroke="#fff" stroke-width="1.2" stroke-linejoin="round"/>
+  </svg>`;
+
+// x/y: where it ends up on the monster; sx/sy: where it flies in from;
+// at: arrival delay (ms); tx/ty: where its "+ part" label pops up.
+const FRANKEN_PARTS = [
+  { cls: 'coat', svg: () => KAIBA_COAT_SVG, x: 0, y: 112, sx: '0px', sy: '70vh', at: 850, r: 0, tag: 'Kaiba\'s coat', tx: 0, ty: 150 },
+  { cls: 'hair', svg: () => FRANKEN_HAIR_SVG, x: 0, y: -74, sx: '0px', sy: '-70vh', at: 500, r: 0, tag: 'Yugi\'s hair', tx: 0, ty: -118 },
+  { cls: 'bandana', svg: () => '<b>★</b>', x: 0, y: -38, sx: '-80vw', sy: '0px', at: 1200, r: -4, tag: 'Keith\'s bandana', tx: -100, ty: -40 },
+  { cls: 'meye', svg: () => MILLENNIUM_EYE_SVG, x: -20, y: -6, sx: '-60vw', sy: '-40vh', at: 1550, r: 0, tag: 'Pegasus\'s eye', tx: -100, ty: 0 },
+  { cls: 'glasses', svg: () => '<span class="ce-emoji">👓</span>', x: 0, y: -4, sx: '80vw', sy: '-20vh', at: 1900, r: 0, tag: 'Weevil\'s glasses', tx: 100, ty: -20 },
+  { cls: 'fish', svg: () => '<span class="ce-emoji">🐟</span>', x: 66, y: 34, sx: '70vw', sy: '30vh', at: 2200, r: -30, tag: 'Mako\'s fish', tx: 100, ty: 40 }
+];
+
+const FRANKEN_SHOUTS = [
+  ['Heart of the Cards!', -80, -178],
+  ['Screw the rules!', 85, -152],
+  ['Nyeh!', -105, -118],
+  ['Hehehe!', 100, -98],
+  ['In America!', -95, -58],
+  ['Yugi-boy~ ♪', 95, -40],
+  ['The sea!!', -95, 10],
+  ['Hm. Pathetic.', 92, 28]
+];
+
+registerCharacterEgg('custom', {
+  toast: 'IT\'S ALIVE! …and it has no idea what deck it\'s playing.',
+  scene: () => {
+    const part = p => `<span class="ce-fk-part ce-fk-${p.cls}" style="--x: ${p.x}px; --y: ${p.y}px; --sx: ${p.sx}; --sy: ${p.sy}; --at: ${p.at}ms; --r: ${p.r}deg;">${p.svg()}</span>`;
+    const tags = FRANKEN_PARTS.map(p =>
+      `<span class="ce-fk-tag" style="--x: ${p.tx}px; --y: ${p.ty}px; --at: ${p.at}ms;">+ ${p.tag}</span>`).join('');
+    const [coat, ...parts] = FRANKEN_PARTS;
+    return `
+      <div class="ce-dim ce-dim--lab"></div>
+      <div class="ce-flash ce-flash--lab"></div>
+      <div class="ce-fk-rig">
+        <span class="ce-fk-coil ce-fk-coil--l"></span>
+        <span class="ce-fk-coil ce-fk-coil--r"></span>
+        <span class="ce-fk-arc">${FRANKEN_ARC_SVG}</span>
+        <div class="ce-fk-body">
+          ${part(coat)}
+          <span class="ce-fk-head">
+            <i class="ce-fk-stitch"></i>
+            <i class="ce-fk-eye ce-fk-eye--l"></i>
+            <i class="ce-fk-eye ce-fk-eye--r"></i>
+            <i class="ce-fk-mouth"></i>
+            <i class="ce-fk-neckbolt ce-fk-neckbolt--l"></i>
+            <i class="ce-fk-neckbolt ce-fk-neckbolt--r"></i>
+          </span>
+          ${parts.map(part).join('')}
+          ${tags}
+        </div>
+        <span class="ce-fk-zap ce-fk-zap--l ce-emoji">⚡</span>
+        <span class="ce-fk-zap ce-fk-zap--r ce-emoji">⚡</span>
+        <span class="ce-fk-alive">IT'S ALIVE!</span>
+        ${FRANKEN_SHOUTS.map(([text, x, y], i) =>
+          `<span class="ce-bubble ce-fk-say" style="--i: ${i}; --x: ${x}px; --y: ${y}px;">${text}</span>`).join('')}
+      </div>`;
+  }
 });
 
-// --- Yugi (Battle City): Kuribon! ---------------------------------------------
+// --- Yugi (Duelist Kingdom): Magical Hats mini-game ----------------------------
+// See magical-hats-easter-egg.js.
+registerCharacterEgg('yugi-dk', {
+  run: () => openMagicalHats()
+});
+
+// --- Yugi (Battle City): the Magnet Warriors assemble (badly) --------------------
+// α, β and γ fly in, slam together with the same poles and get flung off
+// screen, Beta flips around, they finally stack into Valkyrion... who then
+// attracts every bit of metal junk in the area and sags under it.
+const MAGNET_WARRIORS = [['a', 'α', 'Alpha'], ['b', 'β', 'Beta'], ['g', 'γ', 'Gamma']];
+const MAGNET_JUNK = ['🔑', '🥄', '📎', '🍴', '🥫', '🔧', '✂️', '🔔', '🔩', '🧷', '📌', '⚙️', '🍳', '🪙', '🧲'];
+
 registerCharacterEgg('yugi-bc', {
-  toast: 'Dark Magician Girl: 1 · Dark Magician\'s dignity: 0',
-  scene: () => {
-    const hearts = ceRange(22, i =>
-      `<span class="ce-heart ce-emoji" style="left: ${ceRand(2, 95).toFixed(0)}%; --i: ${i}; --s: ${ceRand(0.7, 1.6).toFixed(2)}; --sway: ${ceRand(-30, 30).toFixed(0)}px;">${cePick(['💖', '💕', '💗', '❤️'])}</span>`);
+  toast: 'Valkyrion the Magna Warrior. Also a world-class fridge magnet. 🧲',
+  toastSmall: 'Some assembly required.',
+  scene: ctx => {
+    const far = Math.max(ctx.vw, ctx.vh);
+    const junk = [...[...MAGNET_JUNK].sort(() => Math.random() - 0.5), '🛒'].map((item, i, list) => {
+      const angle = ceRand(0, Math.PI * 2);
+      const last = i === list.length - 1;
+      return `<span class="ce-junk ce-emoji${last ? ' ce-junk--big' : ''}" style="--i: ${i}; --sx: ${(Math.cos(angle) * far).toFixed(0)}px; --sy: ${(Math.sin(angle) * far).toFixed(0)}px; --ex: ${(last ? 0 : ceRand(-52, 52)).toFixed(0)}px; --ey: ${(last ? 8 : ceRand(-70, 70)).toFixed(0)}px; --r: ${ceRand(-60, 60).toFixed(0)}deg;">${item}</span>`;
+    }).join('');
     return `
-      <div class="ce-dim ce-dim--pink"></div>
-      ${hearts}
-      <div class="ce-at ce-dm"><span class="ce-emoji ce-dm-stand">🧙‍♂️</span><span class="ce-emoji ce-dm-palm">🤦‍♂️</span></div>
-      <div class="ce-at ce-dmg"><span class="ce-emoji">🧙‍♀️</span><span class="ce-emoji ce-wink">😉</span></div>
-      <div class="ce-at ce-bubble ce-kuribon">Kuribon! ♡</div>`;
+      <div class="ce-dim ce-dim--magnet"></div>
+      <div class="ce-flash ce-flash--magnet"></div>
+      <div class="ce-mw-rig">
+        <span class="ce-mw-field"></span>
+        ${MAGNET_WARRIORS.map(([key, letter, name]) => `
+          <div class="ce-mw ce-mw--${key}"><div class="ce-mw-body"><b>${letter}</b><i>${name}</i></div></div>`).join('')}
+        <span class="ce-mw-arm ce-mw-arm--sword ce-emoji">🗡️</span>
+        <span class="ce-mw-arm ce-mw-arm--shield ce-emoji">🛡️</span>
+        ${junk}
+        <span class="ce-mw-label ce-mw-boink">BOINK!<small>N ⇄ N</small></span>
+        <span class="ce-mw-label ce-mw-flip">🔄 flip!</span>
+        <span class="ce-mw-label ce-mw-title">MAGNA WARRIOR VALKYRION!</span>
+      </div>`;
   }
 });
 

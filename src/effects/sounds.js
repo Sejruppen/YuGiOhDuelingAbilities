@@ -1146,31 +1146,100 @@ const CHAR_EGG_SOUNDS = {
     marimba({ t: t + 4.25, note: 55, gain: 0.08 });
   },
 
-  // Card flip 0.25s, puzzle flash 0.5s, hair grows 1.6-4.7s.
-  'cegg-yugi-dk': t => {
-    const hall = darkBus({ reverb: 0.5, echo: 0.1 });
-    cardFlip(t + 0.2, 0.12);
-    arpeggio(t + 0.5, [69, 76, 81, 88], 0.04, (tt, n) => bell({ t: tt, freq: midi(n), dur: 1.2, gain: 0.04, out: hall }));
-    puzzleHum(t + 0.45, 1.3, 0.05, hall);
-    boing(t + 1.6, { from: 100, to: 300, dur: 0.35, gain: 0.06 });
-    slideWhistle({ t: t + 1.8, freqs: [300, 420, 600, 850, 1200, 1700], dur: 2.8, gain: 0.04, wobble: 5 });
-    brass({ t: t + 3.4, notes: [45, 52], dur: 0.2, gain: 0.045 });
-    brass({ t: t + 3.65, notes: [45, 52], dur: 0.2, gain: 0.045 });
-    brass({ t: t + 3.9, notes: [46, 53], dur: 0.7, gain: 0.05 });
+  // Frankenstein Duelist (Custom): lab hum 0-2.4s, a part stitched on at
+  // 0.5/0.85/1.2/1.55/1.9/2.2s (+0.4s landing), coils charge 2.3s, LIGHTNING
+  // 2.5s, "IT'S ALIVE!" 2.9s, everyone's catchphrase at once 3.0-3.6s, "huh?" 4.2s.
+  'cegg-custom': t => {
+    const lab = darkBus({ reverb: 0.5, echo: 0.15 });
+    tone({ t, freq: 60, dur: 2.5, type: 'sawtooth', gain: 0.025, filter: 400, attack: 0.3, out: lab });
+    tone({ t, freq: 120, dur: 2.5, type: 'square', gain: 0.01, filter: 500, attack: 0.3, detune: 6, out: lab });
+    tone({ t: t + 0.2, freq: 300, to: 600, dur: 0.15, type: 'triangle', gain: 0.05, attack: 0.005 });
+    [0.5, 0.85, 1.2, 1.55, 1.9, 2.2].forEach(at => {
+      ceWhoosh(t + at, 0.35, 0.04, 500, 2400);
+      for (let i = 0; i < 5; i++) {
+        tone({ t: t + at + 0.4 + i * 0.035, freq: rnd(1800, 2600), dur: 0.015, type: 'square', gain: 0.02, filter: 4000, attack: 0.001 });
+      }
+      tone({ t: t + at + 0.4, freq: 180, to: 90, dur: 0.08, type: 'triangle', gain: 0.05, attack: 0.002 });
+    });
+    laserCharge({ t: t + 1.4, dur: 1.05, from: 80, to: 900, gain: 0.04, out: lab });
+    [2.45, 2.6].forEach((at, i) => {
+      boom(t + at, 0.7 - i * 0.2, lab);
+      for (let j = 0; j < 10; j++) {
+        noise({ t: t + at + rnd(0, 0.25), dur: 0.04, gain: 0.06, type: 'highpass', freq: rnd(2500, 5000), attack: 0.001 });
+      }
+    });
+    brass({ t: t + 2.9, notes: [48, 51, 55, 60], dur: 0.2, gain: 0.045 });
+    brass({ t: t + 3.1, notes: [50, 53, 56, 62], dur: 0.7, gain: 0.05 });
+    [140, 190, 240, 300, 360].forEach((base, i) => godBabble(t + 3.0 + i * 0.07, base, 6, lab));
+    tone({ t: t + 4.2, freq: 220, to: 420, dur: 0.35, type: 'sawtooth', gain: 0.03, filter: 1200, attack: 0.02 });
+    tone({ t: t + 4.2, freq: 223, to: 424, dur: 0.35, type: 'triangle', gain: 0.03, attack: 0.02 });
   },
 
-  // DMG slides in 0-0.6s, "Kuribon!" 1.1s, hearts, DM walks 2.2s, facepalm 3.2s.
+  // Magical Hats mini-game (Yugi DK; magical-hats-easter-egg.js).
+  'hats-open': t => {
+    const hall = darkBus({ reverb: 0.5, echo: 0.1 });
+    puzzleHum(t, 1.0, 0.04, hall);
+    arpeggio(t + 0.05, [69, 76, 81, 88, 93], 0.05, (tt, n) => bell({ t: tt, freq: midi(n), dur: 1, gain: 0.03, out: hall }));
+  },
+  'hats-show': t => {
+    healSparkles(t, 0.4, 4);
+    tone({ t, freq: 600, to: 1300, dur: 0.18, type: 'triangle', gain: 0.04, attack: 0.01 });
+  },
+  'hats-cover': t => {
+    ceWhoosh(t, 0.25, 0.05, 2400, 500);
+    tone({ t: t + 0.2, freq: 140, to: 80, dur: 0.12, type: 'triangle', gain: 0.07, attack: 0.003 });
+  },
+  'hats-swap': t => {
+    noise({ t, dur: 0.14, gain: 0.04, freq: rnd(1200, 2200), to: rnd(500, 900), q: 1.5, attack: 0.05 });
+  },
+  'hats-guess': t => {
+    marimba({ t, note: 72, gain: 0.07 });
+    marimba({ t: t + 0.1, note: 76, gain: 0.07 });
+  },
+  'hats-win': t => {
+    const hall = darkBus({ reverb: 0.4 });
+    boing(t, { from: 200, to: 700, dur: 0.25, gain: 0.05 });
+    brass({ t: t + 0.08, notes: [60, 64, 67], dur: 0.18, gain: 0.04 });
+    brass({ t: t + 0.3, notes: [64, 67, 72], dur: 0.6, gain: 0.045 });
+    arpeggio(t + 0.3, [84, 88, 91, 96], 0.05, (tt, n) => bell({ t: tt, freq: midi(n), dur: 0.8, gain: 0.03, out: hall }));
+  },
+  'hats-lose': t => {
+    noise({ t, dur: 0.35, gain: 0.07, freq: 900, to: 300, q: 0.8, attack: 0.02 });
+    ceSadTrombone(t + 0.3, 0.035);
+  },
+
+  // Magnet Warriors: fly in 0-0.6s, magnetic hum 0.7-1.3s, BOINK 1.3s and
+  // flung off, Beta flips 2.0-2.35s, clunk-clunk-clunk 2.5s, VALKYRION 2.7s,
+  // junk clanks on 3.25-4.2s, then he groans and sags (4.3s).
   'cegg-yugi-bc': t => {
-    const room = darkBus({ reverb: 0.3 });
-    ceWhoosh(t, 0.6, 0.05, 2500, 600);
-    healSparkles(t + 0.6, 0.4, 4, room);
-    kuriChirp(t + 1.1, 0.05, room);
-    kuriChirp(t + 1.3, 0.05, room);
-    arpeggio(t + 1.15, [79, 83, 86, 91], 0.06, (tt, n) => bell({ t: tt, freq: midi(n), dur: 0.6, gain: 0.025, out: room }));
-    for (let i = 0; i < 12; i++) bubble({ t: t + 1.2 + rnd(0, 2.3), from: rnd(600, 900), to: rnd(1200, 1800), gain: 0.03, dur: 0.07 });
-    [2.25, 2.45, 2.65, 2.85].forEach(o => tone({ t: t + o, freq: 90, to: 70, dur: 0.1, type: 'triangle', gain: 0.08, attack: 0.003 }));
-    noise({ t: t + 3.2, dur: 0.07, gain: 0.12, type: 'highpass', freq: 1500, attack: 0.001 });
-    tone({ t: t + 3.25, freq: 180, to: 110, dur: 0.5, type: 'sawtooth', gain: 0.03, filter: 700, attack: 0.03 });
+    const hall = darkBus({ reverb: 0.45, echo: 0.1 });
+    [0, 0.12, 0.24].forEach(o => ceWhoosh(t + o, 0.45, 0.05, 600, 2600));
+    [0.55, 0.62, 0.7].forEach(o => ceClang(t + o, 0.03, hall));
+    laserCharge({ t: t + 0.7, dur: 0.6, from: 60, to: 600, gain: 0.04, out: hall });
+    boing(t + 1.3, { from: 90, to: 700, dur: 0.5, gain: 0.1 });
+    ceClang(t + 1.3, 0.06, hall);
+    slideWhistle({ t: t + 1.35, freqs: [1400, 2200, 500], dur: 0.45, gain: 0.03, wobble: 14 });
+    [1.72, 1.8, 1.88].forEach(o => noise({ t: t + o, dur: 0.15, gain: 0.07, type: 'lowpass', freq: 1200, to: 300, attack: 0.002 }));
+    ceWhoosh(t + 1.75, 0.45, 0.04, 2400, 700);
+    for (let i = 0; i < 6; i++) tone({ t: t + 2.0 + i * 0.05, freq: 1800, dur: 0.02, type: 'square', gain: 0.02, filter: 3000, attack: 0.001 });
+    tone({ t: t + 2.3, freq: 900, to: 1500, dur: 0.1, gain: 0.03, attack: 0.005 });
+    [2.5, 2.56, 2.62].forEach((o, i) => {
+      tone({ t: t + o, freq: 150 - i * 20, to: 70, dur: 0.12, type: 'triangle', gain: 0.09, attack: 0.002 });
+      ceClang(t + o, 0.03, hall);
+    });
+    boom(t + 2.7, 0.5, hall);
+    brass({ t: t + 2.72, notes: [50, 57, 62, 66], dur: 0.25, gain: 0.04 });
+    brass({ t: t + 2.98, notes: [52, 59, 64, 68], dur: 0.6, gain: 0.045 });
+    arpeggio(t + 2.75, [81, 86, 90, 93], 0.05, (tt, n) => bell({ t: tt, freq: midi(n), dur: 0.9, gain: 0.03, out: hall }));
+    for (let i = 0; i < 16; i++) {
+      const at = t + 3.25 + i * 0.065;
+      if (i === 15) ceClang(at, 0.06, hall);
+      else if (i % 3) coinClink(at, 0.03);
+      else tone({ t: at, freq: rnd(700, 1100), dur: 0.05, type: 'square', gain: 0.025, filter: 2500, attack: 0.001 });
+    }
+    tone({ t: t + 4.3, freq: 160, to: 90, dur: 0.7, type: 'sawtooth', gain: 0.035, filter: 600, attack: 0.08 });
+    noise({ t: t + 4.3, dur: 0.6, gain: 0.03, freq: 400, to: 250, q: 8, attack: 0.1 });
+    tone({ t: t + 4.75, freq: 110, to: 60, dur: 0.25, type: 'triangle', gain: 0.08, attack: 0.003 });
   },
 
   // Three roars 0/0.35/0.7s, the coat whips past 1.7-3.2s, coins from 2.6s.
@@ -1368,6 +1437,151 @@ const CHAR_EGG_SOUNDS = {
     brass({ t: t + 3.65, notes: [60, 64, 67], dur: 0.25, gain: 0.035 });
     brass({ t: t + 3.92, notes: [64, 67, 72], dur: 0.8, gain: 0.04 });
     slideWhistle({ t: t + 4.0, freqs: [2200, 2900, 2000], dur: 0.5, gain: 0.02, wobble: 20 });
+  }
+};
+
+// --- Size picker eggs (src/effects/size-eggs.js) ----------------------------
+
+const SIZE_EGG_SOUNDS = {
+  // Card flies in 0s, charge 0.55-1.05s, ZAP 1.05s, shrink 1.05-1.4s,
+  // chipmunk squeaks + pitter-patter 1.4-3.15s, boing back 3.15s.
+  'shrink-ray': t => {
+    const room = darkBus({ reverb: 0.3 });
+    ceWhoosh(t, 0.45, 0.05, 500, 2400);
+    cardFlip(t + 0.4, 0.1);
+    arpeggio(t + 0.55, [72, 79, 84], 0.06, (tt, n) => bell({ t: tt, freq: midi(n), dur: 0.6, gain: 0.025, out: room }));
+    laserCharge({ t: t + 0.55, dur: 0.5, from: 200, to: 2400, gain: 0.04, out: room });
+    tone({ t: t + 1.05, freq: 3200, to: 300, dur: 0.25, type: 'sawtooth', gain: 0.05, filter: 5000, attack: 0.002, out: room });
+    noise({ t: t + 1.05, dur: 0.2, gain: 0.08, type: 'highpass', freq: 2000, attack: 0.002, out: room });
+    slideWhistle({ t: t + 1.1, freqs: [500, 2600], dur: 0.3, gain: 0.04, wobble: 10, out: room });
+
+    tone({ t: t + 1.45, freq: 2200, to: 3400, dur: 0.18, type: 'triangle', gain: 0.04, attack: 0.005 });
+    [1.6, 2.05, 2.6].forEach((at, i) => ceGiggle(t + at, 1500 + i * 150, 6, room, 'square'));
+    for (let i = 0; i < 26; i++) {
+      tone({ t: t + 1.4 + i * 0.067, freq: rnd(2600, 3600), dur: 0.012, type: 'triangle', gain: 0.02, attack: 0.001 });
+    }
+
+    slideWhistle({ t: t + 3.15, freqs: [2600, 300], dur: 0.25, gain: 0.04, out: room });
+    boing(t + 3.35, { from: 120, to: 480, dur: 0.45, gain: 0.08, out: room });
+    tone({ t: t + 3.85, freq: 160, to: 90, dur: 0.1, type: 'triangle', gain: 0.07, attack: 0.002, out: room });
+  },
+
+  // Stomps at 0.42/1.02/1.68s, "WHO BUILT THIS CEILING?!" 1.98s, creaky
+  // crouch 2.76-3.12s, tiny "…hi." 3.36s, BONK 4.56s, sinks 5.16s.
+  'obelisk-headroom': t => {
+    const hall = darkBus({ reverb: 0.6, echo: 0.2 });
+    noise({ t, dur: 2, gain: 0.08, type: 'lowpass', freq: 160, attack: 0.4, out: hall });
+    tone({ t, freq: 38, dur: 2, type: 'sawtooth', gain: 0.03, filter: 140, attack: 0.4, out: hall });
+    [0.42, 1.02, 1.68].forEach((at, i) => boom(t + at, 0.6 + i * 0.2, hall));
+    brass({ t: t + 1.7, notes: [36, 43, 48, 55], dur: 0.9, gain: 0.04 });
+
+    godBabble(t + 1.98, 85, 9, hall);
+    godBabble(t + 1.99, 128, 9, hall);
+
+    tone({ t: t + 2.76, freq: 150, to: 105, dur: 0.36, type: 'sawtooth', gain: 0.035, filter: 700, q: 6, attack: 0.02, out: hall });
+    [2.85, 3.05].forEach(at => noise({ t: t + at, dur: 0.05, gain: 0.08, type: 'bandpass', freq: rnd(1200, 2000), q: 4, attack: 0.001 }));
+    tone({ t: t + 3.36, freq: 330, to: 290, dur: 0.18, type: 'square', gain: 0.02, filter: 900, attack: 0.02, out: hall });
+    tone({ t: t + 3.58, freq: 300, to: 260, dur: 0.2, type: 'square', gain: 0.018, filter: 900, attack: 0.02, out: hall });
+
+    ceWhoosh(t + 4.32, 0.25, 0.05, 400, 1600, hall);
+    ceClang(t + 4.56, 0.08, hall);
+    boom(t + 4.56, 0.5, hall);
+    tone({ t: t + 4.56, freq: 600, to: 180, dur: 0.25, type: 'triangle', gain: 0.08, attack: 0.002 });
+    arpeggio(t + 4.7, [91, 96, 93, 98], 0.08, (tt, n) => bell({ t: tt, freq: midi(n), dur: 0.5, gain: 0.02, out: hall }));
+    tone({ t: t + 4.8, freq: 140, to: 95, dur: 0.6, type: 'sawtooth', gain: 0.03, filter: 500, attack: 0.05, out: hall });
+    slideWhistle({ t: t + 5.16, freqs: [420, 90], dur: 0.8, gain: 0.04, out: hall });
+    noise({ t: t + 5.16, dur: 0.8, gain: 0.05, type: 'lowpass', freq: 200, attack: 0.2, out: hall });
+  }
+};
+
+// --- Duel header eggs (src/effects/duel-header-eggs.js) ---------------------
+
+// The credits song's bus, so a skip can fade the rest of it out.
+let sfxCreditsBus = null;
+
+const HEADER_EGG_SOUNDS = {
+  // Wizard poof 0.1s, roulette ticks 0.5-1.4s (lands on 💀: "uh-oh"), the
+  // nudge 1.5s, TIME MAGIC! 1.6s, tape rewind 1.9-3.3s, ka-chunk + PLAY 3.3s,
+  // sad trombone 3.55s.
+  'time-wizard': t => {
+    const hall = darkBus({ reverb: 0.4, echo: 0.1 });
+    noise({ t: t + 0.1, dur: 0.3, gain: 0.06, freq: 600, to: 3000, q: 1, attack: 0.02 });
+    arpeggio(t + 0.15, [76, 81, 85, 88], 0.05, (tt, n) => bell({ t: tt, freq: midi(n), dur: 0.7, gain: 0.025, out: hall }));
+
+    let at = 0.5;
+    let gap = 0.025;
+    while (at < 1.4) {
+      tone({ t: t + at, freq: 2200, dur: 0.012, type: 'square', gain: 0.03, filter: 4000, attack: 0.001 });
+      at += gap;
+      gap *= 1.11;
+    }
+    tone({ t: t + 1.42, freq: 180, dur: 0.25, type: 'sawtooth', gain: 0.03, filter: 700, attack: 0.01 });
+    tone({ t: t + 1.42, freq: 190, dur: 0.25, type: 'sawtooth', gain: 0.025, filter: 700, attack: 0.01 });
+    tone({ t: t + 1.5, freq: 1800, to: 2400, dur: 0.05, type: 'triangle', gain: 0.05, attack: 0.002 });
+    tone({ t: t + 1.58, freq: 2200, dur: 0.012, type: 'square', gain: 0.03, filter: 4000, attack: 0.001 });
+    brass({ t: t + 1.62, notes: [60, 64, 67, 72], dur: 0.35, gain: 0.035 });
+    arpeggio(t + 1.62, [84, 88, 91, 96], 0.04, (tt, n) => bell({ t: tt, freq: midi(n), dur: 0.8, gain: 0.025, out: hall }));
+
+    const rew = t + 1.9;
+    noise({ t: rew, dur: 1.4, gain: 0.04, type: 'highpass', freq: 3000, attack: 0.05 });
+    tone({ t: rew, freq: 500, to: 1900, dur: 1.4, type: 'square', gain: 0.012, filter: 2500, attack: 0.05 });
+    for (let i = 0; i < 22; i++) {
+      const f = rnd(900, 2400);
+      tone({ t: rew + i * 0.062, freq: f, to: f * rnd(1.2, 1.6), dur: 0.045, type: 'triangle', gain: 0.025, attack: 0.003 });
+    }
+
+    const clunk = t + 3.3;
+    noise({ t: clunk, dur: 0.08, gain: 0.12, type: 'lowpass', freq: 1200, attack: 0.002 });
+    tone({ t: clunk, freq: 220, to: 80, dur: 0.1, type: 'triangle', gain: 0.1, attack: 0.002 });
+    tone({ t: clunk + 0.08, freq: 160, to: 70, dur: 0.08, type: 'triangle', gain: 0.07, attack: 0.002 });
+    tone({ t: clunk + 0.1, freq: 1900, to: 300, dur: 0.18, type: 'square', gain: 0.01, filter: 2000, attack: 0.005 });
+    ceSadTrombone(clunk + 0.25, 0.03);
+  },
+
+  // A cheesy anime outro: C-G-Am-F twice (2s per bar), then a held C (16.3s).
+  'end-credits': t => {
+    sfxCreditsBus?.gain.setTargetAtTime(0, t, 0.05);
+    const bus = darkBus({ reverb: 0.35, echo: 0.08 });
+    sfxCreditsBus = bus;
+    const start = t + 0.3;
+    const bar = 2;
+    const beat = bar / 4;
+    const chords = [[48, [60, 64, 67]], [43, [59, 62, 67]], [45, [60, 64, 69]], [41, [60, 65, 69]]];
+    const leads = [
+      [67, 72, 74, 76], [74, 71, 67, 71], [72, 76, 74, 72], [69, 72, 77, 76],
+      [79, 76, 74, 76], [74, 79, 77, 74], [76, 72, 74, 76], [77, 76, 74, 74]
+    ];
+
+    leads.forEach((lead, b) => {
+      const [root, pad] = chords[b % 4];
+      const at = start + b * bar;
+      pad.forEach(n => {
+        tone({ t: at, freq: midi(n), dur: bar + 0.1, type: 'sawtooth', gain: 0.01, filter: 1100, attack: 0.25, detune: -6, out: bus });
+        tone({ t: at, freq: midi(n), dur: bar + 0.1, type: 'sawtooth', gain: 0.008, filter: 1100, attack: 0.25, detune: 7, out: bus });
+      });
+      for (let i = 0; i < 4; i++) {
+        const bt = at + i * beat;
+        tone({ t: bt, freq: midi(root - 12 + (i % 2 ? 7 : 0)), dur: beat * 0.9, type: 'triangle', gain: 0.05, attack: 0.01, out: bus });
+        if (i % 2) noise({ t: bt, dur: 0.12, gain: 0.03, type: 'highpass', freq: 1800, attack: 0.002, out: bus });
+        else tone({ t: bt, freq: 120, to: 50, dur: 0.15, type: 'sine', gain: 0.08, attack: 0.002, out: bus });
+        tone({ t: bt, freq: midi(lead[i]), dur: beat * 0.9, type: 'square', gain: 0.018, filter: 2400, attack: 0.02, out: bus });
+        if (b >= 4) tone({ t: bt, freq: midi(lead[i] + 12), dur: beat * 0.6, type: 'triangle', gain: 0.012, attack: 0.01, out: bus });
+      }
+    });
+
+    const end = start + leads.length * bar;
+    [48, 60, 64, 67, 72].forEach(n => {
+      tone({ t: end, freq: midi(n), dur: 3, type: n === 48 ? 'triangle' : 'sawtooth', gain: n === 48 ? 0.05 : 0.01, filter: 1400, attack: 0.05, out: bus });
+    });
+    tone({ t: end, freq: midi(72), dur: 2.5, type: 'square', gain: 0.018, filter: 2400, attack: 0.02, out: bus });
+    arpeggio(end, [72, 76, 79, 84, 88], 0.08, (tt, n) => bell({ t: tt, freq: midi(n), dur: 1.6, gain: 0.03, out: bus }));
+    // "…?" (17.2s): a questioning little blip.
+    tone({ t: t + 17.2, freq: 500, to: 900, dur: 0.25, type: 'triangle', gain: 0.05, attack: 0.01, out: bus });
+  },
+  'end-credits-stop': t => {
+    sfxCreditsBus?.gain.setTargetAtTime(0, t, 0.08);
+    sfxCreditsBus = null;
+    ceWhoosh(t, 0.3, 0.04, 2400, 500);
   }
 };
 
@@ -1631,7 +1845,9 @@ const SOUND_KITS = {
     ...DISK_SOUNDS,
     ...PALADIN_SOUNDS,
     ...DIVINE_SOUNDS,
-    ...CHAR_EGG_SOUNDS
+    ...CHAR_EGG_SOUNDS,
+    ...HEADER_EGG_SOUNDS,
+    ...SIZE_EGG_SOUNDS
   },
   light: {
     tap: t => tone({ t, freq: 700, dur: 0.02, type: 'triangle', gain: 0.03 }),
@@ -1697,7 +1913,9 @@ const SOUND_KITS = {
     ...DISK_SOUNDS,
     ...PALADIN_SOUNDS,
     ...DIVINE_SOUNDS,
-    ...CHAR_EGG_SOUNDS
+    ...CHAR_EGG_SOUNDS,
+    ...HEADER_EGG_SOUNDS,
+    ...SIZE_EGG_SOUNDS
   },
 
   poc: {
@@ -1817,6 +2035,8 @@ const SOUND_KITS = {
     ...DISK_SOUNDS,
     ...PALADIN_SOUNDS,
     ...DIVINE_SOUNDS,
-    ...CHAR_EGG_SOUNDS
+    ...CHAR_EGG_SOUNDS,
+    ...HEADER_EGG_SOUNDS,
+    ...SIZE_EGG_SOUNDS
   }
 };

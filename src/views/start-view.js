@@ -29,7 +29,7 @@ function renderScalePicker() {
           const stateClass = isActive
             ? 'bg-slate-700 text-white shadow'
             : 'text-slate-400 hover:text-slate-200';
-          return `<button onclick="setUiScale('${scale.id}')" aria-pressed="${isActive}" class="py-2 px-1 rounded-lg text-xs font-bold leading-tight transition ${stateClass}">${scale.label}</button>`;
+          return `<button onclick="tapUiScale('${scale.id}')" aria-pressed="${isActive}" class="py-2 px-1 rounded-lg text-xs font-bold leading-tight transition ${stateClass}">${scale.label}</button>`;
         }).join('')}
       </div>
     </div>
