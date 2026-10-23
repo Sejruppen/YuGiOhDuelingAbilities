@@ -11,7 +11,10 @@
 // the theme roulette one dizzy slide whistle, Pharaoh's Nap one snore, the
 // Millennium Puzzle one ancient golden hum, the broken speaker one sad
 // trombone, Pot of Greed one deadpan "bonk-bonk", Trap Hole one cartoon
-// fall and boing, Gaia the Fierce Knight one gallop and whinny, and the secret
+// fall and boing, Gaia the Fierce Knight one gallop and whinny, Dark Paladin
+// one fusion and a spell-slicing "shing", the Egyptian Gods one divine traffic
+// jam, every other character's hold-the-card egg its own little skit
+// (CHAR_EGG_SOUNDS), and the secret
 // Duel Disk mini-game a whole board's worth (DISK_SOUNDS).
 // effects.js calls playSound(event) for the same events that drive the
 // animations. Sound is on by default and can be muted (saved on the device).
@@ -996,6 +999,378 @@ const GAIA_SOUNDS = {
   }
 };
 
+// --- Dark Paladin: "Polymerization... negated" -------------------------------
+
+const PALADIN_SOUNDS = {
+  // Timeline (s): heroes fly in 0-0.7, vortex 0.3-1.65, fusion flash 1.65,
+  // Polymerization floats in 2.3, the slash 3.0. See dark-paladin-easter-egg.js.
+  'paladin-fusion': t => {
+    const hall = darkBus({ reverb: 0.55, echo: 0.15 });
+    noise({ t, dur: 0.7, gain: 0.07, freq: 300, to: 2500, q: 1.5, attack: 0.3, out: hall });
+    noise({ t: t + 0.05, dur: 0.7, gain: 0.06, freq: 2600, to: 400, q: 1.5, attack: 0.3, out: hall });
+
+    tone({ t: t + 0.3, freq: 110, to: 880, dur: 1.35, type: 'sawtooth', gain: 0.04, filter: [300, 3000], q: 6, attack: 0.4, out: hall });
+    tone({ t: t + 0.3, freq: 165, to: 1320, dur: 1.35, type: 'sawtooth', gain: 0.03, filter: [300, 3000], q: 6, attack: 0.4, detune: 10, out: hall });
+    noise({ t: t + 0.3, dur: 1.35, gain: 0.05, freq: 500, to: 6000, q: 4, attack: 0.5, out: hall });
+
+    boom(t + 1.65, 0.7, hall);
+    noise({ t: t + 1.65, dur: 0.9, gain: 0.08, type: 'highpass', freq: 3000, to: 8000, attack: 0.003, out: hall });
+    arpeggio(t + 1.7, [86, 90, 93, 98], 0.05, (tt, n) => bell({ t: tt, freq: midi(n), dur: 1.2, gain: 0.03, out: hall }));
+    brass({ t: t + 1.8, notes: [50, 57, 62, 65], dur: 1.1, gain: 0.045 });
+    tone({ t: t + 1.8, freq: midi(38), dur: 1.4, type: 'sawtooth', gain: 0.05, filter: [200, 900], attack: 0.1, out: hall });
+
+    arpeggio(t + 2.3, [76, 81, 85], 0.05, (tt, n) => bell({ t: tt, freq: midi(n), dur: 0.6, gain: 0.025, out: hall }));
+
+    noise({ t: t + 2.75, dur: 0.2, gain: 0.04, freq: 800, to: 300, q: 2, attack: 0.1, out: hall });
+    noise({ t: t + 2.98, dur: 0.18, gain: 0.14, type: 'highpass', freq: 2500, to: 9000, attack: 0.004, out: hall });
+    tone({ t: t + 3.0, freq: 3400, to: 2800, dur: 0.9, gain: 0.03, attack: 0.002, out: hall });
+    tone({ t: t + 3.0, freq: 5100, to: 4400, dur: 0.6, gain: 0.015, attack: 0.002, out: hall });
+    noise({ t: t + 3.03, dur: 0.12, gain: 0.08, freq: 1800, q: 3, attack: 0.002, out: hall });
+
+    brass({ t: t + 3.25, notes: [55, 58], dur: 0.18, gain: 0.04 });
+    brass({ t: t + 3.45, notes: [50, 53], dur: 0.5, gain: 0.04 });
+  }
+};
+
+// --- Divine Offering: three gods, one doorway --------------------------------
+
+// Cartoon "argument" gibberish: quick formant-ish blips around a pitch.
+function godBabble(t, base, count, out) {
+  for (let i = 0; i < count; i++) {
+    const f = base * rnd(0.85, 1.35);
+    tone({ t: t + i * 0.075, freq: f, to: f * rnd(0.8, 1.2), dur: 0.06, type: 'square', gain: 0.022, filter: base * 4, q: 3, attack: 0.004, out });
+  }
+}
+
+// Rubbery squeak of something huge stuck in a too-small door.
+function rubberSqueak(t, freq, gain = 0.035, out = sfxOut) {
+  tone({ t, freq, to: freq * 1.5, dur: 0.12, gain, attack: 0.01, out });
+  tone({ t: t + 0.06, freq: freq * 1.4, to: freq * 0.9, dur: 0.1, type: 'triangle', gain: gain * 0.7, attack: 0.01, out });
+}
+
+const DIVINE_SOUNDS = {
+  // Timeline (s): Obelisk 0.33, Slifer 0.9, Ra 1.43, argument 2-3.1, dive
+  // 3.1, stuck 3.5-4.2, pop 4.2, sad trombone 4.45. See divine-offering-easter-egg.js.
+  'divine-offering': t => {
+    const temple = darkBus({ reverb: 0.6, echo: 0.1 });
+    noise({ t, dur: 2.0, gain: 0.08, type: 'lowpass', freq: 120, to: 220, attack: 0.4, out: temple });
+    tone({ t, freq: 38, to: 46, dur: 2.0, gain: 0.12, attack: 0.4, out: temple });
+
+    boom(t + 0.33, 0.6, temple);
+    monsterRoar(t + 0.38, 0.07, temple);
+    brass({ t: t + 0.4, notes: [38, 45], dur: 0.6, gain: 0.04 });
+
+    boom(t + 0.9, 0.4, temple);
+    tone({ t: t + 0.92, freq: 500, to: 1100, dur: 0.25, type: 'sawtooth', gain: 0.035, filter: [1500, 3500], q: 4, attack: 0.02, out: temple });
+    tone({ t: t + 1.15, freq: 1100, to: 380, dur: 0.45, type: 'sawtooth', gain: 0.035, filter: [3500, 1200], q: 4, attack: 0.01, out: temple });
+    noise({ t: t + 0.92, dur: 0.6, gain: 0.04, freq: 1800, to: 700, q: 2, attack: 0.05, out: temple });
+
+    boom(t + 1.43, 0.4, temple);
+    noise({ t: t + 1.43, dur: 0.8, gain: 0.07, type: 'bandpass', freq: 600, to: 2400, q: 0.7, attack: 0.15, out: temple });
+    tone({ t: t + 1.5, freq: 1700, to: 2600, dur: 0.18, gain: 0.03, attack: 0.01, out: temple });
+    tone({ t: t + 1.68, freq: 2600, to: 1500, dur: 0.4, gain: 0.03, attack: 0.01, out: temple });
+    arpeggio(t + 1.5, [79, 83, 86, 91], 0.05, (tt, n) => bell({ t: tt, freq: midi(n), dur: 0.8, gain: 0.02, out: temple }));
+
+    godBabble(t + 2.0, 140, 7, temple);
+    godBabble(t + 2.3, 420, 7, temple);
+    godBabble(t + 2.6, 260, 7, temple);
+    godBabble(t + 2.85, 150, 3, temple);
+    godBabble(t + 2.9, 450, 3, temple);
+
+    noise({ t: t + 3.08, dur: 0.4, gain: 0.09, freq: 400, to: 3500, q: 1.5, attack: 0.25, out: temple });
+    boom(t + 3.48, 0.35, temple);
+    noise({ t: t + 3.48, dur: 0.15, gain: 0.08, type: 'lowpass', freq: 900, attack: 0.002 });
+    [3.55, 3.7, 3.82, 3.95, 4.05, 4.12].forEach((o, i) => rubberSqueak(t + o, 500 + (i % 3) * 180));
+
+    boing(t + 4.18, { from: 120, to: 480, dur: 0.35, gain: 0.07, out: temple });
+    boing(t + 4.24, { from: 180, to: 700, dur: 0.3, gain: 0.05, out: temple });
+    boing(t + 4.3, { from: 240, to: 900, dur: 0.3, gain: 0.04, out: temple });
+
+    const trombone = (at, from, to, dur) => {
+      tone({ t: t + at, freq: from, to, dur, type: 'sawtooth', gain: 0.05, attack: 0.03, filter: [1400, 600] });
+      tone({ t: t + at, freq: from, to, dur, type: 'square', gain: 0.02, attack: 0.03, filter: 900, detune: 8 });
+    };
+    trombone(4.45, midi(55), midi(55), 0.25);
+    trombone(4.73, midi(54), midi(54), 0.25);
+    trombone(5.01, midi(53), midi(50), 0.6);
+  }
+};
+
+// --- Character eggs (src/effects/character-eggs*.js) --------------------------
+// One 'cegg-<id>' sound per character, timed to the 5s scenes in effects.css
+// ("CHARACTER EGGS"); the punchline toast lands at 3.3s.
+
+function ceSadTrombone(t, gain = 0.045) {
+  [[0, 55, 55, 0.25], [0.28, 54, 54, 0.25], [0.56, 53, 50, 0.6]].forEach(([at, from, to, dur]) => {
+    tone({ t: t + at, freq: midi(from), to: midi(to), dur, type: 'sawtooth', gain, attack: 0.03, filter: [1400, 600] });
+    tone({ t: t + at, freq: midi(from), to: midi(to), dur, type: 'square', gain: gain * 0.4, attack: 0.03, filter: 900, detune: 8 });
+  });
+}
+
+// "Hee-hee-hee": quick falling blips around a pitch.
+function ceGiggle(t, base, count = 4, out = sfxOut, type = 'triangle') {
+  for (let i = 0; i < count; i++) {
+    const f = base * (1 - i * 0.05) * rnd(0.97, 1.03);
+    tone({ t: t + i * 0.11, freq: f * 1.15, to: f, dur: 0.08, type, gain: 0.03, filter: base * 5, attack: 0.005, out });
+  }
+}
+
+function ceSplat(t, gain = 0.1, out = sfxOut) {
+  noise({ t, dur: 0.25, gain, type: 'lowpass', freq: 1500, to: 200, attack: 0.002, out });
+  tone({ t, freq: 220, to: 60, dur: 0.22, type: 'triangle', gain: gain * 0.6, attack: 0.002, out });
+}
+
+function ceWhoosh(t, dur = 0.4, gain = 0.06, from = 400, to = 2500, out = sfxOut) {
+  noise({ t, dur, gain, freq: from, to, q: 1.2, attack: dur * 0.5, out });
+}
+
+function ceClang(t, gain = 0.05, out) {
+  bell({ t, freq: rnd(330, 420), dur: 0.9, gain, out });
+  noise({ t, dur: 0.08, gain: gain * 1.4, type: 'highpass', freq: 2500, attack: 0.002, out });
+}
+
+const CHAR_EGG_SOUNDS = {
+  // Pop up 0.3s, shrug 0.7s, six pulls from 1.5s (each "nope" ~0.58s in).
+  'cegg-neutral': t => {
+    boing(t + 0.1, { from: 180, to: 520, dur: 0.3, gain: 0.06 });
+    marimba({ t: t + 0.7, note: 67, gain: 0.08 });
+    marimba({ t: t + 0.85, note: 64, gain: 0.08 });
+    marimba({ t: t + 1.0, note: 67, gain: 0.08 });
+    for (let i = 0; i < 6; i++) {
+      const at = t + 1.5 + i * 0.38;
+      ceWhoosh(at, 0.25, 0.04, 800, 2600);
+      tone({ t: at + 0.6, freq: 150, dur: 0.18, type: 'square', gain: 0.03, filter: 900, attack: 0.005 });
+      tone({ t: at + 0.6, freq: 157, dur: 0.18, type: 'square', gain: 0.02, filter: 900, attack: 0.005 });
+    }
+    marimba({ t: t + 4.1, note: 60, gain: 0.08 });
+    marimba({ t: t + 4.25, note: 55, gain: 0.08 });
+  },
+
+  // Card flip 0.25s, puzzle flash 0.5s, hair grows 1.6-4.7s.
+  'cegg-yugi-dk': t => {
+    const hall = darkBus({ reverb: 0.5, echo: 0.1 });
+    cardFlip(t + 0.2, 0.12);
+    arpeggio(t + 0.5, [69, 76, 81, 88], 0.04, (tt, n) => bell({ t: tt, freq: midi(n), dur: 1.2, gain: 0.04, out: hall }));
+    puzzleHum(t + 0.45, 1.3, 0.05, hall);
+    boing(t + 1.6, { from: 100, to: 300, dur: 0.35, gain: 0.06 });
+    slideWhistle({ t: t + 1.8, freqs: [300, 420, 600, 850, 1200, 1700], dur: 2.8, gain: 0.04, wobble: 5 });
+    brass({ t: t + 3.4, notes: [45, 52], dur: 0.2, gain: 0.045 });
+    brass({ t: t + 3.65, notes: [45, 52], dur: 0.2, gain: 0.045 });
+    brass({ t: t + 3.9, notes: [46, 53], dur: 0.7, gain: 0.05 });
+  },
+
+  // DMG slides in 0-0.6s, "Kuribon!" 1.1s, hearts, DM walks 2.2s, facepalm 3.2s.
+  'cegg-yugi-bc': t => {
+    const room = darkBus({ reverb: 0.3 });
+    ceWhoosh(t, 0.6, 0.05, 2500, 600);
+    healSparkles(t + 0.6, 0.4, 4, room);
+    kuriChirp(t + 1.1, 0.05, room);
+    kuriChirp(t + 1.3, 0.05, room);
+    arpeggio(t + 1.15, [79, 83, 86, 91], 0.06, (tt, n) => bell({ t: tt, freq: midi(n), dur: 0.6, gain: 0.025, out: room }));
+    for (let i = 0; i < 12; i++) bubble({ t: t + 1.2 + rnd(0, 2.3), from: rnd(600, 900), to: rnd(1200, 1800), gain: 0.03, dur: 0.07 });
+    [2.25, 2.45, 2.65, 2.85].forEach(o => tone({ t: t + o, freq: 90, to: 70, dur: 0.1, type: 'triangle', gain: 0.08, attack: 0.003 }));
+    noise({ t: t + 3.2, dur: 0.07, gain: 0.12, type: 'highpass', freq: 1500, attack: 0.001 });
+    tone({ t: t + 3.25, freq: 180, to: 110, dur: 0.5, type: 'sawtooth', gain: 0.03, filter: 700, attack: 0.03 });
+  },
+
+  // Three roars 0/0.35/0.7s, the coat whips past 1.7-3.2s, coins from 2.6s.
+  'cegg-kaiba-dk': t => {
+    const hall = darkBus({ reverb: 0.5, echo: 0.1 });
+    [0, 0.35, 0.7].forEach((o, i) => monsterRoar(t + o, 0.05 + i * 0.01, hall));
+    for (let i = 0; i < 7; i++) noise({ t: t + 1.8 + i * 0.18, dur: 0.14, gain: 0.05, freq: rnd(500, 900), q: 0.8, attack: 0.02 });
+    bell({ t: t + 2.6, freq: 2600, dur: 0.6, gain: 0.06 });
+    bell({ t: t + 2.68, freq: 3300, dur: 0.8, gain: 0.06 });
+    noise({ t: t + 2.6, dur: 0.12, gain: 0.07, type: 'highpass', freq: 3000, attack: 0.002 });
+    for (let i = 0; i < 26; i++) coinClink(t + 2.75 + rnd(0, 2.0), 0.03);
+    brass({ t: t + 3.3, notes: [55, 59, 62, 67], dur: 0.9, gain: 0.035 });
+  },
+
+  // Jet + banner 0-1.9s, Obelisk's punch 1.95s, laughs 2.7/3.03/3.36s.
+  'cegg-kaiba-bc': t => {
+    const sky = darkBus({ reverb: 0.4, echo: 0.3 });
+    noise({ t, dur: 2.2, gain: 0.07, type: 'lowpass', freq: 300, to: 1600, attack: 1.2 });
+    tone({ t, freq: 140, to: 320, dur: 2.2, type: 'sawtooth', gain: 0.02, filter: 900, attack: 1.0 });
+    boom(t + 1.95, 0.8, sky);
+    noise({ t: t + 1.95, dur: 0.15, gain: 0.15, type: 'highpass', freq: 1800, attack: 0.002 });
+    slideWhistle({ t: t + 2.0, freqs: [1600, 900, 400], dur: 0.8, gain: 0.04, wobble: 12 });
+    [2.7, 3.03, 3.36].forEach((o, k) => {
+      for (let i = 0; i < 4; i++) {
+        const f = 260 - k * 25 + (i % 2) * 30;
+        tone({ t: t + o + i * 0.075, freq: f, to: f * 0.9, dur: 0.065, type: 'sawtooth', gain: 0.03, filter: 1400, attack: 0.005, out: sky });
+      }
+    });
+  },
+
+  // Roulette spins 0.5-2.4s onto the skull, wobbly swordsman 2.8s.
+  'cegg-joey-dk': t => {
+    let at = 0.5;
+    let gap = 0.03;
+    while (at < 2.35) {
+      tone({ t: t + at, freq: 2200, dur: 0.02, type: 'square', gain: 0.02, filter: 3000, attack: 0.001 });
+      at += gap;
+      gap *= 1.09;
+    }
+    tone({ t: t + 2.45, freq: 110, dur: 0.5, type: 'square', gain: 0.03, filter: 700, attack: 0.005 });
+    tone({ t: t + 2.45, freq: 116, dur: 0.5, type: 'square', gain: 0.025, filter: 700, attack: 0.005 });
+    boing(t + 2.8, { from: 150, to: 600, dur: 0.35, gain: 0.07 });
+    slideWhistle({ t: t + 3.0, freqs: [420, 300, 460, 280, 440, 260], dur: 1.4, gain: 0.035, wobble: 10 });
+    ceSadTrombone(t + 4.2, 0.03);
+  },
+
+  // Die lands 0.9 (6), 1.9 (6), 2.9 (1); Red-Eyes 3.2, sigh 3.7, leaves 4.3s.
+  'cegg-joey-bc': t => {
+    const hall = darkBus({ reverb: 0.35 });
+    [0.9, 1.9, 2.9].forEach((o, i) => {
+      noise({ t: t + o, dur: 0.12, gain: 0.12, type: 'lowpass', freq: 900, to: 200, attack: 0.002 });
+      tone({ t: t + o, freq: 900, dur: 0.04, type: 'square', gain: 0.03, filter: 2000, attack: 0.001 });
+      if (i < 2) arpeggio(t + o + 0.05, [72 + i * 4, 79 + i * 4], 0.06, (tt, n) => bell({ t: tt, freq: midi(n), dur: 0.5, gain: 0.04, out: hall }));
+    });
+    tone({ t: t + 2.95, freq: midi(60), to: midi(48), dur: 0.6, type: 'triangle', gain: 0.05, attack: 0.01 });
+    monsterRoar(t + 3.2, 0.05, hall);
+    noise({ t: t + 3.7, dur: 0.7, gain: 0.05, freq: 900, to: 300, q: 1.5, attack: 0.2 });
+    ceWhoosh(t + 4.3, 0.5, 0.06, 500, 3000);
+  },
+
+  // Harpies swoop 0-3.2s, blush 1.1s, sparkles 1.4s, perfume 1.8s, kiss 2.3s.
+  'cegg-mai': t => {
+    const room = darkBus({ reverb: 0.35 });
+    [0, 0.38, 0.76].forEach(o => {
+      ceWhoosh(t + o + 0.3, 0.5, 0.045, 600, 2800);
+      tone({ t: t + o + 0.85, freq: 1800, to: 2600, dur: 0.12, type: 'sawtooth', gain: 0.012, filter: 3500, attack: 0.01 });
+    });
+    healSparkles(t + 1.4, 1.3, 9, room);
+    for (let i = 0; i < 5; i++) noise({ t: t + 1.8 + i * 0.18, dur: 0.12, gain: 0.05, type: 'highpass', freq: 5000, attack: 0.005 });
+    tone({ t: t + 2.3, freq: 500, to: 1200, dur: 0.12, gain: 0.04, attack: 0.01 });
+    noise({ t: t + 2.38, dur: 0.06, gain: 0.05, freq: 2000, q: 2, attack: 0.002 });
+    [[3.3, [62, 65, 69, 72]], [3.7, [60, 64, 67, 71]]].forEach(([o, notes]) =>
+      notes.forEach((n, i) => pluck({ t: t + o + i * 0.04, note: n + 12, gain: 0.04, dur: 1 })));
+  },
+
+  // Big wave 0.25-1.3s, flood, whale slap 2.6s, splash, drain 3.8-4.6s.
+  'cegg-mako': t => {
+    noise({ t: t + 0.1, dur: 1.4, gain: 0.12, type: 'lowpass', freq: 400, to: 2200, attack: 0.6 });
+    noise({ t: t + 0.6, dur: 1.0, gain: 0.06, type: 'highpass', freq: 3000, to: 1200, attack: 0.3 });
+    for (let i = 0; i < 14; i++) bubble({ t: t + 1.2 + rnd(0, 2.4), from: rnd(200, 400), to: rnd(600, 1000), gain: 0.03, dur: 0.08 });
+    tone({ t: t + 2.0, freq: 70, to: 140, dur: 0.5, gain: 0.08, attack: 0.1 });
+    noise({ t: t + 2.6, dur: 0.12, gain: 0.18, type: 'highpass', freq: 1200, attack: 0.001 });
+    boom(t + 2.6, 0.35);
+    for (let i = 0; i < 10; i++) noise({ t: t + 2.7 + rnd(0, 0.9), dur: 0.06, gain: 0.04, type: 'highpass', freq: rnd(3000, 6000), attack: 0.002 });
+    noise({ t: t + 3.8, dur: 0.9, gain: 0.07, type: 'lowpass', freq: 1800, to: 200, attack: 0.1 });
+    for (let i = 0; i < 6; i++) bubble({ t: t + 3.9 + i * 0.1, from: 500 - i * 40, to: 200, gain: 0.04, dur: 0.07 });
+  },
+
+  // Ring jingles 0.5-1.5s, the card is sucked in 2-2.7s, figurine 2.65s.
+  'cegg-bakura': t => {
+    const crypt = darkBus({ reverb: 0.6, echo: 0.2 });
+    tone({ t, freq: midi(38), dur: 4.6, type: 'sawtooth', gain: 0.03, filter: 400, attack: 0.6, out: crypt });
+    tone({ t, freq: midi(39), dur: 4.6, type: 'sawtooth', gain: 0.02, filter: 400, attack: 0.6, out: crypt });
+    [0.55, 0.62, 0.7, 0.78, 0.85, 1.0, 1.25].forEach(o => bell({ t: t + o, freq: rnd(1800, 2600), dur: 0.5, gain: 0.025, out: crypt }));
+    noise({ t: t + 1.9, dur: 0.8, gain: 0.09, freq: 3000, to: 200, q: 3, attack: 0.5, out: crypt });
+    tone({ t: t + 1.9, freq: 900, to: 90, dur: 0.8, type: 'sawtooth', gain: 0.03, filter: 1500, attack: 0.3, out: crypt });
+    tone({ t: t + 2.7, freq: 1600, dur: 0.05, gain: 0.04, attack: 0.002 });
+    tone({ t: t + 3.0, freq: 1800, to: 2600, dur: 0.08, gain: 0.03, attack: 0.005 });
+    tone({ t: t + 3.1, freq: 2400, to: 1700, dur: 0.12, gain: 0.03, attack: 0.005 });
+    ceGiggle(t + 3.4, 180, 5, crypt, 'sawtooth');
+    ceWhoosh(t + 4.3, 0.4, 0.05, 300, 2000);
+  },
+
+  // Toon bounces land 0.5/1.1/1.7/2.3/2.9s, giggles, the Eye at 2.5s, wink 3.3s.
+  'cegg-pegasus': t => {
+    [0.5, 1.1, 1.7, 2.3, 2.9].forEach((o, i) => boing(t + o, { from: 140 + i * 20, to: 500 + i * 40, dur: 0.3, gain: 0.05 }));
+    [0.7, 1.15, 1.6, 2.05].forEach(o => ceGiggle(t + o, 900, 4));
+    arpeggio(t + 2.5, [76, 81, 85, 88], 0.05, (tt, n) => bell({ t: tt, freq: midi(n), dur: 0.8, gain: 0.03 }));
+    tone({ t: t + 3.3, freq: 2400, to: 3600, dur: 0.12, gain: 0.04, attack: 0.003 });
+    bell({ t: t + 3.42, freq: 4200, dur: 0.8, gain: 0.04 });
+    ceGiggle(t + 3.7, 520, 6, sfxOut, 'sawtooth');
+  },
+
+  // "TRAP CARD!" at 0.3s, a trap per visible card every 0.23s, the bow 2.9s.
+  'cegg-odion': t => {
+    const hall = darkBus({ reverb: 0.4 });
+    brass({ t: t + 0.25, notes: [57, 60, 63], dur: 0.35, gain: 0.04 });
+    for (let i = 0; i < 9; i++) {
+      const at = t + 0.3 + i * 0.23;
+      if (i % 3 === 0) slideWhistle({ t: at, freqs: [1400, 300], dur: 0.45, gain: 0.025, wobble: 0, out: hall });
+      if (i % 3 === 1) arpeggio(at, [84, 88, 91], 0.03, (tt, n) => bell({ t: tt, freq: midi(n), dur: 0.5, gain: 0.02, out: hall }));
+      if (i % 3 === 2) ceClang(at + 0.04, 0.04, hall);
+    }
+    arpeggio(t + 3.0, [67, 72, 76], 0.12, (tt, n) => marimba({ t: tt, note: n, gain: 0.07 }));
+  },
+
+  // Necklace 0-0.6s, the vision 0.7-2.9s with a ghost tap at 2.05s, "…or not." 3.1s.
+  'cegg-ishizu': t => {
+    const temple = darkBus({ reverb: 0.6, echo: 0.25 });
+    bell({ t: t + 0.4, freq: midi(81), dur: 1.5, gain: 0.05, out: temple });
+    noise({ t: t + 0.6, dur: 2.3, gain: 0.04, freq: 1500, to: 4000, q: 6, attack: 0.6, out: temple });
+    [57, 64, 69, 71].forEach(n => tone({ t: t + 0.7, freq: midi(n), dur: 2.2, gain: 0.015, attack: 0.5, out: temple }));
+    tone({ t: t + 2.05, freq: 1300, dur: 0.04, gain: 0.04, attack: 0.002, out: temple });
+    bell({ t: t + 2.08, freq: midi(88), dur: 1.2, gain: 0.03, out: temple });
+    marimba({ t: t + 3.1, note: 64, gain: 0.08 });
+    marimba({ t: t + 3.3, note: 60, gain: 0.08 });
+    arpeggio(t + 3.6, [81, 84, 88], 0.08, (tt, n) => bell({ t: tt, freq: midi(n), dur: 1, gain: 0.03, out: temple }));
+  },
+
+  // Melt 0.3-2.4s, drips, Revival Jam splats 1.55s & 3.05s and re-forms.
+  'cegg-marik-1': t => {
+    const cave = darkBus({ reverb: 0.4 });
+    tone({ t: t + 0.3, freq: 220, to: 70, dur: 2.0, type: 'triangle', gain: 0.05, attack: 0.2, out: cave });
+    for (let i = 0; i < 9; i++) bubble({ t: t + 0.6 + rnd(0, 1.8), from: rnd(900, 1300), to: rnd(300, 450), gain: 0.03, dur: 0.08 });
+    slideWhistle({ t: t + 1.25, freqs: [1200, 400], dur: 0.3, gain: 0.03, wobble: 0 });
+    ceSplat(t + 1.55, 0.12, cave);
+    slideWhistle({ t: t + 2.1, freqs: [150, 400, 260], dur: 0.45, gain: 0.03, wobble: 14 });
+    boing(t + 2.75, { from: 120, to: 420, dur: 0.3, gain: 0.05 });
+    ceSplat(t + 3.05, 0.12, cave);
+    slideWhistle({ t: t + 3.45, freqs: [150, 420, 280], dur: 0.45, gain: 0.03, wobble: 14 });
+    ceGiggle(t + 3.9, 200, 5, cave, 'sawtooth');
+  },
+
+  // Sphere hums, scroll unrolls 0.7s, ??? 1.1-1.6s, ERROR 2-2.8s, phoenix 2.9s.
+  'cegg-marik-2': t => {
+    const temple = darkBus({ reverb: 0.55, echo: 0.15 });
+    puzzleHum(t, 2.9, 0.05, temple);
+    noise({ t: t + 0.65, dur: 0.4, gain: 0.05, freq: 3000, to: 1500, q: 1, attack: 0.05 });
+    [1.1, 1.35, 1.6].forEach((o, i) => tone({ t: t + o, freq: 400 + i * 60, to: 650 + i * 80, dur: 0.15, gain: 0.04, attack: 0.01 }));
+    [2.0, 2.15, 2.45].forEach(o => {
+      tone({ t: t + o, freq: 220, dur: 0.11, type: 'square', gain: 0.035, filter: 1500, attack: 0.002 });
+      tone({ t: t + o, freq: 233, dur: 0.11, type: 'square', gain: 0.03, filter: 1500, attack: 0.002 });
+    });
+    noise({ t: t + 2.5, dur: 0.4, gain: 0.06, type: 'lowpass', freq: 300, attack: 0.05, out: temple });
+    boom(t + 2.9, 0.7, temple);
+    brass({ t: t + 2.95, notes: [50, 57, 62, 66], dur: 1.0, gain: 0.04 });
+    slideWhistle({ t: t + 3.0, freqs: [1400, 2600, 1900], dur: 0.7, gain: 0.03, wobble: 18, out: temple });
+    noise({ t: t + 3.0, dur: 1.5, gain: 0.05, type: 'highpass', freq: 2000, to: 5000, attack: 0.2, out: temple });
+  },
+
+  // Bugs skitter in 0-2s, nibble 1.5-2.6s, Exodia 2.7s, flick 3.3s.
+  'cegg-weevil': t => {
+    for (let i = 0; i < 40; i++) tone({ t: t + rnd(0, 2.2), freq: rnd(3500, 6000), dur: 0.012, type: 'square', gain: 0.012, attack: 0.001 });
+    for (let i = 0; i < 12; i++) noise({ t: t + 1.5 + rnd(0, 1.1), dur: 0.05, gain: 0.05, freq: rnd(1500, 3000), q: 2, attack: 0.002 });
+    const hall = darkBus({ reverb: 0.5 });
+    brass({ t: t + 2.7, notes: [48, 55, 60, 64], dur: 0.5, gain: 0.035 });
+    bell({ t: t + 2.7, freq: midi(84), dur: 1, gain: 0.04, out: hall });
+    tone({ t: t + 3.3, freq: 600, to: 2000, dur: 0.08, gain: 0.05, attack: 0.003 });
+    slideWhistle({ t: t + 3.35, freqs: [1500, 900, 500], dur: 0.8, gain: 0.03, wobble: 9, out: hall });
+    ceGiggle(t + 3.35, 1100, 6, sfxOut, 'square');
+  },
+
+  // "One…" 0.1s, "two…" 0.55s, flurry 1.3s, slot 1.7s (stops 2.8/3.15/3.5s), flag 3.6s.
+  'cegg-keith': t => {
+    cardFlip(t + 0.1, 0.12);
+    cardFlip(t + 0.55, 0.12);
+    for (let i = 0; i < 16; i++) cardFlip(t + 1.3 + i * 0.06, 0.07, rnd(2000, 3200));
+    bell({ t: t + 1.75, freq: 1800, dur: 0.4, gain: 0.04 });
+    for (let at = 1.9; at < 3.5; at += 0.05) {
+      tone({ t: t + at, freq: 1400, dur: 0.015, type: 'square', gain: 0.012, filter: 3000, attack: 0.001 });
+    }
+    bell({ t: t + 2.8, freq: midi(84), dur: 0.5, gain: 0.05 });
+    bell({ t: t + 3.15, freq: midi(88), dur: 0.5, gain: 0.05 });
+    tone({ t: t + 3.5, freq: 150, dur: 0.35, type: 'square', gain: 0.035, filter: 800, attack: 0.005 });
+    brass({ t: t + 3.65, notes: [60, 64, 67], dur: 0.25, gain: 0.035 });
+    brass({ t: t + 3.92, notes: [64, 67, 72], dur: 0.8, gain: 0.04 });
+    slideWhistle({ t: t + 4.0, freqs: [2200, 2900, 2000], dur: 0.5, gain: 0.02, wobble: 20 });
+  }
+};
+
 // --- Secret Duel Disk mini-game (src/actions/duel-disk-actions.js) ----------
 
 // Kuriboh's "kuri!": a squeaky up-down chirp.
@@ -1253,9 +1628,11 @@ const SOUND_KITS = {
     ...POT_SOUNDS,
     ...TRAP_SOUNDS,
     ...GAIA_SOUNDS,
-    ...DISK_SOUNDS
+    ...DISK_SOUNDS,
+    ...PALADIN_SOUNDS,
+    ...DIVINE_SOUNDS,
+    ...CHAR_EGG_SOUNDS
   },
-
   light: {
     tap: t => tone({ t, freq: 700, dur: 0.02, type: 'triangle', gain: 0.03 }),
     'sound-on': t => arpeggio(t, [72, 79], 0.08, (at, n) => marimba({ t: at, note: n, gain: 0.12 })),
@@ -1317,7 +1694,10 @@ const SOUND_KITS = {
     ...POT_SOUNDS,
     ...TRAP_SOUNDS,
     ...GAIA_SOUNDS,
-    ...DISK_SOUNDS
+    ...DISK_SOUNDS,
+    ...PALADIN_SOUNDS,
+    ...DIVINE_SOUNDS,
+    ...CHAR_EGG_SOUNDS
   },
 
   poc: {
@@ -1434,6 +1814,9 @@ const SOUND_KITS = {
     ...POT_SOUNDS,
     ...TRAP_SOUNDS,
     ...GAIA_SOUNDS,
-    ...DISK_SOUNDS
+    ...DISK_SOUNDS,
+    ...PALADIN_SOUNDS,
+    ...DIVINE_SOUNDS,
+    ...CHAR_EGG_SOUNDS
   }
 };

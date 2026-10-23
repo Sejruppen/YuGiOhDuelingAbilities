@@ -51,21 +51,21 @@ const CHARACTERS = [
     theme: 'Legends Assembled',
     skills: [
       { name: '(White Dragon) The Legend Comes to Life', text: 'Reveal 1 "Blue-Eyes White Dragon" in your hand; add 1 "Polymerization" or "Future Fusion" from your Deck to your hand.', maxUses: 1 },
-      { name: '(Sky God) Divine Offering', text: 'You can treat 1 monster you control as 2 Tributes for the Tribute Summon of a Divine-Beast monster.', maxUses: 1 },
+      { name: '(Gods) Divine Offering', text: 'You can treat 1 monster you control as 2 Tributes for the Tribute Summon of a Divine-Beast monster.', maxUses: 1 },
       { name: '(Cybernetic) Machine Assembly', text: 'If you control a Machine monster: Add 1 Machine monster from your Deck to your hand.', maxUses: 1 },
       { name: '(Illusion) Master of Traps', text: 'Set 1 "Magical Hats" or "Spellbinding Circle" directly from your Deck to your Spell & Trap Zone.', maxUses: 1 },
       { name: '(Arsenal) Overwhelming Power', text: 'Send 1 card from your hand to the GY; add 1 "United We Stand" or "Mage Power" from your Deck to your hand.', maxUses: 1 }
     ],
     comebacks: [
       { name: '(White Dragon) The Legend Comes to Life', text: 'Requirement: You have 2000 or less LP. Special Summon 1 "Blue-Eyes White Dragon" from your hand or GY. It cannot attack directly this turn.' },
-      { name: '(Sky God) Divine Offering', text: 'Requirement: Your LP is lower than your opponent\'s and they control 2 or more monsters. Draw 2 cards. You can only Normal Summon Divine-Beast monsters this turn.' },
+      { name: '(Gods) Divine Offering', text: 'Requirement: Your LP is lower than your opponent\'s and they control 2 or more monsters. Draw 2 cards. You can only Normal Summon Divine-Beast monsters this turn.' },
       { name: '(Cybernetic) Machine Assembly', text: 'Requirement: You have 2000 or less LP and control no monsters. Special Summon 1 "Cyber Dragon" from your Deck or GY, and if you do, it gains 1000 ATK until the end of the turn.' },
       { name: '(Illusion) Master of Traps', text: 'Requirement: You take battle damage that leaves you with 2000 or less LP. Set 1 "Mirror Force" or "Draining Shield" directly from your GY; it can be activated this turn.' },
       { name: '(Arsenal) Overwhelming Power', text: 'Requirement: Your LP is 2000 or less and an opponent controls a monster with 3000 or more ATK. Equip 1 "Solitary Sword of Poison" from your Deck to a monster you control.' }
     ],
     quests: [
       { name: '(White Dragon) The Legend Comes to Life', text: 'Quest: Fusion Summon "Blue-Eyes Ultimate Dragon". Reward: "Blue-Eyes" monsters you control are unaffected by your opponent\'s Trap Cards.' },
-      { name: '(Sky God) Divine Offering', text: 'Quest: Successfully Tribute Summon a Divine-Beast monster. Reward: Your opponent cannot activate cards or effects when your Divine-Beast monsters attack.' },
+      { name: '(Gods) Divine Offering', text: 'Quest: Successfully Tribute Summon a Divine-Beast monster. Reward: Your opponent cannot activate cards or effects when your Divine-Beast monsters attack.' },
       { name: '(Cybernetic) Machine Assembly', text: 'Quest: Destroy 3 monsters by battle using Machine monsters. Reward: Once per turn, you can negate the activation of an opponent\'s Spell/Trap card that targets a Machine monster you control.' },
       { name: '(Illusion) Master of Traps', text: 'Quest: Successfully resolve 3 Trap Cards. Reward: Your opponent takes 500 damage each time they attack directly.' },
       { name: '(Arsenal) Overwhelming Power', text: 'Quest: Control a monster equipped with 2 or more Equip Spells. Reward: Equipped monsters you control inflict piercing battle damage.' }
