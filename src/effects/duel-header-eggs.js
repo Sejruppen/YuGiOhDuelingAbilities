@@ -76,6 +76,7 @@ function playTimeWizardRewind() {
 
   headerEgg.busy = true;
   headerEgg.swallowClick = true;
+  markEggFound('time-wizard');
   playSound({ name: 'time-wizard' });
 
   const app = document.getElementById('app');
@@ -203,6 +204,7 @@ function rollEndCredits() {
   overlay.setAttribute('aria-label', 'End credits. Tap to skip.');
   headerEgg.busy = true;
   headerEgg.swallowClick = true;
+  markEggFound('end-credits');
   playSound({ name: 'end-credits' });
 
   const openedAt = performance.now();

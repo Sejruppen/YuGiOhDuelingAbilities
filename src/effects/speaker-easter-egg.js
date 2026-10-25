@@ -79,6 +79,7 @@ function breakSpeaker() {
   // let the whole story be heard.
   try { localStorage.setItem(SOUND_STORAGE_KEY, 'on'); } catch {}
   unlockAudio();
+  markEggFound('speaker');
   playSound({ name: 'speaker-rip' });
   render();
 

@@ -25,6 +25,7 @@ function countThemeSwitch() {
 }
 
 function triggerDizzy() {
+  markEggFound('dizzy');
   if (prefersReducedMotion()) return;
   dizzyEgg.busy = true;
   playSound({ name: 'dizzy' });

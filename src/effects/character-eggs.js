@@ -63,6 +63,7 @@ const cePick = list => list[Math.floor(Math.random() * list.length)];
 function runCharacterEgg(card, id) {
   const recipe = CHARACTER_EGGS[id];
   if (!recipe) return;
+  markEggFound(`char-${id}`);
   // Interactive eggs (Magical Hats) open their own screen instead of a scene;
   // they reset charEgg.busy / swallowClick when they close.
   if (recipe.run) {

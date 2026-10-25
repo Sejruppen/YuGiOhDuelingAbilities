@@ -58,6 +58,7 @@ setInterval(() => {
 }, NAP_CHECK_MS);
 
 function startPharaohNap() {
+  markEggFound('pharaoh-nap');
   const overlay = document.createElement('div');
   overlay.className = 'fx-nap';
   overlay.innerHTML = `

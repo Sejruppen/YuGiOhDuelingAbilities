@@ -17,6 +17,7 @@ function isHealOverflow(from, to) {
 }
 
 function triggerHealOverflow(anchor) {
+  markEggFound('full-heal');
   const { x, y } = getCenter(anchor);
   const overlay = spawnFx('fx-heal-overflow', HEAL_TOTAL_MS + 100, {
     vars: { '--ox': `${x}px`, '--oy': `${y}px` },

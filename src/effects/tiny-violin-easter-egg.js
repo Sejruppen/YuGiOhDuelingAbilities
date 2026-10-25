@@ -14,6 +14,7 @@ function isTinyViolin(from, to) {
 }
 
 function triggerTinyViolin() {
+  markEggFound('tiny-violin');
   const notes = TINY_VIOLIN_NOTES.map((note, i) =>
     `<span class="violin-note" style="--i: ${i}; --nx: ${rand(-50, 50).toFixed(0)}px">${note}</span>`
   ).join('');

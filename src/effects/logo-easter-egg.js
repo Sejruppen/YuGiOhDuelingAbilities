@@ -81,6 +81,7 @@ function resetLogoEgg() {
 }
 
 function summonExodia(logo) {
+  markEggFound('exodia');
   logoEgg.busy = true;
   playSound({ name: 'logo-obliterate' });
 

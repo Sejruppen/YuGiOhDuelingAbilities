@@ -13,6 +13,7 @@ function isLastStand(from, to) {
 }
 
 function triggerLastStand(app) {
+  markEggFound('last-stand');
   restartClass(app, 'fx-last-stand-shake', LAST_STAND_SHAKE_MS);
   spawnFx('fx-last-stand', LAST_STAND_TOTAL_MS + 100, {
     html: `

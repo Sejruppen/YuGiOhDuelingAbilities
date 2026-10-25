@@ -117,6 +117,7 @@ function summonDivineBeasts(card) {
 
   divineEgg.busy = true;
   divineEgg.swallowClick = true;
+  markEggFound('divine-offering');
   playSound({ name: 'divine-offering' });
   card.classList.add('divine-jammed');
 

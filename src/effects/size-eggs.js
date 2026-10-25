@@ -42,6 +42,7 @@ function lockSizeEgg(ms) {
 // --- Small: Shrink Ray mishap ----------------------------------------------------
 
 function fireShrinkRay() {
+  markEggFound('shrink-ray');
   const overlay = spawnFx('fx-shrink', SHRINK_MS + 100, {
     html: `
       <div class="shr-beam"></div>
@@ -113,6 +114,7 @@ const OBELISK_HEADROOM_SVG = `
   </svg>`;
 
 function summonObeliskHeadroom() {
+  markEggFound('obelisk-headroom');
   const overlay = spawnFx('fx-obelisk', OBELISK_MS + 100, {
     html: `
       <div class="ob-dim"></div>

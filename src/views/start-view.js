@@ -53,6 +53,7 @@ function renderStartView() {
           ${renderThemePicker()}
           ${renderScalePicker()}
           ${renderSoundToggle()}
+          ${renderEggCounter()}
         </div>
       </div>
     </div>

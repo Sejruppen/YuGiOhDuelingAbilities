@@ -118,6 +118,7 @@ function summonDarkPaladin(card) {
 
   paladinEgg.busy = true;
   paladinEgg.swallowClick = true;
+  markEggFound('dark-paladin');
   playSound({ name: 'paladin-fusion' });
   card.classList.add('paladin-empowered');
 

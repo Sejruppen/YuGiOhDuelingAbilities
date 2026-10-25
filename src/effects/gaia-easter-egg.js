@@ -113,6 +113,7 @@ function summonGaia(button) {
 
   gaiaEgg.busy = true;
   gaiaEgg.swallowClick = true;
+  markEggFound('gaia');
   playSound({ name: 'gaia-gallop', hit, drop });
   button.classList.add('gaia-hidden');
 

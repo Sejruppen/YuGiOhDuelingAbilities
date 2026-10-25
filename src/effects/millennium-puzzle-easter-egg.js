@@ -90,6 +90,7 @@ function assembleMillenniumPuzzle() {
   if (!overlay) return;
 
   puzzleEgg.busy = true;
+  markEggFound('millennium-puzzle');
   playSound({ name: 'puzzle-assemble' });
   locks.forEach(lock => restartClass(lock, 'puzzle-taken', PUZZLE_TOTAL_MS));
   setTimeout(() => { puzzleEgg.busy = false; }, PUZZLE_TOTAL_MS);

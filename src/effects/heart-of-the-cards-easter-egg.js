@@ -96,6 +96,7 @@ function triggerHeartOfTheCards() {
 
   heartEgg.busy = true;
   heartEgg.count++;
+  markEggFound('heart-of-the-cards');
   playSound({ name: overload ? 'heart-overload' : 'heart-of-the-cards' });
   setTimeout(() => { heartEgg.busy = false; }, HEART_TOTAL_MS);
 }

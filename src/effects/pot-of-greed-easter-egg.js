@@ -84,6 +84,7 @@ function summonPotOfGreed(button) {
 
   potEgg.busy = true;
   potEgg.swallowClick = true;
+  markEggFound('pot-of-greed');
   playSound({ name: 'pot-of-greed' });
   setTimeout(() => { potEgg.busy = false; }, POT_TOTAL_MS);
 }

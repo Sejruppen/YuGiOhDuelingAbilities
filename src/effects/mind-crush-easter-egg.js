@@ -41,6 +41,7 @@ function triggerMindCrush(type) {
   if (!overlay) return;
 
   crushEgg.busy = true;
+  markEggFound('mind-crush');
   playSound({ name: 'mind-crush' });
   setTimeout(() => { crushEgg.busy = false; }, MIND_CRUSH_TOTAL_MS);
 }

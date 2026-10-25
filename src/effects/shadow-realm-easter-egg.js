@@ -43,6 +43,7 @@ function renderShadowMotes() {
 }
 
 function triggerShadowRealm(app) {
+  markEggFound('shadow-realm');
   const overlay = spawnFx('fx-shadow-realm', SHADOW_TOTAL_MS + 100, {
     html: `
       <div class="shadow-fog"></div>

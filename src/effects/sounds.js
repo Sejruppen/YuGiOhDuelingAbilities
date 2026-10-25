@@ -1440,6 +1440,188 @@ const CHAR_EGG_SOUNDS = {
   }
 };
 
+// --- Egg counter + THE GRAND FINALE (egg-tracker.js, pharaoh-finale.js) -----
+
+// The finale score's bus, so Skip / Close can fade the rest of it out.
+let sfxFinaleBus = null;
+
+// A breathy ney flute: triangle with delayed vibrato plus a breath of noise.
+function ney(t, note, dur, gain = 0.03, out = sfxOut) {
+  const freq = midi(note);
+  const osc = sfxCtx.createOscillator();
+  const lfo = sfxCtx.createOscillator();
+  const depth = sfxCtx.createGain();
+  const lp = sfxCtx.createBiquadFilter();
+  const amp = sfxCtx.createGain();
+  osc.type = 'triangle';
+  osc.frequency.setValueAtTime(freq * 0.985, t);
+  osc.frequency.exponentialRampToValueAtTime(freq, t + 0.07);
+  lfo.frequency.value = 5.3;
+  depth.gain.setValueAtTime(0, t);
+  depth.gain.linearRampToValueAtTime(freq * 0.012, t + Math.min(dur * 0.6, 0.5));
+  lp.type = 'lowpass';
+  lp.frequency.value = 2400;
+  amp.gain.setValueAtTime(0.0001, t);
+  amp.gain.exponentialRampToValueAtTime(gain, t + 0.06);
+  amp.gain.setValueAtTime(gain, t + dur * 0.75);
+  amp.gain.exponentialRampToValueAtTime(0.0001, t + dur + 0.08);
+  lfo.connect(depth).connect(osc.frequency);
+  osc.connect(lp).connect(amp).connect(out);
+  osc.start(t);
+  lfo.start(t);
+  osc.stop(t + dur + 0.12);
+  lfo.stop(t + dur + 0.12);
+  noise({ t, dur: dur * 0.9, gain: gain * 0.22, freq: freq * 2, q: 6, attack: 0.05, out });
+}
+
+// A wordless "aah" choir: detuned saw pads plus a breathy formant.
+function choir({ t, notes, dur, gain = 0.012, attack = 1, out }) {
+  notes.forEach(n => {
+    [-9, 0, 8].forEach(detune => {
+      tone({ t, freq: midi(n), dur, type: 'sawtooth', gain, attack, filter: 1500, detune, out });
+    });
+  });
+  noise({ t, dur, gain: gain * 2.5, freq: 900, q: 2, attack, out });
+  noise({ t, dur, gain: gain * 1.5, freq: 1300, q: 3, attack, out });
+}
+
+function frameDrum(t, doum, out) {
+  if (doum) {
+    tone({ t, freq: 95, to: 52, dur: 0.22, type: 'triangle', gain: 0.12, attack: 0.002, out });
+    noise({ t, dur: 0.08, gain: 0.05, type: 'lowpass', freq: 400, attack: 0.002, out });
+  } else {
+    noise({ t, dur: 0.05, gain: 0.04, freq: 3200, q: 2, attack: 0.001, out });
+  }
+}
+
+const FINALE_SOUNDS = {
+  'egg-found': t => {
+    marimba({ t, note: 79, gain: 0.08 });
+    marimba({ t: t + 0.09, note: 84, gain: 0.08 });
+    bell({ t: t + 0.18, freq: midi(96), dur: 0.8, gain: 0.025 });
+  },
+  'egg-found-all': t => {
+    brass({ t, notes: [64, 68, 71], dur: 0.18, gain: 0.04 });
+    brass({ t: t + 0.2, notes: [64, 68, 71, 76], dur: 0.8, gain: 0.045 });
+    arpeggio(t + 0.2, [88, 92, 95, 100], 0.06, (tt, n) => bell({ t: tt, freq: midi(n), dur: 1, gain: 0.025 }));
+  },
+
+  // The full score, timed to the finale's CSS timeline (see pharaoh-finale.js).
+  'pharaoh-finale': t => {
+    sfxFinaleBus?.gain.setTargetAtTime(0, t, 0.05);
+    const bus = darkBus({ reverb: 0.55, echo: 0.12 });
+    sfxFinaleBus = bus;
+
+    // Intro: a low drone, heartbeats, a shimmer for "40 / 40".
+    tone({ t, freq: 41.2, dur: 3.6, type: 'sawtooth', gain: 0.05, filter: 220, attack: 1, out: bus });
+    [0.6, 1.6, 2.6].forEach((at, i) => {
+      const g = 0.25 + i * 0.08;
+      tone({ t: t + at, freq: 62, to: 40, dur: 0.25, gain: g, attack: 0.003, out: bus });
+      tone({ t: t + at + 0.28, freq: 58, to: 38, dur: 0.22, gain: g * 0.7, attack: 0.003, out: bus });
+    });
+    arpeggio(t + 0.6, [88, 95, 100, 107], 0.12, (tt, n) => bell({ t: tt, freq: midi(n), dur: 1.6, gain: 0.015, out: bus }));
+
+    // Torches ignite (3.2s) and crackle.
+    [3.2, 3.32].forEach(at => noise({ t: t + at, dur: 0.6, gain: 0.08, freq: 300, to: 2400, q: 1, attack: 0.1, out: bus }));
+    for (let i = 0; i < 24; i++) {
+      noise({ t: t + 3.6 + rnd(0, 11), dur: 0.03, gain: 0.025, type: 'highpass', freq: rnd(2500, 5000), attack: 0.001, out: bus });
+    }
+
+    // The tomb: an Egyptian drone and a frame-drum groove (doum-tek-tek-doum-tek).
+    [40, 47, 52].forEach(n => tone({ t: t + 3.2, freq: midi(n), dur: 12.6, type: 'sawtooth', gain: 0.012, filter: 600, attack: 2, out: bus }));
+    for (let bar = 0; bar < 10; bar++) {
+      const b = t + 4.0 + bar * 1.2;
+      [[0, true], [0.3, false], [0.45, false], [0.6, true], [0.9, false]].forEach(([o, doum]) => frameDrum(b + o, doum, bus));
+    }
+    // The honour guard rises: stone thuds, far to near.
+    for (let i = 0; i < 10; i++) {
+      const at = t + 4.0 + i * 0.36;
+      noise({ t: at, dur: 0.25, gain: 0.07, type: 'lowpass', freq: 500, to: 150, attack: 0.01, out: bus });
+      tone({ t: at, freq: 80, to: 50, dur: 0.2, type: 'triangle', gain: 0.06, attack: 0.005, out: bus });
+    }
+    // Ney melody in E double harmonic (E F G# A B C D#).
+    let at = t + 4.4;
+    [[64, 0.4], [65, 0.4], [68, 0.8], [69, 0.4], [68, 0.4], [65, 0.8], [64, 1.2]].forEach(([n, d]) => {
+      ney(at, n, d, 0.035, bus);
+      at += d;
+    });
+    at = t + 9.0;
+    [[71, 0.4], [72, 0.4], [71, 0.4], [69, 0.4], [68, 0.8], [69, 0.4], [71, 0.4], [72, 0.8], [75, 0.4], [76, 1.6]].forEach(([n, d]) => {
+      ney(at, n, d, 0.035, bus);
+      at += d;
+    });
+
+    // The seven Millennium Items: whoosh in, lock with a chime (8.5s + k*0.8s).
+    [76, 79, 81, 83, 86, 88, 91].forEach((n, k) => {
+      const fly = t + 8.5 + k * 0.8;
+      ceWhoosh(fly, 0.6, 0.04, 500, 3000, bus);
+      bell({ t: fly + 0.7, freq: midi(n), dur: 1.8, gain: 0.04, out: bus });
+      ceClang(fly + 0.7, 0.025, bus);
+    });
+    // Strings swell under the items.
+    choir({ t: t + 8.5, notes: [52, 59, 64, 67], dur: 6, gain: 0.006, attack: 4.5, out: bus });
+
+    // The carvings light up (14.1s).
+    boom(t + 14.1, 0.6, bus);
+    noise({ t: t + 14.1, dur: 1.6, gain: 0.07, type: 'lowpass', freq: 160, attack: 0.1, out: bus });
+    noise({ t: t + 14.1, dur: 1.4, gain: 0.04, type: 'highpass', freq: 2000, to: 8000, attack: 0.3, out: bus });
+    brass({ t: t + 14.15, notes: [40, 47, 52, 55], dur: 1.3, gain: 0.04 });
+    arpeggio(t + 14.2, [76, 80, 83, 88, 92], 0.08, (tt, n) => bell({ t: tt, freq: midi(n), dur: 1.4, gain: 0.025, out: bus }));
+
+    // Yami's walk (15.6-19.6s): taiko steps and a rising brass fanfare.
+    for (let i = 0; i < 8; i++) {
+      const step = t + 15.6 + i * 0.5;
+      tone({ t: step, freq: 110, to: 45, dur: 0.4, gain: 0.16 + i * 0.015, attack: 0.003, out: bus });
+      noise({ t: step, dur: 0.15, gain: 0.05, type: 'lowpass', freq: 600, attack: 0.002, out: bus });
+    }
+    [[15.8, [52, 59, 64], 0.3], [16.2, [52, 59, 64], 0.3], [16.6, [55, 62, 67], 0.7], [17.4, [57, 64, 69], 0.4],
+      [17.8, [59, 66, 71], 0.4], [18.2, [60, 67, 72], 1.0], [19.2, [59, 63, 66, 71], 0.6]].forEach(([o, notes, dur]) => {
+      brass({ t: t + o, notes, dur, gain: 0.04 });
+    });
+
+    // The door grinds open (19.6s)...
+    boom(t + 19.6, 0.9, bus);
+    noise({ t: t + 19.6, dur: 2.2, gain: 0.12, type: 'lowpass', freq: 320, to: 120, attack: 0.15, out: bus });
+    tone({ t: t + 19.6, freq: 48, to: 40, dur: 2.2, type: 'sawtooth', gain: 0.04, filter: 220, attack: 0.2, out: bus });
+    // ...and the light: a choir in E major, a cascade of bells, sparkles.
+    choir({ t: t + 20.0, notes: [40, 52, 56, 59, 64, 68, 71, 76], dur: 4.6, gain: 0.008, attack: 1.2, out: bus });
+    arpeggio(t + 20.0, [76, 80, 83, 88, 92, 95, 100], 0.09, (tt, n) => bell({ t: tt, freq: midi(n), dur: 2, gain: 0.03, out: bus }));
+    healSparkles(t + 20.2, 3.5, 30, bus);
+    laserCharge({ t: t + 21.0, dur: 1.4, from: 120, to: 2400, gain: 0.025, out: bus });
+
+    // White-out (22.4s).
+    boom(t + 22.4, 1.0, bus);
+    noise({ t: t + 22.4, dur: 2.5, gain: 0.08, type: 'highpass', freq: 3000, to: 1200, attack: 0.01, out: bus });
+
+    // The ending: a warm E major pad, chimes for each line, the trophy fanfare.
+    choir({ t: t + 23.6, notes: [52, 56, 59, 64, 68], dur: 8.5, gain: 0.006, attack: 1.5, out: bus });
+    tone({ t: t + 23.6, freq: midi(28), dur: 8.5, type: 'triangle', gain: 0.05, attack: 1.5, out: bus });
+    bell({ t: t + 25.0, freq: midi(76), dur: 2.5, gain: 0.04, out: bus });
+    bell({ t: t + 26.8, freq: midi(71), dur: 2.5, gain: 0.035, out: bus });
+    bell({ t: t + 27.0, freq: midi(76), dur: 2.5, gain: 0.035, out: bus });
+    ceWhoosh(t + 28.6, 0.9, 0.05, 300, 3500, bus);
+    for (let i = 0; i < 6; i++) cardFlip(t + 28.7 + i * 0.12, 0.05);
+    brass({ t: t + 29.4, notes: [64, 68, 71], dur: 0.22, gain: 0.045 });
+    brass({ t: t + 29.65, notes: [64, 68, 71, 76], dur: 1.6, gain: 0.05 });
+    arpeggio(t + 29.65, [88, 92, 95, 100, 104], 0.07, (tt, n) => bell({ t: tt, freq: midi(n), dur: 1.5, gain: 0.025, out: bus }));
+    for (let i = 0; i < 10; i++) coinClink(t + 29.7 + rnd(0, 1.2), 0.02);
+  },
+  'pharaoh-finale-skip': t => {
+    sfxFinaleBus?.gain.setTargetAtTime(0, t, 0.08);
+    const bus = darkBus({ reverb: 0.5, echo: 0.1 });
+    sfxFinaleBus = bus;
+    choir({ t, notes: [52, 56, 59, 64, 68], dur: 5, gain: 0.006, attack: 0.8, out: bus });
+    bell({ t: t + 0.2, freq: midi(76), dur: 2.5, gain: 0.04, out: bus });
+    brass({ t: t + 1.2, notes: [64, 68, 71], dur: 0.22, gain: 0.04 });
+    brass({ t: t + 1.45, notes: [64, 68, 71, 76], dur: 1.4, gain: 0.045 });
+    arpeggio(t + 1.45, [88, 92, 95, 100], 0.07, (tt, n) => bell({ t: tt, freq: midi(n), dur: 1.4, gain: 0.025, out: bus }));
+  },
+  'pharaoh-finale-stop': t => {
+    sfxFinaleBus?.gain.setTargetAtTime(0, t, 0.15);
+    sfxFinaleBus = null;
+  }
+};
+
 // --- Size picker eggs (src/effects/size-eggs.js) ----------------------------
 
 const SIZE_EGG_SOUNDS = {
@@ -1847,7 +2029,8 @@ const SOUND_KITS = {
     ...DIVINE_SOUNDS,
     ...CHAR_EGG_SOUNDS,
     ...HEADER_EGG_SOUNDS,
-    ...SIZE_EGG_SOUNDS
+    ...SIZE_EGG_SOUNDS,
+    ...FINALE_SOUNDS
   },
   light: {
     tap: t => tone({ t, freq: 700, dur: 0.02, type: 'triangle', gain: 0.03 }),
@@ -1915,7 +2098,8 @@ const SOUND_KITS = {
     ...DIVINE_SOUNDS,
     ...CHAR_EGG_SOUNDS,
     ...HEADER_EGG_SOUNDS,
-    ...SIZE_EGG_SOUNDS
+    ...SIZE_EGG_SOUNDS,
+    ...FINALE_SOUNDS
   },
 
   poc: {
@@ -2037,6 +2221,7 @@ const SOUND_KITS = {
     ...DIVINE_SOUNDS,
     ...CHAR_EGG_SOUNDS,
     ...HEADER_EGG_SOUNDS,
-    ...SIZE_EGG_SOUNDS
+    ...SIZE_EGG_SOUNDS,
+    ...FINALE_SOUNDS
   }
 };

@@ -48,6 +48,7 @@ function renderScrewCoins() {
 }
 
 function screwTheRules(type, card) {
+  markEggFound('screw-the-rules');
   screwEgg.busy = true;
   playSound({ name: 'screw-the-rules' });
   restartClass(card, 'fx-used-deny', 400);

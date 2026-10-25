@@ -77,6 +77,7 @@ function springTrapHole(button) {
 
   trapEgg.busy = true;
   trapEgg.swallowClick = true;
+  markEggFound('trap-hole');
   playSound({ name: 'trap-hole' });
   button.classList.add('trap-hidden');
   setTimeout(() => {

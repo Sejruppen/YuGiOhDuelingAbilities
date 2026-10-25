@@ -30,6 +30,7 @@ function diskAllowsClick() {
 }
 
 function openDuelDisk() {
+  markEggFound('duel-disk');
   newDiskGame();
   setState({ screen: SCREENS.DISK });
 }
