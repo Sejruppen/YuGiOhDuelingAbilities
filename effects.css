@@ -7884,6 +7884,152 @@ html[data-theme] .disk-header [data-sound-btn] { color: #cbd5e1; border-color: r
 }
 
 /* =========================================================================
+   TOURNAMENT
+   ========================================================================= */
+
+/* Stepper hits a limit. */
+.tn-nope { animation: tn-nope 0.4s ease; }
+@keyframes tn-nope {
+  0%, 100% { transform: none; }
+  20% { transform: translateX(-6px); color: rgb(244 63 94); }
+  40% { transform: translateX(5px); }
+  60% { transform: translateX(-3px); }
+  80% { transform: translateX(2px); }
+}
+
+
+/* --- Draw ---------------------------------------------------------------- */
+
+.tn-draw--intro .tn-draw-card { animation: tn-deal 0.5s cubic-bezier(0.2, 1.2, 0.4, 1) both; animation-delay: calc(var(--i, 0) * 45ms); }
+@keyframes tn-deal {
+  from { opacity: 0; transform: translateY(-30px) rotate(-8deg) scale(0.8); }
+}
+
+.tn-facedown {
+  background:
+    repeating-linear-gradient(45deg, rgb(245 158 11 / 0.07) 0 6px, transparent 6px 12px),
+    radial-gradient(circle at 50% 50%, rgb(120 53 15 / 0.45), rgb(15 23 42 / 0.95) 75%);
+}
+.tn-facedown .tn-draw-name { color: rgb(148 163 184); letter-spacing: 0.2em; }
+.tn-facedown .tn-draw-badge { font-size: 1rem; }
+
+.tn-spinning {
+  border-color: rgb(245 158 11) !important;
+  box-shadow: 0 0 0 2px rgb(245 158 11 / 0.5), 0 0 24px rgb(245 158 11 / 0.45);
+  animation: tn-shake 0.12s linear infinite;
+}
+.tn-spinning .tn-draw-name { color: #fff; letter-spacing: 0; filter: blur(0.4px); }
+.tn-spinning .tn-draw-badge { animation: tn-spin-badge 0.3s linear infinite; }
+@keyframes tn-shake {
+  0%, 100% { transform: translate(0, 0); }
+  25% { transform: translate(-1px, 1px); }
+  75% { transform: translate(1px, -1px); }
+}
+@keyframes tn-spin-badge { to { transform: rotate(360deg); } }
+
+.tn-landed { animation: tn-land 0.6s cubic-bezier(0.2, 1.4, 0.4, 1); }
+.tn-landed::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: radial-gradient(circle, rgb(255 255 255 / 0.85), rgb(245 158 11 / 0.4) 50%, transparent 75%);
+  animation: tn-flash 0.6s ease-out forwards;
+  pointer-events: none;
+}
+@keyframes tn-land {
+  0% { transform: scale(1.18) rotate(-2deg); }
+  60% { transform: scale(0.96); }
+  100% { transform: none; }
+}
+@keyframes tn-flash { from { opacity: 1; } to { opacity: 0; } }
+
+.tn-draw-next { display: none; }
+.tn-draw--done .tn-draw-next { display: block; animation: tn-rise 0.45s cubic-bezier(0.2, 1.3, 0.4, 1); }
+header:has(+ .tn-draw--done) .tn-draw-skip { visibility: hidden; }
+@keyframes tn-rise { from { opacity: 0; transform: translateY(24px); } }
+
+/* --- Bracket ------------------------------------------------------------- */
+
+.tn-deal .tn-round { animation: tn-col 0.5s cubic-bezier(0.2, 1.1, 0.4, 1) both; animation-delay: calc(var(--i, 0) * 120ms); }
+@keyframes tn-col { from { opacity: 0; transform: translateX(-24px); } }
+
+.tn-ready { animation: tn-ready 1.8s ease-in-out infinite; }
+@keyframes tn-ready {
+  0%, 100% { box-shadow: 0 0 0 0 rgb(245 158 11 / 0); }
+  50% { box-shadow: 0 0 0 3px rgb(245 158 11 / 0.25), 0 0 18px rgb(245 158 11 / 0.25); }
+}
+.tn-winner { background: linear-gradient(90deg, rgb(245 158 11 / 0.18), transparent); }
+.tn-loser { opacity: 0.55; }
+
+.tn-champion { animation: tn-champ-glow 2.4s ease-in-out infinite; }
+@keyframes tn-champ-glow {
+  0%, 100% { box-shadow: 0 0 0 rgb(245 158 11 / 0); }
+  50% { box-shadow: 0 0 26px rgb(245 158 11 / 0.35); }
+}
+
+/* --- Champion overlay (spawned in #fx-layer) ----------------------------- */
+
+.fx-tn-champ {
+  position: fixed;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  background: radial-gradient(circle, rgb(120 53 15 / 0.55), rgb(2 6 23 / 0.75) 70%);
+  animation: tn-champ-bg 4.6s ease forwards;
+}
+@keyframes tn-champ-bg {
+  0% { opacity: 0; }
+  8%, 82% { opacity: 1; }
+  100% { opacity: 0; }
+}
+.tn-champ-rays {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 160vmax;
+  height: 160vmax;
+  margin: -80vmax 0 0 -80vmax;
+  background: repeating-conic-gradient(rgb(251 191 36 / 0.22) 0 8deg, transparent 8deg 22deg);
+  mask-image: radial-gradient(circle, #000 10%, transparent 55%);
+  -webkit-mask-image: radial-gradient(circle, #000 10%, transparent 55%);
+  animation: tn-rays 12s linear infinite;
+}
+@keyframes tn-rays { to { transform: rotate(360deg); } }
+.tn-champ-box { position: relative; text-align: center; padding: 0 1.5rem; }
+.tn-champ-cup {
+  font-size: 6rem;
+  line-height: 1;
+  filter: drop-shadow(0 0 24px rgb(251 191 36 / 0.8));
+  animation: tn-cup 1.1s cubic-bezier(0.2, 1.5, 0.4, 1) 0.65s both, tn-bob 2s ease-in-out 1.8s infinite;
+}
+@keyframes tn-cup {
+  from { transform: translateY(60vh) scale(0.3) rotate(-30deg); }
+  to { transform: none; }
+}
+@keyframes tn-bob { 50% { transform: translateY(-8px) rotate(3deg); } }
+.tn-champ-title {
+  margin-top: 0.75rem;
+  font-size: 0.85rem;
+  font-weight: 800;
+  letter-spacing: 0.45em;
+  text-transform: uppercase;
+  color: rgb(251 191 36);
+  animation: tn-pop 0.5s ease 1.4s both;
+}
+.tn-champ-name {
+  font-size: 2.25rem;
+  font-weight: 900;
+  line-height: 1.1;
+  color: #fff;
+  text-shadow: 0 0 18px rgb(251 191 36 / 0.7), 0 3px 0 rgb(120 53 15);
+  animation: tn-slam 0.55s cubic-bezier(0.2, 1.6, 0.4, 1) 2s both;
+}
+.tn-champ-theme { margin-top: 0.25rem; color: rgb(253 230 138); font-size: 0.9rem; animation: tn-pop 0.5s ease 2.3s both; }
+@keyframes tn-pop { from { opacity: 0; transform: translateY(10px); } }
+@keyframes tn-slam { from { opacity: 0; transform: scale(2.6); } }
+
+/* =========================================================================
    THEME SWITCH (View Transitions API)
    ========================================================================= */
 

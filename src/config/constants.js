@@ -9,7 +9,8 @@ const SCREENS = {
   ABILITIES: 'abilities',
   DUEL: 'duel',
   // Secret Duel Disk mini-game (hold "Start Duel Setup" for 2s).
-  DISK: 'disk'
+  DISK: 'disk',
+  TOURNAMENT: 'tournament'
 };
 
 const LP_SIDES = {

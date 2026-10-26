@@ -57,6 +57,7 @@ function renderStartView() {
           <button onclick="if (diskAllowsClick()) goToCharacters()" onpointerdown="startDiskPress(this)" onpointerup="cancelDiskPress(this)" onpointerleave="cancelDiskPress(this)" onpointercancel="cancelDiskPress(this)" oncontextmenu="return false" class="disk-press w-full max-w-xs py-4 rounded-xl bg-amber-500 hover:bg-amber-400 active:scale-98 text-slate-950 font-bold text-xl shadow-lg shadow-amber-500/20 transition">
             Start Duel Setup
           </button>
+          ${renderTournamentButton()}
           ${renderThemePicker()}
           ${renderScalePicker()}
           ${renderSoundToggle()}

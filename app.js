@@ -15,6 +15,11 @@ function renderCurrentView(app) {
     return;
   }
 
+  if (state.screen === SCREENS.TOURNAMENT) {
+    app.innerHTML = renderTournamentView();
+    return;
+  }
+
   const char = getSelectedCharacter();
   if (!char) {
     resetApp();

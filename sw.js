@@ -1,4 +1,4 @@
-const CACHE_NAME = 'ygo-skills-mvp-v75';
+const CACHE_NAME = 'ygo-skills-mvp-v76';
 const ASSETS = [
   './',
   './index.html',
@@ -11,10 +11,12 @@ const ASSETS = [
   './src/config/constants.js',
   './src/config/ability-types.js',
   './src/state/store.js',
+  './src/state/tournament-store.js',
   './src/utils/format.js',
   './src/actions/navigation-actions.js',
   './src/actions/duel-actions.js',
   './src/actions/life-point-actions.js',
+  './src/actions/tournament-actions.js',
   './src/components/modal.js',
   './src/components/ability-picker.js',
   './src/components/duel-card.js',
@@ -26,6 +28,7 @@ const ASSETS = [
   './src/views/character-view.js',
   './src/views/abilities-view.js',
   './src/views/duel-view.js',
+  './src/views/tournament-view.js',
   './src/effects/sounds.js',
   './src/effects/effects.js',
   './src/effects/logo-easter-egg.js',
@@ -57,6 +60,7 @@ const ASSETS = [
   './src/effects/size-eggs.js',
   './src/effects/egg-tracker.js',
   './src/effects/pharaoh-finale.js',
+  './src/effects/tournament-effects.js',
   './src/service-worker-registration.js',
   './app.js',
   './manifest.json',

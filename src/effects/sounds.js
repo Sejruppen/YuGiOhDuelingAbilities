@@ -1933,6 +1933,68 @@ const DISK_SOUNDS = {
   }
 };
 
+// Tournament: draw drumroll, slot-machine ticks, landing slams, winner
+// stings and the champion fanfare.
+const TOURNAMENT_SOUNDS = {
+  'tn-draw': t => {
+    const room = darkBus({ reverb: 0.3 });
+    for (let i = 0; i < 18; i++) {
+      noise({ t: t + i * 0.045, dur: 0.05, gain: 0.02 + i * 0.003, type: 'bandpass', freq: 1800, q: 1.2, attack: 0.002, out: room });
+    }
+    tone({ t: t + 0.8, freq: 110, to: 60, dur: 0.3, gain: 0.12, attack: 0.003, out: room });
+    cardFlip(t + 0.15, 0.08);
+    cardFlip(t + 0.4, 0.08, 2200);
+  },
+  // progress 0..1: the ticks drop in pitch as the wheel slows down.
+  'tn-tick': (t, { progress = 0 }) => {
+    tone({ t, freq: 2400 - progress * 1100, dur: 0.02, type: 'square', gain: 0.018, filter: 4000, attack: 0.001 });
+  },
+  'tn-land': t => {
+    const room = darkBus({ reverb: 0.25 });
+    tone({ t, freq: 140, to: 55, dur: 0.25, gain: 0.16, attack: 0.002, out: room });
+    noise({ t, dur: 0.12, gain: 0.08, type: 'lowpass', freq: 1800, to: 300, attack: 0.002, out: room });
+    arpeggio(t + 0.05, [76, 83], 0.07, (tt, n) => bell({ t: tt, freq: midi(n), dur: 0.7, gain: 0.03, out: room }));
+  },
+  'tn-draw-done': t => {
+    const room = darkBus({ reverb: 0.4 });
+    arpeggio(t, [67, 72, 76, 79], 0.08, (tt, n) => bell({ t: tt, freq: midi(n), dur: 0.9, gain: 0.03, out: room }));
+  },
+  'tn-start': t => {
+    const room = darkBus({ reverb: 0.4 });
+    brass({ t, notes: [60, 67], dur: 0.22, gain: 0.05 });
+    brass({ t: t + 0.24, notes: [60, 67], dur: 0.12, gain: 0.05 });
+    brass({ t: t + 0.38, notes: [65, 72], dur: 0.6, gain: 0.06 });
+    boom(t + 0.38, 0.5, room);
+  },
+  'tn-win': t => {
+    const room = darkBus({ reverb: 0.35 });
+    tone({ t, freq: 900, to: 1800, dur: 0.12, type: 'triangle', gain: 0.05, attack: 0.003 });
+    arpeggio(t + 0.08, [72, 76, 79, 84], 0.06, (tt, n) => bell({ t: tt, freq: midi(n), dur: 0.8, gain: 0.03, out: room }));
+    [0.2, 0.3, 0.4].forEach(o => coinClink(t + o, 0.025));
+  },
+  'tn-undo': t => {
+    tone({ t, freq: 900, to: 400, dur: 0.16, type: 'triangle', gain: 0.05, attack: 0.003 });
+    cardFlip(t + 0.05, 0.06, 1800);
+  },
+  // Drumroll -> "da-da-da DAAA" fanfare -> bells and coins.
+  'tn-champion': t => {
+    const room = darkBus({ reverb: 0.55 });
+    for (let i = 0; i < 16; i++) {
+      noise({ t: t + i * 0.04, dur: 0.045, gain: 0.025 + i * 0.003, type: 'bandpass', freq: 1500, q: 1.1, attack: 0.002, out: room });
+    }
+    const f = t + 0.7;
+    brass({ t: f, notes: [60, 64, 67], dur: 0.16, gain: 0.05 });
+    brass({ t: f + 0.18, notes: [60, 64, 67], dur: 0.16, gain: 0.05 });
+    brass({ t: f + 0.36, notes: [60, 64, 67], dur: 0.16, gain: 0.05 });
+    brass({ t: f + 0.56, notes: [65, 69, 72], dur: 0.4, gain: 0.055 });
+    brass({ t: f + 1.0, notes: [67, 71, 74], dur: 0.3, gain: 0.055 });
+    brass({ t: f + 1.32, notes: [72, 76, 79, 84], dur: 1.6, gain: 0.06 });
+    boom(f + 1.32, 0.7, room);
+    arpeggio(f + 1.4, [84, 88, 91, 96, 91, 96], 0.1, (tt, n) => bell({ t: tt, freq: midi(n), dur: 1.2, gain: 0.025, out: room }));
+    for (let i = 0; i < 12; i++) coinClink(f + 1.5 + rnd(0, 1.4), 0.02);
+  }
+};
+
 // ---------------------------------------------------------------------------
 // Theme kits
 // ---------------------------------------------------------------------------
@@ -2037,7 +2099,8 @@ const SOUND_KITS = {
     ...CHAR_EGG_SOUNDS,
     ...HEADER_EGG_SOUNDS,
     ...SIZE_EGG_SOUNDS,
-    ...FINALE_SOUNDS
+    ...FINALE_SOUNDS,
+    ...TOURNAMENT_SOUNDS
   },
   light: {
     tap: t => tone({ t, freq: 700, dur: 0.02, type: 'triangle', gain: 0.03 }),
@@ -2106,7 +2169,8 @@ const SOUND_KITS = {
     ...CHAR_EGG_SOUNDS,
     ...HEADER_EGG_SOUNDS,
     ...SIZE_EGG_SOUNDS,
-    ...FINALE_SOUNDS
+    ...FINALE_SOUNDS,
+    ...TOURNAMENT_SOUNDS
   },
 
   poc: {
@@ -2229,7 +2293,8 @@ const SOUND_KITS = {
     ...CHAR_EGG_SOUNDS,
     ...HEADER_EGG_SOUNDS,
     ...SIZE_EGG_SOUNDS,
-    ...FINALE_SOUNDS
+    ...FINALE_SOUNDS,
+    ...TOURNAMENT_SOUNDS
   }
 };
 
