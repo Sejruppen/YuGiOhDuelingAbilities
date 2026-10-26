@@ -1495,6 +1495,13 @@ function frameDrum(t, doum, out) {
 }
 
 const FINALE_SOUNDS = {
+  // Tapping the locked secret theme tile: a padlock rattle.
+  'theme-locked': t => {
+    [0, 0.07, 0.14].forEach((o, i) => {
+      noise({ t: t + o, dur: 0.035, gain: 0.07, freq: 2400 - i * 200, q: 4, attack: 0.001 });
+      tone({ t: t + o, freq: 900 - i * 60, dur: 0.05, type: 'square', gain: 0.012, filter: 2500 });
+    });
+  },
   'egg-found': t => {
     marimba({ t, note: 79, gain: 0.08 });
     marimba({ t: t + 0.09, note: 84, gain: 0.08 });
@@ -2223,5 +2230,104 @@ const SOUND_KITS = {
     ...HEADER_EGG_SOUNDS,
     ...SIZE_EGG_SOUNDS,
     ...FINALE_SOUNDS
+  }
+};
+
+// --- Treasure (secret theme): crystal chimes, gem clinks and gold coins. -----
+// Starts from the Power of Chaos kit (all the easter-egg sounds, the defeat
+// gong) and swaps the everyday UI sounds for jewellery.
+const GOLD_CHORDS = { skill: [64, 68, 71, 76], comeback: [61, 64, 68, 73], quest: [64, 68, 71, 76, 80] };
+const GOLD_SPARKLE = [88, 92, 95, 100, 104];
+
+function gemClink(t, note = 96, gain = 0.035) {
+  bell({ t, freq: midi(note), dur: 0.5, gain });
+  bell({ t: t + 0.012, freq: midi(note + 7) * 1.003, dur: 0.35, gain: gain * 0.6 });
+}
+
+function crystalSweep(t, notes = GOLD_SPARKLE, step = 0.045, gain = 0.03) {
+  arpeggio(t, notes, step, (at, n) => bell({ t: at, freq: midi(n), dur: 0.9, gain }));
+}
+
+SOUND_KITS.gold = {
+  ...SOUND_KITS.poc,
+  tap: t => bell({ t, freq: midi(103), dur: 0.12, gain: 0.012 }),
+  'sound-on': t => {
+    gemClink(t, 88);
+    gemClink(t + 0.1, 95);
+  },
+  // A treasure chest bursting open: thud, coins, a glittering sweep.
+  theme: t => {
+    tone({ t, freq: 120, to: 60, dur: 0.25, gain: 0.12 });
+    for (let i = 0; i < 12; i++) coinClink(t + 0.08 + rnd(0, 0.7), rnd(0.02, 0.04));
+    crystalSweep(t + 0.15, [76, 80, 83, 88, 92, 95, 100, 104], 0.05, 0.03);
+  },
+  'screen-enter': t => {
+    noise({ t, dur: 0.35, gain: 0.03, type: 'highpass', freq: 4000, to: 9000, attack: 0.1 });
+    gemClink(t + 0.08, 100, 0.02);
+  },
+  'modal-open': t => {
+    noise({ t, dur: 0.18, gain: 0.04, freq: 900, to: 2400, q: 1 });
+    crystalSweep(t + 0.05, [83, 88, 92], 0.05, 0.025);
+  },
+  'modal-close': t => crystalSweep(t, [92, 88, 83], 0.04, 0.02),
+  pick: t => gemClink(t, 93),
+  peek: t => {
+    noise({ t, dur: 0.12, gain: 0.04, type: 'highpass', freq: 5000 });
+    gemClink(t + 0.03, 98, 0.025);
+  },
+  unpeek: t => gemClink(t, 90, 0.02),
+  // The gem ignites: a shimmering chord in its colour, sparkles on top.
+  activate: (t, e) => {
+    boom(t, 0.4);
+    laserCharge({ t, dur: 0.35, from: 400, to: 3000, gain: 0.03 });
+    (GOLD_CHORDS[e.type] || GOLD_CHORDS.skill).forEach(n => bell({ t: t + 0.3, freq: midi(n), dur: 1.6, gain: 0.035 }));
+    crystalSweep(t + 0.35);
+  },
+  // A royal fanfare and a waterfall of gold.
+  'quest-complete': t => {
+    brass({ t, notes: [64, 68, 71], dur: 0.2, gain: 0.04 });
+    brass({ t: t + 0.22, notes: [64, 68, 71], dur: 0.12, gain: 0.04 });
+    brass({ t: t + 0.36, notes: [66, 69, 73], dur: 0.2, gain: 0.04 });
+    brass({ t: t + 0.6, notes: [64, 68, 71, 76], dur: 1.1, gain: 0.045 });
+    crystalSweep(t + 0.6, [88, 92, 95, 100, 104, 107], 0.05, 0.03);
+    for (let i = 0; i < 22; i++) coinClink(t + 0.55 + rnd(0, 1.8), rnd(0.02, 0.045));
+  },
+  deactivate: t => crystalSweep(t, [88, 83, 76], 0.07, 0.03),
+  use: t => {
+    gemClink(t, 91, 0.04);
+    coinClink(t + 0.05, 0.035);
+  },
+  'use-undo': t => gemClink(t, 84, 0.025),
+  // The stone cracks: glassy splinters, then the engraving.
+  exhaust: t => {
+    noise({ t, dur: 0.08, gain: 0.12, type: 'highpass', freq: 4500 });
+    for (let i = 0; i < 9; i++) bell({ t: t + 0.02 + rnd(0, 0.35), freq: rnd(2500, 6000), dur: 0.2, gain: rnd(0.01, 0.025) });
+    tone({ t, freq: 90, to: 50, dur: 0.4, gain: 0.1 });
+    SOUND_KITS.gold.stamp(t + 0.45);
+  },
+  stamp: t => {
+    tone({ t, freq: 180, to: 70, dur: 0.18, gain: 0.2 });
+    bell({ t, freq: 520, dur: 0.6, gain: 0.04 });
+  },
+  restore: t => crystalSweep(t, [76, 80, 83, 88, 92], 0.05, 0.03),
+  'lp-swap': t => {
+    for (let i = 0; i < 4; i++) coinClink(t + i * 0.07, 0.035);
+  },
+  damage: (t, e) => {
+    const k = Math.min(1, 0.5 + e.amount / 3000);
+    boom(t, k);
+    noise({ t, dur: 0.1, gain: 0.08 * k, type: 'highpass', freq: 3500 });
+    bell({ t: t + 0.02, freq: 1180, dur: 0.5, gain: 0.03 * k });
+  },
+  heal: t => {
+    healSparkles(t, 0.6, 8);
+    bell({ t: t + 0.1, freq: midi(88), dur: 1.2, gain: 0.035 });
+  },
+  // The vault resets: coins pour back into the chest, the lid shuts.
+  'duel-reset': t => {
+    for (let i = 0; i < 26; i++) coinClink(t + rnd(0, 1), rnd(0.015, 0.04));
+    noise({ t, dur: 1, gain: 0.05, freq: 3000, to: 1200, q: 1, attack: 0.2 });
+    tone({ t: t + 1.05, freq: 110, to: 55, dur: 0.3, gain: 0.2 });
+    noise({ t: t + 1.05, dur: 0.12, gain: 0.08, type: 'lowpass', freq: 900 });
   }
 };

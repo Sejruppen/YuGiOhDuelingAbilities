@@ -1,17 +1,24 @@
+function renderThemeButton(theme, activeId = getAppTheme().id) {
+  if (!isThemeAvailable(theme)) {
+    return `<button onclick="teaseTreasureTheme(this)" aria-disabled="true" title="Find every secret to unlock" class="theme-btn-locked py-2 px-1 rounded-lg text-xs font-bold leading-tight transition text-slate-500 border border-dashed border-slate-700"><span class="ce-emoji">🔒</span> ???</button>`;
+  }
+  const isActive = theme.id === activeId;
+  const stateClass = isActive
+    ? 'bg-slate-700 text-white shadow'
+    : 'text-slate-400 hover:text-slate-200';
+  const secretClass = theme.secret ? ' theme-btn-treasure' : '';
+  const label = theme.secret ? `<span class="ce-emoji">💎</span> ${theme.label}` : theme.label;
+  return `<button onclick="setAppTheme('${theme.id}')" aria-pressed="${isActive}" class="py-2 px-1 rounded-lg text-xs font-bold leading-tight transition ${stateClass}${secretClass}">${label}</button>`;
+}
+
 function renderThemePicker() {
   const activeId = getAppTheme().id;
 
   return `
     <div class="w-full max-w-xs mt-8">
       <p class="text-xs font-semibold uppercase tracking-widest text-slate-400 mb-2">Theme</p>
-      <div class="grid grid-cols-3 gap-1 p-1 rounded-xl bg-slate-900/80 border border-slate-800">
-        ${APP_THEMES.map(theme => {
-          const isActive = theme.id === activeId;
-          const stateClass = isActive
-            ? 'bg-slate-700 text-white shadow'
-            : 'text-slate-400 hover:text-slate-200';
-          return `<button onclick="setAppTheme('${theme.id}')" aria-pressed="${isActive}" class="py-2 px-1 rounded-lg text-xs font-bold leading-tight transition ${stateClass}">${theme.label}</button>`;
-        }).join('')}
+      <div class="grid grid-cols-2 gap-1 p-1 rounded-xl bg-slate-900/80 border border-slate-800">
+        ${APP_THEMES.map(theme => renderThemeButton(theme, activeId)).join('')}
       </div>
     </div>
   `;

@@ -250,6 +250,7 @@ function finaleHtml() {
       </div>
       <div class="fin-end-buttons">
         <button type="button" class="fin-btn fin-btn--ghost" onclick="replayPharaohFinale()">↺ Replay</button>
+        <button type="button" class="fin-btn fin-btn--ghost" onclick="wearTreasureTheme()">💎 Treasure theme</button>
         <button type="button" class="fin-btn" onclick="closePharaohFinale()">Close</button>
       </div>
     </div>
@@ -302,6 +303,13 @@ function closePharaohFinale() {
   playSound({ name: 'pharaoh-finale-stop' });
   overlay.classList.add('fin--closing');
   setTimeout(() => overlay.remove(), 600);
+}
+
+// Reward button: put on the newly unlocked Treasure theme right away.
+function wearTreasureTheme() {
+  unlockTreasureTheme();
+  closePharaohFinale();
+  setAppTheme('gold');
 }
 
 function replayPharaohFinale() {

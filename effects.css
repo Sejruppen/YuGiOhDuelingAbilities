@@ -917,6 +917,391 @@ html[data-theme="poc"] .start-screen::after {
 @keyframes poc-motes-slow { to { transform: translateY(-170px); } }
 
 /* =========================================================================
+   TREASURE — gold, gemstones & diamond sparkle (secret theme, see
+   src/config/app-themes.js). Things are revealed through diamond-shaped
+   cuts, glint with white light, and rain gold coins and cut gems.
+   ========================================================================= */
+
+html[data-theme="gold"] button:active { transform: scale(0.96); filter: brightness(1.2) saturate(1.2); }
+html[data-theme="gold"] .bg-amber-500::after {
+  background: linear-gradient(115deg, transparent 40%, rgba(255, 255, 255, 0.95) 49%, rgba(255, 250, 220, 0.6) 51%, transparent 60%);
+  animation-duration: 3.2s;
+}
+
+/* Screens: cut open in a diamond shape with a flash of light; items glint in. */
+html[data-theme="gold"] #app.fx-screen-forward,
+html[data-theme="gold"] #app.fx-screen-back { animation: gl-cut-in 0.55s cubic-bezier(0.5, 0, 0.2, 1) backwards; }
+html[data-theme="gold"] #app:is(.fx-screen-forward, .fx-screen-back) .fx-stagger > *,
+html[data-theme="gold"] .fx-deal > * {
+  animation: gl-rise 0.5s cubic-bezier(0.2, 0.9, 0.3, 1.1) backwards;
+  animation-delay: calc(var(--i) * 55ms + 120ms);
+}
+@keyframes gl-cut-in {
+  from { clip-path: polygon(50% 50%, 50% 50%, 50% 50%, 50% 50%); filter: brightness(2.2) sepia(0.6); }
+  70% { filter: brightness(1.2) sepia(0.2); }
+  to { clip-path: polygon(50% -60%, 160% 50%, 50% 160%, -60% 50%); filter: none; }
+}
+@keyframes gl-rise { from { opacity: 0; transform: translateY(16px) scale(0.97); filter: brightness(2.4) sepia(0.8); } }
+
+/* Modals: a jewel-box lid swinging open. */
+html[data-theme="gold"] .fx-modal-in .modal-panel { transform-origin: 50% 0; animation: gl-lid-open 0.5s cubic-bezier(0.2, 1.2, 0.4, 1) backwards; }
+html[data-theme="gold"] .fx-modal-out .modal-panel { transform-origin: 50% 0; animation: gl-lid-close 0.28s ease-in both; }
+@keyframes gl-lid-open {
+  from { transform: perspective(900px) rotateX(-80deg) scale(0.9); opacity: 0; filter: brightness(2.2); }
+  60% { transform: perspective(900px) rotateX(8deg); opacity: 1; }
+}
+@keyframes gl-lid-close { to { transform: perspective(900px) rotateX(-70deg) scale(0.92); opacity: 0; } }
+
+/* Peek: the card is "cut" open in a diamond facet, with a white glint. */
+html[data-theme="gold"] .fx-peek { animation: gl-facet 0.5s cubic-bezier(0.4, 0, 0.2, 1) backwards; }
+html[data-theme="gold"] .fx-unpeek,
+html[data-theme="gold"] .fx-undo { animation: gl-facet 0.38s cubic-bezier(0.4, 0, 0.2, 1) backwards; }
+html[data-theme="gold"] .fx-peek::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: 20;
+  pointer-events: none;
+  border-radius: inherit;
+  background: linear-gradient(115deg, transparent 40%, rgba(255, 255, 255, 0.85) 50%, transparent 60%) no-repeat;
+  background-size: 300% 100%;
+  background-position: 100% 0;
+  animation: fx-sweep 0.7s 0.25s ease-out forwards;
+}
+@keyframes gl-facet {
+  from { clip-path: polygon(50% 50%, 50% 50%, 50% 50%, 50% 50%); filter: brightness(2.5); }
+  to { clip-path: polygon(50% -60%, 160% 50%, 50% 160%, -60% 50%); filter: none; }
+}
+
+/* Activate: the gem ignites in its colour, prismatic glint sweeps across. */
+html[data-theme="gold"] .fx-activate { animation: gl-activate 0.9s cubic-bezier(0.2, 0.9, 0.3, 1) backwards; }
+html[data-theme="gold"] .fx-activate::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: 20;
+  pointer-events: none;
+  border-radius: inherit;
+  background: linear-gradient(115deg, transparent 30%, rgba(255, 120, 160, 0.4) 42%, rgba(255, 240, 150, 0.6) 46%, #fff 50%, rgba(140, 230, 255, 0.6) 54%, rgba(190, 140, 255, 0.4) 58%, transparent 70%) no-repeat;
+  background-size: 300% 100%;
+  background-position: 100% 0;
+  animation: fx-sweep 0.9s 0.2s ease-out forwards;
+}
+@keyframes gl-activate {
+  0% { transform: scale(0.92); filter: brightness(2.6) saturate(1.6); box-shadow: 0 0 0 0 rgb(var(--fx-accent) / 0.9), 0 0 0 0 rgba(248, 224, 138, 0.9); }
+  35% { transform: scale(1.03); filter: brightness(1.3); box-shadow: 0 0 0 10px rgb(var(--fx-accent) / 0), 0 0 0 3px rgba(248, 224, 138, 0.8), 0 0 50px rgb(var(--fx-accent) / 0.7); }
+}
+
+html[data-theme="gold"] .fx-use { animation: gl-use 0.5s ease-out backwards; }
+html[data-theme="gold"] .fx-bump { animation: gl-bump 0.45s cubic-bezier(0.3, 1.6, 0.5, 1) backwards; }
+@keyframes gl-use { from { filter: brightness(1.8) saturate(1.4); box-shadow: inset 0 0 0 2px rgba(248, 224, 138, 0.9), 0 0 28px rgb(var(--fx-accent) / 0.6); } }
+@keyframes gl-bump { from { transform: scale(1.9) rotate(-8deg); color: #f8e08a; text-shadow: 0 0 12px rgba(255, 220, 120, 0.9); } }
+
+/* Exhaust: the gem cracks and goes dull; "USED" is engraved in the gold. */
+html[data-theme="gold"] .used-watermark {
+  color: rgba(214, 166, 64, 0.16);
+  font-family: 'Cinzel', Georgia, serif;
+  text-shadow: 0 1px 0 rgba(255, 255, 255, 0.05), 0 -1px 0 rgba(0, 0, 0, 0.4);
+}
+html[data-theme="gold"] .fx-exhaust { animation: gl-crack 0.8s ease-out backwards; }
+html[data-theme="gold"] .fx-stamp { animation: gl-engrave 0.55s 0.2s cubic-bezier(0.3, 1.5, 0.5, 1) backwards; }
+html[data-theme="gold"] .fx-stamp-late { animation: gl-engrave 0.55s 0.85s cubic-bezier(0.3, 1.5, 0.5, 1) backwards; }
+html[data-theme="gold"] .fx-restore { animation: gl-polish 0.8s ease-out backwards; }
+@keyframes gl-crack {
+  0% { filter: brightness(2.2) saturate(1.5); }
+  20% { transform: translate(-4px, 1px) rotate(-0.6deg); }
+  35% { transform: translate(4px, -1px) rotate(0.6deg); filter: brightness(1.2) grayscale(0.4); }
+  50% { transform: translate(-2px, 0); }
+  70% { filter: grayscale(0.8) brightness(0.7); }
+}
+@keyframes gl-engrave {
+  from { transform: rotate(-12deg) scale(2.6); opacity: 0; color: rgba(255, 230, 150, 0.9); text-shadow: 0 0 20px rgba(255, 210, 100, 0.9); }
+  60% { transform: rotate(-12deg) scale(0.95); opacity: 1; }
+}
+@keyframes gl-polish { from { filter: brightness(2) saturate(1.6) drop-shadow(0 0 14px rgba(255, 220, 120, 0.9)); } }
+
+/* Ability picker: a gold setting snaps around the chosen stone. */
+html[data-theme="gold"] .is-selected::after {
+  content: '';
+  position: absolute;
+  inset: -4px;
+  pointer-events: none;
+  border-radius: 1.1rem;
+  border: 2px solid #f2c94c;
+  box-shadow: 0 0 0 1px #6b4508, 0 0 14px rgba(255, 210, 100, 0.55), inset 0 0 10px rgba(255, 210, 100, 0.3);
+  animation: gl-setting 2s ease-in-out infinite;
+  animation-delay: calc(var(--fx-t, 0) * -1ms);
+}
+html[data-theme="gold"] .is-selected.fx-pick::after { animation: gl-setting-snap 0.4s cubic-bezier(0.3, 1.6, 0.5, 1) backwards, gl-setting 2s 0.4s ease-in-out infinite; }
+html[data-theme="gold"] .fx-pick { animation: gl-use 0.5s ease-out backwards; }
+@keyframes gl-setting { 0%, 100% { opacity: 1; } 50% { opacity: 0.65; } }
+@keyframes gl-setting-snap { from { transform: scale(1.15); opacity: 0; } }
+
+/* Life Points */
+html[data-theme="gold"] .fx-lp-damage { animation: gl-lp-hit 0.55s ease-out backwards; }
+html[data-theme="gold"] .fx-lp-heal { animation: gl-lp-heal 0.8s ease-out backwards; }
+html[data-theme="gold"] .fx-lp-swap,
+html[data-theme="gold"] .fx-lp-reset { animation: gl-coin-spin 0.7s cubic-bezier(0.3, 1.2, 0.5, 1) backwards; }
+html[data-theme="gold"] #app.fx-shake { animation: dk-shake 0.45s ease-out; }
+html[data-theme="gold"] .lp-bar.lp-critical::after { box-shadow: inset 0 0 26px rgba(224, 17, 75, 0.65), 0 0 0 1px rgba(255, 96, 128, 0.6); }
+html[data-theme="gold"] .lp-bar::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: linear-gradient(160deg, transparent 42%, rgba(255, 240, 190, 0.3) 50%, transparent 58%);
+  background-size: 100% 300%;
+  animation: poc-glint 5s ease-in-out infinite;
+  animation-delay: calc(var(--fx-t, 0) * -1ms);
+}
+@keyframes gl-lp-hit {
+  0% { box-shadow: inset 0 0 40px rgba(224, 17, 75, 0.95), 0 0 20px rgba(224, 17, 75, 0.6); filter: brightness(1.5); }
+  20% { transform: translateX(-5px); }
+  40% { transform: translateX(4px); }
+  60% { transform: translateX(-2px); }
+}
+@keyframes gl-lp-heal { from { box-shadow: inset 0 0 40px rgba(52, 211, 153, 0.85), 0 0 26px rgba(52, 211, 153, 0.7); filter: brightness(1.5) saturate(1.3); } }
+@keyframes gl-coin-spin { from { transform: perspective(600px) rotateY(360deg); filter: brightness(1.8) sepia(0.6); } }
+
+/* Banner: gold-leaf lettering on a gem-studded band. */
+html[data-theme="gold"] .fx-banner::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 50%;
+  height: 5.2rem;
+  margin-top: -2.6rem;
+  background:
+    radial-gradient(circle, rgb(var(--fx-accent)) 0 3px, transparent 4px) 0 4px / 34px 8px repeat-x,
+    radial-gradient(circle, rgb(var(--fx-accent)) 0 3px, transparent 4px) 17px calc(100% - 4px) / 34px 8px repeat-x,
+    linear-gradient(90deg, transparent, rgba(20, 14, 8, 0.92) 12%, rgba(20, 14, 8, 0.92) 88%, transparent);
+  border-block: 2px solid #d6a640;
+  box-shadow: 0 0 30px rgb(var(--fx-accent) / 0.45);
+  animation: poc-band 2s ease-in-out both;
+}
+html[data-theme="gold"] .fx-banner-text {
+  position: relative;
+  padding: 0 0.4em;
+  font-family: 'Cinzel Decorative', 'Cinzel', Georgia, serif;
+  font-size: clamp(1.3rem, 7.5vw, 2.3rem);
+  font-weight: 900;
+  letter-spacing: 0.06em;
+  white-space: nowrap;
+  background: linear-gradient(110deg, #c8901e 0 35%, #fffbe6 48%, #fff 50%, #f2c94c 56%, #c8901e 70% 100%);
+  background-size: 300% 100%;
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  filter: drop-shadow(0 2px 0 #3a2606) drop-shadow(0 0 10px rgb(var(--fx-accent) / 0.8));
+  animation: gl-banner 2s cubic-bezier(0.2, 0.9, 0.3, 1) both;
+}
+@keyframes gl-banner {
+  0% { opacity: 0; transform: scale(2.2); background-position: 100% 0; }
+  18% { opacity: 1; transform: scale(0.96); }
+  26% { transform: scale(1); }
+  70% { opacity: 1; background-position: 0 0; }
+  100% { opacity: 0; transform: scale(1.06); background-position: 0 0; }
+}
+
+/* Overlays: prismatic diamond dispersion, ruby vignette, a vault of gold. */
+html[data-theme="gold"] .fx-overlay--activate,
+html[data-theme="gold"] .fx-overlay--quest {
+  background: radial-gradient(circle, rgb(var(--fx-accent) / 0.3), transparent 60%);
+  animation: fx-flash 1.4s ease-out both;
+}
+html[data-theme="gold"] .fx-overlay--activate::before,
+html[data-theme="gold"] .fx-overlay--quest::before {
+  content: '';
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 220vmax;
+  height: 220vmax;
+  margin: -110vmax 0 0 -110vmax;
+  background: repeating-conic-gradient(from 0deg,
+    transparent 0deg 4deg, rgba(255, 90, 140, 0.35) 5deg, rgba(255, 220, 110, 0.45) 6deg, rgba(255, 255, 255, 0.6) 7deg,
+    rgba(110, 220, 255, 0.45) 8deg, rgba(170, 120, 255, 0.35) 9deg, transparent 10deg 15deg);
+  -webkit-mask: radial-gradient(circle, #000 0, rgba(0, 0, 0, 0.6) 12%, transparent 35%);
+  mask: radial-gradient(circle, #000 0, rgba(0, 0, 0, 0.6) 12%, transparent 35%);
+  animation: poc-rays 1.5s ease-out both;
+}
+html[data-theme="gold"] .fx-overlay--quest::before { animation-duration: 1.9s; }
+html[data-theme="gold"] .fx-overlay--damage { box-shadow: inset 0 0 90px 12px rgba(224, 17, 75, 0.6); animation: fx-flash 0.6s ease-out both; }
+html[data-theme="gold"] .fx-overlay--reset {
+  background: radial-gradient(circle, rgba(255, 230, 150, 0.55), rgba(200, 140, 30, 0.25) 45%, transparent 75%);
+  animation: fx-flash 1s ease-out both;
+}
+html[data-theme="gold"] .fx-overlay--defeat {
+  background: radial-gradient(circle, transparent 25%, rgba(0, 0, 0, 0.8));
+  backdrop-filter: grayscale(1) sepia(0.5) brightness(0.5);
+  -webkit-backdrop-filter: grayscale(1) sepia(0.5) brightness(0.5);
+  animation: dk-defeat 2.2s ease-in-out both;
+}
+
+/* Particles: cut gemstones (brilliant shape) and falling gold coins. */
+html[data-theme="gold"] .fx-particle {
+  width: calc(var(--s) * 1.9);
+  height: calc(var(--s) * 1.9);
+  background:
+    linear-gradient(135deg, rgba(255, 255, 255, 0.9) 0 22%, transparent 23% 55%, rgba(0, 0, 0, 0.35) 56%),
+    rgb(var(--fx-accent));
+  clip-path: polygon(20% 0, 80% 0, 100% 30%, 50% 100%, 0 30%);
+}
+html[data-theme="gold"] .fx-particle:nth-child(3n) {
+  --fx-accent: 235 245 255;
+  clip-path: polygon(50% 0, 100% 50%, 50% 100%, 0 50%);
+}
+html[data-theme="gold"] .fx-particle--rain {
+  width: calc(var(--s) * 1.8);
+  height: calc(var(--s) * 1.8);
+  border-radius: 50%;
+  clip-path: none;
+  background: radial-gradient(circle at 35% 35%, #fff6c2, #f2c94c 50%, #9a6a12);
+  box-shadow: 0 0 0 1px #6b4508, 0 0 6px rgba(255, 210, 100, 0.6);
+  animation-name: poc-coin;
+}
+
+/* +1 burst: a faceted gem flash with the text in gold. */
+html[data-theme="gold"] .fx-burst { animation: dk-burst 0.95s ease-out both; }
+html[data-theme="gold"] .fx-burst-text {
+  font: 900 1.4rem/1 'Cinzel', Georgia, serif;
+  color: #fff6c2;
+  text-shadow: 0 0 6px rgb(var(--fx-accent)), 0 0 16px rgb(var(--fx-accent)), 0 2px 0 #3a2606;
+}
+html[data-theme="gold"] .fx-burst::before {
+  content: '';
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 60px;
+  height: 60px;
+  margin: -30px 0 0 -30px;
+  border: 2px solid #f8e08a;
+  rotate: 45deg;
+  box-shadow: 0 0 12px rgb(var(--fx-accent)), inset 0 0 10px rgb(var(--fx-accent) / 0.7);
+  animation: dk-ring 0.6s ease-out both;
+}
+
+html[data-theme="gold"] .fx-float { font: 900 1.9rem/1 'Cinzel', Georgia, serif; animation: dk-float-up 1.2s ease-out both; }
+html[data-theme="gold"] .fx-float--damage { color: #ff6f91; -webkit-text-stroke: 1px #3a0010; text-shadow: 0 0 12px rgba(224, 17, 75, 0.95); }
+html[data-theme="gold"] .fx-float--heal { color: #6ef0b4; -webkit-text-stroke: 1px #032a1d; text-shadow: 0 0 12px rgba(16, 185, 129, 0.95); }
+
+/* Taps: a diamond twinkle. */
+html[data-theme="gold"] .fx-tap {
+  width: 34px;
+  height: 34px;
+  background: radial-gradient(circle, #fff, #e6f6ff 35%, #9fd8ff 60%, #f2c94c);
+  clip-path: polygon(50% 0, 58% 42%, 100% 50%, 58% 58%, 50% 100%, 42% 58%, 0 50%, 42% 42%);
+  animation: poc-twinkle 0.5s ease-out both;
+}
+
+/* Ambient: twinkling diamonds, glinting gold, glowing gems. */
+html[data-theme="gold"] .lock-medallion { animation: gl-gem-glow 2.6s ease-in-out infinite; animation-delay: calc(var(--fx-t, 0) * -1ms); }
+@keyframes gl-gem-glow {
+  0%, 100% { filter: brightness(1); }
+  50% { filter: brightness(1.35) drop-shadow(0 0 10px rgb(var(--fx-accent, 245 200 76) / 0.9)); }
+}
+html[data-theme="gold"] .duel-card-active::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  pointer-events: none;
+  box-shadow: inset 0 0 0 1.5px rgba(248, 224, 138, 0.55), inset 0 0 26px rgb(var(--fx-accent) / 0.35);
+  animation: dk-glow 3s ease-in-out infinite;
+  animation-delay: calc(var(--fx-t, 0) * -1ms);
+}
+html[data-theme="gold"] .duel-card-hidden { overflow: hidden; isolation: isolate; }
+html[data-theme="gold"] .duel-card-hidden > * { position: relative; z-index: 1; }
+html[data-theme="gold"] .duel-card-hidden::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  background: linear-gradient(120deg, transparent 40%, rgba(255, 240, 190, 0.22) 50%, transparent 60%) no-repeat;
+  background-size: 300% 100%;
+  animation: gl-sweep-loop 5.5s ease-in-out infinite;
+  animation-delay: calc(var(--fx-t, 0) * -1ms);
+}
+@keyframes gl-sweep-loop { 0%, 55% { background-position: 100% 0; } 100% { background-position: 0 0; } }
+
+html[data-theme="gold"] .brand-title {
+  background: linear-gradient(110deg, #e4ac2c 0 38%, #fffbe6 47%, #ffffff 50%, #fffbe6 53%, #e4ac2c 62% 100%);
+  background-size: 250% 100%;
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  animation: poc-title-shine 4.5s ease-in-out infinite;
+  animation-delay: calc(var(--fx-t, 0) * -1ms);
+}
+
+html[data-theme="gold"] .start-screen img { animation: gl-logo 5s ease-in-out infinite; animation-delay: calc(var(--fx-t, 0) * -1ms); }
+@keyframes gl-logo {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-6px); filter: brightness(1.12) drop-shadow(0 0 18px rgba(255, 210, 100, 0.6)); }
+}
+
+/* Diamond dust: two layers of twinkling sparkles drift over the start screen. */
+html[data-theme="gold"] .start-screen { position: relative; overflow: hidden; }
+html[data-theme="gold"] .start-screen > * { position: relative; z-index: 1; }
+html[data-theme="gold"] .start-screen::before,
+html[data-theme="gold"] .start-screen::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background-image:
+    radial-gradient(2px 2px at 12% 18%, #fff, transparent),
+    radial-gradient(1.5px 1.5px at 68% 34%, #fff4c2, transparent),
+    radial-gradient(2.5px 2.5px at 38% 72%, #e6f6ff, transparent),
+    radial-gradient(1.5px 1.5px at 86% 82%, #ffd6e6, transparent),
+    radial-gradient(2px 2px at 52% 8%, #fff, transparent);
+  background-size: 190px 210px;
+  animation: gl-twinkle 3.2s ease-in-out infinite;
+  animation-delay: calc(var(--fx-t, 0) * -1ms);
+}
+html[data-theme="gold"] .start-screen::after {
+  background-size: 130px 150px;
+  background-position: 60px 40px;
+  animation-duration: 4.4s;
+  animation-delay: calc(var(--fx-t, 0) * -1ms - 1.6s);
+}
+@keyframes gl-twinkle { 0%, 100% { opacity: 0.15; } 50% { opacity: 0.9; } }
+
+/* Theme picker: the secret tile. Shown in every theme. */
+.theme-btn-locked { opacity: 0.75; }
+.theme-btn-locked.theme-locked-shake { animation: theme-locked-shake 0.45s ease-out; }
+@keyframes theme-locked-shake { 20% { transform: translateX(-4px) rotate(-2deg); } 40% { transform: translateX(4px) rotate(2deg); } 60% { transform: translateX(-2px); } 80% { transform: translateX(1px); } }
+.theme-btn-treasure {
+  position: relative;
+  overflow: hidden;
+  color: #f8e08a !important;
+  text-shadow: 0 0 8px rgba(255, 210, 100, 0.5);
+}
+.theme-btn-treasure[aria-pressed="true"] {
+  color: #2a1a04 !important;
+  text-shadow: none;
+  background-image: linear-gradient(to bottom, #fff2b8, #f2c94c 35%, #c8901e);
+}
+.theme-btn-treasure::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: linear-gradient(115deg, transparent 40%, rgba(255, 255, 255, 0.7) 50%, transparent 60%) no-repeat;
+  background-size: 300% 100%;
+  animation: gl-sweep-loop 3.5s ease-in-out infinite;
+  animation-delay: calc(var(--fx-t, 0) * -1ms);
+}
+.theme-btn-unlocking { animation: theme-unlock 1.2s cubic-bezier(0.3, 1.5, 0.5, 1) both; }
+@keyframes theme-unlock {
+  0% { transform: scale(0.4) rotate(-10deg); filter: brightness(3); opacity: 0; }
+  50% { transform: scale(1.15); filter: brightness(1.8) drop-shadow(0 0 12px rgba(255, 210, 100, 0.9)); opacity: 1; }
+}
+
+/* =========================================================================
    LOGO EASTER EGG (src/effects/logo-easter-egg.js) — all themes
    Taps boing the logo and build up a golden glow (--logo-charge 0..1); every
    4 taps in a row lights one of five orbs (pieces of Exodia) around it.
@@ -6120,13 +6505,16 @@ html[data-theme] .cegg-active.cegg-card--marik-1 { transform-origin: 50% 100%; a
 }
 .fin-end-buttons {
   display: flex;
-  gap: 0.75rem;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 0.6rem;
+  max-width: 92vw;
   margin-top: 0.4rem;
   pointer-events: auto;
   animation: fin-rise-in 0.8s ease-out 30.2s both;
 }
 .fin-btn {
-  padding: 0.6rem 1.4rem;
+  padding: 0.6rem 1.1rem;
   border-radius: 0.75rem;
   font-family: 'Cinzel', Georgia, serif;
   font-weight: 700;
@@ -7504,6 +7892,12 @@ html[data-theme] .disk-header [data-sound-btn] { color: #cbd5e1; border-color: r
 html[data-theme="dark"]::view-transition-new(root) { animation: vt-circle 0.7s cubic-bezier(0.6, 0, 0.2, 1) both; }
 html[data-theme="light"]::view-transition-new(root) { animation: vt-wipe 0.6s cubic-bezier(0.6, 0, 0.2, 1) both; }
 html[data-theme="poc"]::view-transition-new(root) { animation: vt-unroll 0.9s cubic-bezier(0.5, 0, 0.2, 1) both; }
+html[data-theme="gold"]::view-transition-new(root) { animation: vt-diamond 1s cubic-bezier(0.6, 0, 0.2, 1) both; }
+@keyframes vt-diamond {
+  from { clip-path: polygon(50% 50%, 50% 50%, 50% 50%, 50% 50%); filter: brightness(3) saturate(1.5); }
+  55% { filter: brightness(1.6) saturate(1.3); }
+  to { clip-path: polygon(50% -110%, 210% 50%, 50% 210%, -110% 50%); filter: none; }
+}
 @keyframes vt-circle { from { clip-path: circle(0% at 50% 85%); } to { clip-path: circle(150% at 50% 85%); } }
 @keyframes vt-wipe { from { clip-path: inset(0 0 100% 0); } to { clip-path: inset(0); } }
 @keyframes vt-unroll {

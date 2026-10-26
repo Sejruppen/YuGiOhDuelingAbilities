@@ -69,25 +69,44 @@ function markEggFound(id) {
   if (!EGG_IDS.includes(id) || eggTracker.found.has(id)) return;
   eggTracker.found.add(id);
   saveFoundEggs();
+  if (allEggsFound()) unlockTreasureTheme();
   paintEggCounters();
   showEggFoundPill();
   if (allEggsFound() && !hasSeenFinale()) scheduleFinale();
 }
 
+function unlockTreasureTheme() {
+  try {
+    localStorage.setItem(TREASURE_UNLOCK_KEY, '1');
+  } catch {}
+}
+
 // --- "Secret found!" pill --------------------------------------------------------
+
+function showEggPill(html, extraClass = '') {
+  const pill = document.createElement('div');
+  pill.className = `egg-found${extraClass ? ` ${extraClass}` : ''}`;
+  pill.setAttribute('role', 'status');
+  pill.innerHTML = html;
+  getFxLayer().appendChild(pill);
+  setTimeout(() => pill.remove(), EGG_FOUND_PILL_MS);
+}
 
 function showEggFoundPill() {
   const count = getFoundEggCount();
   const done = count >= EGG_TOTAL;
-  const pill = document.createElement('div');
-  pill.className = `egg-found${done ? ' egg-found--done' : ''}`;
-  pill.setAttribute('role', 'status');
-  pill.innerHTML = done
-    ? `<span class="ce-emoji">👑</span> ${count} / ${EGG_TOTAL} · Every secret found!`
-    : `<span class="ce-emoji">🥚</span> Secret found! <b>${count} / ${EGG_TOTAL}</b>`;
-  getFxLayer().appendChild(pill);
-  setTimeout(() => pill.remove(), EGG_FOUND_PILL_MS);
+  showEggPill(done
+    ? `<span class="ce-emoji">👑</span> Every secret found! <b>💎 Treasure theme unlocked</b>`
+    : `<span class="ce-emoji">🥚</span> Secret found! <b>${count} / ${EGG_TOTAL}</b>`, done ? 'egg-found--done' : '');
   playSound({ name: done ? 'egg-found-all' : 'egg-found' });
+}
+
+// The locked theme tile on the start screen.
+function teaseTreasureTheme(button) {
+  restartClass(button, 'theme-locked-shake', 450);
+  playSound({ name: 'theme-locked' });
+  if (document.querySelector('#fx-layer .egg-found')) return;
+  showEggPill(`<span class="ce-emoji">🔒</span> Find all secrets to unlock <b>${getFoundEggCount()} / ${EGG_TOTAL}</b>`);
 }
 
 // --- Start-screen counter --------------------------------------------------------
@@ -115,6 +134,12 @@ function renderEggCounter() {
 // Repaint in place (re-rendering the whole view mid-egg could disturb it).
 function paintEggCounters() {
   const count = getFoundEggCount();
+  if (allEggsFound()) {
+    const treasure = APP_THEMES.find(t => t.secret);
+    document.querySelectorAll('.theme-btn-locked').forEach(el => {
+      el.outerHTML = renderThemeButton(treasure).replace('theme-btn-treasure', 'theme-btn-treasure theme-btn-unlocking');
+    });
+  }
   document.querySelectorAll('.egg-counter').forEach(el => {
     if (allEggsFound() && !el.classList.contains('egg-counter--done')) {
       el.outerHTML = renderEggCounter().trim();
@@ -148,4 +173,5 @@ function scheduleFinale() {
 }
 
 // All found on an earlier visit but the finale never played (e.g. reloaded).
+if (allEggsFound()) unlockTreasureTheme();
 if (allEggsFound() && !hasSeenFinale()) scheduleFinale();

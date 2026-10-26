@@ -301,3 +301,222 @@ html[data-theme="poc"] .modal-panel {
   background-image: linear-gradient(160deg, #f8ebc8, #e6c88c);
   box-shadow: 0 0 0 2px #c99a3c, 0 20px 40px rgba(0, 0, 0, 0.6);
 }
+
+/* ===================================================================== */
+/* TREASURE THEME (secret: unlocked by finding every easter egg)         */
+/* The Pharaoh's vault: black velvet, polished gold filigree and cut     */
+/* gemstones. Sapphire = Skill, Ruby = Comeback, Gold/Topaz = Quest,     */
+/* Emerald = healing, Amethyst = accents, diamonds sparkle everywhere.   */
+/* ===================================================================== */
+html[data-theme="gold"] {
+  --app-bg: 13 10 8;
+  --app-fg: 253 243 214;
+
+  --c-white: 255 248 225;
+  --c-black: 6 4 2;
+
+  /* Gold-leaf text (50..400), bronze muted (500/600), velvet surfaces (700..950). */
+  --c-slate-50: 255 251 238;
+  --c-slate-100: 254 243 208;
+  --c-slate-200: 248 228 178;
+  --c-slate-300: 234 208 148;
+  --c-slate-400: 200 168 106;
+  --c-slate-500: 156 124 72;
+  --c-slate-600: 116 90 50;
+  --c-slate-700: 82 62 34;
+  --c-slate-800: 50 38 22;
+  --c-slate-900: 28 21 14;
+  --c-slate-950: 17 12 8;
+
+  /* Skill: sapphire */
+  --c-sky-100: 219 234 254;
+  --c-sky-200: 191 219 254;
+  --c-sky-300: 147 197 253;
+  --c-sky-400: 110 168 255;
+  --c-sky-500: 37 99 235;
+  --c-sky-600: 29 78 216;
+  --c-sky-700: 30 64 175;
+  --c-sky-800: 30 58 138;
+  --c-sky-900: 23 37 84;
+  --c-sky-950: 13 20 50;
+
+  /* Comeback: ruby */
+  --c-rose-100: 255 228 232;
+  --c-rose-200: 254 202 212;
+  --c-rose-300: 253 160 178;
+  --c-rose-400: 255 96 128;
+  --c-rose-500: 224 17 75;
+  --c-rose-600: 185 10 60;
+  --c-rose-700: 150 10 50;
+  --c-rose-800: 120 10 42;
+  --c-rose-900: 80 6 28;
+  --c-rose-950: 45 4 16;
+
+  /* Quest: polished gold / topaz */
+  --c-amber-100: 255 249 222;
+  --c-amber-200: 254 236 168;
+  --c-amber-300: 252 222 120;
+  --c-amber-400: 245 200 76;
+  --c-amber-500: 228 172 44;
+  --c-amber-600: 190 136 26;
+  --c-amber-700: 150 104 18;
+  --c-amber-800: 112 78 14;
+  --c-amber-900: 72 50 10;
+  --c-amber-950: 40 28 6;
+
+  /* Emerald */
+  --c-emerald-100: 209 250 229;
+  --c-emerald-200: 167 243 208;
+  --c-emerald-300: 110 231 183;
+  --c-emerald-400: 52 211 153;
+  --c-emerald-500: 16 185 129;
+  --c-emerald-600: 5 150 105;
+  --c-emerald-900: 6 60 45;
+  --c-emerald-950: 2 34 26;
+
+  /* Amethyst */
+  --c-indigo-100: 243 232 255;
+  --c-indigo-200: 233 213 255;
+  --c-indigo-300: 216 180 254;
+  --c-indigo-400: 192 132 252;
+  --c-indigo-500: 168 85 247;
+  --c-indigo-600: 147 51 234;
+  --c-indigo-900: 59 7 100;
+  --c-indigo-950: 34 5 58;
+}
+
+/* Black velvet with a faint gold diamond lattice and a warm vault glow. */
+html[data-theme="gold"] body {
+  background-color: rgb(var(--app-bg));
+  background-image:
+    radial-gradient(ellipse at 50% -10%, rgba(255, 196, 80, 0.16), transparent 60%),
+    radial-gradient(ellipse at center, transparent 55%, rgba(0, 0, 0, 0.75) 100%),
+    repeating-linear-gradient(45deg, rgba(228, 172, 44, 0.06) 0 1px, transparent 1px 26px),
+    repeating-linear-gradient(-45deg, rgba(228, 172, 44, 0.06) 0 1px, transparent 1px 26px),
+    linear-gradient(180deg, #17110b, #0b0806);
+  background-attachment: fixed;
+}
+
+html[data-theme="gold"] h1,
+html[data-theme="gold"] h2,
+html[data-theme="gold"] h3,
+html[data-theme="gold"] button {
+  font-family: 'Cinzel', Georgia, serif;
+}
+
+html[data-theme="gold"] .brand-title {
+  font-family: 'Cinzel Decorative', 'Cinzel', Georgia, serif;
+  filter: drop-shadow(0 2px 0 #4a3008) drop-shadow(0 0 16px rgba(255, 200, 80, 0.55));
+}
+
+html[data-theme="gold"] .start-screen {
+  background-image: radial-gradient(circle at 50% 30%, rgba(255, 200, 90, 0.18), transparent 60%);
+}
+
+html[data-theme="gold"] .start-screen img {
+  border: 3px solid #e4ac2c;
+  box-shadow: 0 0 0 2px #3a2606, 0 0 0 5px #f8e08a, 0 0 30px rgba(255, 200, 80, 0.6);
+}
+
+/* Gold-filigree trim on every surface. */
+html[data-theme="gold"] .border-slate-800,
+html[data-theme="gold"] .border-slate-700 {
+  border-color: rgba(214, 166, 64, 0.38);
+}
+
+html[data-theme="gold"] header {
+  background-image: linear-gradient(to bottom, #241a0f, #130e09);
+  border-bottom: 2px solid transparent;
+  border-image: linear-gradient(90deg, transparent, #f8e08a 20%, #b8861a 50%, #f8e08a 80%, transparent) 1;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.6);
+}
+
+html[data-theme="gold"] footer {
+  border-top: 2px solid transparent;
+  border-image: linear-gradient(90deg, transparent, #f8e08a 20%, #b8861a 50%, #f8e08a 80%, transparent) 1;
+}
+
+/* Gem buttons: a cut stone with a bright facet highlight and gold setting. */
+html[data-theme="gold"] .bg-sky-600,
+html[data-theme="gold"] .bg-rose-600,
+html[data-theme="gold"] .bg-amber-600,
+html[data-theme="gold"] .bg-emerald-600 {
+  color: #fffaf0;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.6);
+  background-image:
+    linear-gradient(155deg, rgba(255, 255, 255, 0.45) 0 14%, transparent 15% 50%, rgba(0, 0, 0, 0.25) 51%),
+    linear-gradient(25deg, transparent 60%, rgba(255, 255, 255, 0.18) 61% 72%, transparent 73%);
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.25), 0 0 0 1.5px #d6a640, 0 4px 14px rgba(0, 0, 0, 0.5);
+}
+
+/* Primary buttons: a polished gold ingot. */
+html[data-theme="gold"] .bg-amber-500 {
+  background-image: linear-gradient(to bottom, #fff2b8, #f2c94c 30%, #c8901e 62%, #8a5a0c 100%);
+  border: 1px solid #fff2b8;
+  color: #2a1a04;
+  text-shadow: 0 1px 0 rgba(255, 245, 210, 0.7);
+  box-shadow: 0 0 0 1.5px #6b4508, 0 6px 22px rgba(228, 172, 44, 0.35);
+}
+
+html[data-theme="gold"] .hover\:bg-amber-400:hover {
+  filter: brightness(1.08);
+}
+
+/* Hidden ability = a sealed jewel box: velvet with a gold diamond lattice. */
+html[data-theme="gold"] .duel-card-hidden {
+  border: 2px solid #b8861a;
+  background-color: #150f0a;
+  background-image:
+    radial-gradient(circle at 50% 42%, rgba(255, 210, 110, 0.18), transparent 55%),
+    repeating-linear-gradient(45deg, rgba(228, 172, 44, 0.16) 0 1px, transparent 1px 18px),
+    repeating-linear-gradient(-45deg, rgba(228, 172, 44, 0.16) 0 1px, transparent 1px 18px);
+  box-shadow: inset 0 0 0 4px #150f0a, inset 0 0 0 5px rgba(248, 224, 138, 0.5), inset 0 0 40px rgba(0, 0, 0, 0.8);
+}
+
+html[data-theme="gold"] .duel-card-hidden h3 {
+  color: #f8e08a;
+  text-shadow: 0 2px 4px #000;
+}
+
+/* The lock becomes a cut gemstone in the box's colour. */
+html[data-theme="gold"] .duel-card-hidden .lock-medallion {
+  border: 2px solid #f8e08a;
+  color: #fffaf0;
+  background:
+    linear-gradient(135deg, rgba(255, 255, 255, 0.65) 0 18%, transparent 19% 50%, rgba(0, 0, 0, 0.3) 51%),
+    radial-gradient(circle at 35% 30%, rgb(var(--fx-accent) / 1), rgb(var(--fx-accent) / 0.55) 70%);
+  box-shadow: 0 0 0 2px #6b4508, 0 0 16px rgb(var(--fx-accent) / 0.6);
+}
+
+/* Life Points on an engraved gold plaque set with velvet. */
+html[data-theme="gold"] .lp-bar {
+  border: 2px solid #d6a640;
+  background-color: #120d08;
+  background-image: linear-gradient(180deg, #2a1e10, #0f0b07 50%, #2a1e10);
+  box-shadow: inset 0 0 0 3px #120d08, inset 0 0 0 4px rgba(248, 224, 138, 0.45), 0 4px 14px rgba(0, 0, 0, 0.6);
+}
+
+html[data-theme="gold"] .lp-bar > span,
+html[data-theme="gold"] .lp-bar .text-slate-400 {
+  color: #e9c96a;
+}
+
+html[data-theme="gold"] .lp-value {
+  font-family: 'Cinzel', Georgia, serif;
+  letter-spacing: 0.02em;
+}
+
+html[data-theme="gold"] .lp-bar .lp-value {
+  font-size: 1.85rem;
+  text-shadow: 0 0 10px currentColor, 0 2px 2px #000;
+}
+
+html[data-theme="gold"] .lp-bar.text-emerald-400 { color: #6ef0b4; }
+html[data-theme="gold"] .lp-bar.text-amber-400 { color: #f8d66a; }
+html[data-theme="gold"] .lp-bar.text-rose-400 { color: #ff6f91; }
+
+html[data-theme="gold"] .modal-panel {
+  border: 2px solid #d6a640;
+  background-image: linear-gradient(160deg, #241a0f, #120d08);
+  box-shadow: 0 0 0 1px #6b4508, 0 0 0 4px rgba(248, 224, 138, 0.25), 0 20px 50px rgba(0, 0, 0, 0.8);
+}
