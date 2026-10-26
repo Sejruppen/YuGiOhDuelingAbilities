@@ -1,4 +1,4 @@
-const CACHE_NAME = 'ygo-skills-mvp-v76';
+const CACHE_NAME = 'ygo-skills-mvp-v77';
 const ASSETS = [
   './',
   './index.html',
@@ -67,11 +67,25 @@ const ASSETS = [
   './icon.jpg'
 ];
 
+// Cache versions up to v76 belong to app code without the update banner; that
+// code reloads by itself when a new worker takes over, so skip the wait once.
+const isPreBannerCache = (key) => {
+  const match = /^ygo-skills-mvp-v(\d+)$/.exec(key);
+  return !!match && Number(match[1]) <= 76;
+};
+
 self.addEventListener('install', (event) => {
-  event.waitUntil(
-    caches.open(CACHE_NAME).then((cache) => cache.addAll(ASSETS))
-  );
-  self.skipWaiting();
+  event.waitUntil((async () => {
+    const cache = await caches.open(CACHE_NAME);
+    // Bypass the HTTP cache so a new version never stores stale files.
+    await cache.addAll(ASSETS.map((url) => new Request(url, { cache: 'reload' })));
+    if ((await caches.keys()).some(isPreBannerCache)) self.skipWaiting();
+  })());
+});
+
+// Sent by the update banner's "Update" button.
+self.addEventListener('message', (event) => {
+  if (event.data?.type === 'SKIP_WAITING') self.skipWaiting();
 });
 
 self.addEventListener('activate', (event) => {
