@@ -31,7 +31,7 @@ const EGG_IDS = [
 
 const EGG_TOTAL = EGG_IDS.length;
 
-const eggTracker = { found: loadFoundEggs(), finaleTimer: null };
+const eggTracker = { found: loadFoundEggs(), finaleTimer: null, resetTimer: null };
 
 function loadFoundEggs() {
   try {
@@ -79,6 +79,54 @@ function unlockTreasureTheme() {
   try {
     localStorage.setItem(TREASURE_UNLOCK_KEY, '1');
   } catch {}
+}
+
+// --- Reset (Settings) -------------------------------------------------------------
+// First tap arms the button ("Tap again to reset"), a second tap within a few
+// seconds wipes every found egg, the finale flag and the Treasure theme unlock.
+const EGG_RESET_CONFIRM_MS = 3000;
+
+function renderEggResetButton() {
+  if (!getFoundEggCount()) return '';
+  const armed = !!eggTracker.resetTimer;
+  return `
+    <button type="button" onclick="resetEggs()" class="w-full max-w-xs mt-2 py-2 px-4 rounded-xl text-xs font-bold transition border ${armed
+      ? 'bg-rose-600 border-rose-500 text-white'
+      : 'bg-slate-900/80 border-slate-800 text-rose-400 hover:bg-slate-800'}">
+      ${armed ? 'Tap again to reset all secrets' : '<span class="ce-emoji">🗑️</span> Reset secrets'}
+    </button>
+  `;
+}
+
+function resetEggs() {
+  if (!eggTracker.resetTimer) {
+    eggTracker.resetTimer = setTimeout(() => {
+      eggTracker.resetTimer = null;
+      render();
+    }, EGG_RESET_CONFIRM_MS);
+    render();
+    return;
+  }
+  clearTimeout(eggTracker.resetTimer);
+  eggTracker.resetTimer = null;
+  clearInterval(eggTracker.finaleTimer);
+  eggTracker.finaleTimer = null;
+  eggTracker.found.clear();
+  saveFoundEggs();
+  try {
+    localStorage.removeItem(EGG_FINALE_SEEN_KEY);
+    localStorage.removeItem(TREASURE_UNLOCK_KEY);
+  } catch {}
+  // The Treasure theme is locked again: fall back to the default if it's in use.
+  if (document.documentElement.dataset.theme === 'gold') {
+    try {
+      localStorage.setItem(THEME_STORAGE_KEY, APP_THEMES[0].id);
+    } catch {}
+    applyAppTheme(APP_THEMES[0]);
+  }
+  render();
+  showEggPill(`<span class="ce-emoji">🥚</span> Secrets reset <b>0 / ${EGG_TOTAL}</b>`);
+  playSound({ name: 'theme-locked' });
 }
 
 // --- "Secret found!" pill --------------------------------------------------------

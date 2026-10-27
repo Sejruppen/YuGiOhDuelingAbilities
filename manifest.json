@@ -1,7 +1,7 @@
 {
   "name": "Yu-Gi-Oh! Abilities",
   "short_name": "YGO Abilities",
-  "description": "Companion app for custom Yu-Gi-Oh! Character Decks, Skills, Comebacks, and Quests.",
+  "description": "Companion app for custom Yu-Gi-Oh! Character Decks: Skills, Comebacks and Quests, Life Point tracking, knockout Tournaments and Co-op Boss battles.",
   "start_url": "./index.html",
   "display": "standalone",
   "orientation": "portrait",
