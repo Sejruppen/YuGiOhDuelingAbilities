@@ -6,7 +6,7 @@ const COOP_STAGE_LABELS = { 1: 'Toon World', 2: 'Millennium Eye', 3: 'Final Read
 function renderCoopButton() {
   const running = coop.phase === 'battle';
   return `
-    <button onclick="goToCoop()" class="coop-start-btn w-full py-2.5 px-2 rounded-xl border border-indigo-500/50 bg-slate-900/80 hover:bg-slate-800 text-indigo-300 font-bold text-sm leading-tight transition flex flex-col items-center gap-0.5">
+    <button onclick="if (startEggAllowsClick()) goToCoop()" onpointerdown="startStartEggPress(this, 'friendship')" onpointerup="cancelStartEggPress(this)" onpointerleave="cancelStartEggPress(this)" onpointercancel="cancelStartEggPress(this)" oncontextmenu="return false" class="coop-start-btn cegg-press w-full py-2.5 px-2 rounded-xl border border-indigo-500/50 bg-slate-900/80 hover:bg-slate-800 text-indigo-300 font-bold text-sm leading-tight transition flex flex-col items-center gap-0.5">
       <span class="text-xl leading-none">👁️</span>
       <span>Co-op Boss</span>
       ${running ? '<span class="text-[0.65rem] font-semibold opacity-80">▶ Continue</span>' : ''}

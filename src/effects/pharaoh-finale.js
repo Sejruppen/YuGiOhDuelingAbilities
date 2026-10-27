@@ -1,5 +1,5 @@
 // THE GRAND FINALE: "The Ceremonial Battle". Plays once when the last of the
-// 40 easter eggs is found (egg-tracker.js), and can be replayed from the
+// easter eggs is found (egg-tracker.js), and can be replayed from the
 // start screen's counter afterwards.
 //
 //   0.6s   Darkness. "40 / 40", "Every secret uncovered.", heartbeat drums.

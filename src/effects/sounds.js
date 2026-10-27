@@ -1242,31 +1242,47 @@ const CHAR_EGG_SOUNDS = {
     tone({ t: t + 4.75, freq: 110, to: 60, dur: 0.25, type: 'triangle', gain: 0.08, attack: 0.003 });
   },
 
-  // Three roars 0/0.35/0.7s, the coat whips past 1.7-3.2s, coins from 2.6s.
+  // Three Blue-Eyes swoop in 0-1.6s, fusion flash 1.6s + triple roar, the heads
+  // squabble 2.25/2.55/2.85s, spin 3.4-4.0s, the knot pulls tight at 4.0s.
   'cegg-kaiba-dk': t => {
-    const hall = darkBus({ reverb: 0.5, echo: 0.1 });
-    [0, 0.35, 0.7].forEach((o, i) => monsterRoar(t + o, 0.05 + i * 0.01, hall));
-    for (let i = 0; i < 7; i++) noise({ t: t + 1.8 + i * 0.18, dur: 0.14, gain: 0.05, freq: rnd(500, 900), q: 0.8, attack: 0.02 });
-    bell({ t: t + 2.6, freq: 2600, dur: 0.6, gain: 0.06 });
-    bell({ t: t + 2.68, freq: 3300, dur: 0.8, gain: 0.06 });
-    noise({ t: t + 2.6, dur: 0.12, gain: 0.07, type: 'highpass', freq: 3000, attack: 0.002 });
-    for (let i = 0; i < 26; i++) coinClink(t + 2.75 + rnd(0, 2.0), 0.03);
-    brass({ t: t + 3.3, notes: [55, 59, 62, 67], dur: 0.9, gain: 0.035 });
+    const hall = darkBus({ reverb: 0.55, echo: 0.1 });
+    [0, 0.15, 0.3].forEach((o, i) => {
+      ceWhoosh(t + o + 0.3, 0.9, 0.05, 300 + i * 150, 2200, hall);
+      monsterRoar(t + o + 0.4, 0.04, hall);
+    });
+    laserCharge({ t: t + 0.9, dur: 0.7, from: 120, to: 2400, gain: 0.04, out: hall });
+    boom(t + 1.6, 0.9, hall);
+    noise({ t: t + 1.6, dur: 0.3, gain: 0.1, type: 'highpass', freq: 2500, to: 700, attack: 0.002, out: hall });
+    [0, 0.04, 0.08].forEach((o, i) => monsterRoar(t + 1.75 + o, 0.06 + i * 0.01, hall));
+    brass({ t: t + 1.75, notes: [50, 57, 62, 69], dur: 0.9, gain: 0.04 });
+    [[2.25, 330, 520], [2.55, 420, 660], [2.85, 280, 460]].forEach(([o, from, to]) => {
+      tone({ t: t + o, freq: from, to, dur: 0.12, type: 'sawtooth', gain: 0.04, filter: 1800, attack: 0.005 });
+      tone({ t: t + o + 0.13, freq: to, to: from, dur: 0.16, type: 'sawtooth', gain: 0.04, filter: 1800, attack: 0.005 });
+    });
+    slideWhistle({ t: t + 3.4, freqs: [500, 1400, 600, 1600, 700], dur: 0.6, gain: 0.04, wobble: 14 });
+    noise({ t: t + 3.4, dur: 0.6, gain: 0.05, type: 'bandpass', freq: 600, to: 2400, q: 2, attack: 0.05 });
+    noise({ t: t + 4.0, dur: 0.25, gain: 0.08, type: 'bandpass', freq: 900, to: 300, q: 6, attack: 0.01 });
+    boing(t + 4.02, { from: 260, to: 120, dur: 0.35, gain: 0.07 });
+    [[4.3, 311], [4.55, 294], [4.8, 277]].forEach(([o, f], i) =>
+      tone({ t: t + o, freq: f, to: i === 2 ? f * 0.85 : f, dur: i === 2 ? 0.45 : 0.22, type: 'sawtooth', gain: 0.035, filter: 900, attack: 0.02 }));
   },
 
-  // Jet + banner 0-1.9s, Obelisk's punch 1.95s, laughs 2.7/3.03/3.36s.
+  // Rumble while the shadow grows 0-1.3s, SLAM at 1.3s, flag flutters 2.2s,
+  // the card boings back up 3.2s, dizzy tweets from 3.9s.
   'cegg-kaiba-bc': t => {
-    const sky = darkBus({ reverb: 0.4, echo: 0.3 });
-    noise({ t, dur: 2.2, gain: 0.07, type: 'lowpass', freq: 300, to: 1600, attack: 1.2 });
-    tone({ t, freq: 140, to: 320, dur: 2.2, type: 'sawtooth', gain: 0.02, filter: 900, attack: 1.0 });
-    boom(t + 1.95, 0.8, sky);
-    noise({ t: t + 1.95, dur: 0.15, gain: 0.15, type: 'highpass', freq: 1800, attack: 0.002 });
-    slideWhistle({ t: t + 2.0, freqs: [1600, 900, 400], dur: 0.8, gain: 0.04, wobble: 12 });
-    [2.7, 3.03, 3.36].forEach((o, k) => {
-      for (let i = 0; i < 4; i++) {
-        const f = 260 - k * 25 + (i % 2) * 30;
-        tone({ t: t + o + i * 0.075, freq: f, to: f * 0.9, dur: 0.065, type: 'sawtooth', gain: 0.03, filter: 1400, attack: 0.005, out: sky });
-      }
+    const hall = darkBus({ reverb: 0.45, echo: 0.15 });
+    noise({ t, dur: 1.3, gain: 0.08, type: 'lowpass', freq: 120, to: 300, attack: 0.9, out: hall });
+    tone({ t, freq: 45, to: 60, dur: 1.3, type: 'sawtooth', gain: 0.04, filter: 200, attack: 0.9, out: hall });
+    ceWhoosh(t + 0.8, 0.5, 0.07, 2400, 300, hall);
+    boom(t + 1.3, 1.2, hall);
+    noise({ t: t + 1.3, dur: 0.18, gain: 0.16, type: 'highpass', freq: 1500, attack: 0.002 });
+    tone({ t: t + 1.3, freq: 900, to: 150, dur: 0.2, type: 'square', gain: 0.03, filter: 2000, attack: 0.002 });
+    noise({ t: t + 1.35, dur: 0.6, gain: 0.05, type: 'bandpass', freq: 700, to: 300, q: 0.8, attack: 0.02 });
+    for (let i = 0; i < 5; i++) noise({ t: t + 2.2 + i * 0.12, dur: 0.08, gain: 0.03, freq: rnd(1200, 1800), q: 2, attack: 0.01 });
+    boing(t + 3.2, { from: 100, to: 520, dur: 0.5, gain: 0.09 });
+    [0, 0.25, 0.5, 0.75].forEach(o => {
+      tone({ t: t + 3.9 + o, freq: 2400, to: 3000, dur: 0.07, type: 'sine', gain: 0.025, attack: 0.005 });
+      tone({ t: t + 3.98 + o, freq: 3000, to: 2400, dur: 0.07, type: 'sine', gain: 0.025, attack: 0.005 });
     });
   },
 
@@ -2163,6 +2179,43 @@ const COOP_SOUNDS = {
     [64, 61, 58, 52].forEach((n, i) => tone({ t: t + i * 0.4, freq: midi(n), dur: 0.6, type: 'sawtooth', gain: 0.04, filter: 1200, attack: 0.03, out: room }));
     bell({ t: t + 1.7, freq: midi(40), dur: 2.5, gain: 0.08, out: room });
     pegasusLaugh(t + 2, room);
+  },
+  // Start-screen eggs. Invitation (6s): envelope whoosh, seal crack, paper,
+  // VHS click, music box, Pegasus giggle, star chips, CRT off.
+  'egg-invitation': t => {
+    const room = darkBus({ reverb: 0.45 });
+    ceWhoosh(t, 0.6, 0.06, 300, 2200, room);
+    noise({ t: t + 0.65, dur: 0.12, gain: 0.08, type: 'lowpass', freq: 900, to: 200, attack: 0.002, out: room });
+    eyeHum(t + 0.7, 0.6, 0.04, room);
+    noise({ t: t + 1.2, dur: 0.06, gain: 0.12, type: 'highpass', freq: 2500, attack: 0.001, out: room });
+    tone({ t: t + 1.2, freq: 700, to: 200, dur: 0.08, type: 'square', gain: 0.03, filter: 2000, attack: 0.001, out: room });
+    cardFlip(t + 1.35, 0.1, 1600);
+    cardFlip(t + 1.7, 0.08, 2200);
+    tone({ t: t + 2.1, freq: 1200, dur: 0.03, type: 'square', gain: 0.04, attack: 0.001 });
+    noise({ t: t + 2.15, dur: 0.5, gain: 0.03, type: 'bandpass', freq: 3000, q: 0.7, attack: 0.05 });
+    arpeggio(t + 2.4, [79, 83, 86, 91, 86, 83, 88, 91], 0.16, (tt, n) => bell({ t: tt, freq: midi(n), dur: 0.7, gain: 0.025, out: room }));
+    pegasusLaugh(t + 3.4, room);
+    for (let i = 0; i < 14; i++) coinClink(t + 4.4 + rnd(0, 1.1), 0.025);
+    tone({ t: t + 5.4, freq: 2400, to: 80, dur: 0.3, type: 'sine', gain: 0.05, attack: 0.002 });
+  },
+  // Friendship Sign (5.5s): four hand pats, a squeaky marker, then a warm
+  // swell with bells.
+  'egg-friendship': t => {
+    const room = darkBus({ reverb: 0.5 });
+    [0.25, 0.55, 0.85, 1.15].forEach((o, i) => {
+      ceWhoosh(t + o - 0.15, 0.18, 0.03, 500, 1600, room);
+      noise({ t: t + o, dur: 0.07, gain: 0.09, type: 'bandpass', freq: 900 + i * 120, q: 1.2, attack: 0.002, out: room });
+      tone({ t: t + o, freq: 180 + i * 20, to: 90, dur: 0.08, gain: 0.05, attack: 0.002, out: room });
+    });
+    for (let i = 0; i < 14; i++) {
+      const s = t + 1.65 + i * 0.09 + rnd(0, 0.03);
+      tone({ t: s, freq: rnd(1700, 2300), to: rnd(1500, 2600), dur: 0.07, type: 'sawtooth', gain: 0.012, filter: 3500, attack: 0.005 });
+      noise({ t: s, dur: 0.07, gain: 0.015, type: 'highpass', freq: 4000, attack: 0.005 });
+    }
+    const f = t + 3.1;
+    chord({ t: f, notes: [60, 64, 67, 72], dur: 2.2, gain: 0.025, type: 'triangle', attack: 0.3, filter: 2500 });
+    arpeggio(f, [72, 76, 79, 84, 79, 84, 88], 0.13, (tt, n) => bell({ t: tt, freq: midi(n), dur: 1.2, gain: 0.03, out: room }));
+    healSparkles(f + 0.6, 1.4, 10, room);
   }
 };
 

@@ -153,7 +153,11 @@ registerCharacterEgg('yugi-bc', {
   }
 });
 
-// --- Kaiba (Duelist Kingdom): money, dragons, coat -----------------------------
+// --- Kaiba (Duelist Kingdom): Blue-Eyes Ultimate Dragon, three heads, no plan --
+// Three Blue-Eyes fly in from different sides and fuse on the card. The new
+// three-headed dragon roars... then the heads disagree about which way to go,
+// spin around each other and tie their necks in a knot.
+// KAIBA_COAT_SVG stays: the Custom egg's Frankenstein wears it.
 const KAIBA_COAT_SVG = `
   <svg viewBox="0 0 160 200" aria-hidden="true">
     <path d="M44 14 L8 70 L22 76 L50 36 Z M116 14 L152 70 L138 76 L110 36 Z" fill="#e2e8f0" stroke="#475569" stroke-width="2"/>
@@ -166,29 +170,121 @@ const KAIBA_COAT_SVG = `
     <text x="80" y="64.5" text-anchor="middle" font-size="8" font-weight="900" fill="#fbbf24">KC</text>
   </svg>`;
 
+// [side, flies in from x, y, speech bubble, neck joint x, y in the 260×200 rig]
+const ULTIMATE_HEADS = [
+  ['l', '-70vw', '-10vh', 'This way!', 58, 72],
+  ['m', '0px', '-70vh', 'No — UP!', 130, 34],
+  ['r', '70vw', '10vh', 'THAT way!', 202, 72]
+];
+
+// One Blue-Eyes head in profile, facing left. The neck joins at (88, 44),
+// which is where the CSS transform-origin sits (88% 63%). The jaw hinges open.
+const BUD_HEAD_SVG = `
+  <svg viewBox="0 0 100 70" aria-hidden="true">
+    <g stroke="#1e3a8a" stroke-width="1.6" stroke-linejoin="round">
+      <path d="M66 24 L99 3 L76 31 Z" fill="#bfdbfe"/>
+      <path d="M72 33 L100 24 L78 40 Z" fill="#93c5fd"/>
+      <g class="ce-bu-jaw">
+        <path d="M86 50 C72 58 48 58 26 53 L8 47 L24 45 L56 47 Z" fill="#dbeafe"/>
+        <path d="M14 47 l3 -4 l3 4 M26 48 l3 -4 l3 4 M38 49 l3 -4 l3 4" fill="#fff" stroke-width="0.8"/>
+      </g>
+      <path d="M90 46 C90 28 78 18 62 20 L40 24 L20 29 Q6 32 3 39 Q4 44 10 45 L30 45 L56 46 Q74 48 90 46 Z" fill="#f8fafc"/>
+      <path d="M12 45 l3 4 l3 -4 M24 45 l3 4 l3 -4 M36 45 l3 4 l3 -4 M48 46 l3 4 l3 -4" fill="#fff" stroke-width="0.8"/>
+      <path d="M22 29 L26 21 L30 27 Z M34 26 L39 17 L43 24 Z M47 23 L53 13 L57 21 Z" fill="#bfdbfe"/>
+      <path d="M46 30 L64 25 L71 30 L56 33 Z" fill="#cbd5e1"/>
+    </g>
+    <path d="M58 40 Q72 37 86 42" fill="none" stroke="#60a5fa" stroke-width="3" stroke-linecap="round"/>
+    <path d="M14 38 Q30 36 44 38" fill="none" stroke="#93c5fd" stroke-width="2" stroke-linecap="round"/>
+    <ellipse class="ce-bu-eye" cx="60" cy="34" rx="5.5" ry="2.6" fill="#38bdf8"/>
+    <ellipse cx="61.5" cy="33.4" rx="1.6" ry="1.1" fill="#fff"/>
+    <circle cx="9" cy="37" r="1.3" fill="#1e3a8a"/>
+  </svg>`;
+
+// Left wing; the right one is the same group mirrored. Flaps from the shoulder.
+const BUD_WING = `
+  <g class="ce-bu-wing">
+    <path d="M112 120 L64 62 L22 24 Q26 52 6 68 Q30 76 18 100 Q42 102 46 124 Q80 112 112 120 Z" fill="#bfdbfe" fill-opacity="0.8" stroke="#1e3a8a" stroke-width="2" stroke-linejoin="round"/>
+    <path d="M112 120 L64 62 L22 24 M64 62 L6 68 M64 62 L18 100 M64 62 L46 124" fill="none" stroke="#f8fafc" stroke-width="3.5" stroke-linecap="round"/>
+    <path d="M22 24 L16 12 L28 20 Z" fill="#f8fafc" stroke="#1e3a8a" stroke-width="1.2" stroke-linejoin="round"/>
+  </g>`;
+
+const BUD_BODY_SVG = `
+  <svg viewBox="0 0 260 200" aria-hidden="true">
+    <g fill="none" stroke-linecap="round">
+      <path d="M152 182 Q206 200 228 172 Q244 150 224 142" stroke="#1e3a8a" stroke-width="13"/>
+      <path d="M152 182 Q206 200 228 172 Q244 150 224 142" stroke="#f8fafc" stroke-width="8.5"/>
+    </g>
+    <path d="M224 142 L212 130 L230 136 Z" fill="#bfdbfe" stroke="#1e3a8a" stroke-width="1.5" stroke-linejoin="round"/>
+    ${BUD_WING}
+    <g transform="translate(260 0) scale(-1 1)">${BUD_WING}</g>
+    <g stroke="#1e3a8a" stroke-width="2.2" stroke-linejoin="round">
+      <path d="M94 176 Q80 190 86 198 L106 198 Q106 186 102 178 Z" fill="#e0f2fe"/>
+      <path d="M166 176 Q180 190 174 198 L154 198 Q154 186 158 178 Z" fill="#e0f2fe"/>
+      <path d="M92 170 Q88 128 130 122 Q172 128 168 170 Q160 194 130 194 Q100 194 92 170 Z" fill="#f8fafc"/>
+    </g>
+    <path d="M112 140 Q130 146 148 140 M108 154 Q130 161 152 154 M108 168 Q130 175 152 168 M114 181 Q130 187 146 181" fill="none" stroke="#93c5fd" stroke-width="2.5" stroke-linecap="round"/>
+    <path d="M86 198 l-3 -5 M92 198 l-1 -6 M174 198 l3 -5 M168 198 l1 -6" stroke="#1e3a8a" stroke-width="2" stroke-linecap="round"/>
+  </svg>`;
+
+// Three thick, segmented necks. The "knot" version ties them together.
+const ultimateNecks = paths => `
+  <svg viewBox="0 0 260 200" aria-hidden="true">
+    <g fill="none" stroke-linecap="round">
+      ${paths.map(d => `<path d="${d}" stroke="#1e3a8a" stroke-width="20"/>`).join('')}
+      ${paths.map(d => `<path d="${d}" stroke="#f8fafc" stroke-width="15.5"/>`).join('')}
+      ${paths.map(d => `<path d="${d}" stroke="#bfdbfe" stroke-width="6" stroke-dasharray="5 4"/>`).join('')}
+    </g>
+  </svg>`;
+const ULTIMATE_NECKS = ultimateNecks([
+  'M114 134 Q78 120 58 72',
+  'M130 128 Q122 80 130 34',
+  'M146 134 Q182 120 202 72'
+]);
+const ULTIMATE_KNOT = ultimateNecks([
+  'M114 134 C170 126 168 80 120 100 S88 112 108 88',
+  'M130 128 C80 116 84 66 136 86 S142 72 130 64',
+  'M146 134 C88 128 96 80 142 100 S170 104 152 88'
+]);
+
 registerCharacterEgg('kaiba-dk', {
-  toast: 'Screw the rules, I have MONEY! 💰',
-  scene: () => {
-    const dragons = ceRange(3, i => `<div class="ce-bewd" style="--i: ${i}; top: calc(var(--cy) - 130px + ${i * 60}px);"><span class="ce-emoji">🐉</span></div>`);
-    const coins = ceRange(34, i =>
-      `<span class="ce-coin ce-emoji" style="left: ${ceRand(0, 96).toFixed(0)}%; --i: ${i}; --d: ${ceRand(1100, 1800).toFixed(0)}ms; --s: ${ceRand(0.8, 1.5).toFixed(2)};">🪙</span>`);
-    return `
-      <div class="ce-dim ce-dim--blue"></div>
-      ${dragons}
-      <div class="ce-coat">${KAIBA_COAT_SVG}</div>
-      ${coins}`;
-  }
+  toast: 'Blue-Eyes Ultimate Dragon: three heads, zero teamwork. 🐉🐉🐉',
+  toastSmall: '…Kaiba is not amused.',
+  scene: () => `
+    <div class="ce-dim ce-dim--blue"></div>
+    <span class="ce-at ce-bu-vortex"></span>
+    <div class="ce-flash ce-flash--ultimate"></div>
+    ${ULTIMATE_HEADS.map(([side, sx, sy], i) => `
+      <div class="ce-at ce-bu-in" style="--i: ${i}; --sx: ${sx}; --sy: ${sy};"><span class="ce-bu-in-head${side === 'r' ? ' ce-bu-flip' : ''}">${BUD_HEAD_SVG}</span></div>`).join('')}
+    <div class="ce-at ce-bu-rig">
+      <span class="ce-bu-layer">${BUD_BODY_SVG}</span>
+      <span class="ce-bu-layer ce-bu-necks--straight">${ULTIMATE_NECKS}</span>
+      <span class="ce-bu-layer ce-bu-necks--knot">${ULTIMATE_KNOT}</span>
+      <div class="ce-bu-heads">
+        ${ULTIMATE_HEADS.map(([side, , , , x, y]) => `
+          <span class="ce-bu-head ce-bu-head--${side}" style="left: ${x}px; top: ${y}px;"><span class="ce-bu-face">${BUD_HEAD_SVG}</span></span>`).join('')}
+      </div>
+      ${ULTIMATE_HEADS.map(([side, , , say]) => `<span class="ce-bubble ce-bu-say ce-bu-say--${side}">${say}</span>`).join('')}
+      <span class="ce-bu-dizzy ce-emoji">💫</span>
+    </div>
+    <div class="ce-at ce-bu-title">BLUE-EYES<br>ULTIMATE DRAGON!</div>`
 });
 
-// --- Kaiba (Battle City): KaibaLand, punched -----------------------------------
+// --- Kaiba (Battle City): Obelisk the Tormentor flattens the card -----------------
+// A shadow grows over the card, Obelisk's giant fist slams down and squashes
+// it pancake-flat. A tiny white flag waves, then the card boings back up, dazed.
 registerCharacterEgg('kaiba-bc', {
+  toast: 'Obelisk the Tormentor says hi. 👊',
+  toastSmall: 'Respectfully: ow.',
   scene: () => `
-    <div class="ce-dim ce-dim--sky"></div>
-    <div class="ce-at ce-banner">KAIBALAND OPENING SOON</div>
-    <div class="ce-at ce-jet"><span class="ce-emoji">✈️</span></div>
-    <div class="ce-at ce-fist"><span class="ce-emoji">👊</span></div>
-    <div class="ce-at ce-pow">POW!</div>
-    ${ceRange(3, i => `<div class="ce-at ce-laugh" style="--i: ${i};">HAHAHAHA!</div>`)}`
+    <div class="ce-dim ce-dim--obelisk"></div>
+    <div class="ce-flash ce-flash--obelisk"></div>
+    <span class="ce-at ce-ob-shadow"></span>
+    <div class="ce-at ce-ob-fist"><span class="ce-emoji">👊</span></div>
+    <div class="ce-at ce-ob-slam">SLAM!</div>
+    ${[-1, 1].map(dir => ceRange(3, i => `<span class="ce-at ce-ob-dust ce-emoji" style="--dx: ${dir * (50 + i * 38)}px; --dy: ${-i * 14}px; --i: ${i}; --flip: ${dir};">💨</span>`)).join('')}
+    <span class="ce-at ce-ob-flag ce-emoji">🏳️</span>
+    <span class="ce-at ce-ob-stars ce-emoji">💫</span>
+    <div class="ce-at ce-ob-title">OBELISK THE TORMENTOR</div>`
 });
 
 // --- Joey (Duelist Kingdom): Time Wizard roulette -------------------------------
