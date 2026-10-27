@@ -24,6 +24,8 @@ function renderSettingsView() {
           ${renderScalePicker()}
           <p class="w-full max-w-xs mt-6 -mb-1 text-xs font-semibold uppercase tracking-widest text-slate-400">Sound</p>
           ${renderSoundToggle()}
+          <p class="w-full max-w-xs mt-6 -mb-1 text-xs font-semibold uppercase tracking-widest text-slate-400">Co-op Boss</p>
+          ${renderCoopResetButton()}
           <p class="w-full max-w-xs mt-6 -mb-2 text-xs font-semibold uppercase tracking-widest text-slate-400">Secrets</p>
           ${renderEggCounter()}
           ${renderEggResetButton()}

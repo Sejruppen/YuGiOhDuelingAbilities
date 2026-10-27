@@ -86,6 +86,82 @@ function coopBackToSetup() {
   commitCoop();
 }
 
+// --- Reset progress (Settings) ----------------------------------------------------
+// First tap arms the button, a second tap within a few seconds wipes the
+// trophies (wins per difficulty) and any boss fight still in progress.
+const COOP_RESET_CONFIRM_MS = 3000;
+let coopResetTimer = null;
+
+const coopWinTotal = () => Object.values(getCoopWins()).reduce((sum, n) => sum + (Number(n) || 0), 0);
+const hasCoopProgress = () => coopWinTotal() > 0 || coop.phase !== 'setup';
+
+function renderCoopProgress() {
+  const wins = getCoopWins();
+  const rows = COOP_ENCOUNTERS.filter(e => !e.locked).map(e => {
+    const cells = Object.entries(COOP_DIFFICULTIES).map(([id, diff]) => {
+      const n = Number(wins[`${e.id}:${id}`]) || 0;
+      return `
+        <span class="flex-1 rounded-lg py-1.5 ${n ? 'bg-amber-950/40 border border-amber-500/40' : 'bg-slate-950/60 border border-slate-800'}">
+          <span class="block"><span class="ce-emoji">${diff.icon}</span> <span class="font-semibold ${n ? 'text-amber-300' : 'text-slate-300'}">${diff.label}</span></span>
+          <span class="block mt-0.5 ${n ? 'text-amber-300 font-bold' : 'text-slate-500'}">${n ? `<span class="ce-emoji">🏆</span> ${n} win${n === 1 ? '' : 's'}` : 'Not beaten'}</span>
+        </span>`;
+    }).join('');
+    return `
+      <div class="text-left">
+        <p class="font-bold text-slate-200"><span class="ce-emoji">${e.icon}</span> ${e.name} <span class="font-normal text-slate-500">· ${e.title}</span></p>
+        <div class="flex gap-1.5 mt-1.5 text-center">${cells}</div>
+      </div>`;
+  }).join('');
+
+  const encounter = COOP_ENCOUNTERS.find(e => e.id === coop.encounter);
+  const diff = COOP_DIFFICULTIES[coop.difficulty];
+  const status = { battle: 'Battle in progress', victory: 'Just won (not dismissed)', defeat: 'Just lost (not dismissed)' }[coop.phase];
+  const current = status && encounter && diff
+    ? `<p class="text-left text-slate-400"><span class="ce-emoji">⚔️</span> ${status}: <b class="text-slate-200">${encounter.name}</b> on <b class="text-slate-200">${diff.label}</b></p>`
+    : '';
+
+  return `
+    <div class="w-full max-w-xs mt-2 flex flex-col gap-2.5 px-3 py-2.5 rounded-xl bg-slate-900/80 border border-slate-800 text-xs">
+      ${rows}
+      ${current}
+    </div>
+  `;
+}
+
+function renderCoopResetButton() {
+  if (!hasCoopProgress()) return renderCoopProgress();
+  const armed = !!coopResetTimer;
+  return `
+    ${renderCoopProgress()}
+    <button type="button" onclick="resetCoopProgress()" class="w-full max-w-xs mt-2 py-2 px-4 rounded-xl text-xs font-bold transition border ${armed
+      ? 'bg-rose-600 border-rose-500 text-white'
+      : 'bg-slate-900/80 border-slate-800 text-rose-400 hover:bg-slate-800'}">
+      ${armed ? 'Tap again to reset co-op progress' : '<span class="ce-emoji">🗑️</span> Reset co-op progress'}
+    </button>
+  `;
+}
+
+function resetCoopProgress() {
+  if (!coopResetTimer) {
+    coopResetTimer = setTimeout(() => {
+      coopResetTimer = null;
+      render();
+    }, COOP_RESET_CONFIRM_MS);
+    render();
+    return;
+  }
+  clearTimeout(coopResetTimer);
+  coopResetTimer = null;
+  try {
+    localStorage.removeItem(COOP_WINS_KEY);
+  } catch {}
+  coop = newCoop(coop.difficulty);
+  saveCoop();
+  render();
+  showEggPill('<span class="ce-emoji">👁️</span> Co-op progress reset');
+  playSound({ name: 'theme-locked' });
+}
+
 // --- Toasts and signals -----------------------------------------------------------
 
 function showCoopToast(i, result) {
