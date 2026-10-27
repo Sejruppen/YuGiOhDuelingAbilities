@@ -2008,8 +2008,53 @@ const TOURNAMENT_SOUNDS = {
     boom(f + 1.32, 0.7, room);
     arpeggio(f + 1.4, [84, 88, 91, 96, 91, 96], 0.1, (tt, n) => bell({ t: tt, freq: midi(n), dur: 1.2, gain: 0.025, out: room }));
     for (let i = 0; i < 12; i++) coinClink(f + 1.5 + rnd(0, 1.4), 0.02);
+  },
+  // Kuriboh Multiply (6.2s): spell card, doubling "kuri!" chirps, the giant
+  // Kuriboh's roar, then everyone pops.
+  'tn-kuriboh-multiply': t => {
+    const room = darkBus({ reverb: 0.35 });
+    cardFlip(t, 0.12, 2200);
+    ceWhoosh(t, 0.4, 0.05, 400, 2400, room);
+    arpeggio(t + 0.35, [72, 76, 79, 84], 0.08, (tt, n) => bell({ t: tt, freq: midi(n), dur: 0.8, gain: 0.03, out: room }));
+    [0.9, 1.5, 1.95, 2.3, 2.6, 2.85, 3.05].forEach((w, k) => {
+      const count = Math.min(2 ** k, 9);
+      for (let i = 0; i < count; i++) kuriChirp(t + w + (k ? rnd(0, 0.22) : 0), 0.045 - k * 0.003, room);
+    });
+    for (let i = 0; i < 18; i++) kuriChirp(t + 3.2 + rnd(0, 0.9), 0.025, room);
+    tone({ t: t + 4.3, freq: 140, to: 260, dur: 0.35, type: 'sawtooth', gain: 0.08, filter: 1100, attack: 0.02, out: room });
+    tone({ t: t + 4.65, freq: 260, to: 120, dur: 0.6, type: 'sawtooth', gain: 0.08, filter: 1100, attack: 0.02, out: room });
+    boom(t + 4.35, 0.5, room);
+    for (let i = 0; i < 14; i++) {
+      noise({ t: t + 4.85 + rnd(0, 0.35), dur: 0.05, gain: 0.06, type: 'highpass', freq: 1800, attack: 0.002, out: room });
+    }
+    kuriChirp(t + 5.5, 0.05, room);
+  },
+  // Rock-paper-scissors at 2: pop-out, "?", shrug, three pumps, reveal.
+  'tn-rps-win': t => {
+    const room = rpsIntroSound(t);
+    arpeggio(t + 3.35, [72, 76, 79, 84], 0.09, (tt, n) => bell({ t: tt, freq: midi(n), dur: 0.8, gain: 0.035, out: room }));
+    brass({ t: t + 3.75, notes: [72, 76, 79], dur: 0.5, gain: 0.04 });
+    slideWhistle({ t: t + 3.5, freqs: [900, 300], dur: 0.45, gain: 0.03 });
+  },
+  'tn-rps-tie': t => {
+    const room = rpsIntroSound(t);
+    [58, 57, 56, 55].forEach((n, i) => tone({ t: t + 3.35 + i * 0.3, freq: midi(n), to: i === 3 ? midi(53) : undefined, dur: i === 3 ? 0.7 : 0.26, type: 'sawtooth', gain: 0.04, filter: 900, attack: 0.02, out: room }));
   }
 };
+
+function rpsIntroSound(t) {
+  const room = darkBus({ reverb: 0.3 });
+  tone({ t: t + 0.05, freq: 400, to: 900, dur: 0.08, type: 'triangle', gain: 0.06, attack: 0.003 });
+  tone({ t: t + 0.15, freq: 450, to: 1000, dur: 0.08, type: 'triangle', gain: 0.06, attack: 0.003 });
+  boing(t + 0.6, { from: 200, to: 500, dur: 0.3, gain: 0.05, out: room });
+  slideWhistle({ t: t + 1.1, freqs: [500, 800, 500], dur: 0.5, gain: 0.03, out: room });
+  [2.09, 2.475, 2.86].forEach(o => {
+    tone({ t: t + o, freq: 170, to: 80, dur: 0.1, gain: 0.08, attack: 0.002, out: room });
+    noise({ t: t + o, dur: 0.06, gain: 0.05, type: 'lowpass', freq: 1200, attack: 0.002, out: room });
+  });
+  bell({ t: t + 3.19, freq: midi(88), dur: 0.8, gain: 0.04, out: room });
+  return room;
+}
 
 // Co-op Boss (Pegasus): cartoon Toons, an eerie Millennium Eye and his
 // trademark giggle.

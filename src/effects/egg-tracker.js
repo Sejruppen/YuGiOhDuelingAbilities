@@ -19,6 +19,8 @@ const CHARACTER_EGG_IDS = [
 const EGG_IDS = [
   // Start screen
   'exodia', 'duel-disk', 'dizzy', 'speaker', 'shrink-ray', 'obelisk-headroom', 'dk-invitation', 'friendship-sign',
+  // Tournament setup
+  'kuriboh-multiply', 'rock-paper-scissors',
   // Abilities screen
   'dark-paladin', 'divine-offering',
   // Duel screen

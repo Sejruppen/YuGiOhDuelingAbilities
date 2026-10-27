@@ -66,7 +66,7 @@ function renderTournamentSetup() {
   const max = getTournamentMaxSize();
   const chosen = tournament.picks.length;
   const random = size - chosen;
-  const stepBtn = 'w-10 h-10 rounded-lg bg-slate-800 border border-slate-700 text-xl font-black text-slate-200 hover:bg-slate-700 transition disabled:opacity-30';
+  const stepBtn = 'w-10 h-10 rounded-lg bg-slate-800 border border-slate-700 text-xl font-black text-slate-200 hover:bg-slate-700 transition touch-manipulation';
   const summary = random > 0
     ? `${chosen} chosen · <b class="text-amber-400">${random} drawn at random</b>`
     : `${chosen} chosen · no random spots`;
@@ -81,9 +81,9 @@ function renderTournamentSetup() {
             <p class="text-xs text-slate-500 mt-1">Single elimination · ${min}–${max}</p>
           </div>
           <div class="flex items-center gap-2">
-            <button onclick="changeTournamentSize(-1)" class="${stepBtn}" ${size <= min ? 'disabled' : ''} aria-label="Fewer participants">−</button>
+            <button onclick="changeTournamentSize(-1)" class="${stepBtn}${size <= min ? ' opacity-30' : ''}" ${size <= min ? 'aria-disabled="true"' : ''} aria-label="Fewer participants">−</button>
             <span class="tn-size-value w-10 text-center text-3xl font-black text-white tabular-nums">${size}</span>
-            <button onclick="changeTournamentSize(1)" class="${stepBtn}" ${size >= max ? 'disabled' : ''} aria-label="More participants">+</button>
+            <button onclick="changeTournamentSize(1)" class="${stepBtn}${size >= max ? ' opacity-30' : ''}" ${size >= max ? 'aria-disabled="true"' : ''} aria-label="More participants">+</button>
           </div>
         </div>
         <p class="text-sm text-slate-300 mt-3">${summary}</p>

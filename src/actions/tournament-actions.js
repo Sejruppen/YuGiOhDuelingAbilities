@@ -20,6 +20,7 @@ function changeTournamentSize(delta) {
   const size = clampTournamentSize(tournament.size + delta);
   if (size === tournament.size) {
     restartClass(document.querySelector('.tn-size-value'), 'tn-nope', 400);
+    countTournamentLimitTap(delta);
     return;
   }
   setTournament({ size });
