@@ -4,7 +4,7 @@
 // spawns short-lived overlay elements; styles.css decides how each theme
 // animates them. Overlays live in #fx-layer (outside #app) so re-renders
 // don't cut them off.
-const SCREEN_ORDER = [SCREENS.START, SCREENS.TOURNAMENT, SCREENS.CHARACTER, SCREENS.ABILITIES, SCREENS.DUEL, SCREENS.DISK];
+const SCREEN_ORDER = [SCREENS.START, SCREENS.SETTINGS, SCREENS.TOURNAMENT, SCREENS.COOP, SCREENS.CHARACTER, SCREENS.ABILITIES, SCREENS.DUEL, SCREENS.DISK];
 const LP_COUNT_DURATION_MS = 600;
 
 const BANNER_TEXT = {

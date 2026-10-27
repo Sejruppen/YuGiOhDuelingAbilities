@@ -5,6 +5,11 @@ function renderCurrentView(app) {
     return;
   }
 
+  if (state.screen === SCREENS.SETTINGS) {
+    app.innerHTML = renderSettingsView();
+    return;
+  }
+
   if (state.screen === SCREENS.DISK) {
     app.innerHTML = renderDuelDiskView();
     return;
@@ -17,6 +22,11 @@ function renderCurrentView(app) {
 
   if (state.screen === SCREENS.TOURNAMENT) {
     app.innerHTML = renderTournamentView();
+    return;
+  }
+
+  if (state.screen === SCREENS.COOP) {
+    app.innerHTML = renderCoopView();
     return;
   }
 

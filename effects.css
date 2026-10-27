@@ -8048,6 +8048,167 @@ header:has(+ .tn-draw--done) .tn-draw-skip { visibility: hidden; }
 }
 
 /* =========================================================================
+   CO-OP BOSS (Pegasus – The Millennium Eye)
+   ========================================================================= */
+
+.coop-half--top { transform: rotate(180deg); }
+.coop-panel { transition: box-shadow 0.3s, background-color 0.3s; }
+.coop-panel--active {
+  box-shadow: inset 0 0 0 2px rgba(251, 191, 36, 0.55), inset 0 0 28px rgba(251, 191, 36, 0.12);
+}
+.coop-panel--boss {
+  background: radial-gradient(ellipse at 50% 100%, rgba(192, 38, 211, 0.18), transparent 70%);
+  box-shadow: inset 0 0 0 2px rgba(217, 70, 239, 0.45);
+}
+
+.coop-board { position: relative; transition: background-color 0.6s; }
+.coop-board--stage1 { box-shadow: inset 0 0 30px rgba(245, 158, 11, 0.12); }
+.coop-board--stage2 { box-shadow: inset 0 0 30px rgba(217, 70, 239, 0.18); }
+.coop-board--stage3 { box-shadow: inset 0 0 40px rgba(244, 63, 94, 0.3); animation: coop-board-throb 2.4s ease-in-out infinite; }
+@keyframes coop-board-throb {
+  0%, 100% { box-shadow: inset 0 0 30px rgba(244, 63, 94, 0.2); }
+  50% { box-shadow: inset 0 0 50px rgba(244, 63, 94, 0.45); }
+}
+
+.coop-boss-eye { animation: coop-eye-look 5s ease-in-out infinite; filter: drop-shadow(0 0 6px rgba(250, 204, 21, 0.8)); }
+@keyframes coop-eye-look {
+  0%, 40%, 100% { transform: translateX(0) scale(1); }
+  45% { transform: translateX(-3px) scale(1.05); }
+  55% { transform: translateX(3px) scale(1.05); }
+  60% { transform: scaleY(0.1); }
+  64% { transform: scaleY(1); }
+}
+
+.coop-chip { transition: opacity 0.3s, transform 0.3s; }
+.coop-chip--squashed { transform: scaleY(0.55); transform-origin: bottom; opacity: 0.6; }
+.coop-chip--fresh { animation: coop-chip-pop 0.6s cubic-bezier(0.3, 1.6, 0.5, 1); }
+@keyframes coop-chip-pop {
+  from { transform: scale(0) rotate(-20deg); opacity: 0; }
+  to { transform: scale(1) rotate(0); opacity: 1; }
+}
+.coop-chip--eye { animation: coop-eye-glow 1.2s ease-in-out infinite; }
+@keyframes coop-eye-glow {
+  0%, 100% { box-shadow: 0 0 6px rgba(250, 204, 21, 0.4); }
+  50% { box-shadow: 0 0 16px rgba(250, 204, 21, 0.95); }
+}
+.coop-chip--seal { animation: coop-seal-pulse 1s ease-in-out infinite; }
+@keyframes coop-seal-pulse {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.08); box-shadow: 0 0 14px rgba(244, 63, 94, 0.8); }
+}
+.coop-squash { animation: coop-squash 0.7s ease-out; }
+@keyframes coop-squash {
+  0% { transform: scale(1); }
+  25% { transform: scale(1.4, 0.3); }
+  55% { transform: scale(0.85, 1.25); }
+  80% { transform: scale(1.05, 0.9); }
+  100% { transform: scaleY(0.55); }
+}
+
+.coop-shake { animation: coop-shake 0.5s ease-in-out; }
+@keyframes coop-shake {
+  0%, 100% { translate: 0 0; }
+  20% { translate: -6px 0; }
+  40% { translate: 5px 0; }
+  60% { translate: -4px 0; }
+  80% { translate: 2px 0; }
+}
+.coop-bond-glow { animation: coop-bond-glow 0.9s ease-out; }
+@keyframes coop-bond-glow {
+  0% { filter: drop-shadow(0 0 0 rgba(56, 189, 248, 0)); }
+  30% { filter: drop-shadow(0 0 10px rgba(56, 189, 248, 1)) brightness(1.5); }
+  100% { filter: drop-shadow(0 0 0 rgba(56, 189, 248, 0)); }
+}
+
+.coop-toast { border: 1px solid; animation: coop-pop-in 0.3s ease-out; }
+.coop-toast--good { background: rgba(6, 78, 59, 0.55); border-color: rgba(52, 211, 153, 0.6); color: #d1fae5; }
+.coop-toast--bad { background: rgba(76, 5, 25, 0.55); border-color: rgba(244, 63, 94, 0.6); color: #ffe4e6; }
+.coop-toast--meh { background: rgba(30, 41, 59, 0.7); border-color: rgba(148, 163, 184, 0.5); color: #e2e8f0; }
+.coop-signal { animation: coop-signal-in 0.5s cubic-bezier(0.3, 1.5, 0.5, 1); }
+@keyframes coop-pop-in { from { opacity: 0; transform: translateY(6px); } }
+@keyframes coop-signal-in { from { opacity: 0; transform: scale(0.6); } }
+
+.coop-step-in { animation: coop-step-in 0.45s ease-out; }
+@keyframes coop-step-in { from { opacity: 0; transform: translateY(-12px) scale(0.96); } }
+.coop-step-icon { display: inline-block; animation: coop-icon-bob 2s ease-in-out infinite; }
+@keyframes coop-icon-bob {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-4px); }
+}
+.coop-fate-card .coop-step-icon { animation: coop-fate-flip 0.8s ease-out, coop-icon-bob 2s ease-in-out 0.8s infinite; }
+@keyframes coop-fate-flip {
+  from { transform: perspective(400px) rotateY(180deg) scale(0.6); filter: brightness(3); }
+  to { transform: perspective(400px) rotateY(0) scale(1); filter: none; }
+}
+
+.coop-end-turn { animation: coop-end-pulse 1.6s ease-in-out infinite; }
+@keyframes coop-end-pulse {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(251, 191, 36, 0.5); }
+  50% { box-shadow: 0 0 0 6px rgba(251, 191, 36, 0); }
+}
+
+.coop-encounter--active { box-shadow: 0 0 18px rgba(217, 70, 239, 0.25); }
+.coop-start-btn { box-shadow: 0 0 14px rgba(217, 70, 239, 0.2); }
+
+.coop-cutscene { animation: coop-fade-in 0.5s ease-out; }
+.coop-cut-icon { display: inline-block; animation: coop-cut-icon 1.2s cubic-bezier(0.3, 1.4, 0.5, 1); filter: drop-shadow(0 0 16px rgba(217, 70, 239, 0.8)); }
+@keyframes coop-fade-in { from { opacity: 0; } }
+@keyframes coop-cut-icon {
+  from { transform: scale(0) rotate(-180deg); opacity: 0; }
+  to { transform: scale(1) rotate(0); opacity: 1; }
+}
+
+.coop-end { animation: coop-fade-in 0.6s ease-out; }
+.coop-end--win { background: radial-gradient(ellipse at 50% 30%, rgba(251, 191, 36, 0.22), transparent 65%); }
+.coop-end--lose { background: radial-gradient(ellipse at 50% 30%, rgba(192, 38, 211, 0.22), transparent 65%); }
+.coop-end-icon { display: inline-block; animation: coop-cut-icon 1s cubic-bezier(0.3, 1.4, 0.5, 1); }
+.coop-end--win .coop-end-icon { filter: drop-shadow(0 0 20px rgba(251, 191, 36, 0.9)); }
+.coop-end--lose .coop-end-icon { filter: grayscale(0.6) drop-shadow(0 0 16px rgba(192, 38, 211, 0.8)); }
+
+/* Full-screen overlays spawned in the fx layer. */
+.fx-coop-stage,
+.fx-coop-victory,
+.fx-coop-fallen {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 60;
+}
+.fx-coop-stage { animation: fx-coop-stage 1.6s ease-out forwards; }
+.fx-coop-stage--2 { background: radial-gradient(circle, rgba(217, 70, 239, 0.55), rgba(15, 23, 42, 0.85)); }
+.fx-coop-stage--3 { background: radial-gradient(circle, rgba(244, 63, 94, 0.6), rgba(15, 23, 42, 0.9)); }
+.fx-coop-stage-eye { font-size: 9rem; animation: fx-coop-eye-open 1.6s ease-out forwards; filter: drop-shadow(0 0 40px rgba(250, 204, 21, 1)); }
+@keyframes fx-coop-stage {
+  0% { opacity: 0; }
+  15%, 65% { opacity: 1; }
+  100% { opacity: 0; }
+}
+@keyframes fx-coop-eye-open {
+  0% { transform: scale(0.4, 0.05); }
+  30% { transform: scale(1.2, 1.2); }
+  60% { transform: scale(1); }
+  100% { transform: scale(2.5); opacity: 0; }
+}
+.fx-coop-victory {
+  background: radial-gradient(circle, rgba(255, 255, 255, 0.95), rgba(251, 191, 36, 0.6) 40%, transparent 75%);
+  animation: fx-coop-stage 2.6s ease-out forwards;
+}
+.fx-coop-victory-eye { font-size: 8rem; animation: fx-coop-eye-shatter 2.6s ease-in forwards; }
+@keyframes fx-coop-eye-shatter {
+  0% { transform: scale(1); filter: none; }
+  40% { transform: scale(1.1) rotate(-6deg); filter: grayscale(1) brightness(2); }
+  55% { transform: scale(1.3) rotate(8deg); opacity: 1; }
+  100% { transform: scale(4) rotate(40deg); opacity: 0; filter: blur(6px); }
+}
+.fx-coop-fallen {
+  background: radial-gradient(circle, transparent 30%, rgba(76, 5, 25, 0.75));
+  animation: fx-coop-stage 1.2s ease-out forwards;
+}
+
+/* =========================================================================
    THEME SWITCH (View Transitions API)
    ========================================================================= */
 

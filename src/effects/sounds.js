@@ -1995,6 +1995,177 @@ const TOURNAMENT_SOUNDS = {
   }
 };
 
+// Co-op Boss (Pegasus): cartoon Toons, an eerie Millennium Eye and his
+// trademark giggle.
+function pegasusLaugh(t, out) {
+  ceGiggle(t, 520, 5, out, 'triangle');
+  ceGiggle(t + 0.6, 600, 4, out, 'triangle');
+}
+
+function eyeHum(t, dur, gain, out) {
+  [0, 7, 13].forEach((d, i) => tone({ t, freq: midi(50 + d), dur, type: 'sine', gain: gain / (i + 1), attack: dur * 0.3, detune: rnd(-12, 12), out }));
+}
+
+const COOP_SOUNDS = {
+  'co-start': t => {
+    const room = darkBus({ reverb: 0.6 });
+    eyeHum(t, 1.6, 0.06, room);
+    boom(t + 0.2, 0.5, room);
+    arpeggio(t + 0.5, [62, 65, 69, 74], 0.12, (tt, n) => bell({ t: tt, freq: midi(n), dur: 1, gain: 0.03, out: room }));
+    pegasusLaugh(t + 1.2, room);
+  },
+  'co-turn': t => {
+    tone({ t, freq: 880, to: 1320, dur: 0.12, type: 'triangle', gain: 0.04, attack: 0.004 });
+  },
+  'co-boss-turn': t => {
+    const room = darkBus({ reverb: 0.5 });
+    eyeHum(t, 0.9, 0.05, room);
+    tone({ t, freq: midi(50), to: midi(46), dur: 0.7, type: 'sawtooth', gain: 0.04, filter: 900, attack: 0.05, out: room });
+  },
+  'co-toon': t => {
+    slideWhistle({ t, freqs: [700, 1500, 500], dur: 0.35, gain: 0.04 });
+    boing(t + 0.3, { from: 160, to: 420, dur: 0.3, gain: 0.07 });
+    noise({ t: t + 0.45, dur: 0.12, gain: 0.08, type: 'lowpass', freq: 1500, to: 200, attack: 0.002 });
+  },
+  'co-barrel': t => {
+    const room = darkBus({ reverb: 0.3 });
+    [0, 0.28, 0.56].forEach(o => {
+      noise({ t: t + o, dur: 0.15, gain: 0.12, type: 'lowpass', freq: 2500, to: 150, attack: 0.002, out: room });
+      tone({ t: t + o, freq: 160, to: 50, dur: 0.18, gain: 0.1, attack: 0.002, out: room });
+    });
+  },
+  'co-summon': t => {
+    slideWhistle({ t, freqs: [400, 1600], dur: 0.3, gain: 0.04 });
+    tone({ t: t + 0.32, freq: 1200, to: 300, dur: 0.06, type: 'square', gain: 0.03, filter: 3000, attack: 0.001 });
+    ceGiggle(t + 0.45, 700, 4);
+  },
+  'co-laugh': t => pegasusLaugh(t, darkBus({ reverb: 0.4 })),
+  'co-hit': t => {
+    const room = darkBus({ reverb: 0.25 });
+    ceWhoosh(t, 0.18, 0.05, 600, 3000, room);
+    boom(t + 0.15, 0.45, room);
+    noise({ t: t + 0.15, dur: 0.1, gain: 0.08, type: 'highpass', freq: 2500, attack: 0.002, out: room });
+  },
+  'co-squash': t => {
+    tone({ t, freq: 600, to: 120, dur: 0.18, type: 'triangle', gain: 0.08, attack: 0.002 });
+    noise({ t, dur: 0.15, gain: 0.08, type: 'lowpass', freq: 1200, to: 150, attack: 0.002 });
+    boing(t + 0.2, { from: 120, to: 300, dur: 0.35, gain: 0.06 });
+    ceGiggle(t + 0.5, 1100, 3);
+  },
+  'co-destroy': t => {
+    const room = darkBus({ reverb: 0.35 });
+    boom(t, 0.6, room);
+    for (let i = 0; i < 6; i++) bell({ t: t + 0.05 + i * 0.04, freq: rnd(1800, 4200), dur: 0.3, gain: 0.02, out: room });
+    noise({ t, dur: 0.4, gain: 0.08, type: 'highpass', freq: 3000, to: 800, attack: 0.002, out: room });
+  },
+  'co-bounce': t => {
+    boing(t, { from: 220, to: 90, dur: 0.4, gain: 0.08 });
+    tone({ t: t + 0.05, freq: 300, to: 200, dur: 0.15, type: 'square', gain: 0.025, filter: 1200, attack: 0.002 });
+  },
+  'co-page': t => {
+    noise({ t, dur: 0.28, gain: 0.12, type: 'bandpass', freq: 1800, to: 5000, q: 0.8, attack: 0.01 });
+    noise({ t: t + 0.05, dur: 0.2, gain: 0.06, type: 'highpass', freq: 3000, attack: 0.005 });
+  },
+  'co-book': t => {
+    const room = darkBus({ reverb: 0.5 });
+    noise({ t, dur: 0.12, gain: 0.15, type: 'lowpass', freq: 1500, to: 100, attack: 0.002, out: room });
+    boom(t, 0.8, room);
+    arpeggio(t + 0.3, [74, 70, 67, 62], 0.1, (tt, n) => tone({ t: tt, freq: midi(n), dur: 0.25, type: 'triangle', gain: 0.04, attack: 0.005, out: room }));
+  },
+  'co-hurt': t => {
+    tone({ t, freq: 220, to: 70, dur: 0.3, type: 'sawtooth', gain: 0.06, filter: 900, attack: 0.002 });
+    noise({ t, dur: 0.12, gain: 0.07, type: 'lowpass', freq: 900, attack: 0.002 });
+  },
+  'co-heal': t => {
+    arpeggio(t, [72, 76, 79, 84], 0.05, (tt, n) => bell({ t: tt, freq: midi(n), dur: 0.6, gain: 0.03 }));
+  },
+  'co-negate': t => {
+    const room = darkBus({ reverb: 0.4 });
+    tone({ t, freq: 300, to: 1200, dur: 0.25, type: 'sawtooth', gain: 0.04, filter: [600, 4000], attack: 0.01, out: room });
+    bell({ t: t + 0.2, freq: midi(88), dur: 0.8, gain: 0.04, out: room });
+    noise({ t: t + 0.2, dur: 0.3, gain: 0.05, type: 'highpass', freq: 4000, attack: 0.005, out: room });
+  },
+  'co-shield': t => {
+    const room = darkBus({ reverb: 0.4 });
+    chord({ t, notes: [67, 71, 74], dur: 0.6, gain: 0.025, attack: 0.02, filter: 2400 });
+    bell({ t: t + 0.05, freq: midi(83), dur: 0.9, gain: 0.03, out: room });
+  },
+  'co-bond': t => {
+    const room = darkBus({ reverb: 0.4 });
+    arpeggio(t, [79, 86, 91], 0.07, (tt, n) => bell({ t: tt, freq: midi(n), dur: 0.9, gain: 0.03, out: room }));
+  },
+  'co-revive': t => {
+    const room = darkBus({ reverb: 0.6 });
+    healSparkles(t, 0.8, 10, room);
+    chord({ t, notes: [60, 64, 67, 72], dur: 1.2, gain: 0.02, attack: 0.2, filter: 2600 });
+  },
+  'co-eye': t => {
+    const room = darkBus({ reverb: 0.7, echo: 0.2 });
+    eyeHum(t, 1.1, 0.06, room);
+    tone({ t: t + 0.1, freq: midi(86), to: midi(85), dur: 0.9, type: 'sine', gain: 0.02, attack: 0.2, out: room });
+  },
+  'co-eye-open': t => {
+    const room = darkBus({ reverb: 0.5 });
+    tone({ t, freq: 200, to: 1600, dur: 0.3, type: 'triangle', gain: 0.05, attack: 0.01, out: room });
+    bell({ t: t + 0.28, freq: midi(91), dur: 0.8, gain: 0.04, out: room });
+  },
+  'co-restrict': t => {
+    const room = darkBus({ reverb: 0.5 });
+    eyeHum(t, 1, 0.05, room);
+    for (let i = 0; i < 5; i++) tone({ t: t + i * 0.09, freq: midi(74 - i * 3), dur: 0.12, type: 'square', gain: 0.02, filter: 2000, attack: 0.004, out: room });
+    boom(t + 0.45, 0.35, room);
+  },
+  'co-tick': t => {
+    const room = darkBus({ reverb: 0.4 });
+    [0, 0.5].forEach(o => tone({ t: t + o, freq: o ? 1000 : 1400, dur: 0.05, type: 'square', gain: 0.03, filter: 3000, attack: 0.001, out: room }));
+    bell({ t: t + 0.9, freq: midi(57), dur: 1.4, gain: 0.05, out: room });
+  },
+  'co-seal': t => {
+    const room = darkBus({ reverb: 0.6 });
+    ceWhoosh(t, 0.6, 0.06, 3000, 300, room);
+    cardFlip(t + 0.55, 0.12);
+    bell({ t: t + 0.6, freq: midi(45), dur: 2, gain: 0.08, out: room });
+    pegasusLaugh(t + 1, room);
+  },
+  'co-fate': t => {
+    cardFlip(t, 0.1);
+    cardFlip(t + 0.12, 0.08, 2200);
+    bell({ t: t + 0.25, freq: midi(81), dur: 0.9, gain: 0.035, out: darkBus({ reverb: 0.4 }) });
+  },
+  'co-signal': t => {
+    tone({ t, freq: 1320, dur: 0.07, type: 'sine', gain: 0.05, attack: 0.003 });
+    tone({ t: t + 0.09, freq: 1760, dur: 0.1, type: 'sine', gain: 0.05, attack: 0.003 });
+  },
+  'co-caught': t => {
+    tone({ t, freq: 140, dur: 0.45, type: 'sawtooth', gain: 0.07, filter: 1200, attack: 0.005 });
+    tone({ t, freq: 147, dur: 0.45, type: 'square', gain: 0.04, filter: 1000, attack: 0.005 });
+  },
+  'co-stage': t => {
+    const room = darkBus({ reverb: 0.7 });
+    laserCharge({ t, dur: 0.8, from: 80, to: 1800, gain: 0.04, out: room });
+    boom(t + 0.8, 0.9, room);
+    brass({ t: t + 0.8, notes: [50, 57, 62], dur: 1.1, gain: 0.05 });
+    pegasusLaugh(t + 1.3, room);
+  },
+  'co-victory': t => {
+    const room = darkBus({ reverb: 0.55 });
+    noise({ t, dur: 0.5, gain: 0.1, type: 'highpass', freq: 2500, to: 600, attack: 0.002, out: room });
+    boom(t, 0.8, room);
+    const f = t + 0.5;
+    brass({ t: f, notes: [60, 64, 67], dur: 0.18, gain: 0.05 });
+    brass({ t: f + 0.2, notes: [60, 64, 67], dur: 0.18, gain: 0.05 });
+    brass({ t: f + 0.4, notes: [65, 69, 72], dur: 0.3, gain: 0.055 });
+    brass({ t: f + 0.75, notes: [72, 76, 79, 84], dur: 1.6, gain: 0.06 });
+    healSparkles(f + 0.8, 1.4, 14, room);
+  },
+  'co-defeat': t => {
+    const room = darkBus({ reverb: 0.7 });
+    [64, 61, 58, 52].forEach((n, i) => tone({ t: t + i * 0.4, freq: midi(n), dur: 0.6, type: 'sawtooth', gain: 0.04, filter: 1200, attack: 0.03, out: room }));
+    bell({ t: t + 1.7, freq: midi(40), dur: 2.5, gain: 0.08, out: room });
+    pegasusLaugh(t + 2, room);
+  }
+};
+
 // ---------------------------------------------------------------------------
 // Theme kits
 // ---------------------------------------------------------------------------
@@ -2100,7 +2271,8 @@ const SOUND_KITS = {
     ...HEADER_EGG_SOUNDS,
     ...SIZE_EGG_SOUNDS,
     ...FINALE_SOUNDS,
-    ...TOURNAMENT_SOUNDS
+    ...TOURNAMENT_SOUNDS,
+    ...COOP_SOUNDS
   },
   light: {
     tap: t => tone({ t, freq: 700, dur: 0.02, type: 'triangle', gain: 0.03 }),
@@ -2170,7 +2342,8 @@ const SOUND_KITS = {
     ...HEADER_EGG_SOUNDS,
     ...SIZE_EGG_SOUNDS,
     ...FINALE_SOUNDS,
-    ...TOURNAMENT_SOUNDS
+    ...TOURNAMENT_SOUNDS,
+    ...COOP_SOUNDS
   },
 
   poc: {
@@ -2294,7 +2467,8 @@ const SOUND_KITS = {
     ...HEADER_EGG_SOUNDS,
     ...SIZE_EGG_SOUNDS,
     ...FINALE_SOUNDS,
-    ...TOURNAMENT_SOUNDS
+    ...TOURNAMENT_SOUNDS,
+    ...COOP_SOUNDS
   }
 };
 

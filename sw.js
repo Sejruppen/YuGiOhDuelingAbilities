@@ -1,4 +1,4 @@
-const CACHE_NAME = 'ygo-skills-mvp-v77';
+const CACHE_NAME = 'ygo-skills-mvp-v79';
 const ASSETS = [
   './',
   './index.html',
@@ -12,11 +12,15 @@ const ASSETS = [
   './src/config/ability-types.js',
   './src/state/store.js',
   './src/state/tournament-store.js',
+  './src/config/coop-pegasus.js',
+  './src/state/coop-store.js',
   './src/utils/format.js',
   './src/actions/navigation-actions.js',
   './src/actions/duel-actions.js',
   './src/actions/life-point-actions.js',
   './src/actions/tournament-actions.js',
+  './src/actions/coop-actions.js',
+  './src/actions/settings-actions.js',
   './src/components/modal.js',
   './src/components/ability-picker.js',
   './src/components/duel-card.js',
@@ -29,6 +33,8 @@ const ASSETS = [
   './src/views/abilities-view.js',
   './src/views/duel-view.js',
   './src/views/tournament-view.js',
+  './src/views/coop-view.js',
+  './src/views/settings-view.js',
   './src/effects/sounds.js',
   './src/effects/effects.js',
   './src/effects/logo-easter-egg.js',
@@ -61,6 +67,7 @@ const ASSETS = [
   './src/effects/egg-tracker.js',
   './src/effects/pharaoh-finale.js',
   './src/effects/tournament-effects.js',
+  './src/effects/coop-effects.js',
   './src/service-worker-registration.js',
   './app.js',
   './manifest.json',

@@ -6,8 +6,10 @@ const tnEsc = text => String(text ?? '').replace(/[&<>"']/g, ch => ({ '&': '&amp
 function renderTournamentButton() {
   const running = tournament.phase === 'bracket' && !getTournamentChampion();
   return `
-    <button onclick="goToTournament()" class="tn-start-btn w-full max-w-xs mt-3 py-3 rounded-xl border border-amber-500/50 bg-slate-900/80 hover:bg-slate-800 text-amber-400 font-bold text-base transition">
-      🏆 ${running ? 'Continue Tournament' : 'Tournament'}
+    <button onclick="goToTournament()" class="tn-start-btn w-full py-2.5 px-2 rounded-xl border border-amber-500/50 bg-slate-900/80 hover:bg-slate-800 text-amber-400 font-bold text-sm leading-tight transition flex flex-col items-center gap-0.5">
+      <span class="text-xl leading-none">🏆</span>
+      <span>Tournament</span>
+      ${running ? '<span class="text-[0.65rem] font-semibold opacity-80">▶ Continue</span>' : ''}
     </button>
   `;
 }
