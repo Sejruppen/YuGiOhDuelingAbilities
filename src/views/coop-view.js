@@ -115,7 +115,7 @@ function renderCoopSetup() {
       </ul>
     </div>
     <footer class="p-4 border-t border-slate-800 bg-slate-900/80">
-      <button onclick="startCoopBattle()" class="w-full py-4 rounded-xl bg-amber-500 hover:bg-amber-400 active:scale-98 text-slate-950 font-bold text-lg shadow-lg shadow-amber-500/20 transition">👁️ Face Pegasus</button>
+      <button onclick="if (startEggAllowsClick()) startCoopBattle()" onpointerdown="startStartEggPress(this, 'relinquished')" onpointerup="cancelStartEggPress(this)" onpointerleave="cancelStartEggPress(this)" onpointercancel="cancelStartEggPress(this)" oncontextmenu="return false" class="cegg-press w-full py-4 rounded-xl bg-amber-500 hover:bg-amber-400 active:scale-98 text-slate-950 font-bold text-lg shadow-lg shadow-amber-500/20 transition">👁️ Face Pegasus</button>
     </footer>
   `;
 }

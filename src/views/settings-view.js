@@ -1,10 +1,11 @@
 // Settings screen: theme, size, sound and the secrets counter (moved off the
-// start screen so it fits on a phone without scrolling).
+// start screen so it fits on a phone without scrolling). Holding the button
+// for 2s plays the Limiter Removal egg (start-button-eggs.js).
 function renderSettingsButton() {
   const done = allEggsFound();
   return `
-    <button onclick="goToSettings()" class="settings-start-btn w-full max-w-xs mt-3 py-2.5 px-4 rounded-xl bg-slate-900/80 border border-slate-800 hover:bg-slate-800 text-slate-200 text-sm font-bold transition flex items-center justify-between gap-2">
-      <span><span class="ce-emoji">⚙️</span> Settings</span>
+    <button onclick="if (startEggAllowsClick()) goToSettings()" onpointerdown="startStartEggPress(this, 'limiter-removal')" onpointerup="cancelStartEggPress(this)" onpointerleave="cancelStartEggPress(this)" onpointercancel="cancelStartEggPress(this)" oncontextmenu="return false" class="settings-start-btn cegg-press w-full max-w-xs mt-3 py-2.5 px-4 rounded-xl bg-slate-900/80 border border-slate-800 hover:bg-slate-800 text-slate-200 text-sm font-bold transition flex items-center justify-between gap-2">
+      <span><span class="ce-emoji settings-gear">⚙️</span> Settings</span>
       <span class="text-xs font-semibold text-slate-400"><span class="ce-emoji">${done ? '👑' : '🥚'}</span> ${getFoundEggCount()} / ${EGG_TOTAL}</span>
     </button>
   `;

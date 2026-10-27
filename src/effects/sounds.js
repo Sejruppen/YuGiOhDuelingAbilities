@@ -2573,6 +2573,74 @@ const COOP_SOUNDS = {
   }
 };
 
+// ---------------------------------------------------------------------------
+// Hold-the-button eggs: Settings (Limiter Removal) and co-op "Face Pegasus"
+// (Relinquished). Shared by all themes, 6s each, matching effects.css.
+// ---------------------------------------------------------------------------
+
+function robotClank(t, out) {
+  tone({ t, freq: rnd(150, 210), to: 110, dur: 0.06, type: 'square', gain: 0.03, filter: 1500, attack: 0.002, out });
+  noise({ t, dur: 0.03, gain: 0.03, type: 'highpass', freq: 3500, attack: 0.001, out });
+}
+
+const SETTINGS_EGG_SOUNDS = {
+  // Rev-up whine + slam (0s), clanking footsteps (0.2-1.4s), a power-up
+  // "ATK ×2" (1.5s), alarms, a rising whine and hiss (2.1-3.6s), five pops
+  // (3.6s, 90ms apart), a long steam hiss and a sad robot power-down.
+  'egg-limiter-removal': t => {
+    const room = darkBus({ reverb: 0.3 });
+    tone({ t, freq: 120, to: 900, dur: 0.6, type: 'sawtooth', gain: 0.05, filter: [600, 4000], attack: 0.02, out: room });
+    boom(t + 0.12, 0.6, room);
+    for (let o = 0.2; o < 1.4; o += 0.09) robotClank(t + o + rnd(0, 0.03), room);
+
+    tone({ t: t + 1.5, freq: 220, to: 660, dur: 0.35, type: 'square', gain: 0.04, filter: 3000, out: room });
+    tone({ t: t + 1.5, freq: 330, to: 990, dur: 0.35, type: 'sawtooth', gain: 0.03, filter: 3000, out: room });
+    bell({ t: t + 1.75, freq: midi(84), dur: 0.8, gain: 0.05, out: room });
+
+    tone({ t: t + 2.1, freq: 500, to: 2600, dur: 1.5, type: 'sine', gain: 0.035, attack: 0.3, out: room });
+    noise({ t: t + 2.1, dur: 1.5, gain: 0.05, type: 'highpass', freq: 3000, to: 6000, attack: 0.8, out: room });
+    for (let i = 0; i < 10; i++) {
+      tone({ t: t + 2.25 + i * 0.13, freq: i % 2 ? 660 : 880, dur: 0.1, type: 'square', gain: 0.02 + i * 0.002, filter: 3500, attack: 0.003, out: room });
+    }
+
+    for (let i = 0; i < 5; i++) {
+      const at = t + 3.6 + i * 0.09;
+      boom(at, 0.35, room);
+      noise({ t: at, dur: 0.15, gain: 0.08, type: 'highpass', freq: 1800, attack: 0.001, out: room });
+      ceClang(at + 0.05, 0.025, room);
+    }
+    noise({ t: t + 3.9, dur: 1.6, gain: 0.05, type: 'highpass', freq: 4000, to: 1500, attack: 0.05, out: room });
+
+    tone({ t: t + 4.5, freq: 520, to: 55, dur: 1, type: 'sawtooth', gain: 0.04, filter: [1600, 250], attack: 0.02, out: room });
+    tone({ t: t + 5.2, freq: midi(76), dur: 0.12, type: 'square', gain: 0.025, filter: 2500, out: room });
+    tone({ t: t + 5.36, freq: midi(69), to: midi(64), dur: 0.35, type: 'square', gain: 0.025, filter: 2000, out: room });
+  },
+  // Co-op "Face Pegasus" hold (6s): a dark rumble as Relinquished rises
+  // (0-1.3s), an eerie choir as the Eye opens (1.5s), rubbery struggling
+  // (1.7-2.2s), a big slurp (2.2-2.8s), a gulp (2.9s), a smug giggle (3s),
+  // three hiccups (4.2s), "PTOO!" (4.6s), a gooey landing (5.1s) and a sink.
+  'egg-relinquished': t => {
+    const lair = darkBus({ reverb: 0.6 });
+    tone({ t, freq: 45, to: 70, dur: 1.4, type: 'sawtooth', gain: 0.05, filter: 260, attack: 0.3, out: lair });
+    noise({ t, dur: 1.3, gain: 0.06, type: 'lowpass', freq: 200, to: 700, attack: 0.4, out: lair });
+    tone({ t: t + 0.3, freq: 110, to: 330, dur: 1, type: 'sawtooth', gain: 0.025, filter: [400, 1800], q: 4, attack: 0.2, out: lair });
+    choir({ t: t + 1.5, notes: [50, 53, 56, 59], dur: 1.6, gain: 0.008, attack: 0.3, out: lair });
+    bell({ t: t + 1.6, freq: midi(62), dur: 1.6, gain: 0.05, out: lair });
+    [1.75, 1.92, 2.08].forEach((o, i) => rubberSqueak(t + o, 900 + i * 120, 0.03, lair));
+    noise({ t: t + 2.2, dur: 0.65, gain: 0.08, freq: 3500, to: 250, q: 2, attack: 0.15, out: lair });
+    tone({ t: t + 2.2, freq: 1400, to: 90, dur: 0.65, type: 'triangle', gain: 0.04, attack: 0.1, out: lair });
+    tone({ t: t + 2.9, freq: 260, to: 80, dur: 0.22, gain: 0.12, attack: 0.005, out: lair });
+    ceGiggle(t + 3.05, 520, 5, lair);
+    [4.2, 4.36, 4.52].forEach(o => tone({ t: t + o, freq: 380, to: 760, dur: 0.07, type: 'triangle', gain: 0.06, attack: 0.003, out: lair }));
+    noise({ t: t + 4.62, dur: 0.12, gain: 0.12, type: 'bandpass', freq: 1800, q: 1.5, attack: 0.002, out: lair });
+    tone({ t: t + 4.62, freq: 180, to: 900, dur: 0.14, type: 'square', gain: 0.04, filter: 2500, attack: 0.002, out: lair });
+    ceWhoosh(t + 4.66, 0.4, 0.05, 2500, 600, lair);
+    ceSplat(t + 5.1, 0.09, lair);
+    ceWhoosh(t + 5.3, 0.6, 0.04, 900, 150, lair);
+    tone({ t: t + 5.3, freq: 90, to: 40, dur: 0.7, type: 'sawtooth', gain: 0.03, filter: 300, attack: 0.05, out: lair });
+  }
+};
+
 // Chalk on a blackboard: short, squeaky, resonant scratches.
 // A cartoon cow: a short rising "mm" into a long buzzy falling "ooo".
 function cowMoo(t, out) {
@@ -2722,7 +2790,8 @@ const SOUND_KITS = {
     ...SIZE_EGG_SOUNDS,
     ...FINALE_SOUNDS,
     ...TOURNAMENT_SOUNDS,
-    ...COOP_SOUNDS
+    ...COOP_SOUNDS,
+    ...SETTINGS_EGG_SOUNDS
   },
   light: {
     tap: t => tone({ t, freq: 700, dur: 0.02, type: 'triangle', gain: 0.03 }),
@@ -2793,7 +2862,8 @@ const SOUND_KITS = {
     ...SIZE_EGG_SOUNDS,
     ...FINALE_SOUNDS,
     ...TOURNAMENT_SOUNDS,
-    ...COOP_SOUNDS
+    ...COOP_SOUNDS,
+    ...SETTINGS_EGG_SOUNDS
   },
 
   poc: {
@@ -2918,7 +2988,8 @@ const SOUND_KITS = {
     ...SIZE_EGG_SOUNDS,
     ...FINALE_SOUNDS,
     ...TOURNAMENT_SOUNDS,
-    ...COOP_SOUNDS
+    ...COOP_SOUNDS,
+    ...SETTINGS_EGG_SOUNDS
   }
 };
 

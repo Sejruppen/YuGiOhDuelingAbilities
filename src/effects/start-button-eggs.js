@@ -5,6 +5,10 @@
 //    cracks, Pegasus's video message plays, then star chips rain down.
 //  - Co-op Boss: the Friendship Sign. Four hands stack up, a marker draws Téa's
 //    smiley across all of them, and it glows.
+//  - Settings: Limiter Removal. The gear revs up while held, then a squad of
+//    robots marches in, doubles its ATK, overheats and blows up.
+//  - Co-op "Face Pegasus": Relinquished rises, absorbs the button into the
+//    Millennium Eye on its chest, gets the hiccups and spits it back out.
 const START_EGG_PRESS_MS = 2000;
 const INVITE_EGG_MS = 6000;
 const FRIENDSHIP_EGG_MS = 5500;
@@ -25,6 +29,8 @@ function startStartEggPress(el, kind) {
     else if (kind === 'true-name') playTrueNameEgg();
     else if (kind === 'time-to-duel') playTimeToDuelEgg();
     else if (kind === 'duel-school') playDuelSchoolEgg();
+    else if (kind === 'limiter-removal') playLimiterRemovalEgg(el);
+    else if (kind === 'relinquished') playRelinquishedEgg(el);
     else playInvitationEgg();
   }, START_EGG_PRESS_MS);
 }
@@ -270,4 +276,296 @@ function playDuelSchoolEgg() {
     </div>
     <div class="cegg-toast">Class dismissed.<small>Lesson 3 is postponed indefinitely.</small></div>`);
   if (overlay) playSound({ name: 'egg-duel-school' });
+}
+
+// --- Settings: Limiter Removal ---------------------------------------------------
+// Holding the button revs the ⚙️ faster and faster (.cegg-charging, CSS). Then
+// "LIMITER REMOVAL!" slams in, five little robots march on and flex (ATK ×2),
+// glow red-hot, shake, steam and blow up one by one into smoking scrap, while
+// a copy of the gear over the button overheats with them and slowly cools
+// down. Timings are in the LIMITER REMOVAL section of effects.css.
+const LIMITER_EGG_MS = 6000;
+const LIMITER_ROBOT_X = [12, 31, 50, 69, 88];
+
+const LR_ROBOT_SVG = `
+  <svg viewBox="0 0 60 80" aria-hidden="true">
+    <path d="M30 14 V6" stroke="#64748b" stroke-width="2.5" stroke-linecap="round"/>
+    <circle class="lr-bulb" cx="30" cy="5" r="3.5"/>
+    <rect class="lr-shell" x="2" y="42" width="8" height="18" rx="3"/>
+    <rect class="lr-shell" x="50" y="42" width="8" height="18" rx="3"/>
+    <rect x="16" y="64" width="10" height="14" rx="2" fill="#475569"/>
+    <rect x="34" y="64" width="10" height="14" rx="2" fill="#475569"/>
+    <rect x="26" y="35" width="8" height="6" fill="#475569"/>
+    <rect class="lr-shell" x="10" y="40" width="40" height="26" rx="4" stroke="#334155" stroke-width="1.5"/>
+    <rect x="18" y="45" width="24" height="15" rx="2" fill="#1e293b"/>
+    <rect class="lr-meter" x="21" y="48" width="18" height="9" rx="1.5"/>
+    <rect class="lr-shell" x="13" y="13" width="34" height="23" rx="5" stroke="#334155" stroke-width="1.5"/>
+    <circle class="lr-eye" cx="23" cy="24" r="3.6"/>
+    <circle class="lr-eye" cx="37" cy="24" r="3.6"/>
+    <path d="M22 31 H38" stroke="#334155" stroke-width="2" stroke-dasharray="2 2"/>
+  </svg>`;
+
+function playLimiterRemovalEgg(button) {
+  markEggFound('limiter-removal');
+  const gearEl = button?.querySelector('.settings-gear');
+  const gear = getCenter(gearEl);
+  const gearSize = gearEl ? parseFloat(getComputedStyle(gearEl).fontSize) : 16;
+  const robots = LIMITER_ROBOT_X.map((x, i) => `
+    <div class="ce-at lr-robot" style="left: ${x}%; --i: ${i}; --from: ${x < 50 ? -70 : 70}vw;">
+      <div class="lr-body"><div class="lr-shake">${LR_ROBOT_SVG}</div></div>
+      ${ceRange(3, k => `<span class="lr-steam" style="--k: ${k}; --sx: ${ceRand(-14, 14).toFixed(0)}px;"></span>`)}
+      <span class="lr-pop ce-emoji">💥</span>
+    </div>`).join('');
+  const overlay = spawnStartEgg('limiter', LIMITER_EGG_MS, `
+    <div class="sbe-dim sbe-dim--limiter"></div>
+    <div class="ce-at lr-title">LIMITER REMOVAL!</div>
+    <div class="ce-at lr-atk">ATK ×2</div>
+    <div class="ce-at lr-warn">⚠ OVERHEATING ⚠</div>
+    ${robots}
+    <div class="lr-flash"></div>
+    <div class="ce-at lr-gear" style="left: ${gear.x.toFixed(0)}px; top: ${gear.y.toFixed(0)}px; font-size: ${gearSize}px;">
+      <span class="ce-emoji lr-gear-icon">⚙️</span>
+      ${ceRange(3, k => `<span class="lr-steam lr-steam--gear" style="--k: ${k}; --sx: ${ceRand(-10, 10).toFixed(0)}px;"></span>`)}
+    </div>
+    <div class="cegg-toast">Limiter Removal: ATK doubled!<small>…and every Machine is destroyed in the End Phase. Read the card text.</small></div>`);
+  if (overlay) playSound({ name: 'egg-limiter-removal' });
+}
+
+// --- Co-op "Face Pegasus": Relinquished -------------------------------------------
+// A purple pool opens and Relinquished rises out of it. It's traced after the
+// anime artwork in its own 1280×1760 space: two bone-framed lattice wings
+// on teal stalks, teal armour wrapped in bone ribs, the Millennium symbol on
+// its head, the Millennium Eye on its right shoulder, two clawed arms with
+// green orbs, the bone mouth-ring on its belly with drills on both sides,
+// and the cap and striped drill underneath. Its eye opens, a copy of the
+// button wriggles and gets sucked into the mouth-ring (the real one is hidden
+// meanwhile), it gulps: "Your button now belongs to me~ ♪", gets the hiccups,
+// spits the button back where it was (a bit gooey) and sinks away. Timings
+// are in the RELINQUISHED section of effects.css. The monster is centred at
+// RELINQUISHED_TOP of the screen height and --rq-w wide; the mouth sits at
+// RELINQUISHED_MOUTH (fractions of the artwork).
+const RELINQUISHED_EGG_MS = 6000;
+const RELINQUISHED_TOP = 0.42;
+const RELINQUISHED_MOUTH = { x: 600 / 1280, y: 1135 / 1760 };
+const RELINQUISHED_ASPECT = 1760 / 1280;
+
+const RQ_INK = '#0d1416';
+const RQ_BONE = '#c6c9b3';
+const RQ_TEAL = '#2c5559';
+const RQ_TEAL_DARK = '#1b3639';
+const RQ_SHINE = '#8fb9bb';
+
+// A bone rib with an ink outline.
+const rqBone = (d, w = 20) => `
+  <path d="${d}" fill="none" stroke="${RQ_INK}" stroke-width="${w + 9}"/>
+  <path d="${d}" fill="none" stroke="${RQ_BONE}" stroke-width="${w}"/>`;
+
+// "Lightning" sheen marks on the shiny teal armour.
+const rqShine = d => `<path d="${d}" fill="none" stroke="${RQ_SHINE}" stroke-width="4"/>`;
+
+// A green orb in a bone setting, on the forearms.
+const rqOrb = (x, y) => `
+  <circle cx="${x}" cy="${y}" r="31" fill="${RQ_BONE}"/>
+  <circle cx="${x}" cy="${y}" r="21" fill="#3c7a2b"/>
+  <circle cx="${x - 7}" cy="${y - 7}" r="7" fill="#9ccc65" stroke="none"/>`;
+
+// One dark, curved claw blade with a pale edge highlight.
+const rqClaw = (d, edge) => `
+  <path d="${d}" fill="#22312f"/>
+  <path d="${edge}" fill="none" stroke="#8ea4a7" stroke-width="4"/>`;
+
+// Short lines radiating from (cx, cy) between radius r1 and r2.
+const rqRays = (cx, cy, n, r1, r2) => Array.from({ length: n }, (_, i) => {
+  const a = (i / n) * Math.PI * 2;
+  const c = Math.cos(a), s = Math.sin(a);
+  return `M${(cx + c * r1).toFixed(1)} ${(cy + s * r1).toFixed(1)} L${(cx + c * r2).toFixed(1)} ${(cy + s * r2).toFixed(1)}`;
+}).join(' ');
+
+const RQ_WING_L_OUT = 'M335 605 C290 590 255 545 245 480 C232 400 214 330 208 250 C203 180 222 110 262 70 C295 42 345 40 385 62 C425 88 445 140 470 195 C505 270 545 350 575 430 C596 490 600 545 570 585 C535 615 470 625 420 620 C390 617 360 612 335 605 Z';
+const RQ_WING_L_IN = 'M345 575 C300 560 280 520 272 470 C260 395 244 325 240 255 C236 190 252 130 285 100 C315 76 352 78 380 98 C410 122 428 170 450 220 C482 290 520 365 545 435 C562 485 562 525 540 552 C510 578 455 588 410 585 C385 583 365 580 345 575 Z';
+const RQ_WING_R_OUT = 'M745 625 C705 600 690 545 705 480 C722 415 770 365 830 325 C900 280 975 245 1050 205 C1120 168 1180 135 1225 130 C1255 130 1262 165 1245 200 C1220 250 1170 290 1120 340 C1065 395 1010 455 950 515 C895 568 845 610 800 625 C780 632 760 632 745 625 Z';
+const RQ_WING_R_IN = 'M760 590 C730 570 722 530 735 485 C752 430 795 390 850 355 C915 315 985 280 1055 242 C1120 208 1175 180 1210 172 C1228 172 1228 195 1212 218 C1185 255 1140 295 1095 340 C1045 392 990 450 935 505 C885 553 840 585 805 595 C788 600 772 598 760 590 Z';
+
+const RELINQUISHED_SVG = `
+  <svg viewBox="0 0 1280 1760" aria-hidden="true">
+    <defs>
+      <radialGradient id="rq-portal-grad">
+        <stop offset="0" stop-color="#f0abfc" stop-opacity="0.95"/>
+        <stop offset="0.5" stop-color="#a21caf" stop-opacity="0.6"/>
+        <stop offset="1" stop-color="#4c1d95" stop-opacity="0"/>
+      </radialGradient>
+      <clipPath id="rq-clip-wl"><path d="${RQ_WING_L_IN}"/></clipPath>
+      <clipPath id="rq-clip-wr"><path d="${RQ_WING_R_IN}"/></clipPath>
+      <clipPath id="rq-clip-dl"><path d="M447 1096 L372 1140 L447 1154 Z"/></clipPath>
+      <clipPath id="rq-clip-dr"><path d="M795 1120 L940 1158 L795 1180 Z"/></clipPath>
+      <clipPath id="rq-clip-dd"><path d="M548 1345 L655 1345 L602 1655 Z"/></clipPath>
+    </defs>
+    <g stroke="${RQ_INK}" stroke-width="5" stroke-linejoin="round" stroke-linecap="round">
+
+      <g class="rq-wing rq-wing--l">
+        <path d="M428 598 C422 640 440 670 470 670 C492 662 494 630 484 603 Z" fill="${RQ_TEAL}"/>
+        <ellipse cx="456" cy="632" rx="11" ry="17" fill="${RQ_TEAL_DARK}"/>
+        <path d="${RQ_WING_L_OUT}" fill="${RQ_BONE}"/>
+        <path d="${RQ_WING_L_IN}" fill="#2f373b"/>
+        <g clip-path="url(#rq-clip-wl)">
+          ${rqBone('M440 590 C415 470 380 330 330 92', 22)}
+          ${rqBone('M248 175 Q330 186 408 160')}
+          ${rqBone('M250 270 Q340 266 448 236')}
+          ${rqBone('M260 376 Q350 360 494 330')}
+          ${rqBone('M272 470 Q370 456 545 432')}
+          ${rqBone('M300 548 Q380 532 455 548')}
+          ${rqBone('M300 270 L292 330', 14)}
+          ${rqBone('M470 340 L500 420', 14)}
+          ${rqBone('M310 470 L330 540', 14)}
+        </g>
+      </g>
+      <g class="rq-wing rq-wing--r">
+        <path d="M768 606 C756 650 770 682 800 682 C822 672 820 640 806 610 Z" fill="${RQ_TEAL}"/>
+        <ellipse cx="790" cy="640" rx="11" ry="17" fill="${RQ_TEAL_DARK}"/>
+        <path d="${RQ_WING_R_OUT}" fill="${RQ_BONE}"/>
+        <path d="${RQ_WING_R_IN}" fill="#2f373b"/>
+        <g clip-path="url(#rq-clip-wr)">
+          ${rqBone('M768 598 C870 470 1000 340 1218 184', 22)}
+          ${rqBone('M770 466 L866 574')}
+          ${rqBone('M852 386 L948 494')}
+          ${rqBone('M932 316 L1028 424')}
+          ${rqBone('M1012 246 L1108 354')}
+          ${rqBone('M1098 188 L1172 272')}
+          ${rqBone('M900 520 L960 470', 14)}
+          ${rqBone('M1050 300 L1110 260', 14)}
+        </g>
+      </g>
+
+      <path d="M88 668 C130 640 190 632 250 640 C330 650 410 680 455 720 C490 760 480 820 440 860 C380 900 300 905 230 885 C165 865 125 815 110 760 C102 725 95 695 88 668 Z" fill="${RQ_TEAL}"/>
+      ${rqBone('M95 670 C170 650 250 650 330 680 C380 700 420 720 450 735', 18)}
+      ${rqBone('M235 650 C255 720 255 800 240 880', 18)}
+      ${rqBone('M330 682 C350 750 345 820 320 895', 18)}
+      ${rqBone('M115 770 C180 790 260 795 350 790', 18)}
+      ${rqShine('M150 712 l24 -8 l-8 14 l24 -10')}
+      ${rqShine('M280 740 l22 -6 l-6 12 l22 -8')}
+
+      <path d="M835 720 C900 690 990 690 1060 710 C1095 720 1110 735 1110 748 C1080 752 1060 775 1050 810 C1040 860 990 890 930 890 C880 885 845 850 835 800 Z" fill="${RQ_TEAL}"/>
+      ${rqBone('M850 712 C930 700 1010 705 1092 736', 18)}
+      ${rqBone('M985 702 C1000 760 995 830 975 890', 18)}
+      ${rqBone('M845 800 C900 810 980 810 1048 800', 18)}
+      ${rqShine('M1020 730 l20 -6 l-6 12 l20 -8')}
+
+      <path d="M78 885 C150 905 230 930 290 980 C350 1040 375 1150 390 1260 C400 1330 405 1380 400 1410 L240 1415 C215 1350 190 1270 165 1180 C135 1070 105 975 78 885 Z" fill="${RQ_TEAL}"/>
+      ${rqBone('M80 888 C104 905 118 928 126 960', 16)}
+      ${rqBone('M110 990 C170 985 240 990 320 1012', 16)}
+      ${rqBone('M150 1140 C210 1135 290 1140 362 1150', 16)}
+      ${rqBone('M190 1290 C260 1290 330 1290 394 1300', 16)}
+      ${rqBone('M232 1402 L400 1398', 16)}
+      ${rqBone('M250 990 C262 1100 272 1220 290 1400', 16)}
+      ${rqOrb(262, 1120)}
+      ${rqOrb(285, 1255)}
+      ${rqShine('M180 1050 l20 -6 l-6 12 l20 -8')}
+      ${rqClaw('M245 1405 C235 1460 255 1500 300 1530 C285 1490 280 1450 290 1412 Z', 'M262 1430 C262 1470 275 1495 295 1515')}
+      ${rqClaw('M290 1410 C290 1465 315 1505 360 1530 C340 1490 335 1450 335 1410 Z', 'M306 1428 C308 1470 325 1500 352 1520')}
+      ${rqClaw('M335 1408 C345 1460 375 1495 420 1515 C395 1480 385 1445 382 1405 Z', 'M350 1424 C358 1462 380 1490 410 1506')}
+      ${rqClaw('M375 1330 C430 1330 465 1370 475 1430 C450 1395 420 1380 385 1378 Z', 'M395 1342 C430 1348 455 1375 466 1412')}
+
+      <path d="M1125 880 C1160 1000 1165 1130 1145 1250 C1130 1330 1110 1390 1095 1425 L940 1420 C960 1330 975 1230 975 1130 C975 1040 955 970 925 915 C990 890 1060 878 1125 880 Z" fill="${RQ_TEAL}"/>
+      ${rqBone('M1124 882 C1110 902 1100 922 1098 948', 16)}
+      ${rqBone('M945 980 C1010 970 1080 965 1150 975', 16)}
+      ${rqBone('M970 1150 C1030 1140 1100 1135 1160 1140', 16)}
+      ${rqBone('M970 1300 C1030 1295 1100 1295 1140 1300', 16)}
+      ${rqBone('M1060 900 C1062 1050 1065 1200 1060 1420', 16)}
+      ${rqOrb(1060, 1105)}
+      ${rqOrb(1065, 1305)}
+      ${rqShine('M1110 1020 l18 -6 l-6 12 l18 -8')}
+      ${rqClaw('M995 1335 C940 1340 910 1380 905 1440 C925 1400 955 1385 995 1380 Z', 'M985 1348 C950 1355 925 1385 915 1420')}
+      ${rqClaw('M995 1420 C985 1480 1000 1525 1030 1555 C1025 1505 1030 1465 1040 1422 Z', 'M1010 1436 C1004 1480 1012 1515 1028 1540')}
+      ${rqClaw('M1040 1422 C1040 1480 1055 1525 1085 1560 C1080 1505 1080 1465 1085 1420 Z', 'M1056 1436 C1056 1480 1066 1515 1080 1545')}
+      ${rqClaw('M1085 1418 C1095 1470 1110 1505 1135 1530 C1125 1485 1125 1450 1125 1415 Z', 'M1100 1432 C1106 1470 1116 1495 1130 1516')}
+
+      <ellipse cx="420" cy="1062" rx="46" ry="30" fill="${RQ_TEAL}"/>
+      <ellipse cx="790" cy="1062" rx="42" ry="28" fill="${RQ_TEAL}"/>
+
+      <path d="M440 700 C510 650 600 640 680 648 C760 655 830 690 850 750 C870 820 830 880 770 905 C690 935 590 930 520 900 C460 870 430 800 440 700 Z" fill="${RQ_TEAL}"/>
+      <ellipse cx="700" cy="705" rx="85" ry="60" fill="${RQ_TEAL}"/>
+      ${rqBone('M620 702 C660 662 740 657 785 692', 14)}
+      ${rqBone('M640 742 C680 727 740 730 775 747', 14)}
+      ${rqShine('M610 690 l18 -6 l-6 12 l18 -8')}
+      <path d="M700 622 C722 635 732 660 728 685 C722 705 710 712 700 712 C690 712 678 705 672 685 C668 660 678 635 700 622 Z" fill="${RQ_BONE}"/>
+      <path d="M700 634 C714 643 720 662 717 683 C712 698 706 702 700 702 C694 702 688 698 683 683 C680 662 686 643 700 634 Z" fill="#1d2a2c" stroke="none"/>
+      <g fill="${RQ_BONE}" stroke="${RQ_BONE}" stroke-width="3">
+        <circle cx="700" cy="650" r="6"/>
+        <path d="M688 668 Q700 659 712 668 Q700 676 688 668 Z" stroke="none"/>
+        <path d="M700 675 L700 698 M694 682 L689 698 M706 682 L711 698" fill="none"/>
+      </g>
+
+      ${rqBone('M470 672 C500 702 520 732 545 762 C565 792 565 822 548 852', 38)}
+      <path d="M525 790 C590 755 680 760 735 800 C775 835 760 900 720 945 C680 990 610 1000 560 970 C515 940 495 870 525 790 Z" fill="${RQ_BONE}"/>
+      <ellipse cx="548" cy="865" rx="20" ry="38" fill="${RQ_TEAL_DARK}"/>
+      <ellipse cx="700" cy="872" rx="24" ry="32" fill="${RQ_TEAL_DARK}"/>
+      <ellipse cx="622" cy="945" rx="38" ry="20" fill="${RQ_TEAL_DARK}"/>
+      <ellipse cx="610" cy="815" rx="16" ry="14" fill="${RQ_TEAL_DARK}"/>
+      <path d="M685 812 L762 820 L762 854 L685 850 Z" fill="${RQ_BONE}"/>
+      <circle cx="660" cy="830" r="34" fill="${RQ_BONE}"/>
+      <rect x="645" y="815" width="30" height="30" rx="7" fill="${RQ_TEAL_DARK}"/>
+      <path d="M660 815 V845" stroke="${RQ_BONE}" stroke-width="5"/>
+
+      <circle cx="805" cy="845" r="72" fill="${RQ_TEAL}"/>
+      ${rqShine('M760 798 C780 783 810 778 836 786')}
+      <g class="rq-eye">
+        <path d="M740 845 C770 803 832 798 870 832 C842 872 784 882 740 845 Z" fill="#c8d991" stroke-width="4"/>
+        <path d="M748 830 C782 796 836 794 872 820" fill="none" stroke="#9fb860" stroke-width="6"/>
+        <path d="M752 860 C790 880 835 872 862 846" fill="none" stroke="#9fb860" stroke-width="5"/>
+        <circle cx="805" cy="840" r="26" fill="#b7cd6c" stroke-width="4"/>
+        <circle cx="805" cy="840" r="15" fill="#c8d991" stroke-width="6"/>
+        <circle cx="805" cy="840" r="6" fill="#aac25a" stroke="none"/>
+      </g>
+
+      <path d="M565 958 L642 958 L652 1042 L555 1042 Z" fill="${RQ_BONE}"/>
+      <path d="M447 1096 L372 1140 L447 1154 Z" fill="#8c7c56"/>
+      <path d="M432 1090 V1160 M412 1100 V1160 M392 1110 V1160" stroke="#3a3326" stroke-width="10" clip-path="url(#rq-clip-dl)"/>
+      <path d="M795 1120 L940 1158 L795 1180 Z" fill="#8c7c56"/>
+      <path d="M822 1110 V1190 M852 1110 V1190 M882 1110 V1190 M912 1110 V1190" stroke="#3a3326" stroke-width="12" clip-path="url(#rq-clip-dr)"/>
+      <path d="M440 1080 C470 1060 510 1070 520 1100 C525 1140 510 1170 480 1175 C450 1172 430 1150 430 1120 Z" fill="${RQ_BONE}"/>
+      <path d="M476 1066 C470 1100 470 1140 476 1174" fill="none" stroke-width="3"/>
+      <path d="M700 1085 C730 1070 780 1080 795 1110 C800 1145 785 1170 750 1175 C715 1172 700 1150 700 1120 Z" fill="${RQ_BONE}"/>
+      <path d="M750 1076 C746 1110 746 1140 752 1175" fill="none" stroke-width="3"/>
+
+      <circle cx="600" cy="1135" r="108" fill="${RQ_BONE}"/>
+      <path d="${rqRays(600, 1135, 22, 80, 108)}" fill="none" stroke-width="3"/>
+      <circle cx="600" cy="1135" r="80" fill="#d4d6c4" stroke-width="4"/>
+      <path d="${rqRays(600, 1135, 72, 20, 78)}" fill="none" stroke="#3b4446" stroke-width="1.6"/>
+      <circle cx="600" cy="1135" r="17" fill="#050505"/>
+      <circle class="rq-portal" cx="600" cy="1135" r="100" fill="url(#rq-portal-grad)" stroke="none"/>
+
+      <path d="M548 1345 L655 1345 L602 1655 Z" fill="#8c7c56"/>
+      <path d="M530 1380 Q600 1396 670 1380 M530 1440 Q600 1456 670 1440 M530 1500 Q600 1516 670 1500 M530 1560 Q600 1576 670 1560 M530 1620 Q600 1636 670 1620" fill="none" stroke="#3a3326" stroke-width="26" clip-path="url(#rq-clip-dd)"/>
+      <path d="M548 1345 L655 1345 L602 1655 Z" fill="none"/>
+      <path d="M455 1328 C530 1305 570 1270 590 1232 C596 1222 606 1222 612 1232 C632 1270 672 1305 748 1328 C700 1350 650 1356 600 1356 C550 1356 500 1350 455 1328 Z" fill="${RQ_BONE}"/>
+      <path d="M560 1300 L575 1312 M640 1300 L625 1312 M600 1262 V1290" fill="none" stroke-width="2.5"/>
+    </g>
+  </svg>`;
+
+function playRelinquishedEgg(button) {
+  markEggFound('relinquished');
+  if (!button) return;
+  const r = button.getBoundingClientRect();
+  const width = Math.min(320, window.innerWidth * 0.86, (window.innerHeight * 0.56) / RELINQUISHED_ASPECT);
+  const mouthX = window.innerWidth / 2 + (RELINQUISHED_MOUTH.x - 0.5) * width;
+  const mouthY = window.innerHeight * RELINQUISHED_TOP + (RELINQUISHED_MOUTH.y - 0.5) * width * RELINQUISHED_ASPECT;
+  const dx = mouthX - (r.left + r.width / 2);
+  const dy = mouthY - (r.top + r.height / 2);
+  const goo = ceRange(5, i => `<span class="rq-goo" style="left: ${(10 + i * 19 + ceRand(-4, 4)).toFixed(0)}%; --i: ${i}; --h: ${ceRand(8, 18).toFixed(0)}px;"></span>`);
+  const overlay = spawnStartEgg('relinquished', RELINQUISHED_EGG_MS, `
+    <div class="sbe-dim sbe-dim--relinquished"></div>
+    <div class="ce-at rq-pool"></div>
+    <div class="ce-at rq-monster">${RELINQUISHED_SVG}</div>
+    <div class="ce-at rq-swirl"></div>
+    <div class="ce-at ce-bubble rq-say rq-say--own">Your button now belongs to me~ ♪</div>
+    <div class="ce-at rq-hic">*hic*</div>
+    <div class="ce-at rq-ptoo">PTOO!</div>
+    <div class="rq-btn ${button.className.replace(/\b(cegg-press|cegg-charging)\b/g, '')}" style="left: ${r.left.toFixed(0)}px; top: ${r.top.toFixed(0)}px; width: ${r.width.toFixed(0)}px; height: ${r.height.toFixed(0)}px; --dx: ${dx.toFixed(0)}px; --dy: ${dy.toFixed(0)}px;">
+      <span>${button.innerHTML}</span>${goo}
+    </div>
+    <div class="cegg-toast">Relinquished spat it out.<small>Turns out buttons aren't monsters. "Face Pegasus" returns to the field.</small></div>`);
+  if (!overlay) return;
+  overlay.style.setProperty('--rq-w', `${width.toFixed(0)}px`);
+  restartClass(button, 'rq-taken', RELINQUISHED_EGG_MS - 100);
+  playSound({ name: 'egg-relinquished' });
 }
