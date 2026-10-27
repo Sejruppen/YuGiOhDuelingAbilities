@@ -1,9 +1,11 @@
-// Tournament setup: tapping the participant stepper past its limits.
+// Tournament screen eggs.
 //  - "+" at the max, 5 taps: MULTIPLY! The spell card flips up and Kuribohs
 //    double, again and again, until the screen is full of them (the counter
 //    tries to keep up). Then a giant Kuriboh rises and they all go poof.
 //  - "-" at 2, 5 taps: "A duel... with nobody?" Two tiny duelists pop out of
 //    the "2", shrug, and settle it with rock-paper-scissors instead.
+//  - Hold the 🏆 in the header for 2s: ten star chips fly into a Duelist
+//    Glove one by one, and at 10/10 the gates of Pegasus's castle open.
 const TN_LIMIT_TAPS = 5;
 const TN_LIMIT_GAP_MS = 900;
 const KURIBOH_EGG_MS = 6200;
@@ -177,4 +179,77 @@ function playRockPaperScissors() {
   playSound({ name: outcome === 'tie' ? 'tn-rps-tie' : 'tn-rps-win' });
   document.querySelector('.tn-size-value')?.classList.add('tn-size-hidden');
   setTimeout(() => document.querySelector('.tn-size-value')?.classList.remove('tn-size-hidden'), RPS_EGG_MS - 300);
+}
+
+// --- 🏆 hold: ten star chips --------------------------------------------------------
+
+const STAR_CHIPS_EGG_MS = 6000;
+const STAR_CHIP_FIRST_MS = 400;
+const STAR_CHIP_STEP_MS = 330;
+const STAR_CHIP_FLIGHT_MS = 380;
+
+// Fingerless Duelist Glove; the wristband has 10 star chip slots (2 rows of 5).
+const STAR_CHIP_SLOTS = [20, 40, 60, 80, 100].flatMap(x => [[x, 110], [x, 126]])
+  .sort((a, b) => a[1] - b[1] || a[0] - b[0]);
+const DUELIST_GLOVE_SVG = `
+  <svg viewBox="0 0 120 140" aria-hidden="true">
+    <path d="M14 70 Q2 58 8 48 Q14 42 24 54 L30 64 Z" fill="#fde2c8" stroke="#c08a5c" stroke-width="1.5"/>
+    <rect x="24" y="12" width="16" height="50" rx="8" fill="#fde2c8" stroke="#c08a5c" stroke-width="1.5"/>
+    <rect x="42" y="4" width="16" height="56" rx="8" fill="#fde2c8" stroke="#c08a5c" stroke-width="1.5"/>
+    <rect x="60" y="6" width="16" height="54" rx="8" fill="#fde2c8" stroke="#c08a5c" stroke-width="1.5"/>
+    <rect x="78" y="16" width="15" height="46" rx="7.5" fill="#fde2c8" stroke="#c08a5c" stroke-width="1.5"/>
+    <path d="M20 44 H96 Q102 44 102 52 V102 H16 V56 Q16 46 20 44 Z" fill="#1f2937" stroke="#4b5563" stroke-width="2"/>
+    <path d="M24 44 V54 M42 40 V54 M60 40 V54 M78 44 V54" stroke="#4b5563" stroke-width="2"/>
+    <path d="M40 70 L60 62 L80 70 L60 86 Z" fill="#7c3aed" stroke="#d4a017" stroke-width="2"/>
+    <rect x="8" y="98" width="104" height="38" rx="7" fill="#374151" stroke="#d4a017" stroke-width="2.5"/>
+    ${STAR_CHIP_SLOTS.map(([x, y]) => `<circle cx="${x}" cy="${y}" r="6.5" fill="#111827" stroke="#6b7280" stroke-width="1"/>`).join('')}
+  </svg>`;
+
+// Pegasus's castle, seen through the opening gates.
+const PEGASUS_CASTLE_SVG = `
+  <svg viewBox="0 0 200 120" preserveAspectRatio="xMidYMax meet" aria-hidden="true">
+    <g fill="#1e1b4b">
+      <rect x="20" y="60" width="160" height="60"/>
+      <rect x="30" y="34" width="26" height="86"/>
+      <rect x="144" y="34" width="26" height="86"/>
+      <rect x="82" y="20" width="36" height="100"/>
+      <path d="M28 36 L43 8 L58 36 Z M142 36 L157 8 L172 36 Z M80 22 L100 -10 L120 22 Z"/>
+    </g>
+    <g fill="#fde047">
+      <rect x="40" y="48" width="6" height="9" rx="3"/><rect x="154" y="48" width="6" height="9" rx="3"/>
+      <rect x="96" y="36" width="8" height="12" rx="4"/>
+      <rect x="64" y="76" width="6" height="9" rx="3"/><rect x="130" y="76" width="6" height="9" rx="3"/>
+      <path d="M88 120 V96 Q100 82 112 96 V120 Z" fill="#fef3c7"/>
+    </g>
+  </svg>`;
+
+function playStarChipsEgg() {
+  markEggFound('star-chips');
+  const chips = STAR_CHIP_SLOTS.map(([x, y], i) => {
+    const angle = ceRand(0, Math.PI * 2);
+    return `<span class="tn-chip" style="left: ${(x / 120 * 100).toFixed(2)}%; top: ${(y / 140 * 100).toFixed(2)}%; --fx: ${(Math.cos(angle) * 70).toFixed(0)}vmax; --fy: ${(Math.sin(angle) * 70).toFixed(0)}vmax; --r: ${ceRand(-720, 720).toFixed(0)}deg; --d: ${STAR_CHIP_FIRST_MS + i * STAR_CHIP_STEP_MS}ms;">★</span>`;
+  }).join('');
+  const overlay = spawnStartEgg('chips', STAR_CHIPS_EGG_MS, `
+    <div class="tn-castle">
+      <div class="tn-castle-light"></div>
+      <div class="tn-castle-art">${PEGASUS_CASTLE_SVG}</div>
+    </div>
+    <div class="tn-gates">
+      <div class="tn-gate tn-gate--l"></div>
+      <div class="tn-gate tn-gate--r"></div>
+    </div>
+    <div class="ce-at tn-glove">
+      ${DUELIST_GLOVE_SVG}
+      ${chips}
+      <span class="tn-chip-count">0 / 10</span>
+    </div>
+    <div class="ce-at tn-castle-welcome">Welcome to Pegasus's castle.</div>
+    <div class="cegg-toast">Ten star chips. Entry granted.<small>Duelist Kingdom finalists only.</small></div>`);
+  if (!overlay) return;
+  playSound({ name: 'tn-star-chips' });
+  const count = overlay.querySelector('.tn-chip-count');
+  STAR_CHIP_SLOTS.forEach((_, i) => setTimeout(() => {
+    count.textContent = `${i + 1} / 10`;
+    if (i === 9) count.classList.add('is-full');
+  }, STAR_CHIP_FIRST_MS + i * STAR_CHIP_STEP_MS + STAR_CHIP_FLIGHT_MS));
 }

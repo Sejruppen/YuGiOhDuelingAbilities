@@ -20,7 +20,10 @@ const EGG_IDS = [
   // Start screen
   'exodia', 'duel-disk', 'dizzy', 'speaker', 'shrink-ray', 'obelisk-headroom', 'dk-invitation', 'friendship-sign',
   // Tournament setup
-  'kuriboh-multiply', 'rock-paper-scissors',
+  'kuriboh-multiply', 'rock-paper-scissors', 'star-chips', 'penalty-dice',
+  // Co-op setup
+  'true-name', 'architect', 'name-theodor', 'name-tristan', 'name-otto', 'name-frida', 'name-marie',
+  'time-to-duel', 'duel-school',
   // Abilities screen
   'dark-paladin', 'divine-offering',
   // Duel screen

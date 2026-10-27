@@ -21,10 +21,14 @@ function renderTournamentView() {
 }
 
 function renderTournamentHeader(title, rightHtml = '<div class="w-16"></div>') {
+  // Holding the 🏆 for 2s collects ten star chips (tournament-size-eggs.js).
+  const heading = title.startsWith('🏆')
+    ? `<span class="tn-trophy cegg-press" onpointerdown="startStartEggPress(this, 'star-chips')" onpointerup="cancelStartEggPress(this)" onpointerleave="cancelStartEggPress(this)" onpointercancel="cancelStartEggPress(this)" oncontextmenu="return false">🏆</span>${title.slice('🏆'.length)}`
+    : title;
   return `
     <header class="px-4 py-3.5 border-b border-slate-800 flex items-center justify-between bg-slate-900/80 backdrop-blur">
       <button onclick="leaveTournament()" class="text-slate-300 text-base font-medium px-2 py-1 w-16 text-left">← Back</button>
-      <h2 class="text-lg font-bold text-white">${title}</h2>
+      <h2 class="text-lg font-bold text-white">${heading}</h2>
       ${rightHtml}
     </header>
   `;
@@ -99,7 +103,7 @@ function renderTournamentSetup() {
       </div>
     </div>
     <footer class="p-4 border-t border-slate-800 bg-slate-900/80">
-      <button onclick="drawTournament()" class="w-full py-4 rounded-xl bg-amber-500 hover:bg-amber-400 active:scale-98 text-slate-950 font-bold text-lg shadow-lg shadow-amber-500/20 transition">
+      <button onclick="if (startEggAllowsClick()) drawTournament()" ${random > 0 ? `onpointerdown="startStartEggPress(this, 'penalty-dice')" onpointerup="cancelStartEggPress(this)" onpointerleave="cancelStartEggPress(this)" onpointercancel="cancelStartEggPress(this)" oncontextmenu="return false"` : ''} class="cegg-press w-full py-4 rounded-xl bg-amber-500 hover:bg-amber-400 active:scale-98 text-slate-950 font-bold text-lg shadow-lg shadow-amber-500/20 transition">
         ${random > 0 ? '🎲 Draw the Tournament' : '⚔️ Start the Tournament'}
       </button>
     </footer>

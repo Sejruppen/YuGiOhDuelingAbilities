@@ -58,6 +58,9 @@ function renderCoopKeypad(i, label, actionsHtml) {
 
 // --- Setup ------------------------------------------------------------------------
 
+// Holding a difficulty for 2s plays its easter egg (start-button-eggs.js).
+const COOP_DIFFICULTY_EGGS = { rookie: 'duel-school', duelist: 'time-to-duel', pharaoh: 'true-name' };
+
 function renderCoopSetup() {
   const wins = getCoopWins();
   const selected = coop.difficulty || 'duelist';
@@ -78,7 +81,7 @@ function renderCoopSetup() {
     const active = id === selected;
     const won = wins[`pegasus:${id}`];
     return `
-      <button onclick="setCoopDifficulty('${id}')" aria-pressed="${active}" class="relative rounded-xl border px-2 py-3 text-center transition ${active ? 'border-amber-500 bg-amber-950/40' : 'border-slate-700 bg-slate-900/90 hover:border-amber-500/50'}">
+      <button onclick="if (startEggAllowsClick()) setCoopDifficulty('${id}')" ${COOP_DIFFICULTY_EGGS[id] ? `onpointerdown="startStartEggPress(this, '${COOP_DIFFICULTY_EGGS[id]}')" onpointerup="cancelStartEggPress(this)" onpointerleave="cancelStartEggPress(this)" onpointercancel="cancelStartEggPress(this)" oncontextmenu="return false"` : ''} aria-pressed="${active}" class="${COOP_DIFFICULTY_EGGS[id] ? 'cegg-press ' : ''}relative rounded-xl border px-2 py-3 text-center transition ${active ? 'border-amber-500 bg-amber-950/40' : 'border-slate-700 bg-slate-900/90 hover:border-amber-500/50'}">
         <span class="block text-2xl">${diff.icon}</span>
         <span class="block text-sm font-bold ${active ? 'text-amber-400' : 'text-white'}">${diff.label}</span>
         ${won ? `<span class="absolute top-1 right-1.5 text-[0.65rem] text-amber-300">🏆${won}</span>` : ''}

@@ -2039,8 +2039,107 @@ const TOURNAMENT_SOUNDS = {
   'tn-rps-tie': t => {
     const room = rpsIntroSound(t);
     [58, 57, 56, 55].forEach((n, i) => tone({ t: t + 3.35 + i * 0.3, freq: midi(n), to: i === 3 ? midi(53) : undefined, dur: i === 3 ? 0.7 : 0.26, type: 'sawtooth', gain: 0.04, filter: 900, attack: 0.02, out: room }));
+  },
+  // Ten star chips (6s): whoosh + clink, rising a note each, then the full
+  // glove sparkles and the castle gates creak open.
+  'tn-star-chips': t => {
+    const room = darkBus({ reverb: 0.5 });
+    const scale = [72, 74, 76, 77, 79, 81, 83, 84, 86, 88];
+    scale.forEach((n, i) => {
+      const land = t + 0.4 + i * 0.33 + 0.38;
+      ceWhoosh(land - 0.3, 0.28, 0.025, 700, 2600, room);
+      coinClink(land, 0.05);
+      bell({ t: land, freq: midi(n), dur: 0.6, gain: 0.03, out: room });
+    });
+    healSparkles(t + 3.8, 0.5, 8, room);
+    tone({ t: t + 3.95, freq: 70, to: 52, dur: 0.75, type: 'sawtooth', gain: 0.05, filter: 500, q: 4, attack: 0.05, out: room });
+    noise({ t: t + 3.95, dur: 0.75, gain: 0.05, type: 'bandpass', freq: 350, to: 220, q: 3, attack: 0.05, out: room });
+    boom(t + 4.6, 0.5, room);
+    chord({ t: t + 4.5, notes: [60, 64, 67, 72], dur: 1.4, gain: 0.025, type: 'triangle', attack: 0.25, filter: 2400 });
+  },
+  // Penalty Game, part 1 (dice-duel-egg.js): a rumbling dark drone, glowing
+  // eyes, growled threats, a booming laugh, and his die clattering to a 6.
+  'tn-dice-intro': t => {
+    const cave = darkBus({ reverb: 0.7, echo: 0.2 });
+    darkCluster({ t, notes: [31, 32, 38], dur: 7, gain: 0.035, attack: 1.2, filter: [150, 600], out: cave });
+    boom(t + 0.3, 0.6, cave);
+    [76, 77].forEach(n => tone({ t: t + 1.5, freq: midi(n), to: midi(n - 3), dur: 0.9, type: 'triangle', gain: 0.02, attack: 0.01, out: cave }));
+    [1.9, 2.7].forEach(at => tone({ t: t + at, freq: 75, to: 58, dur: 0.6, type: 'sawtooth', gain: 0.05, filter: 420, q: 3, attack: 0.05, out: cave }));
+    bell({ t: t + 3.1, freq: midi(38), dur: 2.5, gain: 0.12, out: cave });
+    bruteLaugh(t + 3.7, 6, 0.07, cave);
+    diceRattle(t + 5.0, 0.8, 0.05, cave);
+    diceThud(t + 5.45, 0.08, cave);
+    diceThud(t + 5.8, 0.12, cave);
+    brass({ t: t + 5.9, notes: [38, 45, 50], dur: 0.7, gain: 0.05 });
+    tone({ t: t + 6.0, freq: 80, to: 62, dur: 0.5, type: 'sawtooth', gain: 0.05, filter: 420, q: 3, attack: 0.04, out: cave });
+    bruteLaugh(t + 6.6, 3, 0.045, cave);
+    [6.9, 7.7, 8.5, 9.3, 10.1].forEach(at => heartbeat(t + at, 0.18));
+  },
+  // Part 2, from the player's tap: the roll lands on 1, a mocking chuckle,
+  // tension, CRACK, a heroic hit for the 7, "wha...", the Penalty Game bell,
+  // and a Shadow Realm vortex that slams shut on him.
+  'tn-dice-roll': t => {
+    const cave = darkBus({ reverb: 0.7, echo: 0.2 });
+    diceRattle(t, 1.0, 0.05, cave);
+    diceThud(t + 0.55, 0.08, cave);
+    diceThud(t + 1.0, 0.12, cave);
+    tone({ t: t + 1.05, freq: midi(50), to: midi(45), dur: 0.8, type: 'triangle', gain: 0.04, attack: 0.01, out: cave });
+    bruteLaugh(t + 1.4, 3, 0.05, cave);
+    for (let i = 0; i < 17; i++) {
+      tone({ t: t + 2.0 + i * 0.1, freq: midi(i % 2 ? 63 : 62), dur: 0.09, type: 'sawtooth', gain: 0.01 + i * 0.002, filter: 1400, attack: 0.01, out: cave });
+    }
+    dieCrack(t + 2.95, 0.5);
+    dieCrack(t + 3.3, 0.8);
+    const split = t + 3.7;
+    dieCrack(split, 1.4);
+    boom(split, 1, cave);
+    chord({ t: split + 0.02, notes: [62, 66, 69, 74], dur: 1.6, gain: 0.03, type: 'sawtooth', attack: 0.01, filter: 3000 });
+    bell({ t: split + 0.05, freq: midi(86), dur: 1.5, gain: 0.05, out: cave });
+    tone({ t: t + 5.3, freq: 240, to: 140, dur: 0.6, type: 'sawtooth', gain: 0.05, filter: [1400, 500], q: 4, attack: 0.02, out: cave });
+    bell({ t: t + 6.3, freq: midi(45), dur: 3, gain: 0.12, out: cave });
+    eyeHum(t + 6.3, 1.5, 0.05, cave);
+    const swirl = t + 7.2;
+    tone({ t: swirl, freq: 900, to: 45, dur: 2, type: 'sawtooth', gain: 0.045, attack: 0.3, filter: [3000, 150], out: cave });
+    noise({ t: swirl, dur: 2, gain: 0.1, freq: 4000, to: 120, q: 4, attack: 1.4, out: cave });
+    tone({ t: swirl + 0.3, freq: 520, to: 90, dur: 1.6, type: 'sawtooth', gain: 0.03, filter: 1500, attack: 0.05, out: cave });
+    shadowWhispers(swirl, 2, 8, cave);
+    const slam = t + 9.2;
+    boom(slam, 1.2, cave);
+    tone({ t: slam, freq: 70, to: 25, dur: 2.5, gain: 0.3, attack: 0.003 });
+    bell({ t: slam + 0.2, freq: midi(38), dur: 3.5, gain: 0.18, out: cave });
+    darkCluster({ t: slam + 0.3, notes: [57, 60, 63, 64], dur: 2.4, gain: 0.016, attack: 0.8, filter: [600, 2200], out: cave });
   }
 };
+
+// A deep, booming "HA HA HA" for the Penalty Game brute.
+function bruteLaugh(t, count, gain, out) {
+  for (let i = 0; i < count; i++) {
+    const at = t + i * 0.24;
+    const f = 105 - i * 3;
+    tone({ t: at, freq: f * 1.15, to: f * 0.85, dur: 0.2, type: 'sawtooth', gain, filter: [900, 500], q: 3, attack: 0.015, out });
+    tone({ t: at, freq: f * 0.58, to: f * 0.5, dur: 0.2, type: 'square', gain: gain * 0.4, filter: 400, attack: 0.015, out });
+    noise({ t: at, dur: 0.12, gain: gain * 0.5, freq: 650, to: 450, q: 4, attack: 0.01, out });
+  }
+}
+
+function diceRattle(t, dur, gain, out) {
+  const count = Math.round(dur / 0.06);
+  for (let i = 0; i < count; i++) {
+    const at = t + (i * dur) / count + rnd(0, 0.02);
+    noise({ t: at, dur: 0.03, gain: gain * rnd(0.5, 1), freq: rnd(2500, 4500), q: 6, attack: 0.002, out });
+    tone({ t: at, freq: rnd(900, 1500), dur: 0.03, type: 'triangle', gain: gain * 0.4, attack: 0.002, out });
+  }
+}
+
+function diceThud(t, gain, out) {
+  tone({ t, freq: 160, to: 70, dur: 0.15, gain, attack: 0.003, out });
+  noise({ t, dur: 0.06, gain: gain * 0.6, type: 'lowpass', freq: 900, attack: 0.002, out });
+}
+
+function dieCrack(t, strength) {
+  noise({ t, dur: 0.05 + strength * 0.12, gain: 0.12 * strength, type: 'highpass', freq: 3000, to: 1500, attack: 0.001 });
+  tone({ t, freq: 2400, to: 500, dur: 0.05, type: 'square', gain: 0.03 * strength, attack: 0.001 });
+}
 
 function rpsIntroSound(t) {
   const room = darkBus({ reverb: 0.3 });
@@ -2261,8 +2360,210 @@ const COOP_SOUNDS = {
     chord({ t: f, notes: [60, 64, 67, 72], dur: 2.2, gain: 0.025, type: 'triangle', attack: 0.3, filter: 2500 });
     arpeggio(f, [72, 76, 79, 84, 79, 84, 88], 0.13, (tt, n) => bell({ t: tt, freq: midi(n), dur: 1.2, gain: 0.03, out: room }));
     healSparkles(f + 0.6, 1.4, 10, room);
+  },
+  // Pharaoh hold: "His true name" (true-name-egg.js). Hijaz scale on D.
+  'atn-open': t => {
+    const tomb = darkBus({ reverb: 0.8, echo: 0.2 });
+    noise({ t, dur: 1.6, gain: 0.14, type: 'lowpass', freq: 300, to: 120, attack: 0.05, out: tomb });
+    boom(t, 0.9, tomb);
+    [0, 0.45, 0.7, 1.15].forEach((o, i) => frameDrum(t + 0.3 + o, i % 2 === 0, tomb));
+    [62, 63, 66, 67, 69].forEach((n, i) => ney(t + 0.7 + i * 0.32, n, i === 4 ? 1.3 : 0.38, 0.03, tomb));
+    bell({ t: t + 2.1, freq: midi(50), dur: 2.5, gain: 0.08, out: tomb });
+  },
+  'atn-key': t => {
+    const f = rnd(1500, 2100);
+    noise({ t, dur: 0.04, gain: 0.07, freq: f, q: 3, attack: 0.001 });
+    tone({ t, freq: rnd(520, 640), to: 260, dur: 0.06, type: 'triangle', gain: 0.05, attack: 0.002 });
+  },
+  'atn-wrong': t => {
+    const tomb = darkBus({ reverb: 0.7 });
+    noise({ t, dur: 0.9, gain: 0.08, type: 'highpass', freq: 5000, to: 1200, attack: 0.01, out: tomb });
+    tone({ t, freq: 140, to: 70, dur: 0.5, type: 'sawtooth', gain: 0.04, filter: 500, attack: 0.01, out: tomb });
+    [69, 67, 66, 63, 62].forEach((n, i) => ney(t + 0.35 + i * 0.3, n, i === 4 ? 1.1 : 0.34, 0.025, tomb));
+    bell({ t: t + 1.6, freq: midi(38), dur: 2, gain: 0.07, out: tomb });
+  },
+  'atn-named': t => {
+    const hall = darkBus({ reverb: 0.8, echo: 0.25 });
+    boom(t, 1, hall);
+    noise({ t, dur: 1.2, gain: 0.08, type: 'highpass', freq: 2500, to: 8000, attack: 0.3, out: hall });
+    choir({ t: t + 0.2, notes: [50, 62, 66, 69], dur: 4.2, gain: 0.011, attack: 0.8, out: hall });
+    [0, 0.3, 0.45, 0.75, 1.05, 1.2, 1.5, 1.8, 1.95, 2.25].forEach((o, i) => frameDrum(t + 0.4 + o, i % 3 === 0, hall));
+    [[74, 0.4], [75, 0.2], [78, 0.2], [79, 0.4], [81, 0.3], [79, 0.2], [78, 0.2], [75, 0.2], [74, 1.2]]
+      .reduce((at, [n, d]) => { ney(t + at, n, d, 0.03, hall); return at + d; }, 0.6);
+    arpeggio(t + 3.6, [74, 78, 81, 86, 90], 0.09, (tt, n) => bell({ t: tt, freq: midi(n), dur: 1.4, gain: 0.035, out: hall }));
+    chord({ t: t + 3.6, notes: [62, 66, 69, 74], dur: 2.4, gain: 0.025, type: 'triangle', attack: 0.2, filter: 2600 });
+    healSparkles(t + 3.6, 1.8, 14, hall);
+  },
+  // Spelling MATHIAS on the stone keyboard: the Eye winks, then the
+  // architect's scroll unrolls (true-name-egg.js).
+  'atn-architect': t => {
+    const hall = darkBus({ reverb: 0.75, echo: 0.2 });
+    eyeHum(t, 1.6, 0.05, hall);
+    tone({ t: t + 0.35, freq: 1800, to: 2600, dur: 0.12, type: 'sine', gain: 0.04, out: hall });
+    bell({ t: t + 0.45, freq: midi(86), dur: 1.4, gain: 0.04, out: hall });
+    [62, 66, 69, 74].forEach((n, i) => ney(t + 0.7 + i * 0.28, n, i === 3 ? 1 : 0.3, 0.025, hall));
+    noise({ t: t + 1.9, dur: 0.9, gain: 0.06, freq: 2200, to: 900, q: 0.8, attack: 0.05, out: hall });
+    chord({ t: t + 2.1, notes: [62, 66, 69, 74], dur: 2.6, gain: 0.02, type: 'triangle', attack: 0.4, filter: 2200 });
+    arpeggio(t + 2.1, [74, 78, 81, 86], 0.11, (tt, n) => bell({ t: tt, freq: midi(n), dur: 1.2, gain: 0.03, out: hall }));
+  },
+  // Family names on the stone keyboard (name-eggs.js), timed to effects.css.
+  'name-theodor': t => {
+    const hall = darkBus({ reverb: 0.6 });
+    eyeHum(t, 1, 0.04, hall);
+    [1.1, 1.3, 1.5].forEach(o => ceWhoosh(t + o, 0.35, 0.05, 500, 2200, hall));
+    brass({ t: t + 2.2, notes: [55, 62, 67], dur: 0.7, gain: 0.05 });
+    laserCharge({ t: t + 2.5, dur: 1.1, from: 90, to: 2200, gain: 0.05, out: hall });
+    boom(t + 3.6, 0.9, hall);
+    chord({ t: t + 3.7, notes: [55, 59, 62, 67], dur: 1.6, gain: 0.03, type: 'triangle', attack: 0.05, filter: 2400 });
+    arpeggio(t + 3.7, [79, 83, 86, 91], 0.08, (tt, n) => bell({ t: tt, freq: midi(n), dur: 1, gain: 0.03, out: hall }));
+    cowMoo(t + 4.7, hall);
+  },
+  'name-tristan': t => {
+    const hall = darkBus({ reverb: 0.55 });
+    eyeHum(t, 1, 0.04, hall);
+    [0.9, 1, 1.1].forEach(o => tone({ t: t + o + 0.5, freq: 160, to: 70, dur: 0.12, type: 'triangle', gain: 0.08, attack: 0.002, out: hall }));
+    [1.7, 1.95, 2.2, 2.45, 2.7, 2.95].forEach(o => ceWhoosh(t + o, 0.2, 0.035, 600, 1800, hall));
+    ceWhoosh(t + 3.3, 0.4, 0.05, 800, 3000, hall);
+    holoRise(t + 3.35, 0.05, hall);
+    kuriChirp(t + 3.6, 0.04, hall);
+    tone({ t: t + 4.3, freq: 2400, to: 700, dur: 0.22, type: 'square', gain: 0.025, filter: 3000, attack: 0.003 });
+    cardFlip(t + 4.85);
+    ceClang(t + 5.35, 0.05, hall);
+    laserCharge({ t: t + 5.4, dur: 0.85, from: 60, to: 1400, gain: 0.06, out: hall });
+    boom(t + 6.15, 1.1, hall);
+    monsterRoar(t + 6.2, 0.13, hall);
+    brass({ t: t + 6.9, notes: [62, 66, 69, 74], dur: 1.2, gain: 0.05 });
+  },
+  'name-otto': t => {
+    const plain = darkBus({ reverb: 0.3 });
+    noise({ t: t + 0.2, dur: 2.6, gain: 0.16, type: 'lowpass', freq: 160, to: 90, attack: 1.4, out: plain });
+    for (let i = 0; i < 10; i++) {
+      const at = 0.5 + i * 0.22;
+      gallopStride(t + at, 0.05 + 0.09 * Math.max(0, 1 - Math.abs(at - 1.95) / 1.5), plain);
+    }
+    noise({ t: t + 1.3, dur: 0.18, gain: 0.08, freq: 700, q: 2, attack: 0.01, out: plain });
+    noise({ t: t + 1.52, dur: 0.18, gain: 0.08, freq: 650, q: 2, attack: 0.01, out: plain });
+    monsterRoar(t + 1.55, 0.08, plain);
+    boom(t + 1.95, 1.3, plain);
+    ceClang(t + 1.97, 0.07, plain);
+    noise({ t: t + 1.95, dur: 0.6, gain: 0.12, type: 'highpass', freq: 2500, to: 900, attack: 0.002, out: plain });
+    ceWhoosh(t + 2, 0.8, 0.08, 2200, 300, plain);
+    for (let i = 0; i < 7; i++) gallopStride(t + 5.2 + i * 0.3, 0.025, plain);
+  },
+  'name-frida': t => {
+    const lair = darkBus({ reverb: 0.8, echo: 0.2 });
+    darkCluster({ t, notes: [45, 52, 56], dur: 4, gain: 0.02, out: lair });
+    noise({ t: t + 0.9, dur: 1.2, gain: 0.1, type: 'lowpass', freq: 400, to: 1800, attack: 0.1, out: lair });
+    for (let i = 0; i < 14; i++) noise({ t: t + 1 + i * rnd(0.12, 0.22), dur: 0.03, gain: 0.04, freq: rnd(1500, 4000), q: 4, attack: 0.001, out: lair });
+    tone({ t: t + 1.3, freq: 110, to: 330, dur: 1.2, type: 'sawtooth', gain: 0.03, filter: [300, 1500], attack: 0.3, out: lair });
+    noise({ t: t + 4.2, dur: 0.5, gain: 0.14, type: 'highpass', freq: 3000, to: 800, attack: 0.002, out: lair });
+    noise({ t: t + 4.35, dur: 0.3, gain: 0.1, type: 'highpass', freq: 2500, attack: 0.002, out: lair });
+    boom(t + 4.25, 0.6, lair);
+    [4.4, 4.6, 4.9].forEach(o => tone({ t: t + o, freq: rnd(60, 80), to: rnd(40, 55), dur: 0.5, type: 'sawtooth', gain: 0.03, filter: 400, attack: 0.05, out: lair }));
+    witchCackle(t + 4.8, lair);
+    tone({ t: t + 6.6, freq: midi(62), dur: 0.3, type: 'triangle', gain: 0.03, out: lair });
+    [0, 0.3].forEach(o => {
+      tone({ t: t + 7.4 + o, freq: 760, to: 520, dur: 0.2, type: 'sawtooth', gain: 0.03, filter: 1600, q: 3, attack: 0.01, out: lair });
+      noise({ t: t + 7.4 + o, dur: 0.18, gain: 0.03, freq: 1300, q: 3, attack: 0.01, out: lair });
+    });
+  },
+  'name-marie': t => {
+    const room = darkBus({ reverb: 0.7, echo: 0.25 });
+    bigHeartbeat(t + 0.2, 0.25, room);
+    bigHeartbeat(t + 1.0, 0.22, room);
+    healPad({ t: t + 0.3, notes: [60, 64, 67, 71], dur: 6, gain: 0.03, attack: 1, out: room });
+    cardFlip(t + 1.5);
+    holoRise(t + 1.5, 0.04, room);
+    [[76, 0.4], [79, 0.4], [84, 0.8], [83, 0.4], [79, 0.4], [81, 1.2], [77, 0.4], [81, 0.4], [86, 0.8], [84, 0.4], [83, 0.4], [84, 1.6]]
+      .reduce((at, [n, d]) => { bell({ t: t + at, freq: midi(n), dur: 1.6, gain: 0.04, out: room }); return at + d; }, 1.8);
+    healPad({ t: t + 6.5, notes: [57, 60, 64, 69], dur: 5, gain: 0.025, attack: 1, out: room });
+    healSparkles(t + 1.6, 3, 14, room);
+  },
+  // "IT'S TIME TO DUEL!!!" (original riff, 150 bpm): four stabs for the
+  // words, a crash on DUEL, then a driving E-minor power-chord riff.
+  'egg-time-to-duel': t => {
+    const amp = darkBus({ reverb: 0.35 });
+    ceWhoosh(t, 0.3, 0.05, 300, 3000, amp);
+    [0.3, 0.6, 0.9].forEach((o, i) => {
+      powerChord(t + o, 40 + i * 2, 0.18, 0.05, amp);
+      rockDrum(t + o, 'kick', amp);
+    });
+    const hit = t + 1.3;
+    boom(hit, 1.1, amp);
+    noise({ t: hit, dur: 1.4, gain: 0.1, type: 'highpass', freq: 6000, to: 3500, attack: 0.003, out: amp });
+    powerChord(hit, 40, 0.75, 0.06, amp);
+    const riff = [40, 40, 43, 40, 45, 40, 47, 45];
+    for (let i = 0; i < 12; i++) {
+      const at = hit + 0.8 + i * 0.2;
+      powerChord(at, riff[i % 8], 0.16, 0.045, amp);
+      if (i % 2 === 0) rockDrum(at, i % 4 === 2 ? 'snare' : 'kick', amp);
+      rockDrum(at + 0.1, 'hat', amp);
+    }
+    powerChord(hit + 3.2, 40, 1.2, 0.055, amp);
+    noise({ t: hit + 3.2, dur: 1.2, gain: 0.07, type: 'highpass', freq: 6000, to: 3500, attack: 0.003, out: amp });
+  },
+  // Grandpa's Duel School (6.5s): board drops, footsteps, chalk scribbles,
+  // pointer taps, then CRACK, a groan, a sad trombone and squeaky wheels.
+  'egg-duel-school': t => {
+    const room = darkBus({ reverb: 0.3 });
+    ceWhoosh(t, 0.5, 0.04, 1800, 400, room);
+    tone({ t: t + 0.55, freq: 150, to: 90, dur: 0.12, type: 'triangle', gain: 0.1, attack: 0.002, out: room });
+    [0.35, 0.55, 0.75, 0.95].forEach(o => tone({ t: t + o, freq: 220, to: 140, dur: 0.05, type: 'triangle', gain: 0.04, attack: 0.002, out: room }));
+    chalkScribble(t + 0.7, 0.6, room);
+    chalkScribble(t + 1.4, 0.7, room);
+    [0, 1, 2, 3, 4].forEach(i => tone({ t: t + 1.8 + i * 0.12, freq: 900 + i * 60, dur: 0.04, type: 'triangle', gain: 0.025, attack: 0.002, out: room }));
+    [2.1, 2.32, 2.54, 2.76].forEach(o => tone({ t: t + o, freq: 520, to: 300, dur: 0.05, type: 'square', gain: 0.03, filter: 1600, attack: 0.002, out: room }));
+    chalkScribble(t + 2.7, 1.0, room);
+    dieCrack(t + 3.8, 1.3);
+    tone({ t: t + 3.95, freq: 260, to: 150, dur: 0.9, type: 'sawtooth', gain: 0.035, filter: [1400, 600], q: 4, attack: 0.05, out: room });
+    ceSadTrombone(t + 4.2, 0.035);
+    for (let o = 4.4; o < 6.1; o += 0.28) rubberSqueak(t + o, 1300 + rnd(-150, 150), 0.02, room);
+    ceWhoosh(t + 5.3, 0.6, 0.04, 400, 1800, room);
   }
 };
+
+// Chalk on a blackboard: short, squeaky, resonant scratches.
+// A cartoon cow: a short rising "mm" into a long buzzy falling "ooo".
+function cowMoo(t, out) {
+  tone({ t, freq: 125, to: 150, dur: 0.3, type: 'sawtooth', gain: 0.07, filter: [300, 900], q: 4, attack: 0.08, out });
+  tone({ t: t + 0.25, freq: 150, to: 105, dur: 1.1, type: 'sawtooth', gain: 0.07, filter: [900, 350], q: 4, attack: 0.03, out });
+}
+
+// A small villain's "Mwa-ha-ha-ha-ha!": one low "mwa", then rising and falling "ha"s.
+function witchCackle(t, out) {
+  tone({ t, freq: 480, to: 640, dur: 0.28, type: 'square', gain: 0.03, filter: 2200, attack: 0.02, out });
+  [1, 1.08, 1.16, 1.22, 1.16, 1.08, 1, 0.92].forEach((k, i) => {
+    const f = 700 * k;
+    const at = t + 0.34 + i * 0.15;
+    tone({ t: at, freq: f * 1.12, to: f, dur: 0.11, type: 'square', gain: 0.03, filter: 2400, attack: 0.004, out });
+    noise({ t: at, dur: 0.05, gain: 0.02, freq: 2600, q: 2, attack: 0.002, out });
+  });
+}
+
+function chalkScribble(t, dur, out) {
+  for (let at = 0; at < dur; at += 0.09) {
+    noise({ t: t + at + rnd(0, 0.02), dur: 0.07, gain: 0.025, freq: rnd(2500, 4200), to: rnd(2500, 4200), q: 10, attack: 0.005, out });
+  }
+}
+
+// Distorted guitar power chord: root, fifth and octave.
+function powerChord(t, root, dur, gain, out) {
+  [root, root + 7, root + 12].forEach((n, i) => {
+    tone({ t, freq: midi(n), dur, type: 'sawtooth', gain, attack: 0.004, filter: [3500, 1400], q: 3, detune: -8 + i * 4, out });
+    tone({ t, freq: midi(n), dur, type: 'square', gain: gain * 0.5, attack: 0.004, filter: 2200, detune: 9, out });
+  });
+}
+
+function rockDrum(t, kind, out) {
+  if (kind === 'kick') {
+    tone({ t, freq: 130, to: 45, dur: 0.16, gain: 0.16, attack: 0.002, out });
+  } else if (kind === 'snare') {
+    noise({ t, dur: 0.14, gain: 0.1, freq: 1800, q: 0.8, attack: 0.002, out });
+    tone({ t, freq: 220, to: 160, dur: 0.08, type: 'triangle', gain: 0.06, attack: 0.002, out });
+  } else {
+    noise({ t, dur: 0.03, gain: 0.03, type: 'highpass', freq: 8000, attack: 0.001, out });
+  }
+}
 
 // ---------------------------------------------------------------------------
 // Theme kits
