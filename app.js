@@ -46,19 +46,45 @@ function renderCurrentView(app) {
   }
 }
 
+// Every render replaces #app's markup, which would snap all scrollable areas
+// back to the top. Scrollable elements are matched by document order so their
+// positions survive re-renders within the same screen.
+function getScrollableElements(app) {
+  return Array.from(app.querySelectorAll('*')).filter(el => {
+    const style = getComputedStyle(el);
+    return /(auto|scroll)/.test(`${style.overflowY} ${style.overflowX}`);
+  });
+}
+
+function captureScroll(app) {
+  return {
+    screen: state.screen,
+    window: { x: window.scrollX, y: window.scrollY },
+    elements: getScrollableElements(app).map(el => ({ top: el.scrollTop, left: el.scrollLeft })),
+  };
+}
+
+function restoreScroll(app, saved) {
+  if (saved.screen !== state.screen) return;
+  getScrollableElements(app).forEach((el, i) => {
+    const pos = saved.elements[i];
+    if (!pos) return;
+    el.scrollTop = pos.top;
+    el.scrollLeft = pos.left;
+  });
+  if (window.scrollX !== saved.window.x || window.scrollY !== saved.window.y) {
+    window.scrollTo(saved.window.x, saved.window.y);
+  }
+}
+
 function render() {
   const app = document.getElementById('app');
 
-  // Keep the abilities list scroll position when re-rendering after a selection.
-  const scrollTop = document.getElementById(ABILITIES_SCROLL_CONTAINER_ID)?.scrollTop ?? 0;
+  const savedScroll = captureScroll(app);
   const beforeFx = beforeRenderEffects(app);
 
   renderCurrentView(app);
-
-  const scrollContainer = document.getElementById(ABILITIES_SCROLL_CONTAINER_ID);
-  if (scrollContainer) {
-    scrollContainer.scrollTop = scrollTop;
-  }
+  restoreScroll(app, savedScroll);
 
   afterRenderEffects(app, beforeFx);
 }
