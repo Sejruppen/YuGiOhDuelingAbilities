@@ -213,7 +213,8 @@ function enterCoopStage(stage) {
   }
   // During Pegasus' turn the omen is rebuilt when his turn ends.
   if (coop.turn !== 'boss') coop.omen = buildCoopOmen();
-  playSound({ name: 'co-stage' });
+  // The stage cutscene has its own soundtrack ('pg-scene-stage*').
+  if (prefersReducedMotion()) playSound({ name: 'co-stage' });
   queueCoopFx(() => fxCoopStage(stage));
 }
 

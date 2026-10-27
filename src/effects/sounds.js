@@ -2361,6 +2361,57 @@ const COOP_SOUNDS = {
     arpeggio(f, [72, 76, 79, 84, 79, 84, 88], 0.13, (tt, n) => bell({ t: tt, freq: midi(n), dur: 1.2, gain: 0.03, out: room }));
     healSparkles(f + 0.6, 1.4, 10, room);
   },
+  // Pegasus cutscenes (pegasus-cutscenes.js), timed to the PG_SCENES steps.
+  'pg-scene-intro': t => {
+    const hall = darkBus({ reverb: 0.6, echo: 0.15 });
+    boom(t + 0.1, 0.4, hall);
+    eyeHum(t, 1.4, 0.04, hall);
+    ceWhoosh(t + 0.3, 0.9, 0.05, 300, 1500, hall);
+    noise({ t: t + 1.3, dur: 0.3, gain: 0.03, freq: 900, to: 450, q: 3, attack: 0.05, out: hall });
+    tone({ t: t + 1.65, freq: 330, to: 260, dur: 0.25, type: 'triangle', gain: 0.025, attack: 0.02, out: hall });
+    cardFlip(t + 1.8);
+    cardFlip(t + 1.95, 0.1, 2000);
+    arpeggio(t + 1.8, [74, 77, 81, 86], 0.07, (tt, n) => bell({ t: tt, freq: midi(n), dur: 0.9, gain: 0.03, out: hall }));
+    [2.05, 2.3, 2.55, 2.8].forEach((o, i) => boing(t + o, { from: 180 + i * 40, to: 560 + i * 60, dur: 0.3, gain: 0.05, out: hall }));
+    // A little music-box waltz in D minor under the dialogue.
+    [[62, 65, 69], [62, 65, 69], [61, 64, 69], [62, 65, 70], [62, 65, 69], [57, 61, 64], [62, 65, 69], [62, 65, 69]]
+      .forEach((notes, bar) => notes.forEach((n, beat) => bell({ t: t + 3.2 + bar * 0.75 + beat * 0.25, freq: midi(n + 12), dur: 0.6, gain: beat ? 0.015 : 0.025, out: hall })));
+    tone({ t: t + 3.5, freq: midi(74), to: midi(79), dur: 0.2, type: 'triangle', gain: 0.03, attack: 0.005, out: hall });
+    tone({ t: t + 5, freq: midi(79), to: midi(84), dur: 0.2, type: 'triangle', gain: 0.03, attack: 0.005, out: hall });
+    pegasusLaugh(t + 6.6, hall);
+    pegasusLaugh(t + 7.6, hall);
+  },
+  'pg-scene-stage2': t => {
+    const hall = darkBus({ reverb: 0.7, echo: 0.2 });
+    for (let i = 0; i < 6; i++) noise({ t: t + 0.3 + i * 0.14, dur: 0.16, gain: 0.06, freq: 3200, to: 1100, q: 1.5, attack: 0.003, out: hall });
+    brass({ t: t + 1.2, notes: [50, 53, 56], dur: 0.9, gain: 0.05 });
+    ceWhoosh(t + 2.7, 0.35, 0.06, 600, 2500, hall);
+    noise({ t: t + 3, dur: 0.4, gain: 0.08, type: 'highpass', freq: 6000, to: 2500, attack: 0.001, out: hall });
+    [0, 0.05, 0.11, 0.18].forEach(o => ceramicClink(t + 3 + o, 0.04, hall));
+    boom(t + 3.4, 0.9, hall);
+    eyeHum(t + 3.3, 6, 0.07, hall);
+    choir({ t: t + 3.4, notes: [50, 57, 62, 63], dur: 4, gain: 0.01, attack: 0.6, out: hall });
+    [5, 6.4].forEach(at => {
+      laserCharge({ t: t + at, dur: 0.6, from: 400, to: 2400, gain: 0.04, out: hall });
+      [0.45, 0.6, 0.75, 0.9].forEach(o => cardFlip(t + at + o, 0.08));
+    });
+    pegasusLaugh(t + 7.9, hall);
+  },
+  'pg-scene-stage3': t => {
+    const hall = darkBus({ reverb: 0.8, echo: 0.25 });
+    boom(t + 0.2, 1, hall);
+    darkCluster({ t: t + 0.2, notes: [38, 44, 49], dur: 7.5, gain: 0.022, out: hall });
+    [0.6, 1.6, 2.6, 3.6, 4.6].forEach(o => bigHeartbeat(t + o, 0.2, hall));
+    [0.8, 0.95, 1.1].forEach(o => cardFlip(t + o));
+    [2.4, 3.8].forEach(at => {
+      ceWhoosh(t + at, 0.8, 0.07, 1800, 200, hall);
+      bell({ t: t + at + 0.7, freq: midi(38), dur: 1.6, gain: 0.06, out: hall });
+    });
+    boom(t + 5.2, 1.2, hall);
+    noise({ t: t + 5.2, dur: 0.8, gain: 0.08, type: 'highpass', freq: 3000, to: 800, attack: 0.002, out: hall });
+    pegasusLaugh(t + 5.4, hall);
+    pegasusLaugh(t + 6.3, hall);
+  },
   // Pharaoh hold: "His true name" (true-name-egg.js). Hijaz scale on D.
   'atn-open': t => {
     const tomb = darkBus({ reverb: 0.8, echo: 0.2 });

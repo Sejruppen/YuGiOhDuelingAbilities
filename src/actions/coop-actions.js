@@ -22,6 +22,7 @@ const coopUi = {
   confirmQuit: false,
   confirmCatch: [false, false],
   freshUid: null,
+  scene: null,
   timers: {}
 };
 
@@ -53,14 +54,16 @@ function setCoopDifficulty(difficulty) {
 }
 
 function startCoopBattle() {
-  Object.assign(coopUi, { panel: [null, null], input: ['', ''], toast: [null, null], signal: [null, null], confirmQuit: false });
+  Object.assign(coopUi, { panel: [null, null], input: ['', ''], toast: [null, null], signal: [null, null], confirmQuit: false, scene: null });
   createCoopBattle(coop.difficulty || 'duelist');
-  playSound({ name: 'co-start' });
+  // The intro cutscene has its own soundtrack ('pg-scene-intro').
+  if (prefersReducedMotion()) playSound({ name: 'co-start' });
   commitCoop();
 }
 
 function dismissCoopCutscene() {
   coop.cutscene = null;
+  coopUi.scene = null;
   commitCoop();
 }
 

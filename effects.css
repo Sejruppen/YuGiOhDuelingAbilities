@@ -10245,6 +10245,409 @@ header:has(+ .tn-draw--done) .tn-draw-skip { visibility: hidden; }
 }
 @keyframes mr-write { to { clip-path: inset(0 0 0 0); } }
 
+/* --- PEGASUS CUTSCENES (pegasus-cutscenes.js) ---
+   Poses are classes on .fx-pg. Pegasus (.pg-stage) is 40vh tall and centred,
+   so his Millennium Eye sits at (50% + 2vh, 50% - 5.5vh). Player 1's blocks
+   sit at the bottom; Player 2's are mirrored at the top and rotated 180deg. */
+.fx-pg {
+  pointer-events: auto;
+  cursor: pointer;
+  animation: dd-fade 500ms ease-out both;
+}
+.fx-pg.is-out { animation: pg-out 600ms ease-in forwards; }
+@keyframes pg-out { to { opacity: 0; } }
+
+.pg-bg {
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(ellipse at 50% 50%, #4c1d95, #1e0b33 55%, #07020d);
+}
+.pg-bg::before,
+.pg-bg::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  transition: opacity 900ms ease-out;
+}
+.pg-bg::before { background: radial-gradient(circle at calc(50% + 2vh) 44%, rgb(253 224 71 / 0.35), transparent 40%); }
+.pg-bg::after { background: radial-gradient(ellipse at 50% 50%, rgb(220 38 38 / 0.7), rgb(69 10 10 / 0.95) 60%, #0c0101); }
+.fx-pg.reveal .pg-bg::before { opacity: 1; }
+.fx-pg.blood .pg-bg::after { opacity: 1; }
+
+.pg-spot {
+  position: absolute;
+  left: 50%;
+  top: 0;
+  width: 80vmin;
+  height: 100%;
+  translate: -50% 0;
+  background: radial-gradient(ellipse 45% 30% at 50% 50%, rgb(255 255 255 / 0.18), transparent);
+  animation: dd-fade 1200ms ease-out both;
+}
+.fx-pg.blood .pg-spot { background: radial-gradient(ellipse 45% 30% at 50% 50%, rgb(254 202 202 / 0.2), transparent); }
+
+/* Pegasus himself. */
+.pg-stage {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  height: 40vh;
+  aspect-ratio: 200 / 260;
+  translate: -50% -50%;
+}
+.pg-man {
+  position: absolute;
+  inset: 0;
+  transition: transform 900ms cubic-bezier(0.2, 0.9, 0.3, 1), opacity 700ms ease-out;
+}
+.fx-pg.is-entering .pg-man { transform: translateX(-70vw) rotate(-6deg); opacity: 0; }
+.fx-pg.laugh .pg-man { animation: pg-laugh 170ms ease-in-out infinite alternate; }
+@keyframes pg-laugh {
+  from { transform: translateY(0) rotate(-1.5deg); }
+  to { transform: translateY(-1.2vh) rotate(1.5deg); }
+}
+.pg-svg {
+  transform-origin: 50% 100%;
+  animation: pg-breathe 2.6s ease-in-out infinite alternate;
+  filter: drop-shadow(0 1.5vh 2vh rgb(0 0 0 / 0.6));
+}
+@keyframes pg-breathe { to { transform: scale(1.012, 1.02); } }
+
+.pg-svg .pg-arm-point,
+.pg-svg .pg-arm-glass,
+.pg-svg .pg-lock,
+.pg-svg .pg-brow {
+  transform-box: view-box;
+  transition: transform 500ms cubic-bezier(0.3, 1.3, 0.5, 1);
+}
+.pg-svg .pg-arm-point { transform-origin: 138px 198px; }
+.pg-svg .pg-arm-glass { transform-origin: 40px 250px; }
+.pg-svg .pg-lock { transform-origin: 107px 56px; transition-duration: 800ms; }
+.pg-svg .pg-brow { transform-origin: 97px 85px; }
+.fx-pg.point-p1 .pg-arm-point { transform: rotate(58deg); }
+.fx-pg.point-p2 .pg-arm-point { transform: rotate(-78deg); }
+.fx-pg.sip .pg-arm-glass { transform: rotate(16deg) translate(4px, -12px); }
+.fx-pg.toss .pg-arm-glass { transform: rotate(-24deg); }
+.fx-pg.reveal .pg-lock { transform: rotate(-30deg) translate(8px, -4px); }
+.fx-pg.scowl .pg-brow { transform: rotate(12deg) translateY(1px); }
+
+.pg-svg .pg-glass {
+  transform-box: view-box;
+  transform-origin: 62px 150px;
+  transition: transform 900ms cubic-bezier(0.4, 0, 0.8, 0.6), opacity 900ms ease-in;
+}
+.fx-pg.toss .pg-glass,
+.fx-pg.no-glass .pg-glass { transform: translate(-150px, -260px) rotate(-560deg); opacity: 0; }
+.pg-svg .pg-wine {
+  transform-box: fill-box;
+  transform-origin: 50% 0;
+  animation: pg-slosh 2.2s ease-in-out infinite alternate;
+}
+@keyframes pg-slosh { from { transform: rotate(-4deg); } to { transform: rotate(4deg); } }
+
+.pg-svg .pg-mouth,
+.pg-svg .pg-eye {
+  transform-box: fill-box;
+  transform-origin: center;
+  transition: transform 300ms ease-out, opacity 150ms;
+}
+.pg-svg .pg-mouth-open { opacity: 0; transition: opacity 150ms; }
+.fx-pg.scowl .pg-mouth { transform: scaleY(-1) translateY(-2px); }
+.fx-pg.laugh .pg-mouth { opacity: 0; }
+.fx-pg.laugh .pg-mouth-open { opacity: 1; }
+.fx-pg.laugh .pg-eye { transform: scaleY(0.4); }
+
+.pg-svg .pg-meye { transition: filter 600ms; }
+.fx-pg.reveal .pg-meye {
+  filter: drop-shadow(0 0 2px #fde047) drop-shadow(0 0 6px #f59e0b);
+  animation: pg-meye 1.2s ease-in-out infinite alternate;
+}
+@keyframes pg-meye { to { filter: drop-shadow(0 0 4px #fef9c3) drop-shadow(0 0 12px #f59e0b); } }
+
+/* Toon World book. */
+.pg-book {
+  position: absolute;
+  left: 50%;
+  top: 80%;
+  width: 52%;
+  aspect-ratio: 1.5;
+  translate: -50% -50%;
+  perspective: 500px;
+  opacity: 0;
+  transform: translateY(3vh) scale(0.7);
+  transition: opacity 400ms, transform 500ms cubic-bezier(0.3, 1.4, 0.5, 1);
+}
+.fx-pg.book-open .pg-book { opacity: 1; transform: none; }
+.fx-pg.book-burn .pg-book {
+  opacity: 0;
+  transform: translateY(4vh) rotate(10deg) scale(0.6);
+  transition-duration: 700ms;
+  transition-delay: 900ms;
+}
+.pg-book-pages {
+  position: absolute;
+  inset: 0;
+  border: 2px solid #9a3412;
+  border-radius: 3px;
+  background: linear-gradient(90deg, #fef3c7 0 48%, #c8b48a 49% 51%, #fef3c7 52%);
+  box-shadow: 0 1vh 2vh rgb(0 0 0 / 0.6);
+  clip-path: inset(0 0 0 50%);
+  transition: clip-path 1ms linear 650ms;
+}
+.fx-pg.book-open .pg-book-pages { clip-path: inset(0); }
+.fx-pg.book-still .pg-book-pages { transition: none; }
+.pg-book-pages span {
+  position: absolute;
+  left: 52%;
+  top: 8%;
+  width: 42%;
+  height: 84%;
+  background: #fffbeb;
+  border: 1px solid #c8b48a;
+  opacity: 0;
+}
+.fx-pg.book-burn .pg-book-pages span { animation: pg-page 1100ms ease-out calc(var(--i) * 110ms) both; }
+@keyframes pg-page {
+  0% { opacity: 1; transform: none; }
+  100% {
+    opacity: 0;
+    transform: translate(calc((var(--i) - 2.5) * 5vh), -30vh) rotate(calc((var(--i) - 2.5) * 70deg)) scale(0.5);
+  }
+}
+.pg-book-cover {
+  position: absolute;
+  left: 50%;
+  top: 0;
+  width: 50%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  border: 2px solid #701a75;
+  border-radius: 3px;
+  background: linear-gradient(135deg, #f472b6, #a21caf);
+  color: #fde047;
+  font: 900 1.4vh/1.1 'Cinzel', Georgia, serif;
+  text-shadow: 0 1px 0 #701a75;
+  transform-origin: left center;
+  backface-visibility: hidden;
+  transition: transform 700ms ease-in-out;
+}
+.fx-pg.book-open .pg-book-cover { transform: rotateY(-180deg); }
+.pg-toon {
+  position: absolute;
+  left: 50%;
+  top: 30%;
+  translate: -50% -50%;
+  font-size: 4vh;
+  opacity: 0;
+}
+.fx-pg.book-open:not(.book-still) .pg-toon {
+  animation:
+    pg-toon 900ms cubic-bezier(0.3, 1.5, 0.5, 1) calc(500ms + var(--i) * 250ms) both,
+    pg-wiggle 600ms ease-in-out calc(1400ms + var(--i) * 250ms) infinite alternate;
+}
+.fx-pg.book-still .pg-toon { display: none; }
+@keyframes pg-toon {
+  from { opacity: 0; transform: scale(0.2); }
+  to { opacity: 1; transform: translate(calc((var(--i) - 1.5) * 11vh), calc(-9vh - (var(--i) - 1.5) * (var(--i) - 1.5) * -1.5vh)); }
+}
+@keyframes pg-wiggle { from { rotate: -12deg; } to { rotate: 12deg; } }
+
+/* Stage 3: Pegasus fans out his soul-sealing cards. */
+.pg-fan {
+  position: absolute;
+  left: 98%;
+  top: 83%;
+}
+.pg-fan span {
+  position: absolute;
+  left: -1.6vh;
+  bottom: 0;
+  width: 3.2vh;
+  height: 4.6vh;
+  border: 2px solid #fbbf24;
+  border-radius: 3px;
+  background: radial-gradient(circle, #f0abfc 0 15%, #86198f 18% 40%, #3b0764 45%);
+  box-shadow: 0 0 1.2vh rgb(232 121 249 / 0.7);
+  transform-origin: 50% 100%;
+  opacity: 0;
+  transform: rotate(0) scale(0.3);
+  transition: transform 450ms cubic-bezier(0.3, 1.4, 0.5, 1) calc((var(--i) + 1) * 80ms), opacity 300ms;
+}
+.fx-pg.cards .pg-fan span { opacity: 1; transform: rotate(calc(var(--i) * 24deg)) translateY(-1vh); }
+
+/* The duelists' sides of the table. */
+.pg-player {
+  position: absolute;
+  left: 50%;
+  width: min(320px, 86vw);
+  translate: -50% 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.4vh;
+}
+.pg-player--1 { bottom: 3%; }
+.pg-player--2 { top: 3%; rotate: 180deg; }
+.pg-hand {
+  display: flex;
+  justify-content: center;
+  height: 9vh;
+  transition: opacity 600ms;
+}
+.pg-card {
+  position: relative;
+  width: 6.3vh;
+  height: 9vh;
+  margin: 0 -0.5vh;
+  perspective: 400px;
+  rotate: calc(var(--i) * 7deg);
+}
+.pg-card-back,
+.pg-card-face {
+  position: absolute;
+  inset: 0;
+  border-radius: 0.5vh;
+  backface-visibility: hidden;
+  transition: transform 500ms ease-in-out calc((var(--i) + 1.5) * 90ms), box-shadow 500ms;
+}
+.pg-card-back {
+  border: 2px solid #1c1917;
+  background: radial-gradient(circle, #f59e0b 0 16%, #7c2d12 19% 34%, #451a03 38%);
+}
+.pg-card-face {
+  display: grid;
+  place-items: center;
+  border: 2px solid #92400e;
+  background: linear-gradient(#fef3c7, #f59e0b);
+  font-size: 3.6vh;
+  transform: rotateY(180deg);
+}
+.fx-pg.read-p1 .pg-player--1 .pg-card-back,
+.fx-pg.read-p2 .pg-player--2 .pg-card-back { transform: rotateY(-180deg); }
+.fx-pg.read-p1 .pg-player--1 .pg-card-face,
+.fx-pg.read-p2 .pg-player--2 .pg-card-face { transform: rotateY(0); box-shadow: 0 0 1.4vh #fde047; }
+.pg-player-name {
+  font: 700 1.6vh/1 'Cinzel', Georgia, serif;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  color: #e9d5ff;
+  opacity: 0.75;
+}
+.pg-soul {
+  position: absolute;
+  left: 50%;
+  top: -0.5vh;
+  width: 7vh;
+  height: 10vh;
+  margin-left: -3.5vh;
+  display: grid;
+  place-items: center;
+  border: 2px solid #fde047;
+  border-radius: 0.6vh;
+  background: linear-gradient(#f5d0fe, #6b21a8);
+  box-shadow: 0 0 2vh #e879f9;
+  font-size: 5.5vh;
+  opacity: 0;
+  transform: translateY(-30vh) scale(0.3) rotate(-220deg);
+  transition: transform 800ms cubic-bezier(0.3, 1.2, 0.5, 1), opacity 400ms;
+}
+.pg-soul .ce-emoji { filter: brightness(0) drop-shadow(0 0 0.6vh #e879f9); }
+.fx-pg.soul-p1 .pg-player--1 .pg-soul,
+.fx-pg.soul-p2 .pg-player--2 .pg-soul { opacity: 1; transform: none; }
+.fx-pg.soul-p1 .pg-player--1 .pg-hand,
+.fx-pg.soul-p2 .pg-player--2 .pg-hand { opacity: 0.25; }
+.fx-pg.flash .pg-soul { animation: pg-soul-pulse 700ms ease-in-out infinite alternate; }
+@keyframes pg-soul-pulse { to { box-shadow: 0 0 4vh #f0abfc, 0 0 1vh #fff; } }
+
+/* Millennium Eye scan beams (P1 down, P2 up). */
+.pg-beam {
+  position: absolute;
+  left: calc(50% + 2vh);
+  width: min(90vw, 420px);
+  translate: -50% 0;
+  opacity: 0;
+  mix-blend-mode: screen;
+  transform: scaleY(0);
+  transition: opacity 300ms, transform 450ms ease-out;
+}
+.pg-beam--1 {
+  top: calc(50% - 5.5vh);
+  bottom: 3%;
+  transform-origin: top;
+  background: linear-gradient(rgb(253 224 71 / 0.9), rgb(253 224 71 / 0.15));
+  clip-path: polygon(48% 0, 52% 0, 100% 100%, 0 100%);
+}
+.pg-beam--2 {
+  top: 3%;
+  bottom: calc(50% + 5.5vh);
+  transform-origin: bottom;
+  background: linear-gradient(0deg, rgb(253 224 71 / 0.9), rgb(253 224 71 / 0.15));
+  clip-path: polygon(0 0, 100% 0, 52% 100%, 48% 100%);
+}
+.fx-pg.scan-p1 .pg-beam--1,
+.fx-pg.scan-p2 .pg-beam--2 { opacity: 1; transform: none; }
+
+/* Speech bubbles: P1 under Pegasus, P2 mirrored above him. */
+.pg-say {
+  position: absolute;
+  left: 50%;
+  width: max-content;
+  max-width: min(340px, 86vw);
+  padding: 0.55rem 0.9rem;
+  border-radius: 1rem;
+  translate: -50% 0;
+  background: #fdf4ff;
+  box-shadow: 0 0.6rem 1.2rem rgb(0 0 0 / 0.5), 0 0 0 2px #c026d3;
+  color: #3b0764;
+  font: italic 700 0.95rem/1.3 'Cinzel', Georgia, serif;
+  text-align: center;
+  opacity: 0;
+}
+.pg-say::before {
+  content: '';
+  position: absolute;
+  left: 50%;
+  top: -9px;
+  translate: -50% 0;
+  border: 9px solid transparent;
+  border-top: 0;
+  border-bottom-color: #fdf4ff;
+}
+.pg-say--1 { top: calc(50% + 21vh); }
+.pg-say--2 { bottom: calc(50% + 21vh); rotate: 180deg; }
+.pg-say.is-on { animation: pg-say 350ms cubic-bezier(0.3, 1.5, 0.5, 1) both; }
+@keyframes pg-say {
+  from { opacity: 0; transform: scale(0.6); }
+  to { opacity: 1; transform: none; }
+}
+.fx-pg.blood .pg-say { background: #fff1f2; box-shadow: 0 0.6rem 1.2rem rgb(0 0 0 / 0.5), 0 0 0 2px #dc2626; color: #7f1d1d; }
+.fx-pg.blood .pg-say::before { border-bottom-color: #fff1f2; }
+
+.pg-redflash {
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(circle, rgb(254 202 202 / 0.9), rgb(220 38 38 / 0.6));
+  opacity: 0;
+}
+.fx-pg.flash .pg-redflash { animation: ng-flash 900ms ease-out both; }
+
+.pg-skip {
+  position: absolute;
+  left: 50%;
+  translate: -50% 0;
+  margin: 0;
+  font-size: 0.6rem;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  color: rgb(233 213 255 / 0.4);
+}
+.pg-skip--1 { bottom: 0.2rem; }
+.pg-skip--2 { top: 0.2rem; rotate: 180deg; }
+
 /* --- Co-op Duelist hold: "IT'S TIME TO DUEL!!!" (5000ms, 1% = 50ms) --- */
 .ttd-bg {
   position: absolute;

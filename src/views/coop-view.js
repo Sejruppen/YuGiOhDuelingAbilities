@@ -128,6 +128,13 @@ function renderCoopBattle() {
   const freshStep = stepKey !== null && stepKey !== coopUi.shownStep;
   coopUi.shownStep = stepKey;
 
+  // Each phase's rule card is preceded by an animated Pegasus scene (once).
+  if (coop.cutscene && coopUi.scene !== coop.cutscene) {
+    const key = coop.cutscene;
+    coopUi.scene = key;
+    setTimeout(() => playPegasusScene(key));
+  }
+
   return `
     <div class="coop-screen flex-1 min-h-0 flex flex-col">
       <section class="coop-half coop-half--top flex-1 min-h-0 flex flex-col">${renderCoopHalf(1, freshStep)}</section>
