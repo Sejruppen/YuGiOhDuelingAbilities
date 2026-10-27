@@ -1,4 +1,5 @@
-// Settings screen: theme, size, sound and the secrets counter (moved off the
+// Settings screen: theme, size, sound, the secrets counter and the "Get a
+// hint" button (egg-hints.js; moved off the
 // start screen so it fits on a phone without scrolling). Holding the button
 // for 2s plays the Limiter Removal egg (start-button-eggs.js).
 function renderSettingsButton() {
@@ -29,6 +30,7 @@ function renderSettingsView() {
           ${renderCoopResetButton()}
           <p class="w-full max-w-xs mt-6 -mb-2 text-xs font-semibold uppercase tracking-widest text-slate-400">Secrets</p>
           ${renderEggCounter()}
+          ${renderEggHint()}
           ${renderEggResetButton()}
         </div>
       </div>

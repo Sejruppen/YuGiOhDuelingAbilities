@@ -97,7 +97,7 @@ function renderTournamentSetup() {
         <p class="text-xs font-semibold uppercase tracking-widest text-slate-400">Choose duelists <span class="normal-case tracking-normal font-normal text-slate-500">(optional)</span></p>
         ${chosen ? '<button onclick="clearTournamentPicks()" class="text-xs font-semibold text-slate-400 hover:text-white px-2 py-1">Clear</button>' : ''}
       </div>
-      <p class="text-xs text-slate-500 mb-3 leading-relaxed">Empty spots are drawn at random, one deck per duelist. Neutral and Custom only join if you pick them.</p>
+      <p class="text-xs text-slate-500 mb-3 leading-relaxed">Empty spots are drawn at random, one deck per duelist. Neutral, Custom, Theotaur and Trizze only join if you pick them.</p>
       <div class="space-y-2 pb-2">
         ${CHARACTERS.map(renderTournamentPickRow).join('')}
       </div>

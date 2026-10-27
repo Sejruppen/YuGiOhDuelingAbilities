@@ -13,7 +13,7 @@ const TOURNAMENT_STORAGE_KEY = 'ygo_tournament';
 const TOURNAMENT_MIN_SIZE = 2;
 const TOURNAMENT_DEFAULT_SIZE = 8;
 // Only ever in a tournament when picked by hand.
-const TOURNAMENT_PICK_ONLY_IDS = [NEUTRAL_CHARACTER_ID, CUSTOM_CHARACTER_ID];
+const TOURNAMENT_PICK_ONLY_IDS = [NEUTRAL_CHARACTER_ID, CUSTOM_CHARACTER_ID, 'theotaur', 'trizze'];
 
 const newTournament = () => ({ phase: 'setup', size: TOURNAMENT_DEFAULT_SIZE, picks: [], entrants: [], randomIds: [], slots: [], results: {} });
 

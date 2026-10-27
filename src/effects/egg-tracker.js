@@ -75,6 +75,7 @@ function markEggFound(id) {
   if (!EGG_IDS.includes(id) || eggTracker.found.has(id)) return;
   eggTracker.found.add(id);
   saveFoundEggs();
+  clearEggHint(id);
   if (allEggsFound()) unlockTreasureTheme();
   paintEggCounters();
   showEggFoundPill();
@@ -119,6 +120,7 @@ function resetEggs() {
   eggTracker.finaleTimer = null;
   eggTracker.found.clear();
   saveFoundEggs();
+  clearEggHint();
   try {
     localStorage.removeItem(EGG_FINALE_SEEN_KEY);
     localStorage.removeItem(TREASURE_UNLOCK_KEY);
