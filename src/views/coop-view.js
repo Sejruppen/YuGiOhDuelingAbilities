@@ -457,12 +457,14 @@ function renderCoopCutscene() {
   const c = PEGASUS_CUTSCENES[coop.cutscene];
   if (!c) return '';
   const half = top => `
-    <div class="${top ? 'coop-half--top' : ''} flex-1 min-h-0 overflow-y-auto no-scrollbar p-4 flex flex-col items-center justify-center text-center gap-2">
-      <div class="coop-cut-icon text-6xl leading-none">${c.icon}</div>
-      <p class="text-xl font-black text-white">${c.title}</p>
-      <p class="text-sm italic text-fuchsia-200 max-w-sm">"${c.quote}"</p>
-      <ul class="text-left text-xs text-slate-200 space-y-1 max-w-sm leading-snug">${c.rules.map(r => `<li>${r}</li>`).join('')}</ul>
-      <button onclick="dismissCoopCutscene()" class="mt-1 px-6 py-2.5 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold">Let's duel!</button>
+    <div class="${top ? 'coop-half--top' : ''} flex-1 min-h-0 overflow-y-auto no-scrollbar p-4 flex flex-col">
+      <div class="my-auto flex flex-col items-center text-center gap-2">
+        <div class="coop-cut-icon text-6xl leading-none">${c.icon}</div>
+        <p class="text-xl font-black text-white">${c.title}</p>
+        <p class="text-sm italic text-fuchsia-200 max-w-sm">"${c.quote}"</p>
+        <ul class="text-left text-xs text-slate-200 space-y-1 max-w-sm leading-snug">${c.rules.map(r => `<li>${r}</li>`).join('')}</ul>
+        <button onclick="dismissCoopCutscene()" class="shrink-0 mt-1 px-6 py-2.5 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold">Let's duel!</button>
+      </div>
     </div>
   `;
   return `
