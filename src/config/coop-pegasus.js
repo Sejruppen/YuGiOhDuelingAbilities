@@ -9,18 +9,32 @@ const COOP_REVIVE_LP = 2000;
 const COOP_BOND_COSTS = { foresight: 2, shield: 3, revive: 5, protect: 2 };
 const COOP_CATCH_PENALTY = 1000;
 
+// Table rule for every co-op encounter: the phone covers the middle Monster
+// Zone of both players.
+const COOP_TABLE_RULE = '📱 The phone lies on both of your middle Monster Zones. You each play with only 4 Monster Zones.';
+
+// Silence per stage (index = stage - 1): null = talk freely,
+// 'hands' = no talking about your hands, 'total' = no talking at all.
+const COOP_SILENCE_TEXT = {
+  hands: '🤫 No talking about your hands. Use the signals.',
+  total: '🤐 Complete silence! Not a word. Use the signals.'
+};
+
 const COOP_DIFFICULTIES = {
   rookie: {
     label: 'Rookie', icon: '🌱', bossLp: 12000, bond: 3, bondRate: 1, sealRounds: 4,
+    silence: [null, 'hands', 'hands'],
     desc: 'Pegasus has 12,000 LP. You start with 3 Bond.'
   },
   duelist: {
     label: 'Duelist', icon: '⚔️', bossLp: 16000, bond: 1, bondRate: 1, sealRounds: 3,
-    desc: 'Pegasus has 16,000 LP. The real challenge.'
+    silence: [null, 'hands', 'total'],
+    desc: 'Pegasus has 16,000 LP. Complete silence in the Final Read.'
   },
   pharaoh: {
-    label: 'Pharaoh', icon: '👑', bossLp: 20000, bond: 0, bondRate: 0.5, sealRounds: 2, silent: true,
-    desc: '20,000 LP. Bond fills at half speed, and you may never talk about your hands.'
+    label: 'Pharaoh', icon: '👑', bossLp: 20000, bond: 0, bondRate: 0.5, sealRounds: 2,
+    silence: ['hands', 'total', 'total'],
+    desc: '20,000 LP. Bond fills at half speed. Never talk about your hands, and complete silence once the Eye opens.'
   }
 };
 
@@ -95,7 +109,7 @@ const PEGASUS_CUTSCENES = {
     title: 'The Millennium Eye opens',
     quote: "Enough playtime. Let's see what's in those pretty little heads of yours…",
     rules: [
-      '🤫 Silence: no talking about your hands! Use the signal buttons. Your partner may call you out for 1000 LP.',
+      '💥 Toon World collapses! Each player keeps 1 monster of their choice. The rest are destroyed.',
       '👁️ Mind Read: each turn Pegasus names a card type. The read player must discard one, unless their partner protects them.',
       '🔒 Thousand-Eyes Restrict absorbs a monster. Its owner can\'t attack until Restrict is gone.',
       '🪤 Restrict can only be attacked when its eye is open: activate any Trap to open it.'
@@ -106,9 +120,9 @@ const PEGASUS_CUTSCENES = {
     title: 'The Final Read',
     quote: 'Your souls will make a lovely addition to my collection!',
     rules: [
+      '⚡ Pegasus strikes first! Your turn ends right now and he takes his turn.',
       '⏳ Soul Seal: when the countdown runs out, the player with the lower LP is sealed in a card.',
       '🎭 Pegasus bluffs. He shows two moves, but only one is real.',
-      '👁️ Each turn he picks a player who must play with their hand face-up.',
       '⚔️ Restrict is gone. Hit Pegasus with everything you have!'
     ]
   }

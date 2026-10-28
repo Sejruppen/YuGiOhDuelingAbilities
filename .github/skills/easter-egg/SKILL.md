@@ -83,7 +83,7 @@ To add another name, add an entry to `NAME_EGGS`, an id to `EGG_IDS` and `EGG_HI
 - The data lives in `src/config/coop-pegasus.js`:
   - `COOP_ENCOUNTERS`, `COOP_DIFFICULTIES` (Rookie, Duelist, Pharaoh).
   - `PEGASUS_CUTSCENES`: the rule cards shown at each phase.
-- State lives in `src/state/coop-store.js`: `coop.cutscene` is `'intro'`, `'stage2'` or `'stage3'`.
+- State lives in `src/state/coop-store.js`: `coop.cutscene` is `'intro'`, `'stage2'` or `'stage3'`. The `'victory'` scene is played straight from `coopVictory()` over the end screen and fires the `co-victory` fanfare when it ends.
 - Actions live in `src/actions/coop-actions.js`, with UI state in `coopUi`. Settings has a reset for co-op progress with a per-boss, per-difficulty wins view.
 - **Cutscenes** (`src/effects/pegasus-cutscenes.js`, CSS section "PEGASUS CUTSCENES", sounds `'pg-scene-*'`) play before each rule card, hooked in `renderCoopBattle` in `coop-view.js`.
   - `PEGASUS_SVG` is a detailed SVG Pegasus. Its animatable parts are `pg-arm-point`, `pg-arm-glass`, `pg-glass`, `pg-lock` (hair over the Millennium Eye), `pg-meye`, `pg-brow`, `pg-mouth` and `pg-mouth-open`.

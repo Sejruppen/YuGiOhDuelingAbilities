@@ -64,6 +64,15 @@ function startCoopBattle() {
 function dismissCoopCutscene() {
   coop.cutscene = null;
   coopUi.scene = null;
+  if (coop.bossTurnAfterScene) {
+    coop.bossTurnAfterScene = false;
+    if (coop.phase === 'battle' && typeof coop.turn === 'number') {
+      coopUi.panel = [null, null];
+      coopUi.input = ['', ''];
+      startCoopBossTurn();
+      playSound({ name: 'co-boss-turn' });
+    }
+  }
   commitCoop();
 }
 

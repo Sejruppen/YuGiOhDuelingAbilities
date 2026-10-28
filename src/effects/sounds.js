@@ -2412,6 +2412,28 @@ const COOP_SOUNDS = {
     pegasusLaugh(t + 5.4, hall);
     pegasusLaugh(t + 6.3, hall);
   },
+  // Victory (9.3s): the hit, the Eye powers down, a warm friendship swell, a
+  // grumble, the wine glass returns, then he walks off. 'co-victory' follows.
+  'pg-scene-victory': t => {
+    const hall = darkBus({ reverb: 0.6, echo: 0.15 });
+    boom(t + 0.2, 1, hall);
+    noise({ t: t + 0.2, dur: 0.6, gain: 0.1, type: 'highpass', freq: 3000, to: 700, attack: 0.002, out: hall });
+    brass({ t: t + 0.4, notes: [50, 53, 56], dur: 0.7, gain: 0.045 });
+    [1.4, 1.75, 2.0, 2.4].forEach((o, i) => eyeHum(t + o, 0.18, 0.06 - i * 0.012, hall));
+    tone({ t: t + 1.5, freq: 900, to: 50, dur: 1.4, type: 'sawtooth', gain: 0.035, filter: 1400, attack: 0.01, out: hall });
+    chord({ t: t + 3.2, notes: [60, 64, 67, 72], dur: 1.9, gain: 0.025, type: 'triangle', attack: 0.25, filter: 2600 });
+    choir({ t: t + 3.2, notes: [60, 67, 72, 76], dur: 1.9, gain: 0.01, attack: 0.4, out: hall });
+    arpeggio(t + 3.3, [72, 76, 79, 84, 88], 0.12, (tt, n) => bell({ t: tt, freq: midi(n), dur: 1.1, gain: 0.03, out: hall }));
+    healSparkles(t + 3.6, 1.3, 10, hall);
+    brass({ t: t + 5.1, notes: [45, 48], dur: 0.35, gain: 0.04 });
+    brass({ t: t + 5.5, notes: [43, 47], dur: 0.5, gain: 0.035 });
+    ceWhoosh(t + 6.6, 0.6, 0.04, 2200, 400, hall);
+    [0, 0.06, 0.13].forEach(o => ceramicClink(t + 7.3 + o, 0.035, hall));
+    [[62, 65, 69], [61, 64, 69], [62, 65, 69]]
+      .forEach((notes, bar) => notes.forEach((n, beat) => bell({ t: t + 6.7 + bar * 0.6 + beat * 0.2, freq: midi(n + 12), dur: 0.5, gain: beat ? 0.012 : 0.02, out: hall })));
+    pegasusLaugh(t + 7.9, hall);
+    ceWhoosh(t + 8.4, 0.8, 0.05, 400, 1800, hall);
+  },
   // Pharaoh hold: "His true name" (true-name-egg.js). Hijaz scale on D.
   'atn-open': t => {
     const tomb = darkBus({ reverb: 0.8, echo: 0.2 });

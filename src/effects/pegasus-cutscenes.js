@@ -1,5 +1,5 @@
 // Co-op Boss cutscenes: before each phase's rule card (intro, stage2, stage3)
-// a short animated scene plays with a detailed SVG Pegasus who talks to and
+// and over the victory screen (victory) a short animated scene plays with a detailed SVG Pegasus who talks to and
 // points at both duelists. The phone lies between the players, so Pegasus
 // stands in the middle and every line is shown twice: upright for Player 1
 // (bottom) and rotated for Player 2 (top). Tap anywhere to skip.
@@ -135,6 +135,25 @@ const PG_SCENES = {
       [5200, s => { s.pose('-point-p2'); s.pose('-cards'); s.pose('laugh'); s.pose('flash'); s.say('…will make a lovely addition to my collection!'); }],
       [7800, s => s.end()]
     ]
+  },
+  // Plays over the victory screen. The fanfare and confetti come when it ends.
+  victory: {
+    sound: 'pg-scene-victory',
+    start: 'reveal no-glass',
+    onEnd: () => {
+      playSound({ name: 'co-victory' });
+      fxCoopVictory();
+    },
+    steps: [
+      [200, s => { s.pose('hit'); s.pose('scowl'); s.say('Impossible…!'); }],
+      [1400, s => { s.pose('-hit'); s.pose('eye-fail'); s.say("My Millennium Eye… it can't see your cards anymore!"); }],
+      [3200, s => { s.pose('-scowl'); s.pose('gasp'); s.pose('bond'); s.pose('read-p1'); s.pose('read-p2'); s.say('This light… the power of friendship?!'); }],
+      [5000, s => { s.pose('-gasp'); s.pose('-bond'); s.pose('-reveal'); s.say('Bah! Very well… you win, my friends.'); }],
+      [6600, s => { s.pose('-no-glass'); s.pose('bow'); s.pose('stars'); s.say('Congratulations! Do visit my castle again sometime~'); }],
+      [7500, s => { s.pose('-bow'); s.pose('sip'); }],
+      [8400, s => { s.pose('-sip'); s.pose('is-leaving'); }],
+      [9300, s => s.end()]
+    ]
   }
 };
 
@@ -161,6 +180,8 @@ function playPegasusScene(key) {
       <div class="pg-say pg-say--1"></div>
       <div class="pg-say pg-say--2"></div>
       <div class="pg-redflash"></div>
+      <div class="pg-whiteflash"></div>
+      <div class="pg-stars">${ceRange(24, () => `<span class="ce-emoji" style="--x: ${ceRand(0, 96).toFixed(1)}%; --d: ${Math.round(ceRand(0, 1600))}ms; --s: ${ceRand(0.7, 1.3).toFixed(2)};">${cePick(['✨', '⭐', '💫', '🌟'])}</span>`)}</div>
       <p class="pg-skip pg-skip--1">Tap to skip</p>
       <p class="pg-skip pg-skip--2">Tap to skip</p>`
   });
@@ -181,6 +202,7 @@ function playPegasusScene(key) {
       done = true;
       timers.forEach(clearTimeout);
       overlay.classList.add('is-out');
+      scene.onEnd?.();
       setTimeout(() => overlay.remove(), PG_FADE_MS);
     }
   };

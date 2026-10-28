@@ -43,7 +43,7 @@ function coopOption({ icon, label, sub, disabled, reason }, onclick) {
 
 function renderCoopKeypad(i, label, actionsHtml) {
   const value = coopUi.input[i];
-  const keys = ['1', '2', '3', 'back', '4', '5', '6', '00', '7', '8', '9', '0'];
+  const keys = ['1', '2', '3', 'back', '4', '5', '6', '0', '7', '8', '9', '00'];
   return `
     <div class="flex items-baseline justify-between gap-2 px-1">
       <p class="text-xs text-slate-400">${label}</p>
@@ -97,7 +97,7 @@ function renderCoopSetup() {
     </header>
     <div class="flex-1 min-h-0 overflow-y-auto p-4 no-scrollbar">
       <p class="text-sm text-slate-300 leading-relaxed mb-5">
-        Two duelists, one boss. Lay the phone between your fields: <b class="text-white">Player 1</b> sits at the bottom, <b class="text-white">Player 2</b> at the top.
+        Two duelists, one boss. Lay the phone on your middle Monster Zones: <b class="text-white">Player 1</b> sits at the bottom, <b class="text-white">Player 2</b> at the top.
         Play your own decks, but instead of attacking each other, you attack the phone. Pegasus is <b class="text-amber-400">tough</b>: you will only win together.
       </p>
       <p class="text-xs font-semibold uppercase tracking-widest text-slate-400 mb-2">Encounter</p>
@@ -107,6 +107,7 @@ function renderCoopSetup() {
       <p class="text-xs text-slate-400 mt-2 mb-5">${d.desc}</p>
       <p class="text-xs font-semibold uppercase tracking-widest text-slate-400 mb-2">How it works</p>
       <ul class="text-xs text-slate-300 space-y-1.5 leading-relaxed">
+        <li>${COOP_TABLE_RULE}</li>
         <li>🔁 A round: Player 1's turn, Player 2's turn, then Pegasus' turn and a random Fate card.</li>
         <li>👁️ Pegasus always shows his next move. Plan around it together!</li>
         <li>⚔️ Attack on the phone: pick a target and enter your monster's ATK. The phone handles the battle.</li>
@@ -226,15 +227,15 @@ function renderCoopPlayer(i) {
   const down = isCoopDown(p);
   const myTurn = coop.turn === i;
   const locked = coop.restrict?.locked === i;
-  const silent = isCoopSilent();
+  const silence = coopSilence();
+  const silent = !!silence;
   const status = p.sealed ? '🃏 Sealed in a card' : p.fallen ? '💀 In the Shadow Realm' : myTurn ? '⚔️ Your turn' : `⏳ ${coopName(1 - i)}'s turn`;
   const toast = coopUi.toast[i];
   const signal = coopUi.signal[1 - i] && COOP_SIGNALS[coopUi.signal[1 - i]];
 
   const notices = [];
   if (locked) notices.push("🔒 Restrict holds your strongest monster. You can't attack.");
-  if (coop.faceUp === i) notices.push('🙈 Pegasus sees all: play this turn with your hand face-up!');
-  if (silent && !down) notices.push('🤫 No talking about your hands. Use the signals.');
+  if (silent && !down) notices.push(COOP_SILENCE_TEXT[silence]);
   if (p.fallen && !p.sealed) notices.push(`Your partner can revive you for ${COOP_BOND_COSTS.revive} Bond.`);
 
   const action = (icon, label, onclick, disabled) => `
@@ -456,13 +457,19 @@ function renderCoopStepBody(step, i, fresh) {
 function renderCoopCutscene() {
   const c = PEGASUS_CUTSCENES[coop.cutscene];
   if (!c) return '';
+  const rules = [...c.rules];
+  if (coop.cutscene === 'intro') rules.push(COOP_TABLE_RULE);
+  // The silence rule depends on the difficulty; show it when it changes.
+  const stage = coop.cutscene === 'intro' ? 1 : Number(coop.cutscene.replace('stage', ''));
+  const silence = coopSilence(stage);
+  if (silence && silence !== coopSilence(stage - 1)) rules.push(`${COOP_SILENCE_TEXT[silence]} Your partner may call you out for ${COOP_CATCH_PENALTY} LP.`);
   const half = top => `
     <div class="${top ? 'coop-half--top' : ''} flex-1 min-h-0 overflow-y-auto no-scrollbar p-4 flex flex-col">
       <div class="my-auto flex flex-col items-center text-center gap-2">
         <div class="coop-cut-icon text-6xl leading-none">${c.icon}</div>
         <p class="text-xl font-black text-white">${c.title}</p>
         <p class="text-sm italic text-fuchsia-200 max-w-sm">"${c.quote}"</p>
-        <ul class="text-left text-xs text-slate-200 space-y-1 max-w-sm leading-snug">${c.rules.map(r => `<li>${r}</li>`).join('')}</ul>
+        <ul class="text-left text-xs text-slate-200 space-y-1 max-w-sm leading-snug">${rules.map(r => `<li>${r}</li>`).join('')}</ul>
         <button onclick="dismissCoopCutscene()" class="shrink-0 mt-1 px-6 py-2.5 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold">Let's duel!</button>
       </div>
     </div>

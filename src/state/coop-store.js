@@ -74,7 +74,9 @@ const coopToons = () => coop.guardians.filter(g => g.kind === 'toon');
 const coopBunny = () => coop.guardians.find(g => g.kind === 'bunny');
 const coopGuardianDef = g => (g.kind === 'bunny' ? PEGASUS_BUNNY : PEGASUS_TOONS[g.toon]);
 const coopBossMult = () => (coop.players.some(isCoopDown) ? COOP_FALLEN_MULT : 1);
-const isCoopSilent = () => coop.boss.stage >= 2 || !!coopDiff().silent;
+// null | 'hands' | 'total' for the current stage (see COOP_SILENCE_TEXT).
+const coopSilence = (stage = coop.boss.stage) => coopDiff().silence?.[stage - 1] || null;
+const isCoopSilent = () => !!coopSilence();
 const coopPick = list => list[Math.floor(Math.random() * list.length)];
 const coopStep = () => coop.steps[coop.stepIndex];
 
@@ -133,7 +135,7 @@ function createCoopBattle(difficulty) {
     cheat: false,
     shuffle: false,
     extraToon: false,
-    faceUp: null,
+    bossTurnAfterScene: false,
     countdown: null,
     foresight: false,
     fate: null,
@@ -187,8 +189,9 @@ function coopVictory() {
   coop.phase = 'victory';
   coop.turn = null;
   recordCoopWin();
-  playSound({ name: 'co-victory' });
-  queueCoopFx(fxCoopVictory);
+  // Pegasus' victory cutscene plays the fanfare when it ends.
+  if (prefersReducedMotion()) playSound({ name: 'co-victory' });
+  else queueCoopFx(() => playPegasusScene('victory'));
 }
 
 function coopDefeat() {
@@ -210,6 +213,9 @@ function enterCoopStage(stage) {
   if (stage === 3) {
     if (coop.restrict) releaseCoopRestrict();
     coop.countdown = coopDiff().sealRounds;
+    // Pegasus strikes first: the players' turns are over and his turn starts
+    // when the cutscene is dismissed.
+    if (typeof coop.turn === 'number') coop.bossTurnAfterScene = true;
   }
   // During Pegasus' turn the omen is rebuilt when his turn ends.
   if (coop.turn !== 'boss') coop.omen = buildCoopOmen();
@@ -225,7 +231,7 @@ function ripCoopPage() {
   if (coop.pages === 0) {
     playSound({ name: 'co-book' });
     enterCoopStage(2);
-    return { tone: 'good', text: '📖 The last page is torn out! Toon World slams shut and every Toon vanishes!' };
+    return { tone: 'good', text: '📖 The last page is torn out! Toon World collapses: every Toon vanishes, and each player keeps only 1 monster.' };
   }
   return { tone: 'good', text: `📖 RIIIP! ${coop.pages} page${coop.pages === 1 ? '' : 's'} left.` };
 }
@@ -331,7 +337,6 @@ function describeCoopOmen() {
   } else {
     lines.push({ icon: '🎭', text: 'One of these is a bluff:' });
     o.bluffs.forEach(id => lines.push({ icon: PEGASUS_BLUFFS[id].icon, text: PEGASUS_BLUFFS[id].text }));
-    lines.push({ icon: '🙈', text: 'Someone must play next turn with their hand face-up' });
     lines.push({ icon: '⏳', text: `Soul Seal in ${coop.countdown} turn${coop.countdown === 1 ? '' : 's'}` });
   }
   if (o.stage >= 2) lines.push(o.mindRead ? { icon: '🧠', text: 'Mind Read on a random player' } : { icon: '🔀', text: 'Mind Read will fail (Mind Shuffle)' });
@@ -351,7 +356,6 @@ function normalizeCoopTurn() {
 
 function startCoopBossTurn() {
   coop.turn = 'boss';
-  coop.faceUp = null;
   coop.steps = buildCoopSteps();
   coop.stepIndex = 0;
   prepareCoopStep();
@@ -372,7 +376,7 @@ function buildCoopSteps() {
   } else {
     steps.push({ type: 'bluff', bluff: o.real || 'glare' });
     if (o.mindRead !== false) steps.push({ type: 'mind-read' });
-    steps.push({ type: 'eye-reveal' }, { type: 'seal' });
+    steps.push({ type: 'seal' });
   }
   steps.push({ type: 'fate' });
   return steps;
@@ -500,14 +504,6 @@ function prepareCoopStepType(step) {
       const partner = 1 - target;
       const canProtect = !isCoopDown(coop.players[partner]) && coop.bond >= COOP_BOND_COSTS.protect;
       Object.assign(step, { kind: 'mind-read', target, cardType: coopPick(['MONSTER', 'SPELL', 'TRAP']), sub: canProtect ? 'protect' : 'answer', icon: '🧠', title: 'Mind Read!' });
-      playSound({ name: 'co-eye' });
-      return true;
-    }
-    case 'eye-reveal': {
-      const target = coopLpTarget('random');
-      if (target === null) return false;
-      coop.faceUp = target;
-      Object.assign(step, { kind: 'info', icon: '🙈', title: 'Pegasus sees everything', text: `${coopName(target)}: play your next turn with your hand face-up on the table.` });
       playSound({ name: 'co-eye' });
       return true;
     }

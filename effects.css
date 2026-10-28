@@ -10648,6 +10648,57 @@ header:has(+ .tn-draw--done) .tn-draw-skip { visibility: hidden; }
 .pg-skip--1 { bottom: 0.2rem; }
 .pg-skip--2 { top: 0.2rem; rotate: 180deg; }
 
+/* Victory (9.3s): hit, the Eye fails, friendship beams, bow, walk-off. */
+.pg-whiteflash {
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(circle, rgb(255 255 255 / 0.95), rgb(186 230 253 / 0.5));
+  opacity: 0;
+}
+.fx-pg.hit .pg-whiteflash { animation: ng-flash 900ms ease-out both; }
+.fx-pg.hit .pg-man { animation: pg-hit 650ms ease-out both; }
+@keyframes pg-hit {
+  0% { transform: none; }
+  20% { transform: translateX(-2.5vh) rotate(-6deg); }
+  45% { transform: translateX(1.8vh) rotate(4deg); }
+  70% { transform: translateX(-0.8vh) rotate(-2deg); }
+  100% { transform: none; }
+}
+.fx-pg.eye-fail .pg-meye { animation: pg-meye-fail 1600ms steps(1) both; }
+@keyframes pg-meye-fail {
+  0%, 25%, 50% { opacity: 1; filter: drop-shadow(0 0 6px #f59e0b); }
+  12%, 37%, 62% { opacity: 0.3; filter: none; }
+  75%, 100% { opacity: 0.85; filter: grayscale(1) brightness(0.6); }
+}
+.fx-pg.gasp .pg-mouth { opacity: 0; }
+.fx-pg.gasp .pg-mouth-open { opacity: 1; }
+.fx-pg.bond .pg-beam { opacity: 1; transform: none; }
+.fx-pg.bond .pg-beam--1 { background: linear-gradient(rgb(255 255 255 / 0.95), rgb(125 211 252 / 0.35)); }
+.fx-pg.bond .pg-beam--2 { background: linear-gradient(0deg, rgb(255 255 255 / 0.95), rgb(125 211 252 / 0.35)); }
+.fx-pg.bond .pg-hand { filter: drop-shadow(0 0 1.2vh #7dd3fc); }
+.fx-pg--victory .pg-man { transform-origin: 50% 100%; }
+.fx-pg.bow .pg-man { transform: translateY(1.5vh) scale(0.97, 0.9); }
+.fx-pg.is-leaving .pg-man { transform: translateX(70vw) rotate(6deg); opacity: 0; }
+.pg-stars {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  pointer-events: none;
+}
+.pg-stars span {
+  position: absolute;
+  top: -6vh;
+  left: var(--x);
+  font-size: calc(3vh * var(--s));
+  opacity: 0;
+}
+.fx-pg.stars .pg-stars span { animation: pg-star 2400ms linear var(--d) infinite; }
+@keyframes pg-star {
+  0% { opacity: 0; transform: translateY(0) rotate(0); }
+  10%, 85% { opacity: 1; }
+  100% { opacity: 0; transform: translateY(112vh) rotate(360deg); }
+}
+
 /* --- Co-op Duelist hold: "IT'S TIME TO DUEL!!!" (5000ms, 1% = 50ms) --- */
 .ttd-bg {
   position: absolute;
