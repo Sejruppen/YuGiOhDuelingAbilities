@@ -62,8 +62,8 @@ const EGG_HINTS = {
   'char-ishizu': charHint('Ishizu'),
   'char-marik-1': charHint('Marik (Sadistic Slimes)'),
   'char-marik-2': charHint('Marik (Wrath of the Sun God)'),
-  'char-weevil': { where: 'Character select', text: charHint('Weevil') },
-  'char-keith': { where: 'Character select', text: charHint('Bandit Keith') },
+  'char-weevil': charHint('Weevil'),
+  'char-keith': charHint('Bandit Keith'),
   // Duel screen
   'full-heal': { where: 'Duel', text: 'Can a duelist ever be too healthy? Some cups overflow.' },
   'shadow-realm': { where: 'Duel', text: 'Losing isn\'t always just losing. Sometimes the shadows come to collect.' },
