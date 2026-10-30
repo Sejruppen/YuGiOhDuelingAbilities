@@ -24,7 +24,7 @@ function renderLpModal() {
       </div>
       <div class="flex flex-wrap gap-2">
         ${coopBtn('− Damage', 'confirmLpInput(-1)', 'danger', !value)}
-        ${coopBtn('+ Heal', 'confirmLpInput(1)', 'primary', !value)}
+        ${coopBtn('+ Heal', 'confirmLpInput(1)', 'heal', !value)}
       </div>
       <div class="flex flex-wrap gap-2">
         ${coopBtn('÷2 Halve', 'halveLpQuick()')}

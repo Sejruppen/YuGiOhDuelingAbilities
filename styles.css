@@ -91,7 +91,8 @@ html[data-theme="light"] {
 /* Saturated action buttons keep white labels. */
 html[data-theme="light"] .bg-sky-600,
 html[data-theme="light"] .bg-rose-600,
-html[data-theme="light"] .bg-amber-600 {
+html[data-theme="light"] .bg-amber-600,
+html[data-theme="light"] .bg-emerald-600 {
   color: #fff;
 }
 
@@ -226,7 +227,8 @@ html[data-theme="poc"] footer {
 /* Coloured action buttons: cream lettering, gilded inner edge. */
 html[data-theme="poc"] .bg-sky-600,
 html[data-theme="poc"] .bg-rose-600,
-html[data-theme="poc"] .bg-amber-600 {
+html[data-theme="poc"] .bg-amber-600,
+html[data-theme="poc"] .bg-emerald-600 {
   color: #fbefd2;
   text-shadow: 0 1px 0 rgba(0, 0, 0, 0.45);
   box-shadow: inset 0 0 0 1px rgba(245, 197, 66, 0.55);

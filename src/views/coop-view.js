@@ -24,6 +24,7 @@ function coopBtn(label, onclick, style = '', disabled = false) {
   const styles = {
     primary: 'bg-amber-500 hover:bg-amber-400 text-slate-950',
     danger: 'bg-rose-600 hover:bg-rose-500 text-white',
+    heal: 'bg-emerald-600 hover:bg-emerald-500 text-white',
     '': 'bg-slate-800 hover:bg-slate-700 text-white border border-slate-700'
   };
   return `<button onclick="${onclick}" ${disabled ? 'disabled' : ''} class="flex-1 min-w-[7rem] py-2.5 px-3 rounded-xl font-bold text-sm transition disabled:opacity-40 ${styles[style] ?? styles['']}">${label}</button>`;
