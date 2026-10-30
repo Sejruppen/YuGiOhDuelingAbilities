@@ -32,7 +32,7 @@ const EGG_IDS = [
   'pot-of-greed', 'gaia', 'mind-crush', 'millennium-puzzle', 'pharaoh-nap', 'heart-of-the-cards',
   'time-wizard', 'end-credits',
   // LP modal
-  'change-of-heart', 'noah-delete',
+  'change-of-heart', 'noah-delete', 'kaiba-rip',
   // Character select (hold a character for 2s)
   ...CHARACTER_EGG_IDS.map(id => `char-${id}`)
 ];

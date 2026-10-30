@@ -1761,6 +1761,40 @@ const HEADER_EGG_SOUNDS = {
 
     brass({ t: t + 3.96, notes: [62, 66, 69], dur: 0.14, gain: 0.045 });
     brass({ t: t + 4.14, notes: [67, 71, 74, 79], dur: 0.9, gain: 0.05 });
+  },
+  // LP modal ÷2 hold (lp-modal-eggs.js). Timeline matches effects.css "KAIBA'S
+  // RIP": the card whooshes up (0.2s), the hands grip it (0.85s), a tense
+  // drone with creaking paper (1-1.95s), RIIIP + a dramatic stab (2s), Kaiba's
+  // laugh (2.3s), Grandpa's wail (2.65s) and a sad little fist-shake (2.7-4.8s).
+  'kaiba-rip': t => {
+    const hall = darkBus({ reverb: 0.45, echo: 0.1 });
+
+    ceWhoosh(t + 0.2, 0.5, 0.05, 300, 2500, hall);
+    cardFlip(t + 0.7, 0.14);
+    [0.85, 0.95].forEach(at => tone({ t: t + at, freq: 140, to: 70, dur: 0.1, gain: 0.12, attack: 0.003 }));
+
+    darkCluster({ t: t + 1, notes: [45, 46, 52], dur: 1, gain: 0.025, attack: 0.5, filter: [300, 1600], out: hall });
+    for (let i = 0; i < 9; i++) {
+      noise({ t: t + 1.1 + i * 0.1, dur: 0.04, gain: 0.015 + i * 0.004, type: 'bandpass', freq: rnd(2500, 5000), q: 3, attack: 0.002 });
+    }
+
+    const rip = t + 2;
+    for (let i = 0; i < 26; i++) {
+      noise({ t: rip + i * 0.016, dur: 0.035, gain: 0.09 * (1 - i / 34), type: 'bandpass', freq: rnd(1500, 6000), q: 1.4, attack: 0.001 });
+    }
+    noise({ t: rip, dur: 0.45, gain: 0.06, type: 'highpass', freq: 4000, to: 1500, attack: 0.003, out: hall });
+    brass({ t: rip + 0.03, notes: [50, 53, 56, 62], dur: 0.6, gain: 0.06 });
+    boom(rip, 0.4, hall);
+
+    for (let i = 0; i < 4; i++) {
+      const at = t + 2.3 + i * 0.16;
+      tone({ t: at, freq: 240 - i * 6, to: 180 - i * 6, dur: 0.13, type: 'sawtooth', gain: 0.045, filter: [1500, 700], q: 3, attack: 0.01, out: hall });
+      noise({ t: at, dur: 0.08, gain: 0.025, freq: 900, to: 600, q: 4, attack: 0.01, out: hall });
+    }
+
+    slideWhistle({ t: t + 2.65, freqs: [420, 440, 300, 220], dur: 0.9, gain: 0.035, wobble: 9, out: hall });
+    for (let i = 0; i < 7; i++) tone({ t: t + 2.7 + i * 0.3, freq: 160, to: 110, dur: 0.08, type: 'triangle', gain: 0.05, attack: 0.003 });
+    ceSadTrombone(t + 3.3, 0.035);
   }
 };
 

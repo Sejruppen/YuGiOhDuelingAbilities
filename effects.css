@@ -7044,8 +7044,8 @@ html[data-theme] #app.tw-rewinding {
 
 /* =========================================================================
    LP MODAL EGGS (src/effects/lp-modal-eggs.js). Hold the ❤️ in the LP
-   modal's title for 2s (.cegg-charging), or spam ⌫ on an empty input (see
-   "NOAH'S DELETE" below).
+   modal's title for 2s (.cegg-charging), spam ⌫ on an empty input (see
+   "NOAH'S DELETE" below) or hold ÷2 Halve for 2s ("KAIBA'S RIP").
    ❤️ -> CHANGE OF HEART (5000ms, 1% = 50ms): the heart spins from the title
    to the centre (0-0.7s), flash + the Spell card flips in (0.8-1.1s), the
    angel pops up and says "Be nice!" (1.2-1.7s, the heart tips left), the
@@ -7517,6 +7517,278 @@ html.nd-deleting .modal-panel { animation: nd-panel 6000ms linear both; }
   74%, 100% { opacity: 0.22; transform: rotate(-8deg) scale(1); }
 }
 .fx-nd .cegg-toast { animation-duration: 6000ms; }
+
+/* --- ÷2 hold: KAIBA'S RIP (5000ms, 1% = 50ms) -----------------------------------
+   The Blue-Eyes rises 4-16%, Kaiba's hands grip it 14-20%, "If I can't have
+   it…" 20-38% while it trembles, RIIIP at 40% (flash, paper bits, halves
+   tear apart and flutter down 46-85%), "…NOBODY CAN!" 42-60%, Grandpa shakes
+   his fist 52-82%, toast 66-95%. Both halves hold a full card, clipped along
+   the same jagged tear. */
+.fx-kt .kt-dim {
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(circle at 50% 44%, rgb(30 58 138 / 0.4), rgb(2 6 23 / 0.85) 70%);
+  animation: ce-dim 5000ms ease-out both;
+}
+.fx-kt .kt-stage {
+  position: absolute;
+  left: 50%;
+  top: 44%;
+  width: min(52vw, 11rem);
+  aspect-ratio: 59 / 86;
+  translate: -50% -50%;
+  animation: kt-stage 5000ms ease-out both;
+}
+@keyframes kt-stage {
+  0%, 4% { opacity: 0; transform: translateY(60px) rotate(0deg) scale(0.8); }
+  14% { opacity: 1; transform: translateY(-6px) rotate(0deg) scale(1.02); }
+  16%, 24% { opacity: 1; transform: translateY(0) rotate(0deg) scale(1); }
+  28% { transform: translateY(0) rotate(-0.6deg) scale(1.01); }
+  30% { transform: translateY(0) rotate(0.6deg) scale(1.02); }
+  32% { transform: translateY(0) rotate(-1deg) scale(1.03); }
+  34% { transform: translateY(0) rotate(1deg) scale(1.04); }
+  36% { transform: translateY(0) rotate(-1.4deg) scale(1.05); }
+  38% { transform: translateY(0) rotate(1.4deg) scale(1.06); }
+  40%, 100% { opacity: 1; transform: translateY(0) rotate(0deg) scale(1.06); }
+}
+
+.fx-kt .kt-half { position: absolute; inset: 0; transform-origin: 50% 100%; }
+.fx-kt .kt-half--l {
+  clip-path: polygon(0 0, 52% 0, 47% 12%, 54% 24%, 46% 37%, 53% 50%, 47% 63%, 54% 76%, 46% 88%, 51% 100%, 0 100%);
+  animation: kt-half-l 5000ms ease-in both;
+}
+.fx-kt .kt-half--r {
+  clip-path: polygon(52% 0, 100% 0, 100% 100%, 51% 100%, 46% 88%, 54% 76%, 47% 63%, 53% 50%, 46% 37%, 54% 24%, 47% 12%);
+  animation: kt-half-r 5000ms ease-in both;
+}
+@keyframes kt-half-l {
+  0%, 39.5% { opacity: 1; transform: translate(0, 0) rotate(0deg); }
+  41% { transform: translate(-8px, 0) rotate(-5deg); }
+  46% { transform: translate(-36px, 6px) rotate(-14deg); }
+  62% { transform: translate(-56px, 18vh) rotate(-24deg); }
+  80% { opacity: 1; transform: translate(-80px, 45vh) rotate(-40deg); }
+  86%, 100% { opacity: 0; transform: translate(-90px, 55vh) rotate(-48deg); }
+}
+@keyframes kt-half-r {
+  0%, 39.5% { opacity: 1; transform: translate(0, 0) rotate(0deg); }
+  41% { transform: translate(8px, 0) rotate(5deg); }
+  46% { transform: translate(36px, 4px) rotate(13deg); }
+  62% { transform: translate(60px, 15vh) rotate(28deg); }
+  80% { opacity: 1; transform: translate(84px, 42vh) rotate(44deg); }
+  86%, 100% { opacity: 0; transform: translate(94px, 52vh) rotate(52deg); }
+}
+
+/* The card face (a Normal Monster) */
+.fx-kt .kt-face {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+  padding: 0.35rem;
+  border: 3px solid #3f2a14;
+  border-radius: 0.35rem;
+  background: linear-gradient(160deg, #e0b56a, #b7792f);
+  box-shadow: 0 12px 28px rgb(0 0 0 / 0.6);
+  color: #1c1917;
+}
+.fx-kt .kt-name {
+  padding: 0.1rem 0.3rem;
+  border-radius: 0.15rem;
+  background: linear-gradient(#fafaf9, #d6d3d1);
+  font-family: "Cinzel", serif;
+  font-size: 0.6rem;
+  font-weight: 800;
+  white-space: nowrap;
+  overflow: hidden;
+}
+.fx-kt .kt-stars { text-align: right; font-size: 0.55rem; line-height: 1; letter-spacing: 0.05em; color: #dc2626; text-shadow: 0 0 2px #fde047; }
+.fx-kt .kt-art {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 2px solid #3f2a14;
+  background: radial-gradient(circle at 50% 40%, #bfdbfe, #3b82f6 55%, #1e3a8a);
+}
+.fx-kt .kt-art .ce-emoji { font-size: 3rem; filter: grayscale(1) brightness(1.8) drop-shadow(0 0 6px #93c5fd); }
+.fx-kt .kt-text {
+  padding: 0.2rem 0.3rem;
+  border-radius: 0.15rem;
+  background: #fef3c7;
+  font-size: 0.48rem;
+  line-height: 1.25;
+}
+.fx-kt .kt-text b { display: block; }
+.fx-kt .kt-stats { display: block; margin-top: 0.1rem; text-align: right; font-weight: 800; }
+
+/* Kaiba's hands grip the edges, tremble with the card, then pull apart. */
+.fx-kt .kt-hand { position: absolute; top: 46%; font-size: 2.2rem; filter: drop-shadow(0 3px 5px rgb(0 0 0 / 0.5)); }
+.fx-kt .kt-hand--l { left: -1.3rem; animation: kt-hand-l 5000ms ease-out both; }
+.fx-kt .kt-hand--r { right: -1.3rem; animation: kt-hand-r 5000ms ease-out both; }
+@keyframes kt-hand-l {
+  0%, 14% { opacity: 0; transform: translateX(-50px) scaleX(-1) rotate(0deg); }
+  20%, 39.5% { opacity: 1; transform: translateX(0) scaleX(-1) rotate(0deg); }
+  44% { opacity: 1; transform: translateX(-46px) scaleX(-1) rotate(20deg); }
+  52%, 100% { opacity: 0; transform: translateX(-70px) scaleX(-1) rotate(24deg); }
+}
+@keyframes kt-hand-r {
+  0%, 14% { opacity: 0; transform: translateX(50px) scaleX(1) rotate(0deg); }
+  20%, 39.5% { opacity: 1; transform: translateX(0) scaleX(1) rotate(0deg); }
+  44% { opacity: 1; transform: translateX(46px) scaleX(1) rotate(20deg); }
+  52%, 100% { opacity: 0; transform: translateX(70px) scaleX(1) rotate(24deg); }
+}
+
+/* The tear: a white flash down the middle, paper bits and a comic "RIIIP!" */
+.fx-kt .kt-rip {
+  position: absolute;
+  left: 50%;
+  top: -4%;
+  width: 4px;
+  height: 108%;
+  translate: -50% 0;
+  border-radius: 2px;
+  background: #fff;
+  box-shadow: 0 0 12px 4px rgb(255 255 255 / 0.85);
+  transform-origin: 50% 0;
+  opacity: 0;
+  animation: kt-rip 5000ms linear both;
+}
+@keyframes kt-rip {
+  0%, 38% { opacity: 0; transform: scaleY(0); }
+  39% { opacity: 1; transform: scaleY(0.2); }
+  40.5% { opacity: 1; transform: scaleY(1); }
+  44%, 100% { opacity: 0; transform: scaleY(1); }
+}
+.fx-kt .kt-bit {
+  position: absolute;
+  left: 50%;
+  top: var(--y);
+  width: 0.35rem;
+  height: 0.25rem;
+  background: #fef3c7;
+  opacity: 0;
+  animation: kt-bit 1000ms ease-out 2000ms both;
+}
+@keyframes kt-bit {
+  0% { opacity: 0; transform: translate(0, 0) rotate(0deg); }
+  6% { opacity: 1; }
+  100% { opacity: 0; transform: translate(var(--dx), calc(var(--dy) + 80px)) rotate(var(--r)); }
+}
+.fx-kt .kt-sfx {
+  position: absolute;
+  left: 50%;
+  top: -18%;
+  translate: -50% 0;
+  font-size: 2.2rem;
+  font-weight: 900;
+  font-style: italic;
+  white-space: nowrap;
+  color: #fde047;
+  -webkit-text-stroke: 2px #7f1d1d;
+  text-shadow: 3px 3px 0 #7f1d1d;
+  opacity: 0;
+  animation: kt-sfx 5000ms ease-out both;
+}
+@keyframes kt-sfx {
+  0%, 39.5% { opacity: 0; transform: rotate(-8deg) scale(0.3); }
+  42% { opacity: 1; transform: rotate(-8deg) scale(1.25); }
+  45%, 54% { opacity: 1; transform: rotate(-8deg) scale(1); }
+  58%, 100% { opacity: 0; transform: rotate(-8deg) scale(1.1); }
+}
+
+/* Kaiba's lines and Grandpa */
+.fx-kt .kt-kaiba {
+  position: absolute;
+  left: 50%;
+  top: calc(env(safe-area-inset-top, 0px) + 12%);
+  translate: -50% 0;
+  color: #e0f2fe;
+  background: #0f172a;
+  border: 2px solid #38bdf8;
+  opacity: 0;
+}
+.fx-kt .kt-kaiba--1 { animation: kt-say-1 5000ms ease-out both; }
+.fx-kt .kt-kaiba--2 { font-size: 1.05rem; animation: kt-say-2 5000ms ease-out both; }
+@keyframes kt-say-1 {
+  0%, 20% { opacity: 0; transform: translateY(8px); }
+  23%, 37% { opacity: 1; transform: translateY(0); }
+  39%, 100% { opacity: 0; transform: translateY(0); }
+}
+@keyframes kt-say-2 {
+  0%, 41% { opacity: 0; transform: translateY(0) scale(0.6); }
+  43% { opacity: 1; transform: translateY(0) scale(1.15); }
+  45%, 60% { opacity: 1; transform: translateY(0) scale(1); }
+  63%, 100% { opacity: 0; transform: translateY(0) scale(1); }
+}
+.fx-kt .kt-grandpa {
+  position: absolute;
+  left: 1rem;
+  bottom: calc(env(safe-area-inset-bottom, 0px) + 6.5rem);
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.25rem;
+  opacity: 0;
+  animation: kt-grandpa 5000ms ease-out both;
+}
+@keyframes kt-grandpa {
+  0%, 51% { opacity: 0; transform: translateY(40px); }
+  54% { opacity: 1; transform: translateY(-4px); }
+  56%, 82% { opacity: 1; transform: translateY(0); }
+  86%, 100% { opacity: 0; transform: translateY(20px); }
+}
+.fx-kt .kt-gramps { position: relative; display: block; width: 3.4rem; height: 3.4rem; }
+.fx-kt svg.kt-gramps-face {
+  width: 100%;
+  height: 100%;
+  transform-origin: 50% 90%;
+  filter: drop-shadow(0 3px 5px rgb(0 0 0 / 0.5));
+  animation: kt-shake 300ms ease-in-out 2700ms 7 both;
+}
+.fx-kt .kt-tear-stream { opacity: 0; animation: kt-tear-stream 300ms ease-out 2700ms both; }
+@keyframes kt-tear-stream {
+  from { opacity: 0; }
+  to { opacity: 0.85; }
+}
+.fx-kt .kt-tear { transform-box: fill-box; transform-origin: 50% 0; opacity: 0; }
+.fx-kt .kt-tear--l { --tx: -6px; animation: kt-tear 650ms ease-in 2750ms infinite; }
+.fx-kt .kt-tear--r { --tx: 6px; animation: kt-tear 650ms ease-in 2900ms infinite; }
+.fx-kt .kt-tear--l2 { --tx: -10px; animation: kt-tear 650ms ease-in 3080ms infinite; }
+.fx-kt .kt-tear--r2 { --tx: 10px; animation: kt-tear 650ms ease-in 3230ms infinite; }
+@keyframes kt-tear {
+  0% { opacity: 1; transform: translate(0, 0) scale(0.6); }
+  60% { opacity: 1; }
+  100% { opacity: 0; transform: translate(var(--tx), 26px) scale(1.1); }
+}
+.fx-kt .kt-fist {
+  position: absolute;
+  right: -1.6rem;
+  top: 0.2rem;
+  font-size: 1.7rem;
+  transform-origin: 50% 100%;
+  animation: kt-fist 240ms ease-in-out 2700ms 9 both;
+}
+@keyframes kt-fist {
+  0%, 100% { transform: translateY(0) rotate(-10deg); }
+  50% { transform: translateY(-8px) rotate(14deg); }
+}
+.fx-kt .kt-vein {
+  position: absolute;
+  left: -0.3rem;
+  top: -0.4rem;
+  font-size: 1.1rem;
+  animation: kt-vein 400ms ease-in-out 2700ms 5 both;
+}
+@keyframes kt-vein {
+  0%, 100% { transform: scale(0.85); }
+  50% { transform: scale(1.25); }
+}
+@keyframes kt-shake {
+  0%, 100% { transform: rotate(0deg); }
+  25% { transform: rotate(-12deg); }
+  75% { transform: rotate(12deg); }
+}
 
 /* =========================================================================
    SECRET DUEL DISK MINI-GAME (src/effects/duel-disk-easter-egg.js,

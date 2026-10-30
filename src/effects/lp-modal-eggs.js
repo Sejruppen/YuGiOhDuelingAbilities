@@ -13,10 +13,16 @@
 //         modal is erased top-down into flying pixels... stuck at 99%, then
 //         ACCESS DENIED, "Administrator: S. KAIBA", and the modal snaps back.
 //         Sound: 'noah-delete' (HEADER_EGG_SOUNDS).
+//   ÷2 -> Kaiba's Rip. Hold ÷2 Halve for LP_EGG_PRESS_MS: Kaiba grabs a
+//         Blue-Eyes White Dragon, pauses dramatically ("If I can't have it…")
+//         and RIIIPs it in half (just like Grandpa's). The halves flutter
+//         away and Grandpa shakes his fist. The click after the hold is
+//         swallowed, so nothing is halved. Sound: 'kaiba-rip' (HEADER_EGG_SOUNDS).
 //
-// Timelines: COH_MS / ND_MS, "LP MODAL EGGS" in effects.css.
+// Timelines: COH_MS / ND_MS / KT_MS, "LP MODAL EGGS" in effects.css.
 const LP_EGG_PRESS_MS = 2000;
 const COH_MS = 5000;
+const KT_MS = 5000;
 const ND_MS = 6000;
 const ND_TAPS = 8;
 const ND_TAP_GAP_MS = 700;
@@ -25,21 +31,30 @@ const ND_FILL_FROM_MS = 1200;
 const ND_FILL_TO_MS = 3480;
 const ND_PIXELS = 36;
 
-const lpEgg = { timer: null, busy: false, backTaps: 0, lastBackAt: 0 };
+const lpEgg = { timer: null, busy: false, swallowClick: false, backTaps: 0, lastBackAt: 0 };
 
 function startLpEggPress(el, kind) {
+  lpEgg.swallowClick = false;
   if (lpEgg.busy) return;
   clearTimeout(lpEgg.timer);
   el.classList.add('cegg-charging');
   lpEgg.timer = setTimeout(() => {
     el.classList.remove('cegg-charging');
     if (kind === 'heart') playChangeOfHeartEgg(el);
+    else if (kind === 'halve') playKaibaRipEgg();
   }, LP_EGG_PRESS_MS);
 }
 
 function cancelLpEggPress(el) {
   clearTimeout(lpEgg.timer);
   el.classList.remove('cegg-charging');
+}
+
+// Halve's onclick asks this first: false right after a hold.
+function lpEggAllowsClick() {
+  if (!lpEgg.swallowClick) return true;
+  lpEgg.swallowClick = false;
+  return false;
 }
 
 // The heart art: one heart, clipped into an angel half and a devil half that
@@ -199,4 +214,74 @@ function playNoahDeleteEgg() {
     root.classList.remove('nd-deleting');
     lpEgg.busy = false;
   }, ND_MS);
+}
+
+// --- ÷2 hold: Kaiba's Rip ------------------------------------------------------------
+
+const KT_BITS = 14;
+
+// One Blue-Eyes card face; the left and right halves each show a full copy,
+// clipped along the same jagged tear (effects.css), so together they look whole.
+const KT_CARD_FACE = `
+  <div class="kt-face">
+    <div class="kt-name">Blue-Eyes White Dragon</div>
+    <div class="kt-stars">${'★'.repeat(8)}</div>
+    <div class="kt-art"><span class="ce-emoji">🐉</span></div>
+    <div class="kt-text">
+      <b>[Dragon]</b>
+      This legendary dragon is a powerful engine of destruction.
+      <span class="kt-stats">ATK/3000 DEF/2500</span>
+    </div>
+  </div>
+`;
+
+// A furious, sobbing Grandpa Muto (the 👴 emoji smiles too much): bald, grey
+// tufts, bandana, angry brows, tears, a big moustache and a shouting mouth.
+const KT_GRANDPA_SVG = `
+  <svg class="kt-gramps-face" viewBox="0 0 64 64" aria-hidden="true">
+    <ellipse cx="32" cy="36" rx="20" ry="22" fill="#f5c9a0" />
+    <path d="M12 26 Q32 6 52 26 L52 22 Q32 2 12 22 Z" fill="#334155" />
+    <path d="M12 30 C6 28 4 38 10 42 C8 36 11 33 13 34 Z M52 30 C58 28 60 38 54 42 C56 36 53 33 51 34 Z" fill="#e5e7eb" />
+    <path d="M18 29 L28 34 M46 29 L36 34" stroke="#e5e7eb" stroke-width="4" stroke-linecap="round" />
+    <circle cx="25" cy="37" r="2.2" fill="#1f2937" />
+    <circle cx="39" cy="37" r="2.2" fill="#1f2937" />
+    <ellipse cx="18" cy="44" rx="4" ry="2.5" fill="#f87171" opacity="0.7" />
+    <ellipse cx="46" cy="44" rx="4" ry="2.5" fill="#f87171" opacity="0.7" />
+    <ellipse cx="32" cy="53" rx="5" ry="4.5" fill="#7f1d1d" />
+    <path d="M18 48 Q25 42 32 46 Q39 42 46 48 Q39 47 32 50 Q25 47 18 48 Z" fill="#e5e7eb" />
+    <path class="kt-tear-stream" d="M24 39 Q22 44 23 50 M40 39 Q42 44 41 50" stroke="#7dd3fc" stroke-width="2.4" stroke-linecap="round" fill="none" />
+    <path class="kt-tear kt-tear--l" d="M23 39 Q20 44 23 46 Q26 44 23 39 Z" fill="#7dd3fc" />
+    <path class="kt-tear kt-tear--r" d="M41 39 Q38 44 41 46 Q44 44 41 39 Z" fill="#7dd3fc" />
+    <path class="kt-tear kt-tear--l2" d="M23 39 Q20 44 23 46 Q26 44 23 39 Z" fill="#7dd3fc" />
+    <path class="kt-tear kt-tear--r2" d="M41 39 Q38 44 41 46 Q44 44 41 39 Z" fill="#7dd3fc" />
+  </svg>
+`;
+
+function playKaibaRipEgg() {
+  lpEgg.swallowClick = true;
+  markEggFound('kaiba-rip');
+  playSound({ name: 'kaiba-rip' });
+
+  const overlay = spawnFx('fx-cegg fx-kt', KT_MS + 100, {
+    html: `
+      <div class="kt-dim"></div>
+      <div class="kt-stage">
+        <div class="kt-half kt-half--l">${KT_CARD_FACE}</div>
+        <div class="kt-half kt-half--r">${KT_CARD_FACE}</div>
+        <span class="kt-hand kt-hand--l ce-emoji">✋</span>
+        <span class="kt-hand kt-hand--r ce-emoji">✋</span>
+        <div class="kt-rip"></div>
+        ${ceRange(KT_BITS, () => `<span class="kt-bit" style="--y: ${ceRand(5, 95).toFixed(0)}%; --dx: ${ceRand(-110, 110).toFixed(0)}px; --dy: ${ceRand(-90, 60).toFixed(0)}px; --r: ${ceRand(-300, 300).toFixed(0)}deg;"></span>`)}
+        <div class="kt-sfx">RIIIP!</div>
+      </div>
+      <div class="kt-kaiba kt-kaiba--1 ce-bubble">Kaiba: "If I can't have it…"</div>
+      <div class="kt-kaiba kt-kaiba--2 ce-bubble">"…NOBODY CAN!"</div>
+      <div class="kt-grandpa"><span class="ce-bubble">KAIBA!! My Blue-Eyes!</span><span class="kt-gramps">${KT_GRANDPA_SVG}<span class="kt-fist ce-emoji">✊</span><span class="kt-vein ce-emoji">💢</span></span></div>
+      <div class="cegg-toast">Halved, Kaiba-style.<small>Your Life Points are untouched. Grandpa's card was not.</small></div>
+    `
+  });
+  if (!overlay) return; // reduced motion: the sound has already played
+
+  lpEgg.busy = true;
+  setTimeout(() => { lpEgg.busy = false; }, KT_MS);
 }
