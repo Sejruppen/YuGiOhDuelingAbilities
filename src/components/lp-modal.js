@@ -43,8 +43,10 @@ function renderLpModal() {
 
     <div class="flex gap-3">
     <div class="flex-1 min-w-0 flex flex-col gap-2">
-      <div class="flex items-baseline justify-between gap-2 px-1">
-        <p class="text-xs text-slate-400">Damage, costs or healing</p>
+      <div class="flex items-center justify-between gap-2 px-1">
+        ${value
+          ? '<button type="button" onclick="clearLpInput()" class="text-xs font-bold text-slate-300 hover:text-white rounded-md bg-slate-800 hover:bg-slate-700 px-2.5 py-1">✕ Clear</button>'
+          : '<p class="text-xs text-slate-400">Damage, costs or healing</p>'}
         <p class="text-3xl font-black text-white tabular-nums">${display}</p>
       </div>
       <div class="grid grid-cols-4 gap-1.5">

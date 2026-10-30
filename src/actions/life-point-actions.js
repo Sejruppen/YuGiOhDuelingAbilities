@@ -38,6 +38,10 @@ function lpKey(key) {
   noteLpBackspace(key === 'back' && !current);
 }
 
+function clearLpInput() {
+  setUi({ lpInput: '', lpInputExact: false });
+}
+
 // Closes first (like the co-op panel) so the LP change plays on the LP bar.
 function confirmLpInput(sign) {
   const amount = getLpInputAmount();
