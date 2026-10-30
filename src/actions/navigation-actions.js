@@ -32,7 +32,8 @@ function startDuel() {
   resetHeartOverload();
   setState({
     screen: SCREENS.DUEL,
-    lp: STARTING_LP
+    lp: STARTING_LP,
+    lpLog: []
   });
 }
 

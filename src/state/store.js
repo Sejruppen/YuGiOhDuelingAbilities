@@ -3,7 +3,8 @@ const initialDuelProgress = {
   comebackRevealed: false,
   skillUses: 0,
   comebackUses: 0,
-  questCompleted: false
+  questCompleted: false,
+  lpLog: []
 };
 
 const defaultState = {

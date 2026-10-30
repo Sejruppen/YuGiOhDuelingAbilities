@@ -42,28 +42,43 @@ function confirmLpInput(sign) {
   adjustLpQuick(sign * amount);
 }
 
-function setLp(lp) {
-  setState({ lp });
+const LP_LOG_MAX = 50;
+
+// Every LP change is logged (newest first) with the LP it left you on.
+function setLp(lp, { reset = false } = {}) {
+  const delta = lp - getCurrentLp();
+  if (!delta) return;
+  const lpLog = [{ delta, lp, ...(reset ? { reset } : {}) }, ...(state.lpLog || [])].slice(0, LP_LOG_MAX);
+  setState({ lp, lpLog });
 }
 
 function adjustLpQuick(delta) {
   setLp(Math.max(0, getCurrentLp() + delta));
 }
 
-// Fills in the damage that halves your LP (rounding the LP left up), ready for − Damage.
-// Round hundreds use the normal "digits + 00" form so they can still be edited.
-function halveLpQuick() {
-  const half = Math.floor(getCurrentLp() / 2);
-  if (!half) return setUi({ lpInput: '', lpInputExact: false });
-  const asDigits = String(half / 100);
-  if (half % 100 === 0 && !LP_SHORT_INPUTS.includes(asDigits)) {
+// Puts an amount in the display. Round hundreds use the normal "digits + 00"
+// form so they can still be edited; anything else is shown exactly.
+function setLpInputAmount(amount) {
+  if (!amount) return setUi({ lpInput: '', lpInputExact: false });
+  const asDigits = String(amount / 100);
+  if (amount % 100 === 0 && asDigits.length <= LP_MAX_INPUT && !LP_SHORT_INPUTS.includes(asDigits)) {
     setUi({ lpInput: asDigits, lpInputExact: false });
   } else {
-    setUi({ lpInput: String(half), lpInputExact: true });
+    setUi({ lpInput: String(amount), lpInputExact: true });
   }
+}
+
+// Fills in the damage that halves your LP (rounding the LP left up), ready for − Damage.
+function halveLpQuick() {
+  setLpInputAmount(Math.floor(getCurrentLp() / 2));
+}
+
+function useLpLogEntry(index) {
+  const entry = (state.lpLog || [])[index];
+  if (entry) setLpInputAmount(Math.abs(entry.delta));
 }
 
 function resetLp() {
   resetHeartOverload();
-  setState({ lp: STARTING_LP });
+  setLp(STARTING_LP, { reset: true });
 }
