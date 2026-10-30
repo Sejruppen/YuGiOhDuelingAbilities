@@ -1721,6 +1721,46 @@ const HEADER_EGG_SOUNDS = {
     sfxCreditsBus?.gain.setTargetAtTime(0, t, 0.08);
     sfxCreditsBus = null;
     ceWhoosh(t, 0.3, 0.04, 2400, 500);
+  },
+  // LP modal ⌫ spam (lp-modal-eggs.js). Timeline matches effects.css "NOAH'S
+  // DELETE": a glitch burst (0s), two error blips (0.24s, 0.48s), an alarm
+  // (0.78s), the deletion's data chatter rising with the bar (1.2-3.48s), two
+  // stuck beeps at 99% (3.5s), the ACCESS DENIED buzzer (3.72s) and Kaiba's
+  // smug fanfare (3.96s).
+  'noah-delete': t => {
+    const room = darkBus({ reverb: 0.3, echo: 0.1 });
+
+    for (let i = 0; i < 6; i++) {
+      tone({ t: t + i * 0.035, freq: rnd(200, 2400), dur: 0.03, type: 'square', gain: 0.03, filter: 4000, attack: 0.001 });
+    }
+    noise({ t, dur: 0.22, gain: 0.07, type: 'highpass', freq: 3000, attack: 0.002 });
+
+    [0.24, 0.48].forEach(at => {
+      tone({ t: t + at, freq: 180, dur: 0.12, type: 'square', gain: 0.04, filter: 1400 });
+      tone({ t: t + at, freq: 190, dur: 0.12, type: 'square', gain: 0.03, filter: 1400 });
+    });
+
+    [0, 0.16, 0.32, 0.48].forEach((at, i) => {
+      tone({ t: t + 0.78 + at, freq: i % 2 ? 660 : 880, dur: 0.14, type: 'square', gain: 0.025, filter: 3000, out: room });
+    });
+
+    const start = t + 1.2;
+    const span = 2.28;
+    tone({ t: start, freq: 80, to: 220, slide: span, dur: span, type: 'sawtooth', gain: 0.025, attack: 0.2, filter: 700 });
+    for (let at = 0; at < span; at += 0.05) {
+      const p = at / span;
+      tone({ t: start + at, freq: rnd(600, 1400) * (1 + p * 1.5), dur: 0.03, type: 'square', gain: 0.018, filter: 5000, attack: 0.001 });
+    }
+
+    [3.5, 3.62].forEach(at => tone({ t: t + at, freq: 1760, dur: 0.07, type: 'square', gain: 0.03, filter: 5000, attack: 0.002 }));
+
+    const denied = t + 3.72;
+    tone({ t: denied, freq: 110, dur: 0.55, type: 'square', gain: 0.06, filter: 1600, attack: 0.005 });
+    tone({ t: denied, freq: 116, dur: 0.55, type: 'sawtooth', gain: 0.05, filter: 1600, attack: 0.005 });
+    boom(denied, 0.4, room);
+
+    brass({ t: t + 3.96, notes: [62, 66, 69], dur: 0.14, gain: 0.045 });
+    brass({ t: t + 4.14, notes: [67, 71, 74, 79], dur: 0.9, gain: 0.05 });
   }
 };
 

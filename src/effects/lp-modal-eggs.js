@@ -1,18 +1,31 @@
-// LP modal easter eggs. Hold the ❤️ next to "Life Points" for LP_EGG_PRESS_MS
-// (it glows and trembles) and:
+// LP modal easter eggs.
 //
-//   ❤️ -> Change of Heart: the heart spins out of the modal and turns into the
-//         Spell card. Its art is a split heart, an angel half and a devil half.
-//         The angel and the devil argue, the heart tips
-//         back and forth, cracks down the middle... and snaps back together.
-//         "Your heart stays loyal." Nothing changes, your LP included.
+//   ❤️ -> Change of Heart. Hold the ❤️ next to "Life Points" for
+//         LP_EGG_PRESS_MS (it glows and trembles): the heart spins out of the
+//         modal and turns into the Spell card. Its art is a split heart, an
+//         angel half and a devil half. The angel and the devil argue, the
+//         heart tips back and forth, cracks down the middle... and snaps back
+//         together. "Your heart stays loyal." Nothing changes, your LP included.
+//         Sound: 'change-of-heart' (HEART_SOUNDS).
+//   ⌫  -> Noah's DELETE. Tap ⌫ ND_TAPS times in a row on an empty input: a
+//         Kaiba Corp virtual-world glitch. A terminal complains there's
+//         nothing to delete, so it starts deleting the duelist instead; the
+//         modal is erased top-down into flying pixels... stuck at 99%, then
+//         ACCESS DENIED, "Administrator: S. KAIBA", and the modal snaps back.
+//         Sound: 'noah-delete' (HEADER_EGG_SOUNDS).
 //
-// Timeline: COH_MS, "LP MODAL EGGS" in effects.css. Sound: 'change-of-heart'
-// in sounds.js (HEART_SOUNDS).
+// Timelines: COH_MS / ND_MS, "LP MODAL EGGS" in effects.css.
 const LP_EGG_PRESS_MS = 2000;
 const COH_MS = 5000;
+const ND_MS = 6000;
+const ND_TAPS = 8;
+const ND_TAP_GAP_MS = 700;
+// Keep in sync with the `nd-*` keyframes (1% = 60ms): the bar fills 20-58%.
+const ND_FILL_FROM_MS = 1200;
+const ND_FILL_TO_MS = 3480;
+const ND_PIXELS = 36;
 
-const lpEgg = { timer: null, busy: false };
+const lpEgg = { timer: null, busy: false, backTaps: 0, lastBackAt: 0 };
 
 function startLpEggPress(el, kind) {
   if (lpEgg.busy) return;
@@ -107,4 +120,83 @@ function playChangeOfHeartEgg(source) {
 
   lpEgg.busy = true;
   setTimeout(() => { lpEgg.busy = false; }, COH_MS);
+}
+
+// lpKey calls this for every ⌫ (empty: the input was already empty).
+function noteLpBackspace(empty) {
+  const now = performance.now();
+  if (!empty || lpEgg.busy) {
+    lpEgg.backTaps = 0;
+    return;
+  }
+  lpEgg.backTaps = now - lpEgg.lastBackAt <= ND_TAP_GAP_MS ? lpEgg.backTaps + 1 : 1;
+  lpEgg.lastBackAt = now;
+  if (lpEgg.backTaps < ND_TAPS) return;
+  lpEgg.backTaps = 0;
+  playNoahDeleteEgg();
+}
+
+function playNoahDeleteEgg() {
+  markEggFound('noah-delete');
+  playSound({ name: 'noah-delete' });
+
+  const panel = document.querySelector('.modal-panel');
+  const r = panel ? panel.getBoundingClientRect() : { left: 0, top: 0, width: window.innerWidth, height: window.innerHeight };
+  const name = hdrEsc(getSelectedCharacter()?.name || 'Duelist');
+  const pixels = ceRange(ND_PIXELS, i => {
+    const y = (i + ceRand(0, 1)) / ND_PIXELS;
+    const delay = ND_FILL_FROM_MS + y * (ND_FILL_TO_MS - ND_FILL_FROM_MS);
+    return `<span class="nd-px" style="--px: ${ceRand(0, 1).toFixed(2)}; --py: ${y.toFixed(2)}; --d: ${delay.toFixed(0)}ms; --dx: ${ceRand(-60, 60).toFixed(0)}px; --dy: ${ceRand(-160, -60).toFixed(0)}px; --s: ${ceRand(0.5, 1.4).toFixed(2)};"></span>`;
+  });
+
+  const overlay = spawnFx('fx-cegg fx-nd', ND_MS + 100, {
+    vars: {
+      '--cl': `${r.left.toFixed(0)}px`,
+      '--ct': `${r.top.toFixed(0)}px`,
+      '--cw': `${r.width.toFixed(0)}px`,
+      '--ch': `${r.height.toFixed(0)}px`
+    },
+    html: `
+      <div class="nd-tint"></div>
+      <div class="nd-scan"></div>
+      <div class="nd-glitch"></div>
+      ${pixels}
+      <div class="nd-term">
+        <div class="nd-term-head"><span>KAIBA CORP // VIRTUAL SYSTEM</span><span>v1.0</span></div>
+        <p class="nd-line nd-line--1">&gt; backspace() <b>ERROR: nothing to delete</b></p>
+        <p class="nd-line nd-line--2">&gt; backspace() ×${ND_TAPS} <b>ERROR: STILL nothing</b></p>
+        <p class="nd-line nd-line--3 nd-warn">⚠ Excessive deleting detected. Deleting something else…</p>
+        <p class="nd-line nd-line--4">&gt; delete("${name}")</p>
+        <div class="nd-bar"><span class="nd-fill"></span><b class="nd-pct">0%</b></div>
+        <p class="nd-line nd-line--5">Administrator: <b>S. KAIBA</b> — request rejected.</p>
+        <p class="nd-line nd-line--6">NOAH: …I'll delete you next time.</p>
+        <div class="nd-denied">ACCESS DENIED</div>
+      </div>
+      <div class="cegg-toast">ACCESS DENIED. Kaiba has admin rights.<small>You were 99% deleted. The other 1% is doing fine.</small></div>
+    `
+  });
+  if (!overlay) return; // reduced motion: the sound has already played
+
+  lpEgg.busy = true;
+  const root = document.documentElement;
+  root.classList.add('nd-deleting');
+
+  const pct = overlay.querySelector('.nd-pct');
+  const span = ND_FILL_TO_MS - ND_FILL_FROM_MS;
+  let frame = null;
+  setTimeout(() => {
+    const startedAt = performance.now();
+    const step = now => {
+      const p = Math.min(1, (now - startedAt) / span);
+      pct.textContent = `${Math.floor(99 * (1 - Math.pow(1 - p, 1.6)))}%`;
+      frame = p < 1 ? requestAnimationFrame(step) : null;
+    };
+    frame = requestAnimationFrame(step);
+  }, ND_FILL_FROM_MS);
+
+  setTimeout(() => {
+    if (frame) cancelAnimationFrame(frame);
+    root.classList.remove('nd-deleting');
+    lpEgg.busy = false;
+  }, ND_MS);
 }

@@ -77,7 +77,8 @@ const EGG_HINTS = {
   'time-wizard': { where: 'Duel', text: 'Wish you could turn back time? Starting over takes more than a quick decision.' },
   'end-credits': { where: 'Duel', text: 'Every good story deserves credits. Are you ready to let it end?' },
   // LP modal
-  'change-of-heart': { where: 'Life Points', text: 'Your Life Points have a heart. Is it loyal enough to hold on to?' }
+  'change-of-heart': { where: 'Life Points', text: 'Your Life Points have a heart. Is it loyal enough to hold on to?' },
+  'noah-delete': { where: 'Life Points', text: 'Some duelists keep erasing long after there\'s nothing left. Someone in the virtual world is watching.' }
 };
 
 eggTracker.hintId = null;

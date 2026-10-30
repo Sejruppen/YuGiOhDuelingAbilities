@@ -35,6 +35,7 @@ function lpKey(key) {
     ? current.slice(0, -1)
     : (current + key).replace(/^0+/, '').slice(0, LP_MAX_INPUT);
   setUi({ lpInput: value, lpInputExact: false });
+  noteLpBackspace(key === 'back' && !current);
 }
 
 // Closes first (like the co-op panel) so the LP change plays on the LP bar.
