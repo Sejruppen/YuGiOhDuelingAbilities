@@ -78,7 +78,7 @@ const EGG_HINTS = {
   'end-credits': { where: 'Duel', text: 'Every good story deserves credits. Are you ready to let it end?' },
   // LP modal
   'change-of-heart': { where: 'Life Points', text: 'Your Life Points have a heart. Is it loyal enough to hold on to?' },
-  'noah-delete': { where: 'Life Points', text: 'Some duelists keep erasing long after there\'s nothing left. Someone in the virtual world is watching.' },
+  'noah-delete': { where: 'Life Points', text: 'Some duelists keep erasing long after there\'s nothing left.' },
   'kaiba-rip': { where: 'Life Points', text: 'Cutting things in half is a quick job. Some rivals prefer to take their time and make it dramatic.' }
 };
 

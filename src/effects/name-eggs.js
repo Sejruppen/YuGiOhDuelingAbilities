@@ -37,29 +37,156 @@ const FRIDA_SVG = `
 const ngToast = (delayMs, title, small) =>
   `<div class="cegg-toast atn-gtoast" style="--td: ${delayMs}ms">${title}<small>${small}</small></div>`;
 
+// --- THEODOR: the Dark Paladin ---------------------------------------------------
+// Dark teal armour with gold trim and green gems, a tall horned helmet, a
+// pale face with long grey hair, huge spiked pauldrons and the crescent-bladed
+// staff in his left hand. .dp-staff turns around the hand (60, 170).
+const DARK_PALADIN_SVG = `
+  <svg class="dp-svg" viewBox="0 0 200 300" aria-hidden="true">
+    <defs>
+      <linearGradient id="dp-g-armor" x1="0" y1="0" x2="1" y2="1">
+        <stop offset="0" stop-color="#2f5b80" /><stop offset="0.5" stop-color="#16304d" /><stop offset="1" stop-color="#0a1828" />
+      </linearGradient>
+      <linearGradient id="dp-g-gold" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0" stop-color="#fde68a" /><stop offset="0.5" stop-color="#e8a33d" /><stop offset="1" stop-color="#9a5b12" />
+      </linearGradient>
+      <linearGradient id="dp-g-blade" x1="0" y1="0" x2="1" y2="0">
+        <stop offset="0" stop-color="#334155" /><stop offset="0.45" stop-color="#f8fafc" /><stop offset="1" stop-color="#64748b" />
+      </linearGradient>
+      <radialGradient id="dp-g-gem" cx="0.35" cy="0.35" r="0.7">
+        <stop offset="0" stop-color="#ccfbf1" /><stop offset="0.45" stop-color="#14b8a6" /><stop offset="1" stop-color="#064e3b" />
+      </radialGradient>
+    </defs>
+    <g class="dp-body" stroke-linejoin="round">
+      <path d="M84 168 L74 296 L103 296 L106 214 L109 296 L140 296 L128 168 Z" fill="url(#dp-g-armor)" />
+      <path d="M84 168 L74 296 M128 168 L140 296 M92 172 L106 252 L120 172" fill="none" stroke="url(#dp-g-gold)" stroke-width="2.6" />
+      <path d="M128 112 Q148 140 145 200 L132 202 Q132 152 121 124 Z" fill="url(#dp-g-armor)" />
+      <path d="M131 176 L147 174 L149 190 L130 192 Z" fill="url(#dp-g-gold)" />
+      <path d="M147 182 L180 148 L151 194 Z" fill="url(#dp-g-gold)" />
+      <circle cx="139" cy="207" r="7" fill="#0a1828" stroke="url(#dp-g-gold)" stroke-width="1.5" />
+      <path d="M80 108 Q106 99 132 108 L128 170 L84 170 Z" fill="url(#dp-g-armor)" />
+      <path d="M84 120 Q106 140 128 120 M90 128 L106 152 L122 128" fill="none" stroke="url(#dp-g-gold)" stroke-width="3" />
+      <rect x="83" y="163" width="46" height="8" rx="2" fill="url(#dp-g-gold)" />
+      <circle cx="106" cy="150" r="5" fill="url(#dp-g-gem)" stroke="url(#dp-g-gold)" stroke-width="1.5" />
+      <circle cx="106" cy="167" r="4.5" fill="url(#dp-g-gem)" />
+      <path d="M86 110 Q64 130 57 166 L70 170 Q74 142 95 124 Z" fill="url(#dp-g-armor)" />
+      <path d="M55 150 L72 152 L70 164 L53 162 Z" fill="url(#dp-g-gold)" />
+      <path d="M86 104 L38 90 L58 104 L28 112 L62 118 L48 132 L90 124 Z" fill="url(#dp-g-armor)" stroke="url(#dp-g-gold)" stroke-width="2.5" />
+      <path d="M124 104 L188 80 L160 102 L194 104 L156 116 L172 132 L122 126 Z" fill="url(#dp-g-armor)" stroke="url(#dp-g-gold)" stroke-width="2.5" />
+      <circle cx="64" cy="113" r="4" fill="url(#dp-g-gem)" />
+      <circle cx="157" cy="109" r="4" fill="url(#dp-g-gem)" />
+      <path d="M94 80 L89 114 L97 101 L100 116 L104 99 L109 116 L112 101 L119 114 L116 80 Z" fill="#cbd5e1" />
+      <path d="M95 76 Q105 72 115 76 L114 96 Q105 104 96 96 Z" fill="#8fbcc4" />
+      <path class="dp-eyes" d="M98 86 L103 87.5 M107 87.5 L112 86" stroke="#ccfbf1" stroke-width="1.8" stroke-linecap="round" />
+      <path d="M102 97 L108 97" stroke="#4b6b72" stroke-width="1.2" stroke-linecap="round" />
+      <path d="M88 84 Q85 50 104 18 Q100 44 112 60 Q118 40 134 28 Q122 56 124 84 Q106 70 88 84 Z" fill="url(#dp-g-armor)" stroke="url(#dp-g-gold)" stroke-width="2.5" />
+      <path d="M90 72 L98 65 L104 72 L110 63 L118 70 L122 65" fill="none" stroke="url(#dp-g-gold)" stroke-width="2.5" />
+      <path d="M88 84 L85 105 L94 98 Z M124 84 L127 105 L118 98 Z" fill="url(#dp-g-armor)" stroke="url(#dp-g-gold)" stroke-width="2" />
+      <circle cx="89" cy="84" r="3.5" fill="url(#dp-g-gem)" />
+      <circle cx="123" cy="84" r="3.5" fill="url(#dp-g-gem)" />
+      <circle cx="113" cy="47" r="3.5" fill="url(#dp-g-gem)" />
+    </g>
+    <g class="dp-staff" stroke-linejoin="round">
+      <path d="M66 252 L51 50" stroke="#0f172a" stroke-width="6" stroke-linecap="round" />
+      <path d="M66 252 L51 50" stroke="#475569" stroke-width="2" stroke-linecap="round" />
+      <path class="dp-blade" d="M51 62 C28 30 32 -2 48 -34 C45 -2 58 24 78 40 C66 44 58 52 51 62 Z" fill="url(#dp-g-blade)" stroke="#0f172a" stroke-width="1.5" />
+      <path d="M41 6 Q49 18 61 26 M40 28 Q48 38 60 44" fill="none" stroke="#334155" stroke-width="3" />
+      <path d="M28 72 L52 62 L82 52 L73 64 L54 73 L33 82 Z" fill="url(#dp-g-gold)" />
+      <path d="M36 100 L56 92 L78 85 L71 96 L56 102 Z" fill="url(#dp-g-gold)" />
+      <circle cx="53" cy="67" r="5" fill="url(#dp-g-gem)" />
+      <circle cx="57" cy="95" r="4" fill="url(#dp-g-gem)" />
+      <path d="M66 250 Q74 262 62 270 Q67 258 60 255 Z" fill="url(#dp-g-gold)" />
+      <circle cx="60" cy="170" r="8" fill="#0a1828" stroke="url(#dp-g-gold)" stroke-width="1.5" />
+      <path class="dp-glint dp-glint--a" d="M48 -58 L53 -39 L72 -34 L53 -29 L48 -10 L43 -29 L24 -34 L43 -39 Z" fill="#fef9c3" />
+      <path class="dp-glint dp-glint--b" d="M48 -58 L53 -39 L72 -34 L53 -29 L48 -10 L43 -29 L24 -34 L43 -39 Z" fill="#fef9c3" />
+    </g>
+  </svg>`;
+
+// [name, emoji, colour filter]. A random handful swoops in each time.
+const DP_DRAGONS = [
+  ['Blue-Eyes White Dragon', '🐉', 'grayscale(1) brightness(1.9)'],
+  ['Red-Eyes Black Dragon', '🐉', 'hue-rotate(240deg) saturate(2) brightness(0.7)'],
+  ['Curse of Dragon', '🐲', 'hue-rotate(-60deg) saturate(1.4)'],
+  ['Tri-Horned Dragon', '🐉', 'hue-rotate(160deg) saturate(1.3)'],
+  ['Thousand Dragon', '🐲', 'sepia(1) saturate(0.7) brightness(1.1)'],
+  ['Luster Dragon', '🐉', 'hue-rotate(60deg) saturate(1.6)'],
+  ['Baby Dragon', '🐲', 'hue-rotate(-90deg) saturate(1.3)'],
+  ['Harpie\'s Pet Dragon', '🐉', 'hue-rotate(-140deg) saturate(1.2)'],
+  ['Twin-Headed Thunder Dragon', '🐉', 'hue-rotate(-50deg) saturate(2)'],
+  ['Hyozanryu', '🐉', 'hue-rotate(80deg) saturate(0.4) brightness(1.5)'],
+  ['Koumori Dragon', '🐲', 'hue-rotate(200deg) brightness(0.8)'],
+  ['Crawling Dragon', '🐲', 'none']
+];
+// Where the dragons hover (x%, y%), around the knight rather than on him.
+const DP_SLOTS = [[15, 17], [85, 15], [32, 7], [68, 8], [11, 40], [89, 38], [17, 64], [83, 62]];
+const DP_DRAGON_AT = 3900;
+const DP_DRAGON_GAP = 300;
+const DP_BASE_ATK = 2900;
+const DP_BOLTS = [
+  '20,0 28,18 18,26 30,46 22,52 34,72',
+  '78,0 70,16 82,28 68,44 76,50 64,70',
+  '52,0 44,14 58,24 42,42 54,50 46,64'
+].map((points, i) => `<svg class="dp-bolt" style="--t: ${900 + i * 1000}ms;" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true"><polyline points="${points}" /></svg>`);
+
 const NAME_EGGS = {
-  // Theotaur (Dark Paladin's Legion): Ultimate Magical Fusion with a bull.
+  // Theotaur (Dark Paladin's Legion): the Dark Paladin himself comes for Theodor.
+  // Lightning reveals him (0.9/1.9/2.9s), random dragons swoop in and pump his
+  // ATK (+500 each, 3.9-6s), he charges up on their power (6.2s), DRAGON SLAYER
+  // BLADE cuts three times (7-7.3s), the sky detonates and splits (7.6s) and he
+  // knights "Sir Theodor" (9.5-11s).
   THEODOR: {
     id: 'name-theodor',
-    ms: 12000,
-    title: 'The Master\'s Apprentice approaches.',
-    msg: 'Ah… the Theotaur. Half boy, half bull, all Dark Paladin.',
-    html: () => `
-      <div class="tg-part tg-part--hat ce-at"><span class="ce-emoji">🧙</span><small>Dark Magician</small></div>
-      <div class="tg-part tg-part--sword ce-at"><span class="ce-emoji">🗡️</span><small>Buster Blader</small></div>
-      <div class="tg-part tg-part--bull ce-at"><span class="ce-emoji">🐂</span><small>…a bull?!</small></div>
-      <div class="tg-banner ce-at">Ultimate Magical Fusion!</div>
-      <div class="tg-swirl ce-at"></div>
-      <div class="tg-flash"></div>
-      <div class="ng-card tg-card ce-at">
-        <div class="ng-card-name">Dark Moo-ladin</div>
-        <div class="ng-card-stars">★★★★★★★★</div>
-        <div class="ng-card-art"><span class="ce-emoji">🐂</span><span class="tg-hat"></span><span class="ce-emoji tg-blade">🗡️</span></div>
-        <div class="ng-card-text"><b>[Beast-Warrior / Fusion]</b><br>"Dark Magician" + "Buster Blader" + 1 bull. Negates 1 Spell card. Then eats grass.</div>
-        <div class="ng-card-stats">ATK/2900 DEF/MOO</div>
-      </div>
-      <div class="tg-moo ce-at">MOOO.</div>
-      ${ngToast(5200, 'Theotaur\'s Ultimate Magical Fusion!', 'Dark Moo-ladin: 2900 ATK of pure Theodor.')}`
+    ms: 14500,
+    title: 'A knight approaches the tomb.',
+    msg: 'Ah… Theodor. The Dark Paladin has been waiting for you.',
+    html: () => {
+      const dragons = DP_DRAGONS.slice().sort(() => Math.random() - 0.5).slice(0, DP_SLOTS.length);
+      const sky = `
+        <div class="dp-sky"></div>
+        <div class="dp-moon ce-at"></div>
+        ${dragons.map(([name, emoji, filter], i) => {
+          const [x, y] = DP_SLOTS[i];
+          return `<div class="dp-dragon ce-at" style="left: ${x}%; top: ${y}%; --sx: ${x < 50 ? -60 : 60}vw; --t: ${DP_DRAGON_AT + i * DP_DRAGON_GAP}ms;"><span class="ce-emoji" style="filter: ${filter};">${emoji}</span><small>${name}</small></div>`;
+        }).join('')}`;
+      const atk = ceRange(dragons.length + 1, i => `<b style="--t: ${DP_DRAGON_AT - 200 + i * DP_DRAGON_GAP}ms;">${DP_BASE_ATK + i * 500}</b>`);
+      // Dragon power sucked into the blade during the charge.
+      const motes = ceRange(22, i => {
+        const a = ceRand(0, Math.PI * 2);
+        const d = ceRand(30, 60);
+        return `<span class="dp-mote ce-at" style="--mx: ${(Math.cos(a) * d).toFixed(1)}vw; --my: ${(Math.sin(a) * d).toFixed(1)}vh; --t: ${6150 + i * 30}ms;"></span>`;
+      });
+      const shards = ceRange(16, i => {
+        const a = (i / 16) * Math.PI * 2 + ceRand(-0.2, 0.2);
+        const d = ceRand(45, 80);
+        return `<span class="dp-shard ce-at" style="--dx: ${(Math.cos(a) * d).toFixed(1)}vw; --dy: ${(Math.sin(a) * d).toFixed(1)}vh; --r: ${Math.round(ceRand(-540, 540))}deg; --s: ${ceRand(0.6, 1.4).toFixed(2)};"></span>`;
+      });
+      const slash = (cls, t, [x1, y1, x2, y2], from) =>
+        `<svg class="dp-slash ${cls}" style="--t: ${t}ms; --from: ${from};" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true"><line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" /></svg>`;
+      return `
+        <div class="dp-light"></div>
+        <div class="dp-split dp-split--a">${sky}</div>
+        <div class="dp-split dp-split--b">${sky}</div>
+        ${[900, 1900, 2900].map((t, i) => `<div class="dp-flash" style="--t: ${t}ms;"></div>${DP_BOLTS[i]}`).join('')}
+        <div class="dp-dark"></div>
+        <div class="dp-rays ce-at"></div>
+        <div class="dp-aura ce-at"></div>
+        ${motes}
+        <div class="dp-knight ce-at">${DARK_PALADIN_SVG}</div>
+        <div class="dp-title ce-at">DARK PALADIN<small>Dragon-Slaying Spellsword</small></div>
+        <div class="dp-atk ce-at"><span>ATK</span><div class="dp-atk-num">${atk}</div><small>+500 for every Dragon</small></div>
+        <div class="dp-banner ce-at">DRAGON SLAYER BLADE!!</div>
+        <div class="dp-flash" style="--t: 7000ms;"></div>
+        <svg class="dp-arc" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true"><path d="M-8 8 Q58 14 108 92 Q46 34 -8 8 Z" /></svg>
+        ${slash('dp-slash--1', 7000, [-2, 13.6, 102, 86.4], 'inset(0 100% 100% 0)')}
+        ${slash('dp-slash--2', 7150, [102, 22, -2, 74], 'inset(0 0 100% 100%)')}
+        ${slash('dp-slash--3', 7300, [-2, 47, 102, 53], 'inset(0 100% 0 0)')}
+        <div class="dp-flash dp-flash--big" style="--t: 7600ms;"></div>
+        ${ceRange(3, i => `<div class="dp-ring ce-at" style="--t: ${7600 + i * 140}ms;"></div>`)}
+        ${shards}
+        <div class="dp-slain ce-at">${dragons.length} Dragons slain</div>
+        <div class="dp-arise ce-at">Arise, Sir Theodor<small>Knight of the Dark Paladin</small></div>
+        ${ngToast(11800, 'Arise, Sir Theodor!', 'Dragon Slayer. Spell Breaker. Knight of the Dark Paladin.')}`;
+    }
   },
   // Trizze (Legends Assembled): a travel-size Blue-Eyes from the Magical Hats.
   TRISTAN: {

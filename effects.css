@@ -10159,7 +10159,7 @@ header:has(+ .tn-draw--done) .tn-draw-skip { visibility: hidden; }
   100% { opacity: 0; transform: scale(0.95); }
 }
 
-/* Shared Yu-Gi-Oh! card (Theodor, Marie). */
+/* Shared Yu-Gi-Oh! card (Marie). */
 .ng-card {
   left: 50%;
   top: 45%;
@@ -10205,84 +10205,459 @@ header:has(+ .tn-draw--done) .tn-draw-skip { visibility: hidden; }
   100% { opacity: 1; transform: perspective(600px) rotateY(0deg) scale(1); }
 }
 
-/* THEODOR: Ultimate Magical Fusion of Dark Magician + Buster Blader + a bull. */
-.tg-part {
+/* THEODOR: the Dark Paladin (14500ms). 0.6s night sky and moon, lightning at
+   0.9/1.9/2.9s reveals him in steps, title 2.9s, dragons swoop in from 3.9s
+   (+300ms each) and pump his ATK. 6.15s the sky darkens and the dragons' power
+   streams into his blade, 7s/7.15s/7.3s DRAGON SLAYER BLADE cuts (dragons
+   freeze white), 7.6s detonation: flash, shockwaves, shards, the sky splits
+   apart onto gold. 9.2s he steps up, 9.93s/10.7s shoulder taps, 11s
+   "Arise, Sir Theodor", 11.8s toast. */
+.dp-light {
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(circle at 50% 50%, #fef3c7 0%, #e8a33d 30%, #78350f 62%, #1c1003 100%);
+  animation: dd-fade 400ms ease-out 7400ms both;
+}
+.dp-split { position: absolute; inset: 0; }
+.dp-split--a {
+  clip-path: polygon(0 0, 100% 0, 100% 85%, 0 15%);
+  --ex: 12vw;
+  --ey: -18vh;
+  --er: -6deg;
+  animation: dd-fade 900ms ease-out 600ms both, dp-split 1000ms cubic-bezier(0.1, 0.8, 0.3, 1) 7600ms forwards;
+}
+.dp-split--b {
+  clip-path: polygon(0 15%, 100% 85%, 100% 100%, 0 100%);
+  --ex: -12vw;
+  --ey: 18vh;
+  --er: -6deg;
+  animation: dd-fade 900ms ease-out 600ms both, dp-split 1000ms cubic-bezier(0.1, 0.8, 0.3, 1) 7600ms forwards;
+}
+@keyframes dp-split {
+  0% { opacity: 1; transform: translate(0, 0) rotate(0deg); }
+  60% { opacity: 1; }
+  100% { opacity: 0; transform: translate(var(--ex), var(--ey)) rotate(var(--er)); }
+}
+/* The whole scene rumbles during the charge, jolts on the first cut and
+   quakes on the detonation (1% = 24ms, from 6200ms). Scaled up so the
+   edges never show. */
+.is-guest--theodor .atn-guest { animation: dp-quake 2400ms linear 6200ms; }
+@keyframes dp-quake {
+  0% { transform: translate(0, 0) scale(1); }
+  4% { transform: translate(1px, -1px) scale(1.04); }
+  8% { transform: translate(-2px, 1px) scale(1.04); }
+  12% { transform: translate(2px, 1px) scale(1.04); }
+  16% { transform: translate(-1px, -2px) scale(1.04); }
+  20% { transform: translate(2px, 2px) scale(1.045); }
+  24% { transform: translate(-3px, 1px) scale(1.045); }
+  28% { transform: translate(3px, -2px) scale(1.05); }
+  32% { transform: translate(-3px, 2px) scale(1.05); }
+  34% { transform: translate(12px, -8px) scale(1.07); }
+  37% { transform: translate(-9px, 6px) scale(1.06); }
+  40% { transform: translate(7px, 4px) scale(1.06); }
+  43% { transform: translate(-8px, -5px) scale(1.06); }
+  46% { transform: translate(6px, 3px) scale(1.06); }
+  49% { transform: translate(-3px, -2px) scale(1.05); }
+  52% { transform: translate(2px, 1px) scale(1.05); }
+  55% { transform: translate(0, 0) scale(1.05); }
+  58% { transform: translate(-18px, 12px) scale(1.09); }
+  61% { transform: translate(16px, -10px) scale(1.08); }
+  64% { transform: translate(-13px, -9px) scale(1.07); }
+  67% { transform: translate(11px, 8px) scale(1.07); }
+  71% { transform: translate(-8px, 5px) scale(1.06); }
+  75% { transform: translate(6px, -4px) scale(1.05); }
+  80% { transform: translate(-4px, 2px) scale(1.04); }
+  86% { transform: translate(2px, -1px) scale(1.03); }
+  93% { transform: translate(-1px, 1px) scale(1.01); }
+  100% { transform: translate(0, 0) scale(1); }
+}
+/* Night closes in around him while he charges, then the detonation clears it. */
+.dp-dark {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  background: radial-gradient(circle at 50% 45%, rgb(2 6 23 / 0.2), rgb(2 6 23 / 0.92) 70%);
+  animation: dp-dark 1600ms ease-in-out 6150ms both;
+}
+@keyframes dp-dark {
+  0% { opacity: 0; }
+  50%, 90% { opacity: 1; }
+  100% { opacity: 0; }
+}
+.dp-aura {
+  left: 50%;
+  top: 48%;
+  width: 95vmin;
+  height: 95vmin;
+  border-radius: 50%;
+  opacity: 0;
+  background: repeating-conic-gradient(rgb(94 234 212 / 0.55) 0deg 8deg, transparent 8deg 22deg, rgb(204 251 241 / 0.4) 22deg 26deg, transparent 26deg 40deg);
+  -webkit-mask: radial-gradient(circle, transparent 12%, #000 30%, transparent 68%);
+  mask: radial-gradient(circle, transparent 12%, #000 30%, transparent 68%);
+  animation: dp-aura 1000ms ease-in 6100ms both;
+}
+@keyframes dp-aura {
+  0% { opacity: 0; transform: scale(1.4) rotate(0deg); }
+  70% { opacity: 1; transform: scale(0.75) rotate(-420deg); }
+  92% { opacity: 1; transform: scale(0.5) rotate(-560deg); }
+  100% { opacity: 0; transform: scale(1.8) rotate(-600deg); }
+}
+.dp-mote {
+  left: 38%;
+  top: 34%;
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  opacity: 0;
+  background: #ccfbf1;
+  box-shadow: 0 0 8px 3px #2dd4bf, 0 0 18px 6px rgb(20 184 166 / 0.5);
+  animation: dp-mote 600ms cubic-bezier(0.5, 0, 0.9, 0.6) var(--t) both;
+}
+@keyframes dp-mote {
+  0% { opacity: 0; transform: translate(var(--mx), var(--my)) scale(1.6); }
+  25% { opacity: 1; }
+  100% { opacity: 0; transform: translate(0, 0) scale(0.3); }
+}
+.dp-arc {
+  opacity: 0;
+  fill: #f0fdfa;
+  filter: drop-shadow(0 0 10px #5eead4) drop-shadow(0 0 30px #14b8a6) drop-shadow(0 0 60px #fff);
+  animation: dp-arc 750ms ease-out 6980ms both;
+}
+.fx-cegg svg.dp-arc { position: absolute; inset: 0; }
+@keyframes dp-arc {
+  0% { opacity: 0; clip-path: inset(0 100% 100% 0); transform: scale(1); }
+  1% { opacity: 1; }
+  30% { opacity: 1; clip-path: inset(0 0 0 0); transform: scale(1); }
+  100% { opacity: 0; clip-path: inset(0 0 0 0); transform: scale(1.08); }
+}
+.dp-flash--big { background: #fff; animation-duration: 1000ms; }
+.dp-ring {
+  left: 50%;
+  top: 50%;
+  width: 40vmin;
+  height: 40vmin;
+  border-radius: 50%;
+  opacity: 0;
+  border: 6px solid #ccfbf1;
+  box-shadow: 0 0 24px 6px #2dd4bf, inset 0 0 24px 6px #2dd4bf;
+  animation: dp-ring 900ms cubic-bezier(0.1, 0.7, 0.3, 1) var(--t) both;
+}
+@keyframes dp-ring {
+  0% { opacity: 0; transform: scale(0.1); border-width: 14px; }
+  1% { opacity: 1; }
+  100% { opacity: 0; transform: scale(5); border-width: 1px; }
+}
+.dp-shard {
+  left: 50%;
+  top: 50%;
+  width: 16px;
+  height: 26px;
+  opacity: 0;
+  background: linear-gradient(160deg, #f0fdfa, #2dd4bf 45%, #0f172a);
+  clip-path: polygon(50% 0, 100% 70%, 30% 100%, 0 45%);
+  animation: dp-shard 1300ms cubic-bezier(0.1, 0.8, 0.3, 1) 7600ms both;
+}
+@keyframes dp-shard {
+  0% { opacity: 0; transform: translate(0, 0) rotate(0deg) scale(var(--s)); }
+  1%, 70% { opacity: 1; }
+  100% { opacity: 0; transform: translate(var(--dx), var(--dy)) rotate(var(--r)) scale(var(--s)); }
+}
+.dp-slain {
+  left: 50%;
+  top: 84%;
+  width: max-content;
+  padding: 0.3rem 0.9rem;
+  border: 2px solid #fecaca;
+  border-radius: 6px;
+  background: rgb(69 10 10 / 0.75);
+  font: 900 clamp(1.1rem, 6vw, 1.6rem)/1 'Cinzel Decorative', 'Cinzel', serif;
+  color: #fee2e2;
+  text-shadow: 0 0 10px #ef4444;
+  rotate: -6deg;
+  animation: dp-stamp 450ms cubic-bezier(0.3, 1.6, 0.5, 1) 7950ms both, ng-out 500ms ease-in 9100ms forwards;
+}
+@keyframes dp-stamp {
+  0% { opacity: 0; transform: scale(3); }
+  100% { opacity: 1; transform: scale(1); }
+}
+.dp-sky {
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(1px 1px at 18% 30%, #fff 50%, transparent),
+    radial-gradient(1px 1px at 72% 12%, #fff 50%, transparent),
+    radial-gradient(1.5px 1.5px at 40% 52%, #e0f2fe 50%, transparent),
+    radial-gradient(1px 1px at 88% 46%, #fff 50%, transparent),
+    radial-gradient(1px 1px at 8% 70%, #fff 50%, transparent),
+    radial-gradient(circle at 62% 26%, #1e3a5f, #0b1324 45%, #02040a 100%);
+}
+.dp-moon {
+  left: 62%;
+  top: 26%;
+  width: 34vmin;
+  height: 34vmin;
+  border-radius: 50%;
+  background: radial-gradient(circle at 40% 38%, #f8fafc, #cbd5e1 55%, #94a3b8);
+  box-shadow: 0 0 40px 10px rgb(186 230 253 / 0.35), 0 0 120px 40px rgb(56 189 248 / 0.15);
+}
+.dp-dragon {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 4px;
-  font-size: min(64px, 17vw);
-  animation: tg-part 2600ms ease-in-out 1000ms both;
+  width: 26vw;
+  font-size: min(54px, 13vw);
+  line-height: 1;
+  animation: dp-dragon 700ms cubic-bezier(0.2, 0.9, 0.3, 1.2) var(--t) both, dp-hit 550ms linear 7020ms forwards;
 }
-.tg-part small { font: 700 0.75rem/1 'Cinzel', serif; color: #e9d5ff; text-shadow: 0 1px 3px #000; white-space: nowrap; }
-.tg-part--hat { left: 24%; top: 40%; --sx: -40vw; --sy: 0px; --ex: 26vw; --ey: 5vh; }
-.tg-part--sword { left: 76%; top: 40%; --sx: 40vw; --sy: 0px; --ex: -26vw; --ey: 5vh; }
-.tg-part--bull { left: 50%; top: 66%; --sx: 0px; --sy: 40vh; --ex: 0px; --ey: -21vh; }
-@keyframes tg-part {
-  0% { opacity: 0; transform: translate(var(--sx), var(--sy)) rotate(0deg) scale(1); }
-  25%, 55% { opacity: 1; transform: translate(0px, 0px) rotate(0deg) scale(1); }
-  100% { opacity: 0; transform: translate(var(--ex), var(--ey)) rotate(720deg) scale(0); }
+/* Cut: the dragons freeze white and tremble until the sky splits under them. */
+@keyframes dp-hit {
+  0% { transform: translateX(0) scale(1); filter: brightness(1) drop-shadow(0 0 0 #5eead4); }
+  10% { transform: translateX(-4px) scale(1.05); filter: brightness(4) drop-shadow(0 0 12px #5eead4); }
+  30% { transform: translateX(4px) scale(1.05); }
+  50% { transform: translateX(-3px) scale(1.05); }
+  70% { transform: translateX(3px) scale(1.05); }
+  100% { transform: translateX(0) scale(1.05); filter: brightness(4) drop-shadow(0 0 12px #5eead4); }
 }
-.tg-banner {
-  left: 50%;
-  top: 16%;
-  width: max-content;
-  max-width: 92vw;
+.dp-dragon .ce-emoji { animation: dp-hover 1400ms ease-in-out infinite alternate; }
+.dp-dragon small {
+  margin-top: 3px;
+  font: 700 0.55rem/1.1 'Cinzel', serif;
+  color: #e0f2fe;
   text-align: center;
-  font: 900 clamp(1.3rem, 6.5vw, 2.2rem)/1.1 'Cinzel Decorative', 'Cinzel', serif;
-  color: #f5d0fe;
-  text-shadow: 0 0 12px #a855f7, 0 3px 0 #3b0764;
-  animation: ng-banner 1400ms ease-out 2200ms both;
+  text-shadow: 0 1px 3px #000, 0 0 6px #000;
 }
-.tg-swirl {
+@keyframes dp-dragon {
+  0% { opacity: 0; transform: translateX(var(--sx)) scale(0.3); }
+  100% { opacity: 1; transform: translateX(0) scale(1); }
+}
+@keyframes dp-hover {
+  from { transform: translateY(-4px); }
+  to { transform: translateY(5px); }
+}
+.dp-flash {
+  position: absolute;
+  inset: 0;
+  background: #e0f2fe;
+  opacity: 0;
+  animation: dp-flash 650ms ease-out var(--t) both;
+}
+@keyframes dp-flash {
+  0% { opacity: 0; }
+  8% { opacity: 1; }
+  22% { opacity: 0.25; }
+  32% { opacity: 0.9; }
+  100% { opacity: 0; }
+}
+.fx-cegg svg.dp-bolt { position: absolute; inset: 0; }
+.dp-bolt { opacity: 0; filter: drop-shadow(0 0 6px #7dd3fc); animation: dp-bolt 450ms linear var(--t) both; }
+.dp-bolt polyline { fill: none; stroke: #fff; stroke-width: 3; stroke-linejoin: bevel; vector-effect: non-scaling-stroke; }
+@keyframes dp-bolt {
+  0% { opacity: 0; }
+  5%, 25% { opacity: 1; }
+  35% { opacity: 0.2; }
+  45% { opacity: 1; }
+  100% { opacity: 0; }
+}
+.dp-rays {
   left: 50%;
   top: 45%;
-  width: 70vmin;
-  height: 70vmin;
+  width: 150vmax;
+  height: 150vmax;
   border-radius: 50%;
-  background: repeating-conic-gradient(#a855f7 0deg 15deg, #1e1b4b 15deg 30deg, #60a5fa 30deg 45deg);
-  -webkit-mask: radial-gradient(circle, #000 20%, transparent 70%);
-  mask: radial-gradient(circle, #000 20%, transparent 70%);
-  animation: tg-swirl 1300ms ease-in 2450ms both;
+  background: repeating-conic-gradient(rgb(254 243 199 / 0.55) 0deg 6deg, transparent 6deg 18deg);
+  -webkit-mask: radial-gradient(circle, #000 10%, transparent 60%);
+  mask: radial-gradient(circle, #000 10%, transparent 60%);
+  animation: dd-fade 1000ms ease-out 9100ms both, dp-spin 24s linear infinite;
 }
-@keyframes tg-swirl {
-  0% { opacity: 0; transform: scale(0.3) rotate(0deg); }
-  50% { opacity: 1; }
-  100% { opacity: 0; transform: scale(1.2) rotate(720deg); }
-}
-.tg-flash { position: absolute; inset: 0; background: #fff; animation: ng-flash 700ms ease-out 3550ms both; }
-.tg-card { background: linear-gradient(160deg, #a855f7, #6b21a8); animation: ng-card 900ms cubic-bezier(0.3, 1.5, 0.5, 1) 3600ms both; }
-.tg-card .ng-card-art { background: radial-gradient(circle at 50% 60%, #fde68a, #7c3aed 70%); }
-.tg-hat {
-  position: absolute;
-  left: 20%;
-  top: 14%;
-  width: 20%;
-  height: 24%;
-  background: linear-gradient(180deg, #7c3aed, #3b0764);
-  clip-path: polygon(60% 0, 100% 100%, 0 100%);
-  rotate: -18deg;
-}
-.tg-hat::after {
-  content: '★';
-  position: absolute;
+@keyframes dp-spin { to { transform: rotate(360deg); } }
+.dp-knight {
   left: 50%;
-  top: 60%;
-  translate: -50% -50%;
-  font-size: 0.14em;
-  color: #fde047;
+  top: 58%;
+  width: min(46vw, 30vh, 260px);
+  aspect-ratio: 2 / 3;
+  animation:
+    dp-reveal 2400ms linear 900ms both,
+    dp-power 1500ms ease-in-out 6150ms,
+    dp-leap 700ms ease-in-out 6650ms,
+    dp-step 900ms ease-out 9200ms forwards;
 }
-.tg-blade { position: absolute; right: 6%; bottom: 8%; font-size: 0.45em; rotate: -30deg; }
-.tg-moo {
-  left: 72%;
-  top: 22%;
-  padding: 0.35rem 0.7rem;
-  border-radius: 1rem;
-  background: #fff;
-  color: #111;
-  font: 900 1.1rem/1 'Cinzel', serif;
-  box-shadow: 0 4px 12px rgb(0 0 0 / 0.5);
-  animation: ng-pop 500ms cubic-bezier(0.3, 1.6, 0.5, 1) 4700ms both;
+/* Charging: his glow swells with the dragons' power, then bursts on the cut. */
+@keyframes dp-power {
+  0% { filter: brightness(1) drop-shadow(0 0 16px rgb(45 212 191 / 0.7)); }
+  55% { filter: brightness(1.25) drop-shadow(0 0 34px rgb(94 234 212 / 1)); }
+  60% { filter: brightness(2.2) drop-shadow(0 0 50px rgb(240 253 250 / 1)); }
+  100% { filter: brightness(1) drop-shadow(0 0 16px rgb(45 212 191 / 0.7)); }
+}
+@keyframes dp-reveal {
+  0% { opacity: 0; transform: scale(0.45); filter: brightness(0.05) drop-shadow(0 0 0 rgb(45 212 191 / 0)); }
+  2% { opacity: 1; transform: scale(0.45); filter: brightness(0.05) drop-shadow(0 0 0 rgb(45 212 191 / 0)); }
+  41% { transform: scale(0.45); }
+  42.5% { transform: scale(0.72); }
+  82% { transform: scale(0.72); filter: brightness(0.05) drop-shadow(0 0 0 rgb(45 212 191 / 0)); }
+  84% { transform: scale(1); }
+  100% { opacity: 1; transform: scale(1); filter: brightness(1) drop-shadow(0 0 16px rgb(45 212 191 / 0.7)); }
+}
+@keyframes dp-leap {
+  0% { transform: translateY(0) scale(1); }
+  45% { transform: translateY(-7vh) scale(1.08); }
+  100% { transform: translateY(0) scale(1); }
+}
+@keyframes dp-step {
+  from { transform: translateY(0) scale(1); }
+  to { transform: translateY(-2vh) scale(1.12); }
+}
+.dp-eyes { filter: drop-shadow(0 0 2px #5eead4); }
+.fx-cegg .dp-staff {
+  transform-box: view-box;
+  transform-origin: 60px 170px;
+  animation: dp-swing 1450ms ease-in-out 6150ms, dp-dub 2000ms ease-in-out 9500ms forwards;
+}
+/* 1% = 14.5ms: slow windup to 6.88s, the cut lands at 6.98s. */
+@keyframes dp-swing {
+  0% { transform: rotate(0deg); }
+  50% { transform: rotate(-45deg); }
+  57% { transform: rotate(135deg); }
+  85% { transform: rotate(135deg); }
+  100% { transform: rotate(0deg); }
+}
+@keyframes dp-dub {
+  0% { transform: rotate(0deg); }
+  18% { transform: rotate(-39deg); }
+  21.5%, 35% { transform: rotate(-35deg); }
+  57% { transform: rotate(39deg); }
+  60%, 80% { transform: rotate(35deg); }
+  100% { transform: rotate(0deg); }
+}
+.fx-cegg .dp-glint { transform-box: fill-box; transform-origin: center; opacity: 0; }
+.dp-glint--a { animation: dp-glint 700ms ease-out 9900ms both; }
+.dp-glint--b { animation: dp-glint 700ms ease-out 10670ms both; }
+@keyframes dp-glint {
+  0% { opacity: 0; transform: scale(0) rotate(0deg); }
+  25% { opacity: 1; transform: scale(1.6) rotate(45deg); }
+  100% { opacity: 0; transform: scale(0.6) rotate(90deg); }
+}
+.dp-blade {
+  filter: drop-shadow(0 0 4px rgb(94 234 212 / 0.6)) brightness(1);
+  animation: dp-blade 1000ms ease-in 6100ms;
+}
+@keyframes dp-blade {
+  0% { filter: drop-shadow(0 0 4px rgb(94 234 212 / 0.6)) brightness(1); }
+  85% { filter: drop-shadow(0 0 14px rgb(204 251 241 / 1)) brightness(1.8); }
+  100% { filter: drop-shadow(0 0 4px rgb(94 234 212 / 0.6)) brightness(1); }
+}
+.dp-title, .dp-banner, .dp-arise {
+  width: max-content;
+  max-width: 94vw;
+  text-align: center;
+  font: 900 clamp(1.6rem, 9vw, 2.8rem)/1.05 'Cinzel Decorative', 'Cinzel', serif;
+  /* Cinzel Decorative's TH/HE ligatures overlap the letters. */
+  font-variant-ligatures: none;
+  font-feature-settings: 'liga' 0, 'dlig' 0;
+}
+.dp-title {
+  left: 50%;
+  top: 14%;
+  color: #e2e8f0;
+  background: linear-gradient(180deg, #f8fafc 0%, #94a3b8 48%, #e2e8f0 52%, #475569 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  filter: drop-shadow(0 0 8px #2dd4bf) drop-shadow(0 3px 0 #0f172a);
+  animation: ng-banner 1400ms ease-out 2900ms both;
+}
+.dp-title small, .dp-arise small {
+  display: block;
+  margin-top: 4px;
+  font: 700 0.75rem/1.2 'Cinzel', serif;
+  letter-spacing: 0.12em;
+  -webkit-text-fill-color: #99f6e4;
+}
+.dp-atk {
+  left: 50%;
+  top: 87%;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: center;
+  gap: 0 0.5rem;
+  width: max-content;
+  padding: 0.35rem 0.9rem;
+  border: 2px solid #e8a33d;
+  border-radius: 8px;
+  background: rgb(2 6 23 / 0.8);
+  box-shadow: 0 0 18px rgb(45 212 191 / 0.4);
+  font: 900 1rem/1 'Cinzel', serif;
+  color: #99f6e4;
+  animation: ng-pop 400ms cubic-bezier(0.3, 1.6, 0.5, 1) 3500ms both, ng-out 400ms ease-in 7000ms forwards;
+}
+.dp-atk small { flex-basis: 100%; text-align: center; font: 700 0.6rem/1.4 'Cinzel', serif; color: #cbd5e1; }
+.dp-atk-num { display: grid; }
+.dp-atk-num b {
+  grid-area: 1 / 1;
+  background: #020617;
+  font-size: 1.9rem;
+  font-variant-numeric: tabular-nums;
+  color: #fde68a;
+  text-shadow: 0 0 10px #f59e0b;
+  animation: dp-atk 350ms cubic-bezier(0.3, 1.6, 0.5, 1) var(--t) both;
+}
+@keyframes dp-atk {
+  0% { opacity: 0; transform: scale(1.8); }
+  100% { opacity: 1; transform: scale(1); }
+}
+.dp-banner {
+  left: 50%;
+  top: 16%;
+  color: #f0fdfa;
+  text-shadow: -3px 0 0 rgb(239 68 68 / 0.7), 3px 0 0 rgb(45 212 191 / 0.8), 0 0 18px #2dd4bf, 0 0 40px #0d9488, 0 4px 0 #042f2e;
+  animation: dp-banner 1250ms ease-out 6400ms both;
+}
+@keyframes dp-banner {
+  0% { opacity: 0; transform: scale(3.2) skewX(-12deg); }
+  10% { opacity: 1; transform: scale(0.92) skewX(-12deg); }
+  16% { transform: scale(1.04) skewX(-12deg); }
+  22% { transform: scale(1) skewX(-12deg); }
+  85% { opacity: 1; transform: scale(1.06) skewX(-12deg); }
+  100% { opacity: 0; transform: scale(1.5) skewX(-12deg); }
+}
+.fx-cegg svg.dp-slash { position: absolute; inset: 0; }
+.dp-slash line {
+  fill: none;
+  stroke: #fff;
+  stroke-width: 5;
+  stroke-linecap: round;
+  vector-effect: non-scaling-stroke;
+}
+.dp-slash--1 line { stroke-width: 9; }
+/* Each cut is drawn by growing a clip from its --from corner (dashes ignore
+   pathLength with non-scaling-stroke). */
+.dp-slash {
+  opacity: 0;
+  filter: drop-shadow(0 0 6px #5eead4) drop-shadow(0 0 18px #fff);
+  animation: dp-slash 650ms ease-out var(--t) both;
+}
+@keyframes dp-slash {
+  0% { opacity: 0; clip-path: var(--from); }
+  1% { opacity: 1; }
+  22% { opacity: 1; clip-path: inset(0 0 0 0); }
+  100% { opacity: 0; clip-path: inset(0 0 0 0); }
+}
+.dp-arise {
+  left: 50%;
+  top: 13%;
+  color: #fde68a;
+  background: linear-gradient(180deg, #fffbeb 0%, #fbbf24 50%, #b45309 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  filter: drop-shadow(0 0 10px rgb(251 191 36 / 0.8)) drop-shadow(0 3px 0 #451a03);
+  animation: dp-arise 1100ms cubic-bezier(0.2, 0.9, 0.3, 1.1) 11000ms both;
+}
+.dp-arise small { -webkit-text-fill-color: #fffbeb; }
+@keyframes dp-arise {
+  0% { opacity: 0; transform: scale(0.6); letter-spacing: 0.4em; }
+  100% { opacity: 1; transform: scale(1); letter-spacing: 0; }
 }
 
 /* TRISTAN: Magical Hats, a travel-size Blue-Eyes, then United We Stand. */

@@ -2490,14 +2490,55 @@ const COOP_SOUNDS = {
   // Family names on the stone keyboard (name-eggs.js), timed to effects.css.
   'name-theodor': t => {
     const hall = darkBus({ reverb: 0.6 });
-    eyeHum(t, 1, 0.04, hall);
-    [1.1, 1.3, 1.5].forEach(o => ceWhoosh(t + o, 0.35, 0.05, 500, 2200, hall));
-    brass({ t: t + 2.2, notes: [55, 62, 67], dur: 0.7, gain: 0.05 });
-    laserCharge({ t: t + 2.5, dur: 1.1, from: 90, to: 2200, gain: 0.05, out: hall });
-    boom(t + 3.6, 0.9, hall);
-    chord({ t: t + 3.7, notes: [55, 59, 62, 67], dur: 1.6, gain: 0.03, type: 'triangle', attack: 0.05, filter: 2400 });
-    arpeggio(t + 3.7, [79, 83, 86, 91], 0.08, (tt, n) => bell({ t: tt, freq: midi(n), dur: 1, gain: 0.03, out: hall }));
-    cowMoo(t + 4.7, hall);
+    // Night wind and a low drone under the lightning.
+    noise({ t: t + 0.5, dur: 6, gain: 0.025, freq: 500, to: 900, q: 0.7, attack: 1.2, out: hall });
+    tone({ t: t + 0.6, freq: midi(38), dur: 6, type: 'sawtooth', gain: 0.025, filter: 280, attack: 1, out: hall });
+    [0.9, 1.9, 2.9].forEach((o, i) => {
+      noise({ t: t + o, dur: 0.12, gain: 0.16, type: 'highpass', freq: 2500, attack: 0.002, out: hall });
+      noise({ t: t + o + 0.05, dur: 1.4, gain: 0.12 + i * 0.03, type: 'lowpass', freq: 700, to: 60, attack: 0.03, out: hall });
+    });
+    brass({ t: t + 2.95, notes: [50, 57, 62, 66], dur: 1.2, gain: 0.04 });
+    // Dragons swoop in, each one adding 500 ATK.
+    for (let i = 0; i < 8; i++) {
+      const at = t + 3.9 + i * 0.3;
+      ceWhoosh(at, 0.3, 0.03, 300, 1600, hall);
+      if (i % 2 === 0) monsterRoar(at + 0.1, 0.035, hall);
+      tone({ t: at + 0.1, freq: midi(72 + i), dur: 0.12, type: 'square', gain: 0.025, filter: 3000, out: hall });
+    }
+    // The charge: the dragons' power drains into the blade over a swelling
+    // dark choir, sub rumble, heartbeats and a rising scream into the cut.
+    darkCluster({ t: t + 6.1, notes: [38, 39, 45, 50], dur: 0.95, gain: 0.02, attack: 0.7, filter: [200, 1600], out: hall });
+    tone({ t: t + 6.1, freq: 32, to: 48, dur: 0.92, gain: 0.18, attack: 0.8, out: hall });
+    noise({ t: t + 6.1, dur: 0.9, gain: 0.07, type: 'highpass', freq: 800, to: 7000, attack: 0.85, out: hall });
+    laserCharge({ t: t + 6.15, dur: 0.83, from: 60, to: 3200, gain: 0.07, out: hall });
+    [6.2, 6.55, 6.8].forEach(o => bigHeartbeat(t + o, 0.2, hall));
+    for (let i = 0; i < 10; i++) tone({ t: t + 6.15 + i * 0.07, freq: 1800 + i * 160, to: 600, dur: 0.12, gain: 0.012, attack: 0.005, out: hall });
+    brass({ t: t + 6.4, notes: [38, 45, 50, 51], dur: 0.6, gain: 0.05 });
+    // Three cuts: a tearing swish, a ringing blade "shing" and an impact each.
+    [[6.98, 1.3], [7.15, 0.8], [7.3, 0.9]].forEach(([o, k]) => {
+      noise({ t: t + o - 0.06, dur: 0.18, gain: 0.14 * k, freq: 7000, to: 1200, q: 1.5, attack: 0.01, out: hall });
+      bell({ t: t + o, freq: rnd(2400, 3000), dur: 0.9, gain: 0.03 * k, out: hall });
+      tone({ t: t + o, freq: 180, to: 40, dur: 0.35, type: 'sawtooth', gain: 0.07 * k, filter: 900, attack: 0.002, out: hall });
+      boom(t + o, 0.55 * k, hall);
+    });
+    // Hit-stop, then DETONATION: layered blasts, dying dragon roars, falling
+    // debris and a long earth-shaking tail.
+    boom(t + 7.6, 1.2, hall);
+    boom(t + 7.68, 0.9, hall);
+    tone({ t: t + 7.6, freq: 60, to: 22, dur: 2.2, gain: 0.25, attack: 0.005, out: hall });
+    noise({ t: t + 7.6, dur: 0.5, gain: 0.18, freq: 3000, to: 400, q: 0.6, attack: 0.002, out: hall });
+    noise({ t: t + 7.62, dur: 3, gain: 0.12, type: 'lowpass', freq: 900, to: 40, attack: 0.02, out: hall });
+    [7.7, 7.85, 8.0].forEach((o, i) => monsterRoar(t + o, 0.05 - i * 0.01, hall));
+    for (let i = 0; i < 14; i++) noise({ t: t + 7.7 + rnd(0, 1.1), dur: 0.05, gain: rnd(0.02, 0.05), type: 'highpass', freq: rnd(2500, 6000), attack: 0.002, out: hall });
+    brass({ t: t + 7.95, notes: [38, 45, 50, 54, 57], dur: 1.1, gain: 0.04 });
+    // The knighting: a warm pad, two shoulder taps, then a fanfare.
+    healPad({ t: t + 9.1, notes: [62, 66, 69, 74], dur: 4, gain: 0.025, out: hall });
+    bell({ t: t + 9.93, freq: midi(86), dur: 1.4, gain: 0.05, out: hall });
+    bell({ t: t + 10.7, freq: midi(91), dur: 1.6, gain: 0.05, out: hall });
+    brass({ t: t + 11, notes: [62, 66, 69], dur: 0.35, gain: 0.045 });
+    brass({ t: t + 11.4, notes: [64, 67, 71], dur: 0.35, gain: 0.045 });
+    brass({ t: t + 11.8, notes: [62, 66, 69, 74], dur: 1.6, gain: 0.05 });
+    choir({ t: t + 11, notes: [62, 69, 74, 78], dur: 2.8, gain: 0.012, attack: 0.5, out: hall });
   },
   'name-tristan': t => {
     const hall = darkBus({ reverb: 0.55 });
@@ -2672,12 +2713,6 @@ const SETTINGS_EGG_SOUNDS = {
 };
 
 // Chalk on a blackboard: short, squeaky, resonant scratches.
-// A cartoon cow: a short rising "mm" into a long buzzy falling "ooo".
-function cowMoo(t, out) {
-  tone({ t, freq: 125, to: 150, dur: 0.3, type: 'sawtooth', gain: 0.07, filter: [300, 900], q: 4, attack: 0.08, out });
-  tone({ t: t + 0.25, freq: 150, to: 105, dur: 1.1, type: 'sawtooth', gain: 0.07, filter: [900, 350], q: 4, attack: 0.03, out });
-}
-
 // A small villain's "Mwa-ha-ha-ha-ha!": one low "mwa", then rising and falling "ha"s.
 function witchCackle(t, out) {
   tone({ t, freq: 480, to: 640, dur: 0.28, type: 'square', gain: 0.03, filter: 2200, attack: 0.02, out });
