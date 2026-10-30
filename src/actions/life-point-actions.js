@@ -3,9 +3,11 @@ function toggleLpSide(event) {
   setState({ lpSide: isLpOnLeft() ? LP_SIDES.RIGHT : LP_SIDES.LEFT });
 }
 
-// Like the Neuron app, typed digits get two implied 0s ("14" means 1400), except
-// "50" which is common on its own. lpInputExact marks a value used as-is (Halve).
+// Like the Neuron app, one or two typed digits get two implied 0s ("14" means 1400),
+// except "50" which is common on its own. Three or more digits are used as typed
+// ("333" means 333). lpInputExact marks a value used as-is (Halve).
 const LP_MAX_INPUT = 4;
+const LP_SUFFIX_MAX_DIGITS = 2;
 const LP_SHORT_INPUTS = ['50'];
 
 function openLpEditor() {
@@ -17,7 +19,8 @@ function closeLpEditor() {
 }
 
 function hasLpInputSuffix() {
-  return !!ui.lpInput && !ui.lpInputExact && !LP_SHORT_INPUTS.includes(ui.lpInput);
+  return !!ui.lpInput && !ui.lpInputExact && ui.lpInput.length <= LP_SUFFIX_MAX_DIGITS
+    && !LP_SHORT_INPUTS.includes(ui.lpInput);
 }
 
 function getLpInputAmount() {
@@ -61,7 +64,7 @@ function adjustLpQuick(delta) {
 function setLpInputAmount(amount) {
   if (!amount) return setUi({ lpInput: '', lpInputExact: false });
   const asDigits = String(amount / 100);
-  if (amount % 100 === 0 && asDigits.length <= LP_MAX_INPUT && !LP_SHORT_INPUTS.includes(asDigits)) {
+  if (amount % 100 === 0 && asDigits.length <= LP_SUFFIX_MAX_DIGITS && !LP_SHORT_INPUTS.includes(asDigits)) {
     setUi({ lpInput: asDigits, lpInputExact: false });
   } else {
     setUi({ lpInput: String(amount), lpInputExact: true });
