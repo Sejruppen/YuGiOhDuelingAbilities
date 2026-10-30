@@ -51,8 +51,8 @@ function renderLpModal() {
         ${LP_KEYPAD_KEYS.map(k => `<button type="button" onclick="lpKey('${k}')" class="py-2 rounded-lg bg-slate-800 hover:bg-slate-700 text-lg font-bold text-white">${k === 'back' ? '⌫' : k}</button>`).join('')}
       </div>
       <div class="flex gap-2 [&>button]:min-w-0 [&>button]:px-1">
-        ${coopBtn('− Damage', 'confirmLpInput(-1)', 'danger', !value)}
         ${coopBtn('+ Heal', 'confirmLpInput(1)', 'heal', !value)}
+        ${coopBtn('− Damage', 'confirmLpInput(-1)', 'danger', !value)}
       </div>
       <div class="flex gap-2 [&>button]:min-w-0 [&>button]:px-1">
         ${coopBtn('÷2 Halve', 'halveLpQuick()')}
