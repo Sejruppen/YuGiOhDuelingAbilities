@@ -28,7 +28,7 @@ const EGG_IDS = [
   // Abilities screen
   'dark-paladin', 'divine-offering',
   // Duel screen
-  'full-heal', 'shadow-realm', 'last-stand', 'tiny-violin', 'screw-the-rules', 'trap-hole',
+  'shadow-realm', 'screw-the-rules', 'trap-hole',
   'pot-of-greed', 'gaia', 'mind-crush', 'millennium-puzzle', 'pharaoh-nap', 'heart-of-the-cards',
   'time-wizard', 'end-credits',
   // Character select (hold a character for 2s)

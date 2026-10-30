@@ -3,17 +3,33 @@ function toggleLpSide(event) {
   setState({ lpSide: isLpOnLeft() ? LP_SIDES.RIGHT : LP_SIDES.LEFT });
 }
 
+const LP_MAX_INPUT = 6;
+
 function openLpEditor() {
-  setUi({ lpModalOpen: true });
+  setUi({ lpModalOpen: true, lpInput: '' });
 }
 
 function closeLpEditor() {
-  setUi({ lpModalOpen: false });
+  setUi({ lpModalOpen: false, lpInput: '' });
+}
+
+function lpKey(key) {
+  const value = key === 'back'
+    ? ui.lpInput.slice(0, -1)
+    : (ui.lpInput + key).replace(/^0+/, '').slice(0, LP_MAX_INPUT);
+  setUi({ lpInput: value });
+}
+
+// Closes first (like the co-op panel) so the LP change plays on the LP bar.
+function confirmLpInput(sign) {
+  const amount = parseInt(ui.lpInput, 10) || 0;
+  if (!amount) return;
+  Object.assign(ui, { lpModalOpen: false, lpInput: '' });
+  adjustLpQuick(sign * amount);
 }
 
 function setLp(lp) {
-  const isLastStand = lp === LAST_STAND_LP && getCurrentLp() > LAST_STAND_LP;
-  setState({ lp, ...(isLastStand ? { lastStand: true } : {}) });
+  setState({ lp });
 }
 
 function adjustLpQuick(delta) {
@@ -26,5 +42,5 @@ function halveLpQuick() {
 
 function resetLp() {
   resetHeartOverload();
-  setState({ lp: STARTING_LP, lastStand: false });
+  setState({ lp: STARTING_LP });
 }

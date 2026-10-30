@@ -65,10 +65,7 @@ const EGG_HINTS = {
   'char-weevil': charHint('Weevil'),
   'char-keith': charHint('Bandit Keith'),
   // Duel screen
-  'full-heal': { where: 'Duel', text: 'Can a duelist ever be too healthy? Some cups overflow.' },
   'shadow-realm': { where: 'Duel', text: 'Losing isn\'t always just losing. Sometimes the shadows come to collect.' },
-  'last-stand': { where: 'Duel', text: 'If 50 damage is the lowest amount of damage you can take, could there be a way of getting lower from that point?' },
-  'tiny-violin': { where: 'Duel', text: 'Hanging on by a thread? Someone might play you a sad little song if you are at the lowest point possible.' },
   'screw-the-rules': { where: 'Duel', text: 'Used abilities are used... Just do not get angry about it.' },
   'trap-hole': { where: 'Duel', text: 'Comebacks can be a trap. Don\'t be too quick to spring yours.' },
   'pot-of-greed': { where: 'Duel', text: 'Ever wondered what your Skill really does? Be greedy with your patience.' },

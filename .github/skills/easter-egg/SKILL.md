@@ -53,7 +53,7 @@ When the owner says "jam", "ideas" or "what could we do for X", reply with a num
 | Tournament setup | `kuriboh-multiply` (over max players), `rock-paper-scissors` (under min), `star-chips` (hold 🏆), `penalty-dice` (hold Draw) | `tournament-size-eggs.js`, `dice-duel-egg.js` |
 | Co-op setup | `duel-school` (hold Rookie), `time-to-duel` (hold Duelist), `true-name` (hold Pharaoh: the tomb), `relinquished` (hold Face Pegasus), `architect` plus `name-*` (typed on the tomb keyboard) | `start-button-eggs.js`, `true-name-egg.js`, `name-eggs.js` |
 | Abilities | `dark-paladin`, `divine-offering` | their own files |
-| Duel | `full-heal` (LP 30,000 green explosion), `shadow-realm`, `last-stand`, `tiny-violin`, `screw-the-rules`, `trap-hole`, `pot-of-greed`, `gaia`, `mind-crush`, `millennium-puzzle`, `pharaoh-nap`, `heart-of-the-cards`, `time-wizard` / `end-credits` (header holds) | `*-easter-egg.js`, `duel-header-eggs.js` |
+| Duel | `shadow-realm`, `screw-the-rules`, `trap-hole`, `pot-of-greed`, `gaia`, `mind-crush`, `millennium-puzzle`, `pharaoh-nap`, `heart-of-the-cards`, `time-wizard` / `end-credits` (header holds) | `*-easter-egg.js`, `duel-header-eggs.js` |
 | Character select | `char-<id>` (hold a character for 2s), one per deck | `character-eggs*.js` |
 
 ## The Pharaoh's tomb (`true-name-egg.js`)

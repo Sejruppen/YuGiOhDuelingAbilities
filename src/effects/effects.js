@@ -245,15 +245,11 @@ function playLpChange(app, lpBar, { from, to, silent, shadowRealm }) {
 
   if (isDamage) {
     spawnOverlay('damage', 'damage', 700);
-    // These easter eggs move #app themselves, so don't fight them with a shake.
-    if (!shadowRealm && !isLastStand(from, to)) restartClass(app, 'fx-shake', 600);
+    // The Shadow Realm moves #app itself, so don't fight it with a shake.
+    if (!shadowRealm) restartClass(app, 'fx-shake', 600);
   } else {
     spawnParticles(lpBar, { type: 'heal', mode: 'rise', count: 16 });
   }
-
-  if (isHealOverflow(from, to)) triggerHealOverflow(anchor);
-  if (isLastStand(from, to)) triggerLastStand(app);
-  if (isTinyViolin(from, to)) triggerTinyViolin();
 
   if (shadowRealm) {
     triggerShadowRealm(app);

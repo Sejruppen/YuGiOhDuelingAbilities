@@ -4,9 +4,8 @@
 // - Light:          soft marimba notes, bubbly pops and chimes.
 // - Power of Chaos: card flips, golden bells, harp, brass fanfares and booms.
 // The logo / Exodia easter egg shares one sinister set across all themes, the
-// 30000 LP "Full Heal!" easter egg one joyful fanfare, the rare Shadow Realm
-// defeat one ghostly howl, the 25 LP "Unstoppable" easter egg one pounding
-// heartbeat, "Believe in the heart of the cards!" one heavenly draw,
+// rare Shadow Realm defeat one ghostly howl,
+// "Believe in the heart of the cards!" one heavenly draw,
 // "Screw the rules" one cash-register fanfare, "Mind Crush" one eerie wink,
 // the theme roulette one dizzy slide whistle, Pharaoh's Nap one snore, the
 // Millennium Puzzle one ancient golden hum, the broken speaker one sad
@@ -107,9 +106,6 @@ function normaliseSoundEvent(event) {
     if (event.silent) return null;
     const amount = Math.abs(event.to - event.from);
     if (event.to === 0 && event.from > 0) return { name: event.shadowRealm ? 'shadow-realm' : 'defeat', amount };
-    if (isHealOverflow(event.from, event.to)) return { name: 'heal-overflow', amount };
-    if (isLastStand(event.from, event.to)) return { name: 'last-stand', amount };
-    if (isTinyViolin(event.from, event.to)) return { name: 'tiny-violin', amount };
     return { name: event.to < event.from ? 'damage' : 'heal', amount };
   }
   if (event.name === 'use' && event.delta < 0) return { ...event, name: 'use-undo' };
@@ -396,7 +392,7 @@ const EXODIA_SOUNDS = {
 };
 
 // ---------------------------------------------------------------------------
-// "Full Heal!" easter egg (shared by all themes): long, bright and happy.
+// Healing helpers (shared by many eggs): bright, warm and happy.
 // ---------------------------------------------------------------------------
 
 // A warm choir-like pad: soft detuned sine/triangle pairs with a slow swell.
@@ -414,32 +410,6 @@ function healSparkles(t, span, count, out) {
     bell({ t: t + rnd(0, span), freq: midi(notes[Math.floor(rnd(0, notes.length))]), dur: 0.9, gain: 0.022, out });
   }
 }
-
-const HEAL_SOUNDS = {
-  // Timeline matches effects.css: a harp glissando sweeps up while the
-  // shockwave grows (0-0.9s), a radiant major chord bursts as the screen goes
-  // green, then a plagal "Amen" cadence (IV -> I) rings out over the fade.
-  'heal-overflow': t => {
-    const hall = darkBus({ reverb: 0.6, echo: 0.15 });
-
-    arpeggio(t, [60, 64, 67, 72, 76, 79, 84, 88, 91, 96], 0.075, (at, n) => pluck({ t: at, note: n, gain: 0.06 }));
-    noise({ t, dur: 0.9, gain: 0.06, freq: 600, to: 9000, q: 1.5, attack: 0.8, out: hall });
-    tone({ t, freq: 300, to: 2400, dur: 0.9, gain: 0.025, attack: 0.85, out: hall });
-
-    const burst = t + 0.9;
-    tone({ t: burst, freq: 180, to: 60, dur: 0.6, gain: 0.25, attack: 0.004 });
-    noise({ t: burst, dur: 1.4, gain: 0.12, type: 'highpass', freq: 5000, to: 2000, attack: 0.01, out: hall });
-    bell({ t: burst, freq: midi(72), dur: 3, gain: 0.12, out: hall });
-    healPad({ t: burst, notes: [48, 55, 60, 64, 67, 72, 76], dur: 1.9, gain: 0.03, attack: 0.08, out: hall });
-    arpeggio(burst + 0.05, [84, 88, 91, 96, 100], 0.06, (at, n) => bell({ t: at, freq: midi(n), dur: 1, gain: 0.03, out: hall }));
-
-    const amen = t + 2.7;
-    healPad({ t: amen, notes: [53, 60, 65, 69, 72, 77], dur: 1.4, gain: 0.028, out: hall });
-    healPad({ t: amen + 1.3, notes: [48, 55, 60, 64, 67, 72, 79], dur: 3.2, gain: 0.03, attack: 0.5, out: hall });
-    bell({ t: amen + 1.3, freq: midi(84), dur: 3, gain: 0.07, out: hall });
-    healSparkles(burst + 0.4, 4.2, 18, hall);
-  }
-};
 
 // ---------------------------------------------------------------------------
 // Shadow Realm easter egg (shared by all themes): howling, swirling, ghostly.
@@ -518,87 +488,14 @@ const SHADOW_SOUNDS = {
 };
 
 // ---------------------------------------------------------------------------
-// "Unstoppable" easter egg (shared by all themes): a near-death heartbeat
-// that builds into a defiant power chord.
+// A heavy, booming lub-dub (shared by many eggs).
 // ---------------------------------------------------------------------------
 
-// A heavy, booming lub-dub.
 function bigHeartbeat(t, gain, out) {
   tone({ t, freq: 70, to: 34, dur: 0.3, gain, attack: 0.004, out });
   noise({ t, dur: 0.12, gain: gain * 0.25, type: 'lowpass', freq: 300, attack: 0.004, out });
   tone({ t: t + 0.2, freq: 60, to: 30, dur: 0.28, gain: gain * 0.7, attack: 0.004, out });
 }
-
-const LAST_STAND_SOUNDS = {
-  // Timeline matches effects.css: the hit lands with a ringing in the ears,
-  // three slow heartbeats pound under a rising drone (0.35-1.75s), and the
-  // "UNSTOPPABLE!" banner slams in at 2.2s with a boom and a power chord.
-  'last-stand': t => {
-    const room = darkBus({ reverb: 0.5 });
-
-    boom(t, 1.1, room);
-    tone({ t: t + 0.05, freq: 3600, dur: 2, gain: 0.025, attack: 0.02 });
-
-    [0.35, 1.05, 1.75].forEach(at => bigHeartbeat(t + at, 0.45, room));
-    darkCluster({ t: t + 0.3, notes: [38, 39, 45], dur: 1.95, gain: 0.03, attack: 1.6, filter: [200, 2500], out: room });
-    tone({ t: t + 0.3, freq: 150, to: 600, dur: 1.9, type: 'sawtooth', gain: 0.03, attack: 1.7, filter: [400, 3000], out: room });
-    noise({ t: t + 1.2, dur: 1, gain: 0.08, freq: 400, to: 6000, q: 2, attack: 0.95, out: room });
-
-    const slam = t + 2.2;
-    boom(slam, 1.4, room);
-    brass({ t: slam, notes: [38, 45, 50, 57, 62], dur: 1.8, gain: 0.05 });
-    noise({ t: slam, dur: 1.8, gain: 0.12, type: 'highpass', freq: 5000, to: 3000, attack: 0.005, out: room });
-    arpeggio(slam + 0.1, [62, 66, 69, 74], 0.07, (at, n) => tone({ t: at, freq: midi(n), dur: 0.9, type: 'square', gain: 0.025, filter: 3000, out: room }));
-  }
-};
-
-// ---------------------------------------------------------------------------
-// Tiny violin easter egg (shared by all themes): a sad, wobbly violin tune
-// cut short by a snapping string.
-// ---------------------------------------------------------------------------
-
-// A bowed note: sawtooth through a lowpass with a slow, sobbing vibrato.
-function violinNote({ t, note, dur, gain = 0.05, out = sfxOut }) {
-  const osc = sfxCtx.createOscillator();
-  const amp = sfxCtx.createGain();
-  const lfo = sfxCtx.createOscillator();
-  const depth = sfxCtx.createGain();
-  const freq = midi(note);
-
-  osc.type = 'sawtooth';
-  osc.frequency.setValueAtTime(freq, t);
-  lfo.frequency.value = 5.5;
-  depth.gain.setValueAtTime(0, t);
-  depth.gain.linearRampToValueAtTime(freq * 0.02, t + Math.min(0.25, dur));
-  lfo.connect(depth).connect(osc.frequency);
-  envelope(amp.gain, t, gain, 0.08, dur);
-  osc.connect(makeFilter(t, 'lowpass', 2400, null, dur, 1.5)).connect(amp).connect(out);
-  osc.start(t);
-  lfo.start(t);
-  osc.stop(t + dur + 0.05);
-  lfo.stop(t + dur + 0.05);
-}
-
-const TINY_VIOLIN_SOUNDS = {
-  // Timeline matches effects.css: the violin pops up (0s), plays a drooping
-  // minor tune (0.4-3.2s), the string snaps with a *twang* at 3.2s, and the
-  // violin flops over with a little thud at 3.5s.
-  'tiny-violin': t => {
-    const room = darkBus({ reverb: 0.35 });
-    tone({ t, freq: 600, to: 1400, dur: 0.15, type: 'triangle', gain: 0.05, attack: 0.005, out: room });
-
-    [[0.4, 0.4, 76], [0.8, 0.4, 74], [1.2, 0.4, 72], [1.6, 0.8, 71], [2.4, 0.85, 69]]
-      .forEach(([at, dur, note]) => violinNote({ t: t + at, note, dur, out: room }));
-
-    const snap = t + 3.2;
-    tone({ t: snap, freq: 1800, to: 220, dur: 0.45, type: 'triangle', gain: 0.1, attack: 0.002, out: room });
-    tone({ t: snap, freq: 2400, to: 300, dur: 0.3, type: 'sawtooth', gain: 0.03, attack: 0.002, filter: 4000, out: room });
-    noise({ t: snap, dur: 0.05, gain: 0.08, type: 'highpass', freq: 4000, attack: 0.001, out: room });
-
-    tone({ t: t + 3.5, freq: 160, to: 70, dur: 0.15, gain: 0.12, attack: 0.003, out: room });
-    noise({ t: t + 3.5, dur: 0.08, gain: 0.05, type: 'lowpass', freq: 800, attack: 0.002, out: room });
-  }
-};
 
 // ---------------------------------------------------------------------------
 // "Heart of the cards" easter egg (shared by all themes): heavenly build-up,
@@ -2789,11 +2686,8 @@ const SOUND_KITS = {
       tone({ t, freq: 440, to: 50, dur: 1.5, type: 'sawtooth', gain: 0.08, filter: [3000, 150] });
       chord({ t: t + 0.2, notes: [45, 48, 52], dur: 2, gain: 0.04, filter: [1200, 200] });
     },
-    ...TINY_VIOLIN_SOUNDS,
     ...EXODIA_SOUNDS,
-    ...HEAL_SOUNDS,
     ...SHADOW_SOUNDS,
-    ...LAST_STAND_SOUNDS,
     ...HEART_SOUNDS,
     ...SCREW_SOUNDS,
     ...MIND_CRUSH_SOUNDS,
@@ -2861,11 +2755,8 @@ const SOUND_KITS = {
       arpeggio(t + 0.3, [84, 79, 76, 72], 0.06, (at, n) => marimba({ t: at, note: n, gain: 0.09 }));
     },
     defeat: t => arpeggio(t, [67, 66, 65, 64], 0.32, (at, n) => tone({ t: at, freq: midi(n), dur: 0.4, type: 'triangle', gain: 0.1, attack: 0.03 })),
-        ...TINY_VIOLIN_SOUNDS,
         ...EXODIA_SOUNDS,
-    ...HEAL_SOUNDS,
     ...SHADOW_SOUNDS,
-    ...LAST_STAND_SOUNDS,
     ...HEART_SOUNDS,
     ...SCREW_SOUNDS,
     ...MIND_CRUSH_SOUNDS,
@@ -2987,11 +2878,8 @@ const SOUND_KITS = {
       boom(t, 0.8);
       brass({ t: t + 0.4, notes: [50, 53, 57], dur: 1.8, gain: 0.03 });
     },
-    ...TINY_VIOLIN_SOUNDS,
     ...EXODIA_SOUNDS,
-    ...HEAL_SOUNDS,
     ...SHADOW_SOUNDS,
-    ...LAST_STAND_SOUNDS,
     ...HEART_SOUNDS,
     ...SCREW_SOUNDS,
     ...MIND_CRUSH_SOUNDS,
