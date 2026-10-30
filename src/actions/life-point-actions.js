@@ -36,8 +36,10 @@ function adjustLpQuick(delta) {
   setLp(Math.max(0, getCurrentLp() + delta));
 }
 
+// Fills in the damage that halves your LP (rounding the LP left up), ready for − Damage.
 function halveLpQuick() {
-  setLp(Math.ceil(getCurrentLp() / 2));
+  const half = Math.floor(getCurrentLp() / 2);
+  setUi({ lpInput: half ? String(half) : '' });
 }
 
 function resetLp() {
