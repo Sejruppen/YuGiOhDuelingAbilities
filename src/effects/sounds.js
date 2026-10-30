@@ -1630,6 +1630,26 @@ const SIZE_EGG_SOUNDS = {
     tone({ t: t + 4.8, freq: 140, to: 95, dur: 0.6, type: 'sawtooth', gain: 0.03, filter: 500, attack: 0.05, out: hall });
     slideWhistle({ t: t + 5.16, freqs: [420, 90], dur: 0.8, gain: 0.04, out: hall });
     noise({ t: t + 5.16, dur: 0.8, gain: 0.05, type: 'lowpass', freq: 200, attack: 0.2, out: hall });
+  },
+
+  // "Get a hint" spam (egg-hints.js): hint cards scatter, Grandpa pops up and
+  // babbles at 1s and 2.3s, drumroll 3.1s, arm swing 3.5s, egg reveal 3.9s,
+  // "…this one." 4s, toast chime 4.6s.
+  'hint-of-the-cards': t => {
+    const room = darkBus({ reverb: 0.3 });
+    for (let i = 0; i < 8; i++) cardFlip(t + i * 0.05, 0.08, rnd(2000, 3200));
+    ceWhoosh(t, 0.5, 0.05, 600, 2400, room);
+    slideWhistle({ t: t + 0.3, freqs: [260, 620], dur: 0.45, gain: 0.03, out: room });
+    godBabble(t + 1.0, 210, 8, room);
+    godBabble(t + 2.3, 190, 10, room);
+    for (let i = 0; i < 12; i++) noise({ t: t + 3.1 + i * 0.033, dur: 0.04, gain: 0.04 + i * 0.004, type: 'bandpass', freq: 220, q: 1.5, attack: 0.002, out: room });
+    ceWhoosh(t + 3.5, 0.35, 0.06, 300, 2000, room);
+    chord({ t: t + 3.9, notes: [60, 64, 67, 72], dur: 1.6, gain: 0.025, type: 'triangle', attack: 0.02, filter: 2600 });
+    brass({ t: t + 3.9, notes: [60, 67, 72], dur: 0.6, gain: 0.04 });
+    arpeggio(t + 3.9, [84, 88, 91, 96, 100], 0.06, (tt, n) => bell({ t: tt, freq: midi(n), dur: 0.9, gain: 0.03, out: room }));
+    tone({ t: t + 3.9, freq: 900, to: 3600, dur: 0.5, gain: 0.02, attack: 0.02, out: room });
+    godBabble(t + 4.1, 200, 3, room);
+    bell({ t: t + 4.6, freq: midi(88), dur: 1.2, gain: 0.035, out: room });
   }
 };
 

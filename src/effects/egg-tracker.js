@@ -33,6 +33,8 @@ const EGG_IDS = [
   'time-wizard', 'end-credits',
   // LP modal
   'change-of-heart', 'noah-delete', 'kaiba-rip',
+  // Settings: spamming "Get a hint"
+  'hint-of-the-cards',
   // Character select (hold a character for 2s)
   ...CHARACTER_EGG_IDS.map(id => `char-${id}`)
 ];

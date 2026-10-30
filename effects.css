@@ -7790,6 +7790,190 @@ html.nd-deleting .modal-panel { animation: nd-panel 6000ms linear both; }
   75% { transform: rotate(12deg); }
 }
 
+/* --- Settings "Get a hint" spam: "The Hint of the Cards" (7000ms) ---
+   (egg-hints.js) Hint cards scatter 0-1s, Grandpa rises 0.3s, "Enough,
+   enough" 0.95s, "The only egg…" 2.3s, arm swings up from behind his back
+   3.45s, the egg pops into his hand 3.85s, "…this one." 3.95s, toast 4.6s,
+   Grandpa sinks 6.3s. */
+.fx-hc .hc-dim {
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(circle at 50% 75%, rgb(120 53 15 / 0.55), rgb(2 6 23 / 0.88) 70%);
+  animation: ce-dim 7000ms ease-out both;
+}
+.fx-hc .hc-card {
+  position: absolute;
+  left: 50%;
+  top: 45%;
+  translate: -50% -50%;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  padding: 0.3rem 0.55rem;
+  border: 1.5px solid #f59e0b;
+  border-radius: 0.5rem;
+  background: #451a03;
+  color: #fcd34d;
+  font-size: 0.7rem;
+  font-weight: 800;
+  opacity: 0;
+  animation: hc-card 1000ms cubic-bezier(0.2, 0.8, 0.4, 1) both;
+}
+@keyframes hc-card {
+  0% { opacity: 0; transform: translate(0, 0) rotate(0deg) scale(0.4); }
+  10%, 80% { opacity: 1; }
+  100% { opacity: 0; transform: translate(var(--dx), var(--dy)) rotate(var(--r)) scale(1); }
+}
+.fx-hc .hc-gramps {
+  position: absolute;
+  left: 50%;
+  bottom: 0;
+  width: min(58vw, 36vh, 260px);
+  aspect-ratio: 3 / 4;
+  translate: -50% 0;
+  animation: hc-rise 700ms cubic-bezier(0.3, 1.4, 0.5, 1) 300ms both, hc-sink 600ms ease-in 6300ms forwards;
+}
+@keyframes hc-rise {
+  from { transform: translateY(105%); }
+  to { transform: translateY(0); }
+}
+@keyframes hc-sink {
+  from { transform: translateY(0); }
+  to { transform: translateY(110%); }
+}
+.fx-hc .hc-body {
+  position: absolute;
+  inset: 0;
+  display: block;
+  transform-origin: 50% 100%;
+  animation: hc-bob 600ms ease-in-out 1000ms 4 alternate;
+}
+@keyframes hc-bob {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(3deg); }
+}
+.fx-hc .hc-arm {
+  transform-box: view-box;
+  transform-origin: 88px 100px;
+  transform: rotate(170deg);
+  animation: hc-arm 450ms cubic-bezier(0.3, 1.5, 0.5, 1) 3450ms forwards;
+}
+@keyframes hc-arm {
+  from { transform: rotate(170deg); }
+  to { transform: rotate(0deg); }
+}
+/* The egg and its glow sit on his raised hand (105, 52 in the SVG). */
+.fx-hc .hc-egg, .fx-hc .hc-rays, .fx-hc .hc-spark {
+  position: absolute;
+  left: 87.5%;
+  top: 19%;
+  translate: -50% -50%;
+}
+.fx-hc .hc-egg {
+  width: 30%;
+  aspect-ratio: 60 / 76;
+  opacity: 0;
+  filter: drop-shadow(0 0 12px #fde68a);
+  animation: hc-egg 600ms cubic-bezier(0.3, 1.6, 0.5, 1) 3850ms both, hc-float 1100ms ease-in-out 4450ms infinite alternate;
+}
+@keyframes hc-egg {
+  0% { opacity: 0; transform: scale(0) rotate(-30deg); }
+  100% { opacity: 1; transform: scale(1) rotate(0deg); }
+}
+@keyframes hc-float {
+  from { transform: scale(1) rotate(0deg); }
+  to { transform: scale(1.06) rotate(8deg); }
+}
+.fx-hc .hc-rays {
+  width: 130%;
+  aspect-ratio: 1;
+  border-radius: 50%;
+  opacity: 0;
+  background: repeating-conic-gradient(rgb(253 230 138 / 0.6) 0deg 10deg, transparent 10deg 25deg);
+  -webkit-mask: radial-gradient(circle, #000 15%, transparent 68%);
+  mask: radial-gradient(circle, #000 15%, transparent 68%);
+  animation: hc-rays 500ms ease-out 3850ms both, hc-spin 8s linear infinite;
+}
+@keyframes hc-rays {
+  from { opacity: 0; transform: scale(0.3); }
+  to { opacity: 1; transform: scale(1); }
+}
+@keyframes hc-spin { to { rotate: 360deg; } }
+.fx-hc .hc-spark {
+  font-size: 1rem;
+  opacity: 0;
+  animation: hc-spark 900ms ease-out var(--d) both;
+}
+@keyframes hc-spark {
+  0% { opacity: 0; transform: rotate(var(--a)) translateY(0) scale(0.3); }
+  30% { opacity: 1; }
+  100% { opacity: 0; transform: rotate(var(--a)) translateY(-70px) scale(1); }
+}
+.fx-hc .hc-say {
+  position: absolute;
+  left: 50%;
+  bottom: 100%;
+  margin-bottom: 0.4rem;
+  width: max-content;
+  max-width: 80vw;
+  translate: -50% 0;
+  white-space: normal;
+  text-align: center;
+  opacity: 0;
+}
+.fx-hc .hc-say--1 { animation: hc-say 1300ms ease-out 950ms both; }
+.fx-hc .hc-say--2 { animation: hc-say 1150ms ease-out 2300ms both; }
+.fx-hc .hc-say--3 { animation: hc-say 2300ms ease-out 3950ms both; }
+@keyframes hc-say {
+  0% { opacity: 0; transform: scale(0.6); }
+  12%, 88% { opacity: 1; transform: scale(1); }
+  100% { opacity: 0; transform: scale(1); }
+}
+.fx-hc .hc-toast { animation-duration: 7000ms; }
+
+/* The "Get a hint" button heats up during a spam streak: --heat goes 0 → 1
+   from the 4th quick tap to the 29th. It shakes harder, glows, swells and
+   turns red-hot. --h2 makes the shaking build up slowly, then go wild. */
+.hc-heat {
+  --h2: calc(var(--heat) * var(--heat));
+  position: relative;
+  overflow: hidden;
+  isolation: isolate;
+  color: rgb(255 251 235) !important;
+  border-color: rgb(251 191 36 / calc(0.4 + var(--heat) * 0.6)) !important;
+  box-shadow:
+    0 0 calc(var(--heat) * 22px) calc(var(--heat) * 4px) rgb(251 191 36 / calc(var(--heat) * 0.85)),
+    0 0 calc(var(--h2) * 40px) calc(var(--h2) * 8px) rgb(239 68 68 / calc(var(--h2) * 0.7));
+  text-shadow: 0 0 calc(var(--heat) * 8px) #fbbf24;
+  animation: hc-heat-shake 110ms linear infinite;
+}
+.hc-heat::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background: linear-gradient(90deg, rgb(245 158 11 / calc(var(--heat) * 0.5)), rgb(239 68 68 / calc(var(--h2) * 0.75)), rgb(245 158 11 / calc(var(--heat) * 0.5)));
+  background-size: 200% 100%;
+  animation: hc-heat-flow 600ms linear infinite;
+}
+.hc-heat .ce-emoji {
+  display: inline-block;
+  transform: scale(calc(1 + var(--heat) * 0.7));
+  filter: drop-shadow(0 0 calc(var(--heat) * 8px) #fde047);
+  animation: hc-heat-bulb 180ms steps(2) infinite;
+}
+@keyframes hc-heat-shake {
+  0%, 100% { transform: translate(0, 0) rotate(0deg) scale(calc(1 + var(--heat) * 0.06)); }
+  25% { transform: translate(calc(var(--h2) * -5px), calc(var(--h2) * 2px)) rotate(calc(var(--h2) * -3deg)) scale(calc(1 + var(--heat) * 0.06)); }
+  50% { transform: translate(calc(var(--h2) * 4px), calc(var(--h2) * -2px)) rotate(calc(var(--h2) * 2deg)) scale(calc(1 + var(--heat) * 0.06)); }
+  75% { transform: translate(calc(var(--h2) * -3px), calc(var(--h2) * -1px)) rotate(calc(var(--h2) * 3deg)) scale(calc(1 + var(--heat) * 0.06)); }
+}
+@keyframes hc-heat-flow { to { background-position: -200% 0; } }
+@keyframes hc-heat-bulb { 50% { opacity: calc(1 - var(--h2) * 0.6); } }
+@media (prefers-reduced-motion: reduce) {
+  .hc-heat, .hc-heat::after, .hc-heat .ce-emoji { animation: none; }
+}
+
 /* =========================================================================
    SECRET DUEL DISK MINI-GAME (src/effects/duel-disk-easter-egg.js,
    src/actions/duel-disk-actions.js, src/views/duel-disk-view.js) — all
