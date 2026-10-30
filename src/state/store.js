@@ -37,6 +37,7 @@ const ui = {
   peek: { skill: false, comeback: false, quest: false },
   lpModalOpen: false,
   lpInput: '',
+  lpInputExact: false,
   resetModalOpen: false
 };
 

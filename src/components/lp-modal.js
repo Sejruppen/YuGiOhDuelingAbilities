@@ -4,6 +4,9 @@ const LP_KEYPAD_KEYS = ['1', '2', '3', 'back', '4', '5', '6', '0', '7', '8', '9'
 function renderLpModal() {
   if (!ui.lpModalOpen) return '';
   const value = ui.lpInput;
+  const display = value
+    ? `${value}${hasLpInputSuffix() ? '<span class="text-slate-600">00</span>' : ''}`
+    : '<span class="text-slate-600">0</span>';
 
   return renderModal('closeLpEditor()', `
     <div class="flex items-center justify-between gap-2 mb-3">
@@ -14,7 +17,7 @@ function renderLpModal() {
     <div class="flex flex-col gap-2">
       <div class="flex items-baseline justify-between gap-2 px-1">
         <p class="text-xs text-slate-400">Damage, costs or healing</p>
-        <p class="text-3xl font-black text-white tabular-nums">${value || '<span class="text-slate-600">0</span>'}</p>
+        <p class="text-3xl font-black text-white tabular-nums">${display}</p>
       </div>
       <div class="grid grid-cols-4 gap-1.5">
         ${LP_KEYPAD_KEYS.map(k => `<button type="button" onclick="lpKey('${k}')" class="py-2 rounded-lg bg-slate-800 hover:bg-slate-700 text-lg font-bold text-white">${k === 'back' ? '⌫' : k}</button>`).join('')}
