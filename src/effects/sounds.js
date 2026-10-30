@@ -2560,21 +2560,61 @@ const COOP_SOUNDS = {
     brass({ t: t + 11.8, notes: [62, 66, 69, 74], dur: 1.6, gain: 0.05 });
     choir({ t: t + 11, notes: [62, 69, 74, 78], dur: 2.8, gain: 0.012, attack: 0.5, out: hall });
   },
+  // Three Blue-Eyes in white lightning, Polymerization, the Ultimate Dragon's
+  // triple roar, its ATK climbing, then NEUTRON BLAST and a crowning fanfare.
   'name-tristan': t => {
-    const hall = darkBus({ reverb: 0.55 });
+    const hall = darkBus({ reverb: 0.6 });
     eyeHum(t, 1, 0.04, hall);
-    [0.9, 1, 1.1].forEach(o => tone({ t: t + o + 0.5, freq: 160, to: 70, dur: 0.12, type: 'triangle', gain: 0.08, attack: 0.002, out: hall }));
-    [1.7, 1.95, 2.2, 2.45, 2.7, 2.95].forEach(o => ceWhoosh(t + o, 0.2, 0.035, 600, 1800, hall));
-    ceWhoosh(t + 3.3, 0.4, 0.05, 800, 3000, hall);
-    holoRise(t + 3.35, 0.05, hall);
-    kuriChirp(t + 3.6, 0.04, hall);
-    tone({ t: t + 4.3, freq: 2400, to: 700, dur: 0.22, type: 'square', gain: 0.025, filter: 3000, attack: 0.003 });
-    cardFlip(t + 4.85);
-    ceClang(t + 5.35, 0.05, hall);
-    laserCharge({ t: t + 5.4, dur: 0.85, from: 60, to: 1400, gain: 0.06, out: hall });
-    boom(t + 6.15, 1.1, hall);
-    monsterRoar(t + 6.2, 0.13, hall);
-    brass({ t: t + 6.9, notes: [62, 66, 69, 74], dur: 1.2, gain: 0.05 });
+    noise({ t: t + 0.3, dur: 4.4, gain: 0.02, freq: 500, to: 900, q: 0.7, attack: 1, out: hall });
+    tone({ t: t + 0.4, freq: midi(38), dur: 4.4, type: 'sawtooth', gain: 0.022, filter: 260, attack: 0.9, out: hall });
+    // Each card: a lightning crack, the slam, a roar, a brass stab and the stamp.
+    [1.2, 2.4, 3.6].forEach((o, i) => {
+      noise({ t: t + o - 0.15, dur: 0.12, gain: 0.16, type: 'highpass', freq: 2500, attack: 0.002, out: hall });
+      noise({ t: t + o - 0.1, dur: 1.2, gain: 0.1, type: 'lowpass', freq: 800, to: 60, attack: 0.03, out: hall });
+      boom(t + o + 0.3, 0.55 + i * 0.1, hall);
+      cardFlip(t + o + 0.28);
+      monsterRoar(t + o + 0.05, 0.07 + i * 0.02, hall);
+      brass({ t: t + o + 0.3, notes: [[50, 57, 62], [52, 59, 64], [54, 61, 66]][i], dur: 0.7, gain: 0.04 });
+      tone({ t: t + o + 0.45, freq: 170, to: 70, dur: 0.14, type: 'triangle', gain: 0.1, attack: 0.002, out: hall });
+      noise({ t: t + o + 0.45, dur: 0.08, gain: 0.08, freq: 900, q: 0.8, attack: 0.002, out: hall });
+    });
+    // Polymerization: a mystic chord, then whooshes spiralling faster into the vortex.
+    chord({ t: t + 4.5, notes: [55, 58, 62, 66], dur: 1.8, gain: 0.018, type: 'triangle', attack: 0.15, filter: 2400 });
+    holoRise(t + 4.5, 0.05, hall);
+    [0, 0.42, 0.74, 0.98, 1.16, 1.28, 1.36].forEach(o => ceWhoosh(t + 4.9 + o, 0.22, 0.04, 500, 2600, hall));
+    laserCharge({ t: t + 4.9, dur: 1.38, from: 80, to: 2400, gain: 0.05, out: hall });
+    choir({ t: t + 4.9, notes: [50, 57, 62, 66], dur: 1.6, gain: 0.01, attack: 1.1, out: hall });
+    // Fusion! Then all three heads roar at once.
+    boom(t + 6.3, 1.2, hall);
+    bell({ t: t + 6.3, freq: midi(86), dur: 1.6, gain: 0.05, out: hall });
+    [0, 0.05, 0.1].forEach((o, i) => monsterRoar(t + 6.6 + o, 0.11 - i * 0.015, hall));
+    brass({ t: t + 6.5, notes: [50, 57, 62, 66], dur: 1.2, gain: 0.05 });
+    // ATK 3000 → 4500, one tick per +300, a ding at the top.
+    for (let i = 0; i < 6; i++) tone({ t: t + 7 + i * 0.2, freq: midi(74 + i * 2), dur: 0.12, type: 'square', gain: 0.025, filter: 3000, out: hall });
+    bell({ t: t + 8.05, freq: midi(91), dur: 1.4, gain: 0.05, out: hall });
+    // The charge: three lasers, a dark swell, heartbeats and a rising hiss.
+    [0, 7, 12].forEach((d, i) => laserCharge({ t: t + 8.4, dur: 1.22, from: 60 + d * 4, to: 2600 + i * 300, gain: 0.045, out: hall }));
+    darkCluster({ t: t + 8.4, notes: [38, 45, 50, 51], dur: 1.25, gain: 0.018, attack: 0.9, filter: [200, 1600], out: hall });
+    tone({ t: t + 8.4, freq: 32, to: 50, dur: 1.25, gain: 0.16, attack: 1, out: hall });
+    noise({ t: t + 8.4, dur: 1.2, gain: 0.07, type: 'highpass', freq: 800, to: 7000, attack: 1.1, out: hall });
+    [8.6, 9.0, 9.3].forEach(o => bigHeartbeat(t + o, 0.18, hall));
+    brass({ t: t + 9, notes: [50, 57, 62, 63], dur: 0.6, gain: 0.05 });
+    // NEUTRON BLAST: a roaring beam, the impact, a long earth-shaking tail.
+    noise({ t: t + 9.65, dur: 1.1, gain: 0.2, freq: 1800, to: 500, q: 0.6, attack: 0.01, out: hall });
+    tone({ t: t + 9.65, freq: 110, to: 70, dur: 1.1, type: 'sawtooth', gain: 0.08, filter: [2400, 400], attack: 0.01, out: hall });
+    tone({ t: t + 9.65, freq: 1400, to: 3200, dur: 0.9, type: 'sawtooth', gain: 0.02, filter: 5000, attack: 0.01, out: hall });
+    boom(t + 9.8, 1.3, hall);
+    boom(t + 9.9, 1, hall);
+    tone({ t: t + 9.8, freq: 60, to: 22, dur: 2.4, gain: 0.25, attack: 0.005, out: hall });
+    noise({ t: t + 9.82, dur: 3, gain: 0.12, type: 'lowpass', freq: 900, to: 40, attack: 0.02, out: hall });
+    for (let i = 0; i < 14; i++) noise({ t: t + 9.9 + rnd(0, 1.2), dur: 0.05, gain: rnd(0.02, 0.05), type: 'highpass', freq: rnd(2500, 6000), attack: 0.002, out: hall });
+    // Glory: a shining pad, sparkles and the crowning fanfare for Lord Trizze.
+    healPad({ t: t + 11, notes: [62, 66, 69, 74], dur: 4, gain: 0.025, out: hall });
+    healSparkles(t + 11.2, 2.4, 16, hall);
+    brass({ t: t + 11.7, notes: [62, 66, 69], dur: 0.35, gain: 0.045 });
+    brass({ t: t + 12.1, notes: [64, 67, 71], dur: 0.35, gain: 0.045 });
+    brass({ t: t + 12.5, notes: [62, 66, 69, 74], dur: 1.6, gain: 0.05 });
+    choir({ t: t + 11.7, notes: [62, 69, 74, 78], dur: 2.8, gain: 0.012, attack: 0.5, out: hall });
   },
   'name-otto': t => {
     const plain = darkBus({ reverb: 0.3 });

@@ -10844,133 +10844,510 @@ header:has(+ .tn-draw--done) .tn-draw-skip { visibility: hidden; }
   100% { opacity: 1; transform: scale(1); letter-spacing: 0; }
 }
 
-/* TRISTAN: Magical Hats, a travel-size Blue-Eyes, then United We Stand. */
-.tr-hat { top: 66%; width: 70px; height: 90px; }
-.tr-hat--a { left: 28%; animation: tr-shuffle-a 1500ms ease-in-out 1700ms both, ng-out 500ms ease-in 5400ms forwards; }
-.tr-hat--b { left: 50%; animation: tr-shuffle-b 1500ms ease-in-out 1700ms both, ng-out 500ms ease-in 5400ms forwards; }
-.tr-hat--c { left: 72%; animation: tr-shuffle-c 1500ms ease-in-out 1700ms both, ng-out 500ms ease-in 5400ms forwards; }
-@keyframes tr-shuffle-a { 0% { transform: none; } 33% { transform: translateX(22vw); } 66%, 100% { transform: translateX(44vw); } }
-@keyframes tr-shuffle-b { 0%, 100% { transform: none; } 33%, 66% { transform: translateX(-22vw); } }
-@keyframes tr-shuffle-c { 0%, 33% { transform: none; } 66% { transform: translateX(-22vw); } 100% { transform: translateX(-44vw); } }
-.tr-cone {
-  width: 100%;
-  height: 100%;
-  display: grid;
-  place-items: end center;
-  padding-bottom: 12px;
-  background: linear-gradient(180deg, #a78bfa, #4c1d95);
-  clip-path: polygon(50% 0, 100% 100%, 0 100%);
-  font: 900 1.6rem/1 'Cinzel', serif;
-  color: #fde047;
-  animation: tr-drop 600ms cubic-bezier(0.3, 1.4, 0.5, 1) 900ms both;
+/* TRISTAN: the Blue-Eyes Ultimate Dragon (15500ms). 0.3s the tomb goes dark,
+   white lightning slams three Blue-Eyes down at 1.2/2.4/3.6s (stamped
+   ATK 3000 0.45s later), 4.5s POLYMERIZATION, 4.9-6.3s the cards spiral into
+   the vortex, 6.3s fusion flash and the Ultimate Dragon bursts out, 6.6-7.3s
+   triple roar, 7-8s ATK 3000 → 4500, 8.4-9.6s the heads rear back and charge,
+   9.65s NEUTRON BLAST, 9.8s impact, 9.85-12.45s white-out, 11s glory,
+   11.7s "Lord Trizze of the Blue-Eyes", 12.7s toast.
+   Heads, necks and body come from the Kaiba egg (BUD_* in
+   character-eggs-heroes.js); the head pose timeline is 1% = 60ms from 6.3s. */
+.is-guest--tristan .atn-guest {
+  animation:
+    ud-jolt 380ms linear 1200ms,
+    ud-jolt 380ms linear 2400ms,
+    ud-jolt 380ms linear 3600ms,
+    ud-jolt 600ms linear 6300ms;
 }
-.tr-cone::before { content: '?'; }
-.tr-hat--b .tr-cone { animation: tr-drop 600ms cubic-bezier(0.3, 1.4, 0.5, 1) 900ms both, tr-lift 600ms ease-out 3300ms forwards; }
-@keyframes tr-drop { 0% { opacity: 0; transform: translateY(-60vh); } 100% { opacity: 1; transform: none; } }
-@keyframes tr-lift { 0% { transform: none; } 100% { transform: translate(30px, -120px) rotate(25deg); } }
-.tr-dragon {
-  left: 50%;
-  top: 64%;
-  font-size: min(340px, 80vw);
-  line-height: 1;
-  transform: scale(0.13);
-  animation: tr-grow 900ms cubic-bezier(0.5, 0, 0.3, 1.2) 5400ms forwards;
+@keyframes ud-jolt {
+  0% { transform: none; }
+  15% { transform: translate(0, 9px); }
+  35% { transform: translate(-5px, -4px); }
+  55% { transform: translate(4px, 2px); }
+  75% { transform: translate(-2px, -1px); }
+  100% { transform: none; }
 }
-.tr-dragon-in {
-  display: block;
-  filter: grayscale(1) brightness(2) drop-shadow(0 0 6px #60a5fa);
-  animation: ng-pop 500ms cubic-bezier(0.3, 1.6, 0.5, 1) 3400ms both;
+/* The charge rumbles, the blast quakes (1% = 26ms from 8400ms). Scaled up so
+   the edges never show. */
+.ud-shake { position: absolute; inset: 0; animation: ud-rumble 2600ms linear 8400ms; }
+@keyframes ud-rumble {
+  0% { transform: translate(0, 0) scale(1); }
+  8% { transform: translate(1px, -1px) scale(1.04); }
+  16% { transform: translate(-1px, 1px) scale(1.04); }
+  24% { transform: translate(2px, 1px) scale(1.04); }
+  32% { transform: translate(-2px, -1px) scale(1.045); }
+  40% { transform: translate(3px, 2px) scale(1.05); }
+  46% { transform: translate(-3px, -2px) scale(1.05); }
+  49% { transform: translate(16px, -12px) scale(1.09); }
+  52% { transform: translate(-14px, 10px) scale(1.08); }
+  55% { transform: translate(12px, 9px) scale(1.08); }
+  58% { transform: translate(-11px, -8px) scale(1.07); }
+  62% { transform: translate(9px, -6px) scale(1.07); }
+  66% { transform: translate(-7px, 5px) scale(1.06); }
+  71% { transform: translate(5px, 3px) scale(1.05); }
+  77% { transform: translate(-3px, -2px) scale(1.04); }
+  85% { transform: translate(2px, 1px) scale(1.02); }
+  93% { transform: translate(-1px, 0) scale(1.01); }
+  100% { transform: translate(0, 0) scale(1); }
 }
-@keyframes tr-grow {
-  0% { transform: translateY(0) scale(0.13); }
-  70% { transform: translateY(-16vh) scale(1.1); }
-  100% { transform: translateY(-14vh) scale(1); }
-}
-.tr-label {
-  left: 50%;
-  top: 75%;
-  width: max-content;
-  text-align: center;
-  font: 700 0.8rem/1.2 'Cinzel', serif;
-  color: #dbeafe;
-  text-shadow: 0 1px 3px #000;
-  animation: ng-pop 400ms ease-out 3600ms both, ng-out 300ms ease-in 5300ms forwards;
-}
-.tr-label small { display: block; font: italic 600 0.7rem/1.2 sans-serif; color: #93c5fd; }
-.tr-say {
-  left: 50%;
-  top: 52%;
-  width: max-content;
-  max-width: 80vw;
-  padding: 0.4rem 0.75rem;
-  border-radius: 1rem;
-  background: #fff;
-  color: #1e3a8a;
-  text-align: center;
-  font: 900 0.85rem/1.2 'Cinzel', serif;
-  box-shadow: 0 4px 14px rgb(0 0 0 / 0.5);
-  animation: ng-pop 400ms cubic-bezier(0.3, 1.6, 0.5, 1) 3900ms both, ng-out 300ms ease-in 5000ms forwards;
-}
-.tr-say small { display: block; font: italic 600 0.75rem/1.2 sans-serif; color: #64748b; }
-.tr-beam {
-  position: absolute;
-  left: calc(50% + 16px);
-  top: 63%;
-  width: 46px;
-  height: 3px;
-  border-radius: 2px;
-  background: #fff;
-  box-shadow: 0 0 6px 2px #93c5fd;
-  transform-origin: left center;
-  animation: tr-beam 600ms ease-out 4300ms both;
-}
-@keyframes tr-beam {
-  0% { opacity: 1; transform: scaleX(0); }
-  40% { opacity: 1; transform: scaleX(1); }
-  100% { opacity: 0; transform: scaleX(1); }
-}
-.tr-card {
-  left: 50%;
-  top: 64%;
-  width: 62px;
-  height: 86px;
-  padding: 4px;
-  display: flex;
-  flex-direction: column;
-  justify-content: space-between;
-  border: 2px solid #111;
-  border-radius: 4px;
-  background: linear-gradient(160deg, #34d399, #047857);
-  color: #fff;
-  font: 900 0.5rem/1.1 'Cinzel', serif;
-  text-align: center;
-  animation: tr-card 700ms ease-in 4800ms both;
-}
-.tr-card span { font: italic 600 0.45rem/1 sans-serif; }
-@keyframes tr-card {
-  0% { opacity: 0; transform: translate(40vw, -50vh) rotate(-200deg) scale(1.4); }
-  70% { opacity: 1; transform: translate(0, 0) rotate(0deg) scale(1); }
-  100% { opacity: 0; transform: translate(0, 0) rotate(0deg) scale(0.3); }
-}
-.tr-glow {
+.ud-dark {
   position: absolute;
   inset: 0;
-  background: radial-gradient(circle at 50% 45%, rgb(191 219 254 / 0.75), transparent 60%);
-  animation: ng-flash 1200ms ease-out 6100ms both;
+  background: radial-gradient(circle at 50% 45%, #0c1e45, #020617 75%);
+  animation: dd-fade 900ms ease-out 300ms both;
 }
-.tr-banner {
+.ud-glory {
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(circle at 50% 50%, #eff6ff 0%, #93c5fd 26%, #1e3a8a 60%, #020617 100%);
+  animation: dd-fade 600ms ease-out 11000ms both;
+}
+.ud-rays {
+  left: 50%;
+  top: 52%;
+  width: 150vmax;
+  height: 150vmax;
+  border-radius: 50%;
+  opacity: 0;
+  background: repeating-conic-gradient(rgb(191 219 254 / 0.45) 0deg 6deg, transparent 6deg 18deg);
+  -webkit-mask: radial-gradient(circle, #000 10%, transparent 60%);
+  mask: radial-gradient(circle, #000 10%, transparent 60%);
+  animation: ud-rays 2200ms ease-out 6300ms both, dp-spin 24s linear infinite;
+}
+@keyframes ud-rays {
+  0% { opacity: 0; }
+  15%, 80% { opacity: 1; }
+  100% { opacity: 0; }
+}
+.ud-rays--glory {
+  top: 50%;
+  opacity: 1;
+  background: repeating-conic-gradient(rgb(254 243 199 / 0.5) 0deg 6deg, transparent 6deg 18deg);
+  animation: dd-fade 1000ms ease-out 11200ms both, dp-spin 30s linear infinite reverse;
+}
+
+/* The three Blue-Eyes. Each card hangs off an arm at --a around the fusion
+   point: .ud-arm turns, .ud-reach pushes out (and pulls in for the spiral),
+   .ud-up turns the card back upright. */
+.ud-arm {
+  left: 50%;
+  top: 45%;
+  animation: ud-spin 1400ms cubic-bezier(0.55, 0, 0.9, 0.5) 4900ms both;
+}
+@keyframes ud-spin {
+  from { transform: rotate(var(--a)); }
+  to { transform: rotate(calc(var(--a) + 900deg)); }
+}
+.ud-reach, .ud-up { position: absolute; left: 0; top: 0; }
+.ud-reach { animation: ud-reach 1400ms cubic-bezier(0.55, 0, 0.9, 0.5) 4900ms both; }
+@keyframes ud-reach {
+  0% { opacity: 1; transform: translateX(34vmin) scale(1); }
+  90% { opacity: 1; }
+  100% { opacity: 0; transform: translateX(0) scale(0.15); }
+}
+.ud-up { transform: rotate(calc(-1 * var(--a))); }
+.ud-card {
+  position: absolute;
+  left: 0;
+  top: 0;
+  translate: -50% -50%;
+  width: min(28vw, 17vh, 130px);
+  aspect-ratio: 59 / 86;
+  padding: 5px;
+  border-radius: 5px;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  background: linear-gradient(160deg, #f0cf7a, #c8922f 60%, #a8741d);
+  color: #111;
+  box-shadow: 0 0 0 2px #111, 0 0 22px rgb(96 165 250 / 0.75), 0 12px 30px rgb(0 0 0 / 0.7);
+  animation:
+    ud-slam 380ms ease-in var(--t) both,
+    ud-glow 1700ms ease-in 4600ms forwards;
+}
+@keyframes ud-slam {
+  0% { opacity: 0; transform: scale(2.8) rotate(-10deg); }
+  70% { opacity: 1; transform: scale(0.94) rotate(0deg); }
+  100% { opacity: 1; transform: scale(1) rotate(0deg); }
+}
+@keyframes ud-glow {
+  0% { filter: brightness(1) drop-shadow(0 0 0 #e0f2fe); }
+  100% { filter: brightness(2.6) drop-shadow(0 0 18px #e0f2fe); }
+}
+.ud-card-name {
+  padding: 2px 3px;
+  border-radius: 2px;
+  background: rgb(255 255 255 / 0.8);
+  box-shadow: inset 0 0 0 1px rgb(0 0 0 / 0.4);
+  font: 900 0.48rem/1.05 'Cinzel', serif;
+  text-align: left;
+}
+.ud-card-stars { text-align: right; font-size: 0.45rem; line-height: 1; color: #b91c1c; text-shadow: 0 0 2px #fde047; }
+.ud-card-art {
+  flex: 1;
+  min-height: 0;
+  display: grid;
+  place-items: center;
+  border: 2px solid #5b4630;
+  background: radial-gradient(circle at 50% 45%, #bfdbfe, #1e3a8a 65%, #0b1324);
+}
+.ud-card-art svg { width: 92%; height: auto; filter: drop-shadow(0 0 6px rgb(191 219 254 / 0.9)); }
+.ud-card-stats { padding-top: 2px; border-top: 1px solid #333; text-align: right; font: 900 0.45rem/1 'Cinzel', serif; }
+.ud-stamp {
+  position: absolute;
+  left: 50%;
+  top: 56%;
+  translate: -50% -50%;
+  rotate: -14deg;
+  padding: 0.15rem 0.4rem;
+  border: 3px solid #dc2626;
+  border-radius: 4px;
+  background: rgb(255 255 255 / 0.85);
+  color: #dc2626;
+  font: 900 clamp(0.75rem, 4vw, 1rem)/1 'Cinzel', serif;
+  white-space: nowrap;
+  box-shadow: 0 0 10px rgb(220 38 38 / 0.6);
+  animation: ud-stamp 320ms cubic-bezier(0.3, 1.6, 0.5, 1) var(--t) both;
+}
+@keyframes ud-stamp {
+  0% { opacity: 0; transform: scale(3); }
+  100% { opacity: 1; transform: scale(1); }
+}
+.ud-bolt {
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  translate: -50% 0;
+  width: 60px;
+  height: 110vh;
+  opacity: 0;
+  filter: drop-shadow(0 0 6px #bfdbfe) drop-shadow(0 0 16px #60a5fa);
+  animation: dp-bolt 500ms linear var(--t) both;
+}
+.ud-bolt polyline { fill: none; stroke: #fff; stroke-width: 4; stroke-linejoin: bevel; vector-effect: non-scaling-stroke; }
+.ud-dust {
+  position: absolute;
+  left: 0;
+  top: 0;
+  translate: -50% -50%;
+  width: 30vmin;
+  height: 30vmin;
+  border-radius: 50%;
+  opacity: 0;
+  border: 4px solid #e0f2fe;
+  box-shadow: 0 0 18px 4px #60a5fa;
+  animation: dp-ring 700ms cubic-bezier(0.1, 0.7, 0.3, 1) var(--t) both;
+}
+.ud-flash {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  background: #e0f2fe;
+  animation: dp-flash 650ms ease-out var(--t) both;
+}
+.ud-flash--big { background: #fff; animation-duration: 1100ms; }
+.ud-vortex {
+  left: 50%;
+  top: 45%;
+  width: 80vmin;
+  height: 80vmin;
+  border-radius: 50%;
+  opacity: 0;
+  background: conic-gradient(from 0deg, transparent, rgb(147 197 253 / 0.85), transparent 30%, rgb(255 255 255 / 0.75), transparent 60%, rgb(168 85 247 / 0.7), transparent 90%);
+  -webkit-mask: radial-gradient(circle, transparent 14%, #000 28%, #000 55%, transparent 70%);
+  mask: radial-gradient(circle, transparent 14%, #000 28%, #000 55%, transparent 70%);
+  animation: ud-vortex 2000ms linear 4600ms both;
+}
+@keyframes ud-vortex {
+  0% { opacity: 0; transform: scale(0.2) rotate(0deg); }
+  20% { opacity: 1; transform: scale(0.9) rotate(-200deg); }
+  85% { opacity: 1; transform: scale(1) rotate(-1080deg); }
+  100% { opacity: 0; transform: scale(1.6) rotate(-1200deg); }
+}
+.ud-ring {
+  left: 50%;
+  top: 96%;
+  width: 40vmin;
+  height: 40vmin;
+  border-radius: 50%;
+  opacity: 0;
+  border: 6px solid #e0f2fe;
+  box-shadow: 0 0 24px 6px #60a5fa, inset 0 0 24px 6px #60a5fa;
+  animation: dp-ring 900ms cubic-bezier(0.1, 0.7, 0.3, 1) var(--t) both;
+}
+.ud-ring--fusion { top: 45%; }
+
+/* The Ultimate Dragon. Head sizes and joints are the Kaiba egg's 260×200 rig
+   in percent, so the whole dragon scales with the screen. */
+.ud-rig {
+  left: 50%;
+  top: 54%;
+  width: min(94vw, 56vh, 460px);
+  aspect-ratio: 260 / 200;
+  animation:
+    ud-rig-in 800ms cubic-bezier(0.2, 0.9, 0.3, 1.3) 6300ms both,
+    ud-hover 2400ms ease-in-out 7100ms infinite alternate;
+}
+@keyframes ud-rig-in {
+  0% { opacity: 0; transform: scale(0.1); }
+  60% { opacity: 1; transform: scale(1.12); }
+  100% { opacity: 1; transform: scale(1); }
+}
+@keyframes ud-hover {
+  from { transform: translateY(0); }
+  to { transform: translateY(-1.5vh); }
+}
+.ud-layer { position: absolute; inset: 0; filter: drop-shadow(0 0 12px rgb(96 165 250 / 0.7)); }
+.ud-head {
+  position: absolute;
+  width: 28.46%;
+  height: 26%;
+  translate: -88% -63%;
+  transform-origin: 88% 63%;
+  --base: 10deg;
+  --roar: 24deg;
+  --rear: 40deg;
+  --fire: -100deg;
+  animation: ud-pose 6000ms ease-in-out 6300ms both;
+}
+.ud-head--m { width: 33.85%; height: 31%; --base: 16deg; --roar: 30deg; --rear: 44deg; --fire: -90deg; }
+.ud-head--r { --base: -10deg; --roar: -24deg; --rear: -40deg; --fire: 100deg; }
+/* Roar 6.6-7.3s, rear back 8.4-9.55s, snap down and fire 9.7s, settle 11.5s. */
+@keyframes ud-pose {
+  0%, 5% { transform: rotate(var(--base)) scale(1); }
+  8.3%, 16.7% { transform: rotate(var(--roar)) scale(1); }
+  21.7%, 35% { transform: rotate(var(--base)) scale(1); }
+  51.7%, 54.2% { transform: rotate(var(--rear)) scale(0.94); }
+  56.7% { transform: rotate(var(--fire)) scale(1.1); }
+  71.7% { transform: rotate(var(--fire)) scale(1); }
+  86.7%, 100% { transform: rotate(var(--base)) scale(1); }
+}
+/* Flip around the neck joint so the right head stays attached. */
+.ud-face { position: relative; display: block; width: 100%; height: 100%; transform-origin: 88% 63%; }
+.ud-head--r .ud-face { transform: scaleX(-1); }
+.ud-face svg { filter: drop-shadow(0 0 10px rgb(96 165 250 / 0.9)); }
+.ud-head .ce-bu-jaw {
+  transform-box: fill-box;
+  transform-origin: 100% 0;
+  animation: ud-jaw 6000ms linear 6300ms both;
+}
+@keyframes ud-jaw {
+  0%, 5% { transform: none; }
+  8%, 16.7% { transform: rotate(-26deg); }
+  20%, 35% { transform: none; }
+  51.7% { transform: rotate(-12deg); }
+  56.7%, 71.7% { transform: rotate(-32deg); }
+  80%, 100% { transform: none; }
+}
+/* Neutron Blast: an orb swells in every mouth (1% = 24ms from 8400ms), then
+   each head fires along its own snout. */
+.ud-orb {
+  position: absolute;
+  left: 6%;
+  top: 62%;
+  translate: -50% -50%;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  opacity: 0;
+  background: radial-gradient(circle, #fff 35%, #bfdbfe 60%, rgb(96 165 250 / 0) 72%);
+  box-shadow: 0 0 12px 5px rgb(147 197 253 / 0.9), 0 0 30px 12px rgb(59 130 246 / 0.5);
+  animation: ud-orb 2400ms ease-in 8400ms both;
+}
+@keyframes ud-orb {
+  0% { opacity: 0; transform: scale(0.2); }
+  10% { opacity: 1; }
+  50% { transform: scale(2.6); }
+  52% { transform: scale(2.2); }
+  54% { transform: scale(2.9); }
+  56% { transform: scale(3.6); }
+  75% { opacity: 1; transform: scale(3); }
+  100% { opacity: 0; transform: scale(0); }
+}
+.ud-beam {
+  position: absolute;
+  right: 94%;
+  top: 62%;
+  translate: 0 -50%;
+  width: 170vmax;
+  height: 18px;
+  border-radius: 9px;
+  opacity: 0;
+  transform-origin: 100% 50%;
+  background: linear-gradient(to left, #fff 0%, #f0f9ff 35%, #bfdbfe 70%, rgb(96 165 250 / 0.7));
+  box-shadow: 0 0 14px 5px #93c5fd, 0 0 40px 14px rgb(59 130 246 / 0.6);
+  animation: ud-beam 1100ms ease-out 9650ms both;
+}
+@keyframes ud-beam {
+  0% { opacity: 1; transform: scale(0, 0.6); }
+  18% { transform: scale(1, 1); }
+  40% { transform: scale(1, 1.7); }
+  70% { opacity: 1; transform: scale(1, 1.3); }
+  100% { opacity: 0; transform: scale(1, 0.2); }
+}
+.ud-night {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  background: radial-gradient(circle at 50% 45%, rgb(2 6 23 / 0.2), rgb(2 6 23 / 0.94) 70%);
+  animation: ud-night 1700ms ease-in-out 8400ms both;
+}
+@keyframes ud-night {
+  0% { opacity: 0; }
+  60%, 90% { opacity: 1; }
+  100% { opacity: 0; }
+}
+.ud-mote {
+  left: 50%;
+  top: 40%;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  opacity: 0;
+  background: #fff;
+  box-shadow: 0 0 8px 3px #93c5fd, 0 0 18px 6px rgb(59 130 246 / 0.5);
+  animation: dp-mote 650ms cubic-bezier(0.5, 0, 0.9, 0.6) var(--t) both;
+}
+.ud-sphere {
+  left: 50%;
+  top: 96%;
+  width: 30vmin;
+  height: 30vmin;
+  border-radius: 50%;
+  opacity: 0;
+  background: radial-gradient(circle, #fff 40%, #dbeafe 60%, rgb(96 165 250 / 0.5) 75%, transparent 76%);
+  box-shadow: 0 0 40px 20px rgb(191 219 254 / 0.9);
+  animation: ud-sphere 900ms cubic-bezier(0.2, 0.7, 0.4, 1) 9800ms both, ng-out 10ms linear 10800ms forwards;
+}
+@keyframes ud-sphere {
+  0% { opacity: 0; transform: scale(0); }
+  10% { opacity: 1; }
+  100% { opacity: 1; transform: scale(9); }
+}
+/* 1% = 26ms: full white 10.24-11.28s, gone by 12.45s. */
+.ud-white {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  background: #fff;
+  animation: ud-white 2600ms ease-in-out 9850ms both;
+}
+@keyframes ud-white {
+  0% { opacity: 0; }
+  15%, 55% { opacity: 1; }
+  100% { opacity: 0; }
+}
+.ud-sparks { position: absolute; inset: 0; }
+.ud-spark {
+  position: absolute;
+  left: var(--x);
+  bottom: -10px;
+  width: var(--s);
+  height: var(--s);
+  border-radius: 50%;
+  opacity: 0;
+  background: #fff;
+  box-shadow: 0 0 6px 2px #bfdbfe;
+  animation: ud-spark var(--dur) ease-out var(--t) both;
+}
+@keyframes ud-spark {
+  0% { opacity: 0; transform: translateY(0); }
+  15% { opacity: 1; }
+  100% { opacity: 0; transform: translateY(-70vh); }
+}
+
+/* Text */
+.ud-banner, .ud-title, .ud-lord {
+  width: max-content;
+  max-width: 94vw;
+  text-align: center;
+  font: 900 clamp(1.2rem, 7.4vw, 2.5rem)/1.05 'Cinzel Decorative', 'Cinzel', serif;
+  /* Cinzel Decorative's ligatures overlap the letters. */
+  font-variant-ligatures: none;
+  font-feature-settings: 'liga' 0, 'dlig' 0;
+}
+.ud-banner--poly {
+  left: 50%;
+  top: 12%;
+  color: #f5f3ff;
+  text-shadow: 0 0 14px #a855f7, 0 0 30px #7c3aed, 0 3px 0 #3b0764;
+  animation: ng-banner 1600ms ease-out 4500ms both;
+}
+.ud-title {
+  left: 50%;
+  top: 12%;
+  color: #e0f2fe;
+  background: linear-gradient(180deg, #fff 0%, #bfdbfe 48%, #f0f9ff 52%, #60a5fa 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  filter: drop-shadow(0 0 10px #3b82f6) drop-shadow(0 3px 0 #1e3a8a);
+  animation: ng-banner 1900ms ease-out 6500ms both;
+}
+.ud-banner--blast {
+  left: 50%;
+  top: 13%;
+  color: #f0f9ff;
+  text-shadow: -3px 0 0 rgb(147 197 253 / 0.8), 3px 0 0 rgb(255 255 255 / 0.8), 0 0 18px #60a5fa, 0 0 40px #2563eb, 0 4px 0 #1e3a8a;
+  animation: dp-banner 1300ms ease-out 9000ms both;
+}
+.ud-atk {
+  left: 50%;
+  top: 88%;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: center;
+  gap: 0 0.5rem;
+  width: max-content;
+  padding: 0.35rem 0.9rem;
+  border: 2px solid #93c5fd;
+  border-radius: 8px;
+  background: rgb(2 6 23 / 0.8);
+  box-shadow: 0 0 18px rgb(59 130 246 / 0.5);
+  font: 900 1rem/1 'Cinzel', serif;
+  color: #bfdbfe;
+  animation: ng-pop 400ms cubic-bezier(0.3, 1.6, 0.5, 1) 6900ms both, ng-out 400ms ease-in 9200ms forwards;
+}
+.ud-atk small { flex-basis: 100%; text-align: center; font: 700 0.6rem/1.4 'Cinzel', serif; color: #cbd5e1; }
+.ud-atk-num { display: grid; }
+.ud-atk-num b {
+  grid-area: 1 / 1;
+  background: #020617;
+  font-size: 1.9rem;
+  font-variant-numeric: tabular-nums;
+  color: #f0f9ff;
+  text-shadow: 0 0 10px #3b82f6;
+  animation: dp-atk 350ms cubic-bezier(0.3, 1.6, 0.5, 1) var(--t) both;
+}
+.ud-atk-num b:last-child {
+  color: #fff;
+  animation: dp-atk 350ms cubic-bezier(0.3, 1.6, 0.5, 1) var(--t) both, ud-max 500ms ease-in-out 8350ms 3 alternate;
+}
+@keyframes ud-max {
+  from { text-shadow: 0 0 10px #3b82f6; }
+  to { text-shadow: 0 0 6px #fff, 0 0 22px #60a5fa, 0 0 40px #2563eb; }
+}
+.ud-lord {
   left: 50%;
   top: 14%;
-  width: max-content;
-  max-width: 92vw;
-  text-align: center;
-  font: 900 clamp(1.5rem, 8vw, 2.6rem)/1.1 'Cinzel Decorative', 'Cinzel', serif;
-  color: #eff6ff;
-  text-shadow: 0 0 14px #3b82f6, 0 3px 0 #1e3a8a;
-  animation: ng-banner 1800ms ease-out 5300ms both;
+  z-index: 3;
+  font-size: clamp(1.9rem, 11vw, 3.4rem);
+  color: #fde68a;
+  background: linear-gradient(180deg, #fffbeb 0%, #fbbf24 50%, #b45309 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  filter: drop-shadow(0 0 10px rgb(96 165 250 / 0.9)) drop-shadow(0 3px 0 #1e3a8a);
+  animation: dp-arise 1200ms cubic-bezier(0.2, 0.9, 0.3, 1.1) 11700ms both;
 }
-.tr-banner small { display: block; font: italic 700 0.9rem/1.3 sans-serif; color: #bfdbfe; }
-.is-guest--tristan .atn-guest { animation: atn-quake 1.2s linear 6100ms both; }
+.ud-lord small {
+  display: block;
+  margin-top: 6px;
+  font-size: clamp(1rem, 5.6vw, 1.6rem);
+  -webkit-text-fill-color: #eff6ff;
+}
 
 /* OTTO: a giant rhino charges through and knocks the tomb over. */
 .is-guest--otto .atn-panel {

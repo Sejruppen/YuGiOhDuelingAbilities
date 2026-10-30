@@ -72,7 +72,7 @@ When the owner says "jam", "ideas" or "what could we do for X", reply with a num
 - **MATHIAS**: the owner, "the architect of this tomb". The Eye winks and a developer scroll unrolls.
 - **MARIE**: his wife. Love theme: roses, a heartbeat Eye, the card "Marie", "Mathias ♥ Marie".
 - **THEODOR**: son who plays the **"Teotaur"** deck (a bull/minotaur theme). His egg is the Dark Paladin: a moonlit lightning reveal, random dragons pumping his ATK, DRAGON SLAYER BLADE splitting the sky and the knighting of "Sir Theodor".
-- **TRISTAN**: son who plays the **"Trizze"** deck. His egg has Magical Hats revealing a travel-size Blue-Eyes, plus United We Stand.
+- **TRISTAN**: son who plays the **"Trizze"** deck. His egg is the Blue-Eyes Ultimate Dragon: three Blue-Eyes slam down in white lightning, Polymerization spirals them together, its ATK climbs to 4500, Neutron Blast whites out the screen and he is crowned "Lord Trizze of the Blue-Eyes".
 - **OTTO**: a giant 🦏 charges across the screen.
 - **FRIDA**: a small Maleficent-style girl with an evil laugh, a curse and a raven.
 

@@ -128,6 +128,16 @@ const DP_BOLTS = [
   '52,0 44,14 58,24 42,42 54,50 46,64'
 ].map((points, i) => `<svg class="dp-bolt" style="--t: ${900 + i * 1000}ms;" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true"><polyline points="${points}" /></svg>`);
 
+// --- TRISTAN: the Blue-Eyes Ultimate Dragon ------------------------------------
+// Reuses the Ultimate Dragon parts from the Kaiba character egg
+// (character-eggs-heroes.js): BUD_HEAD_SVG, BUD_BODY_SVG and ULTIMATE_NECKS.
+// [orbit angle, slam ms]. The cards sit in a triangle around the fusion point.
+const UD_CARDS = [[-90, 1200], [150, 2400], [30, 3600]];
+// [side, neck joint x%, y% in the 260×200 rig]
+const UD_HEADS = [['l', 22.31, 36], ['m', 50, 17], ['r', 77.69, 36]];
+const UD_ATK_AT = 7000;
+const UD_ATK_GAP = 200;
+
 const NAME_EGGS = {
   // Theotaur (Dark Paladin's Legion): the Dark Paladin himself comes for Theodor.
   // Lightning reveals him (0.9/1.9/2.9s), random dragons swoop in and pump his
@@ -188,24 +198,73 @@ const NAME_EGGS = {
         ${ngToast(11800, 'Arise, Sir Theodor!', 'Dragon Slayer. Spell Breaker. Knight of the Dark Paladin.')}`;
     }
   },
-  // Trizze (Legends Assembled): a travel-size Blue-Eyes from the Magical Hats.
+  // Trizze (Legends Assembled): the Blue-Eyes Ultimate Dragon. The tomb goes
+  // dark, three Blue-Eyes slam down in white lightning (1.2/2.4/3.6s) and get
+  // stamped ATK 3000, POLYMERIZATION spirals them together (4.9-6.3s), the
+  // Ultimate Dragon bursts out and roars (6.3s), its ATK climbs to 4500
+  // (7-8s), all three heads charge (8.4s) and fire NEUTRON BLAST (9.65s), the
+  // screen whites out (9.85-12.4s) and Trizze is crowned (11.7s).
   TRISTAN: {
     id: 'name-tristan',
-    ms: 12000,
-    title: 'The Legends assemble.',
-    msg: 'Ah… Trizze. The legend comes to life!',
-    html: () => `
-      <div class="tr-hat tr-hat--a ce-at"><div class="tr-cone"></div></div>
-      <div class="tr-hat tr-hat--b ce-at"><div class="tr-cone"></div></div>
-      <div class="tr-hat tr-hat--c ce-at"><div class="tr-cone"></div></div>
-      <div class="tr-dragon ce-at"><span class="tr-dragon-in ce-emoji">🐉</span></div>
-      <div class="tr-label ce-at">Blue-Eyes White Dragon<small>ATK 3000 (travel size)</small></div>
-      <div class="tr-say ce-at">Burst Stream of Destruction!<small>…pew.</small></div>
-      <div class="tr-beam"></div>
-      <div class="tr-card ce-at"><b>United We Stand</b><span>Equip Spell</span></div>
-      <div class="tr-glow"></div>
-      <div class="tr-banner ce-at">United We Stand!<small>+800 ATK. And then some.</small></div>
-      ${ngToast(7000, 'Trizze: Legends Assembled.', 'Blue-Eyes White Dragon. Some assembly required.')}`
+    ms: 15500,
+    title: 'White lightning strikes the tomb.',
+    msg: 'Ah… Trizze. Three dragons answer your call.',
+    html: () => {
+      const bolt = '<svg viewBox="0 0 20 100" preserveAspectRatio="none" aria-hidden="true"><polyline points="10,0 4,16 13,28 5,46 15,60 6,78 10,100" /></svg>';
+      const cards = UD_CARDS.map(([a, t]) => `
+        <div class="ud-arm ce-at" style="--a: ${a}deg;">
+          <div class="ud-reach"><div class="ud-up">
+            <div class="ud-bolt" style="--t: ${t - 150}ms;">${bolt}</div>
+            <div class="ud-card" style="--t: ${t}ms;">
+              <div class="ud-card-name">Blue-Eyes White Dragon</div>
+              <div class="ud-card-stars">★★★★★★★★</div>
+              <div class="ud-card-art">${BUD_HEAD_SVG}</div>
+              <div class="ud-card-stats">ATK/3000 DEF/2500</div>
+              <div class="ud-stamp" style="--t: ${t + 450}ms;">ATK 3000</div>
+            </div>
+            <span class="ud-dust" style="--t: ${t + 200}ms;"></span>
+          </div></div>
+        </div>`).join('');
+      const heads = UD_HEADS.map(([side, x, y]) => `
+        <span class="ud-head ud-head--${side}" style="left: ${x}%; top: ${y}%;"><span class="ud-face">${BUD_HEAD_SVG}<i class="ud-orb"></i><i class="ud-beam"></i></span></span>`).join('');
+      const atk = ceRange(6, i => `<b style="--t: ${UD_ATK_AT + i * UD_ATK_GAP}ms;">${3000 + i * 300}</b>`);
+      // White power sucked into the three mouths during the charge.
+      const motes = ceRange(26, i => {
+        const a = ceRand(0, Math.PI * 2);
+        const d = ceRand(35, 65);
+        return `<span class="ud-mote ce-at" style="--mx: ${(Math.cos(a) * d).toFixed(1)}vw; --my: ${(Math.sin(a) * d).toFixed(1)}vh; --t: ${8400 + i * 40}ms;"></span>`;
+      });
+      const sparks = ceRange(18, () => `<span class="ud-spark" style="--x: ${ceRand(4, 96).toFixed(0)}%; --s: ${ceRand(4, 9).toFixed(0)}px; --t: ${ceRand(11200, 13600).toFixed(0)}ms; --dur: ${ceRand(2200, 3600).toFixed(0)}ms;"></span>`);
+      return `
+        <div class="ud-shake">
+          <div class="ud-dark"></div>
+          <div class="ud-glory"></div>
+          <div class="ud-rays ce-at"></div>
+          <div class="ud-rays ud-rays--glory ce-at"></div>
+          <div class="ud-vortex ce-at"></div>
+          ${cards}
+          <div class="ud-night"></div>
+          <div class="ud-rig ce-at">
+            <span class="ud-layer">${BUD_BODY_SVG}</span>
+            <span class="ud-layer">${ULTIMATE_NECKS}</span>
+            ${heads}
+          </div>
+          ${motes}
+          <div class="ud-sphere ce-at"></div>
+          ${ceRange(3, i => `<div class="ud-ring ce-at" style="--t: ${9850 + i * 160}ms;"></div>`)}
+          ${UD_CARDS.map(([, t]) => `<div class="ud-flash" style="--t: ${t - 100}ms;"></div>`).join('')}
+          <div class="ud-flash ud-flash--big" style="--t: 6300ms;"></div>
+          ${ceRange(2, i => `<div class="ud-ring ud-ring--fusion ce-at" style="--t: ${6300 + i * 150}ms;"></div>`)}
+          <div class="ud-banner ud-banner--poly ce-at">POLYMERIZATION!</div>
+          <div class="ud-title ce-at">BLUE-EYES<br>ULTIMATE DRAGON</div>
+          <div class="ud-atk ce-at"><span>ATK</span><div class="ud-atk-num">${atk}</div><small>3 × Blue-Eyes White Dragon</small></div>
+          <div class="ud-banner ud-banner--blast ce-at">NEUTRON BLAST!!</div>
+          <div class="ud-white"></div>
+          <div class="ud-sparks">${sparks}</div>
+        </div>
+        <div class="ud-lord ce-at">Lord Trizze<small>of the Blue-Eyes</small></div>
+        ${ngToast(12700, 'Lord Trizze of the Blue-Eyes!', 'Three Blue-Eyes. One Ultimate Dragon. 4500 ATK of pure white lightning.')}`;
+    }
   },
   // A giant rhino charges straight through the tomb.
   OTTO: {
