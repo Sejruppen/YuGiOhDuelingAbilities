@@ -542,6 +542,43 @@ const HEART_SOUNDS = {
     tone({ t: blast, freq: 2200, to: 260, dur: 0.22, type: 'square', gain: 0.05, filter: 3500, attack: 0.002, out: room });
     noise({ t: blast, dur: 0.25, gain: 0.08, type: 'highpass', freq: 3000, to: 1200, attack: 0.002, out: room });
     tone({ t: blast + 0.45, freq: 520, to: 260, dur: 0.5, type: 'triangle', gain: 0.04, attack: 0.01 });
+  },
+  // LP modal heart hold (lp-modal-eggs.js). Timeline matches effects.css: the
+  // heart spins to the centre (0-0.7s), the Spell card flips in (0.8s), the
+  // angel's harp (1.2s), the devil's cackle (1.8s), a racing heartbeat
+  // (2.3-2.7s), the CRACK (2.8s), then the halves snap back (3.2s) into a
+  // warm, loving chord.
+  'change-of-heart': t => {
+    const hall = darkBus({ reverb: 0.5 });
+    const cave = darkBus({ reverb: 0.6, echo: 0.15 });
+
+    ceWhoosh(t, 0.7, 0.05, 300, 3000, hall);
+    for (let i = 0; i < 6; i++) tone({ t: t + i * 0.11, freq: midi(76 + i * 2), dur: 0.12, type: 'triangle', gain: 0.02, out: hall });
+
+    const card = t + 0.8;
+    cardFlip(card, 0.18);
+    arpeggio(card + 0.05, [69, 73, 76, 81], 0.06, (tt, n) => bell({ t: tt, freq: midi(n + 12), dur: 0.9, gain: 0.035, out: hall }));
+
+    const angel = t + 1.2;
+    arpeggio(angel, [72, 76, 79, 84, 88, 91], 0.05, (tt, n) => pluck({ t: tt, note: n, gain: 0.05 }));
+    healPad({ t: angel, notes: [72, 76, 79], dur: 0.6, gain: 0.018, attack: 0.15, out: hall });
+
+    const devil = t + 1.8;
+    darkCluster({ t: devil, notes: [41, 42, 47], dur: 0.8, gain: 0.03, attack: 0.08, filter: [250, 900], out: cave });
+    ceGiggle(devil + 0.15, 260, 6, cave, 'sawtooth');
+
+    [2.3, 2.5, 2.65].forEach((at, i) => heartbeat(t + at, 0.16 + i * 0.05));
+
+    const crack = t + 2.8;
+    noise({ t: crack, dur: 0.18, gain: 0.16, type: 'highpass', freq: 2500, to: 900, attack: 0.001 });
+    tone({ t: crack, freq: 1400, to: 300, dur: 0.15, type: 'square', gain: 0.03, filter: 3000, attack: 0.001 });
+    boom(crack, 0.35, cave);
+
+    const snap = t + 3.2;
+    bubble({ t: snap, from: 250, to: 1100, gain: 0.08, dur: 0.1 });
+    bigHeartbeat(snap + 0.05, 0.22, hall);
+    healPad({ t: snap + 0.1, notes: [65, 69, 72, 77], dur: 1.6, gain: 0.03, attack: 0.15, out: hall });
+    healSparkles(snap + 0.1, 1.3, 8, hall);
   }
 };
 

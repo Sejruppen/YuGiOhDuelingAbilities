@@ -37,7 +37,7 @@ function renderLpModal() {
 
   return renderModal('closeLpEditor()', `
     <div class="flex items-center justify-between gap-2 mb-3">
-      <p class="font-bold text-white"><span class="ce-emoji">❤️</span> Life Points: <span class="lp-value tabular-nums">${getCurrentLp()}</span></p>
+      <p class="font-bold text-white"><span class="ce-emoji cegg-press lp-heart-press" onpointerdown="startLpEggPress(this, 'heart')" onpointerup="cancelLpEggPress(this)" onpointerleave="cancelLpEggPress(this)" onpointercancel="cancelLpEggPress(this)" oncontextmenu="return false">❤️</span> Life Points: <span class="lp-value tabular-nums">${getCurrentLp()}</span></p>
       <button onclick="closeLpEditor()" class="text-sm text-slate-400 hover:text-white px-2 py-1">✕ Cancel</button>
     </div>
 

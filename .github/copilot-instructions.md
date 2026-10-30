@@ -5,7 +5,9 @@ A mobile-first PWA that two players use side by side during physical Yu-Gi-Oh! d
 ## Working agreement
 
 - **Never commit, push or change git history.** Read-only git commands are fine. When you finish, say the changes are ready to commit.
-- **Prefer the file tools** (view, grep, glob, edit, create) over the terminal. There is no build step, test suite or linter, and the owner tests on his phone.
+- **Don't use the terminal unless it's strictly necessary.** Use the file tools (view, grep, glob, edit, create) instead. There is no build step, test suite or linter, and the owner tests on his phone.
+  - Don't run syntax checks (`node --check`), scripts, servers or other "verification" commands. Re-read your edits with view instead.
+  - If a task really can't be done without the terminal, ask the owner first and explain why.
 - Keep replies short. When asked to "come up with ideas" or "jam", brainstorm a numbered list and do not implement anything until the owner picks.
 - **After every change that ships:**
   1. Bump `CACHE_NAME` in `sw.js` (`ygo-skills-mvp-vNNN`).

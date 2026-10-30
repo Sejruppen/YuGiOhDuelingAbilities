@@ -75,7 +75,9 @@ const EGG_HINTS = {
   'pharaoh-nap': { where: 'Duel', text: 'Even Pharaohs get sleepy when nothing happens.' },
   'heart-of-the-cards': { where: 'Duel', text: 'Do you believe in the heart of the cards? It starts with believing in yourself.' },
   'time-wizard': { where: 'Duel', text: 'Wish you could turn back time? Starting over takes more than a quick decision.' },
-  'end-credits': { where: 'Duel', text: 'Every good story deserves credits. Are you ready to let it end?' }
+  'end-credits': { where: 'Duel', text: 'Every good story deserves credits. Are you ready to let it end?' },
+  // LP modal
+  'change-of-heart': { where: 'Life Points', text: 'Your Life Points have a heart. Is it loyal enough to hold on to?' }
 };
 
 eggTracker.hintId = null;
