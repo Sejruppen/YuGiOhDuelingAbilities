@@ -358,36 +358,51 @@ const EXODIA_SOUNDS = {
     tone({ t, freq: 220, to: 35, dur: 1.1, type: 'sawtooth', gain: 0.06, filter: [1500, 150], out });
     tone({ t, freq: 233, to: 37, dur: 1.1, type: 'sawtooth', gain: 0.04, filter: [1500, 150], detune: 12, out });
   },
-  // Timeline matches effects.css: darkness 0s, he rises 0.9s, the laser
-  // charges from 1.6s (heart pounding faster), the blast hits at 3.8s and its
-  // echo rolls on through the whiteout until the world returns (~9s).
+  // Timeline matches effects.css: darkness 0s and the fire roars up, his
+  // silhouette looms 0.8s, the smoke parts 2.1s, his eyes flash 3.2s, the
+  // fists unfold 4s, the ball charges from 4.25s (heart pounding faster),
+  // the blast hits at 6.3s and its echo rolls on through the whiteout until
+  // the world returns (7.8-10s).
   'logo-obliterate': t => {
     const cave = darkBus({ reverb: 0.7 });
     const blastBus = darkBus({ reverb: 0.9, echo: 0.8 });
 
-    darkCluster({ t, notes: [28, 29], dur: 4, gain: 0.06, attack: 1.4, filter: [120, 400], out: cave });
+    darkCluster({ t, notes: [28, 29], dur: 6.3, gain: 0.06, attack: 1.4, filter: [120, 400], out: cave });
     noise({ t, dur: 1.1, gain: 0.1, type: 'lowpass', freq: 200, to: 1400, attack: 0.9, out: cave });
+    noise({ t: t + 0.4, dur: 5.9, gain: 0.06, type: 'lowpass', freq: 300, to: 1600, attack: 1, out: cave });
+    for (let i = 0; i < 14; i++) {
+      noise({ t: t + 0.6 + rnd(0, 5.4), dur: 0.05, gain: 0.05, type: 'highpass', freq: 2500, out: cave });
+    }
 
-    const rise = t + 0.9;
+    const rise = t + 0.8;
     boom(rise, 0.9, cave);
     bell({ t: rise, freq: 41, dur: 4, gain: 0.25, out: cave });
-    darkCluster({ t: rise, notes: [40, 46, 47], dur: 3, gain: 0.03, attack: 1, filter: [150, 900], out: cave });
+    darkCluster({ t: rise, notes: [40, 46, 47], dur: 3.2, gain: 0.03, attack: 1.2, filter: [150, 900], out: cave });
+    darkCluster({ t: t + 2.1, notes: [34, 41, 46, 53], dur: 2.2, gain: 0.03, attack: 0.5, filter: [300, 1400], out: cave });
 
-    const charge = t + 1.6;
-    const chargeDur = 2.2;
+    const glint = t + 3.2;
+    bell({ t: glint, freq: midi(91), dur: 1.4, gain: 0.07, out: cave });
+    tone({ t: glint, freq: 2400, to: 4200, dur: 0.35, type: 'triangle', gain: 0.04, attack: 0.01 });
+    noise({ t: glint, dur: 0.5, gain: 0.06, type: 'highpass', freq: 6000, to: 3000, out: cave });
+
+    ceWhoosh(t + 4.0, 0.35, 0.08, 250, 1200, cave);
+    boom(t + 4.2, 0.45, cave);
+
+    const charge = t + 4.25;
+    const chargeDur = 2.05;
     laserCharge({ t: charge, dur: chargeDur, gain: 0.09, out: darkBus({ reverb: 0.3 }) });
     tone({ t: charge, freq: 500, to: 7000, dur: chargeDur, gain: 0.025, attack: chargeDur - 0.05 });
     noise({ t: charge, dur: chargeDur, gain: 0.12, freq: 300, to: 9000, q: 6, attack: chargeDur - 0.1 });
-    [0, 0.6, 1.05, 1.4, 1.65, 1.85, 2.0].forEach(at => heartbeat(charge + at, 0.32));
+    [0, 0.55, 1.0, 1.35, 1.6, 1.8, 1.95].forEach(at => heartbeat(charge + at, 0.32));
 
-    const blast = t + 3.8;
+    const blast = t + 6.3;
     boom(blast, 1.6, blastBus);
     tone({ t: blast, freq: 120, to: 22, slide: 3, dur: 4, gain: 0.45, attack: 0.003 });
     noise({ t: blast, dur: 0.3, gain: 0.3, type: 'highpass', freq: 2500, to: 800, attack: 0.001, out: blastBus });
     noise({ t: blast, dur: 3.5, gain: 0.35, type: 'lowpass', freq: 8000, to: 120, attack: 0.01, out: blastBus });
     tone({ t: blast, freq: 1800, to: 160, slide: 2.5, dur: 2.6, type: 'sawtooth', gain: 0.06, filter: [7000, 400], out: blastBus });
     darkCluster({ t: blast + 1.2, notes: [28, 34, 35], dur: 4, gain: 0.035, attack: 1.2, filter: [400, 150], out: cave });
-    bell({ t: t + 6.6, freq: 36.7, dur: 4, gain: 0.22, out: cave });
+    bell({ t: t + 7.8, freq: 36.7, dur: 4, gain: 0.22, out: cave });
   }
 };
 

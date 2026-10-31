@@ -1394,9 +1394,19 @@ html[data-theme] .logo-egg:active { transform: none; filter: var(--logo-glow); }
 .logo-egg:not([data-pieces="0"]) .logo-halo { animation: logo-halo-pulse 0.45s ease-in-out infinite alternate; }
 @keyframes logo-halo-pulse { to { scale: 1.12; } }
 
-/* Exodia summon overlay (spawned in #fx-layer). */
+/* --- Start screen logo: "EXODIA, OBLITERATE!" (10000ms) ---
+   Darkness falls and the logo shrinks into a spark that floats to Exodia's
+   chest (0-1.5s). Orange fire and smoke roll in (0.5-1.4s) and his dark
+   silhouette looms in the haze (0.8-2s). The smoke parts and he is lit
+   (2.1-3s), his eyes flash (3.2s), his fists unfold into open claws
+   (4-4.5s) and the spark ignites into the energy ball, which swells until
+   his chest drowns in light (4.25-6.3s). It fires and whites out the screen
+   (6.3-6.8s), the white holds, then fades back to the start screen (7.8-10s).
+   Keep in sync with EXODIA_* in logo-easter-egg.js and 'logo-obliterate'.
+   Only transform/opacity animate on the big layers (compositor-only, so the
+   detailed SVG isn't re-rasterized every frame on phones). */
 .fx-exodia { position: fixed; inset: 0; z-index: 5; overflow: hidden; pointer-events: auto; }
-.exo-scene { position: absolute; inset: 0; animation: exo-hide 0.01s linear 4.6s forwards, exo-quake 0.7s linear 3.8s; }
+.exo-scene { position: absolute; inset: 0; overflow: hidden; animation: exo-hide 0.01s linear 6.8s forwards, exo-quake 0.6s linear 6.3s; }
 @keyframes exo-hide { to { visibility: hidden; } }
 @keyframes exo-quake {
   0%, 100% { transform: none; }
@@ -1406,101 +1416,279 @@ html[data-theme] .logo-egg:active { transform: none; filter: var(--logo-glow); }
   60% { transform: translate(6px, 5px); }
   80% { transform: translate(-3px, 2px); }
 }
-
 .exo-black,
-.exo-fire { position: absolute; inset: -30px; overflow: hidden; }
-.exo-black { background: #000; animation: fx-fade-in 0.9s ease-in both; }
-.exo-fire {
-  background: radial-gradient(ellipse 80% 60% at 50% 62%, #ffcf6b 0%, #f97316 25%, #b42d08 50%, #3a0a02 80%, #120200 100%);
-  animation: fx-fade-in 1.2s ease-out 0.9s both;
-}
-.exo-fire::before {
-  content: '';
-  position: absolute;
-  inset: 0;
-  background: radial-gradient(ellipse 60% 40% at 50% 30%, rgb(255 120 30 / 0.45), transparent 70%);
-  animation: exo-flicker 0.35s ease-in-out infinite alternate;
-}
-@keyframes exo-flicker { from { opacity: 0.4; transform: scaleY(0.95); } to { opacity: 1; transform: scaleY(1.05); } }
-.exo-fire::after {
-  content: '';
-  position: absolute;
-  left: 0;
-  right: 0;
-  top: 0;
-  bottom: -240px;
-  background-image:
-    radial-gradient(2px 2px at 20% 30%, #ffd27a, transparent),
-    radial-gradient(1.5px 1.5px at 70% 60%, #ffb347, transparent),
-    radial-gradient(2.5px 2.5px at 45% 85%, #ffe9a8, transparent),
-    radial-gradient(1.5px 1.5px at 85% 15%, #ff9b3d, transparent);
-  background-size: 160px 240px;
-  animation: poc-motes 3s linear infinite;
-}
+.exo-fill,
+.exo-floor,
+.exo-veil,
+.exo-wash { position: absolute; inset: 0; pointer-events: none; }
+.exo-black { background: #000; animation: fx-fade-in 0.5s ease-in both; }
 
-/* The SVG's energy ball sits 2/3 down the figure, so this puts it at 55% of the screen. */
+/* The fire wall: deep red at the top, bright orange-yellow behind him. */
+.exo-bg {
+  position: absolute;
+  inset: -30px;
+  background: linear-gradient(to bottom, #5a1a06 0%, #b8400c 14%, #ea6a10 32%, #f59a1c 55%, #f8b632 75%, #e8891a 100%);
+  animation: fx-fade-in 0.9s ease-out 0.5s both;
+}
+.exo-flame {
+  position: absolute;
+  left: var(--x);
+  bottom: var(--b);
+  width: var(--w);
+  height: var(--h);
+  translate: -50% 0;
+  border-radius: 50% 50% 45% 45% / 70% 70% 30% 30%;
+  background: radial-gradient(closest-side, rgb(255 238 170 / 0.75), rgb(255 176 60 / 0.4) 55%, rgb(255 140 30 / 0));
+  transform-origin: 50% 100%;
+  animation: fx-fade-in 0.8s ease-out var(--in) both, exo-flame var(--d) ease-in-out var(--in) infinite alternate;
+}
+@keyframes exo-flame {
+  from { transform: scale(0.9, 0.85) skewX(-4deg); }
+  to { transform: scale(1.05, 1.15) skewX(4deg); }
+}
+/* Dark smoke rolling along the top. */
+.exo-smoke {
+  position: absolute;
+  left: var(--x);
+  top: var(--y);
+  width: var(--s);
+  aspect-ratio: 1.4;
+  translate: -50% -50%;
+  border-radius: 50%;
+  background: radial-gradient(closest-side, rgb(46 14 3 / 0.9), rgb(70 22 4 / 0.55) 45%, rgb(70 22 4 / 0));
+  animation: fx-fade-in 1s ease-out 0.6s both, exo-drift var(--d) ease-in-out infinite alternate;
+}
+@keyframes exo-drift { to { transform: translate(var(--dx), 4vh) scale(1.15); } }
+
+/* Exodia: the energy ball (1010/1600 of the art) sits at EXODIA_ORB_Y. */
 .exo-figure-wrap {
   position: absolute;
   left: 50%;
-  top: 55%;
-  width: min(96vw, 60vh);
-  aspect-ratio: 2 / 3;
-  translate: -50% -66.667%;
-  animation: exo-rise 1.4s cubic-bezier(0.2, 0.8, 0.2, 1) 0.9s both;
-  /* Fade out the bottom of the torso and the chain ends. */
-  -webkit-mask-image: linear-gradient(to bottom, #000 72%, transparent 96%);
-  mask-image: linear-gradient(to bottom, #000 72%, transparent 96%);
+  top: 60%;
+  width: min(118vw, 56vh);
+  aspect-ratio: 1000 / 1600;
+  translate: -50% -63.125%;
+  transform-origin: 50% 63.125%;
+  animation: exo-rise 2.2s cubic-bezier(0.2, 0.7, 0.2, 1) 0.8s both;
 }
-/* Darkens the screen edges over Exodia so his outline and chains melt into black. */
-.exo-vignette {
-  position: absolute;
-  inset: -30px;
-  pointer-events: none;
-  background:
-    linear-gradient(to top, #000 0%, rgb(0 0 0 / 0.85) 10%, transparent 30%),
-    linear-gradient(to bottom, #000 0%, transparent 12%),
-    radial-gradient(ellipse 70% 75% at 50% 48%, transparent 50%, rgb(0 0 0 / 0.75) 80%, #000 100%);
-}
-@keyframes exo-rise {
-  from { opacity: 0; transform: translateY(12%) scale(1.15); }
-  to { opacity: 1; transform: none; }
-}
-/* Only transform/opacity animate below (compositor-only, no re-rasterizing
-   the detailed SVG each frame, which made tiles go missing on phones). */
-.exo-body { position: absolute; inset: 0; will-change: transform; animation: exo-rumble 0.1s linear 2.3s 15; }
-.exo-figure,
-.exo-eyes-hot { position: absolute; inset: 0; display: block; width: 100%; height: 100%; overflow: visible; }
+@keyframes exo-rise { from { transform: scale(1.14); } }
+.exo-body { position: absolute; inset: 0; animation: exo-rumble 0.09s linear 5s 14; }
 @keyframes exo-rumble {
   25% { transform: translate(2px, -1px); }
   50% { transform: translate(-2px, 1px); }
   75% { transform: translate(1px, 2px); }
 }
-.exo-eyes-hot { opacity: 0; will-change: opacity; animation: exo-eyes-hot 0.5s ease-in-out 1.6s infinite alternate; }
-@keyframes exo-eyes-hot { to { opacity: 1; } }
-/* The ball's glow: centred on it (2/3 down the figure), as wide as the figure. */
-.exo-glow {
+.exo-layer {
+  position: absolute;
+  inset: 0;
+  display: block;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+  transform-origin: 50% 63.125%;
+  -webkit-mask-image: linear-gradient(to bottom, #000 80%, transparent 99%);
+  mask-image: linear-gradient(to bottom, #000 80%, transparent 99%);
+}
+.exo-sil { filter: brightness(0.3) saturate(1.5) blur(2px); opacity: 0; animation: exo-sil 2.4s ease-out 0.8s both; }
+@keyframes exo-sil {
+  0% { opacity: 0; }
+  42%, 70% { opacity: 0.9; }
+  100% { opacity: 0; }
+}
+.exo-lit { animation: fx-fade-in 0.9s ease-in-out 2.1s both; }
+/* The fists clench, then burst open into the claws. */
+.exo-fists { animation: fx-fade-in 0.9s ease-in-out 2.1s both, exo-fists 0.3s ease-in 4s forwards; }
+@keyframes exo-fists {
+  0% { opacity: 1; transform: none; }
+  45% { opacity: 1; transform: scale(0.96) translateY(4px); }
+  100% { opacity: 0; transform: scale(1.08); }
+}
+.exo-open { opacity: 0; animation: exo-open 0.45s cubic-bezier(0.2, 0.8, 0.3, 1.3) 4.12s forwards, exo-spread 1.7s ease-in 4.6s forwards; }
+@keyframes exo-open {
+  from { opacity: 0; transform: scale(0.88); }
+  40% { opacity: 1; }
+  to { opacity: 1; transform: none; }
+}
+@keyframes exo-spread {
+  from { opacity: 1; transform: none; }
+  to { opacity: 1; transform: scale(1.05); }
+}
+
+/* Eye centres map from (263, 325) / (301, 325) in the head reference frame. */
+.exo-eye {
+  position: absolute;
+  left: var(--x);
+  top: 44.703125%;
+  width: 3.4%;
+  aspect-ratio: 1.8;
+  translate: -50% -50%;
+  border-radius: 50%;
+  background: radial-gradient(circle closest-side, #fff 0 25%, rgb(237 222 255 / 0.85) 45%, rgb(196 160 255 / 0));
+  opacity: 0;
+  animation: exo-eye-flash 0.8s ease-out 3.2s forwards, exo-eye-glow 0.6s ease-in-out 4s infinite alternate;
+}
+@keyframes exo-eye-flash {
+  0% { opacity: 0; transform: scale(0.3); }
+  20% { opacity: 1; transform: scale(3.2); }
+  45% { opacity: 1; transform: scale(2.4); }
+  100% { opacity: 0.4; transform: scale(1); }
+}
+@keyframes exo-eye-glow {
+  from { opacity: 0.25; transform: scale(0.9); }
+  to { opacity: 0.45; transform: scale(1.08); }
+}
+.exo-glint {
   position: absolute;
   left: 50%;
-  top: 66.667%;
-  width: 100%;
+  top: 44.703125%;
+  width: 110%;
+  height: 2.2%;
+  translate: -50% -50%;
+  background: radial-gradient(closest-side, #fff, rgb(255 244 214 / 0.85) 25%, rgb(255 200 120 / 0));
+  opacity: 0;
+  animation: exo-glint 0.7s ease-out 3.2s both;
+}
+@keyframes exo-glint {
+  0% { opacity: 0; transform: scaleX(0.1); }
+  25% { opacity: 1; transform: none; }
+  100% { opacity: 0; transform: scale(0.6, 0.5); }
+}
+
+/* The energy ball ignites between his claws (4.22s), swells with pulses,
+   draws in a breath and fires, growing 30x to fill the screen (6.33-6.82s).
+   1% = 26ms. */
+.exo-orb {
+  position: absolute;
+  left: 50%;
+  top: 63.125%;
+  width: 30%;
   aspect-ratio: 1;
   translate: -50% -50%;
   border-radius: 50%;
-  background: radial-gradient(circle closest-side, rgb(255 255 255 / 0.95), rgb(253 224 71 / 0.65) 30%, rgb(245 158 11 / 0) 100%);
+  background: radial-gradient(circle closest-side, #fff 0 32%, #fffbe0 44%, #fde68a 58%, rgb(251 191 36 / 0.55) 76%, rgb(245 158 11 / 0));
+  box-shadow: 0 0 40px 20px rgb(253 210 90 / 0.55), 0 0 120px 60px rgb(251 160 40 / 0.3);
+  transform: scale(0);
+  will-change: transform;
+  animation: exo-orb 2.6s linear 4.22s both;
+}
+.exo-orb::before {
+  content: '';
+  position: absolute;
+  border-radius: 50%;
+  inset: -60%;
+  background: repeating-conic-gradient(from 0deg, rgb(255 250 210 / 0) 0deg 9deg, rgb(255 250 210 / 0.8) 11deg, rgb(255 250 210 / 0) 13deg 24deg);
+  -webkit-mask: radial-gradient(circle, transparent 18%, #000 28%, transparent 70%);
+  mask: radial-gradient(circle, transparent 18%, #000 28%, transparent 70%);
+  animation: fx-spin 0.8s linear infinite;
+}
+@keyframes exo-orb {
+  0% { transform: scale(0); }
+  6% { transform: scale(0.35); }
+  15% { transform: scale(0.5); }
+  30% { transform: scale(0.85); }
+  36% { transform: scale(0.75); }
+  42% { transform: scale(1); }
+  50% { transform: scale(0.95); }
+  62% { transform: scale(1.35); }
+  70% { transform: scale(1.25); }
+  78% { transform: scale(1.7); }
+  81% { transform: scale(1.5); animation-timing-function: cubic-bezier(0.6, 0, 0.9, 0.5); }
+  100% { transform: scale(30); }
+}
+
+/* Ground the bottom of the figure in smoke and low flames. */
+.exo-floor {
+  background: linear-gradient(to top, rgb(92 28 4 / 0.95), rgb(160 60 10 / 0.55) 12%, rgb(160 60 10 / 0) 26%);
+  animation: fx-fade-in 0.9s ease-out 0.5s both;
+}
+/* The orange haze he looms in, which parts to reveal him (2.1-3.4s). */
+.exo-veil {
+  background: radial-gradient(ellipse at 50% 55%, rgb(253 170 70 / 0.72), rgb(234 110 26 / 0.7));
+  animation: exo-veil 3.4s ease-in-out both;
+}
+@keyframes exo-veil {
+  0%, 12% { opacity: 0; }
+  30%, 60% { opacity: 1; }
+  100% { opacity: 0; }
+}
+.exo-haze {
+  position: absolute;
+  left: var(--x);
+  top: var(--y);
+  width: var(--s);
+  aspect-ratio: 1;
+  translate: -50% -50%;
+  border-radius: 50%;
+  background: radial-gradient(closest-side, var(--c), rgb(250 150 50 / 0));
+  animation: exo-haze 3.4s ease-in-out both;
+}
+@keyframes exo-haze {
+  0% { opacity: 0; transform: scale(0.8); }
+  15% { opacity: 1; }
+  62% { opacity: 1; transform: none; }
+  100% { opacity: 0; transform: translate(var(--dx), var(--dy)) scale(1.5); }
+}
+.exo-ember {
+  position: absolute;
+  left: var(--x);
+  bottom: -2%;
+  width: var(--s);
+  height: var(--s);
+  border-radius: 50%;
+  background: #ffe08a;
+  box-shadow: 0 0 6px #ffb340;
+  opacity: 0;
+  animation: exo-ember var(--d) linear var(--dl) infinite;
+}
+@keyframes exo-ember {
+  0% { opacity: 0; transform: none; }
+  10% { opacity: 1; }
+  100% { opacity: 0; transform: translate(var(--dx), -105vh); }
+}
+
+/* As the ball swells everything is drowned in yellow light. */
+.exo-wash {
+  background: radial-gradient(circle at 50% 60%, rgb(255 250 200 / 0.95), rgb(253 224 71 / 0.7) 25%, rgb(251 191 36 / 0.35) 55%, rgb(245 158 11 / 0) 85%);
   mix-blend-mode: screen;
   opacity: 0;
-  will-change: opacity;
-  animation: exo-glow 1.5s ease-in 2.3s forwards;
+  animation: exo-wash 2.6s ease-in 4.22s both;
 }
-@keyframes exo-glow { to { opacity: 1; } }
+@keyframes exo-wash {
+  0% { opacity: 0; }
+  30% { opacity: 0.3; }
+  62% { opacity: 0.6; }
+  80% { opacity: 0.85; }
+  100% { opacity: 1; }
+}
+/* Rays shooting out as it fires. */
+.exo-burst {
+  position: absolute;
+  left: 50%;
+  top: 60%;
+  width: 160vmax;
+  aspect-ratio: 1;
+  translate: -50% -50%;
+  background: repeating-conic-gradient(from 0deg, rgb(255 255 255 / 0) 0deg 5deg, rgb(255 252 225 / 0.9) 7deg, rgb(255 255 255 / 0) 9deg 15deg);
+  -webkit-mask: radial-gradient(circle, transparent 3%, #000 12%, #000 40%, transparent 70%);
+  mask: radial-gradient(circle, transparent 3%, #000 12%, #000 40%, transparent 70%);
+  opacity: 0;
+  animation: exo-burst 0.6s ease-out 6.28s both;
+}
+@keyframes exo-burst {
+  0% { opacity: 0; transform: scale(0.15); }
+  30% { opacity: 1; }
+  100% { opacity: 1; transform: scale(1.2) rotate(12deg); }
+}
 
+/* The logo glows, shrinks into a spark at his chest and waits there until
+   the ball ignites (4.22s). */
 .exo-logo {
   position: absolute;
   left: var(--lx);
   top: var(--ly);
   width: var(--ls);
   height: var(--ls);
-  animation: exo-logo 2.8s ease-in-out both;
+  animation: exo-logo 4.5s ease-in-out both;
 }
 .exo-logo img {
   --amp: 2px;
@@ -1513,60 +1701,23 @@ html[data-theme] .logo-egg:active { transform: none; filter: var(--logo-glow); }
 }
 @keyframes exo-logo {
   0% { transform: none; filter: brightness(1.35) drop-shadow(0 0 16px #fde68a) drop-shadow(0 0 40px #f59e0b); }
-  30% { transform: none; filter: brightness(1.6) drop-shadow(0 0 24px #fde68a) drop-shadow(0 0 60px #f59e0b); }
-  78% { transform: translateY(-8px) scale(1.06); filter: brightness(1.8) drop-shadow(0 0 30px #fff) drop-shadow(0 0 70px #f59e0b); }
-  96% { transform: translate(var(--tx), var(--ty)) scale(0.3); filter: brightness(4) drop-shadow(0 0 20px #fff) drop-shadow(0 0 40px #fde047); opacity: 1; }
-  100% { transform: translate(var(--tx), var(--ty)) scale(0.2); filter: brightness(4) drop-shadow(0 0 20px #fff) drop-shadow(0 0 40px #fde047); opacity: 0; }
+  15% { transform: translateY(-6px) scale(1.08); filter: brightness(1.8) drop-shadow(0 0 26px #fff) drop-shadow(0 0 60px #f59e0b); }
+  33%, 94% { transform: translate(var(--tx), var(--ty)) scale(0.12); filter: brightness(5) drop-shadow(0 0 60px #fff) drop-shadow(0 0 120px #fde047); opacity: 1; }
+  100% { transform: translate(var(--tx), var(--ty)) scale(0.35); filter: brightness(5) drop-shadow(0 0 60px #fff) drop-shadow(0 0 120px #fde047); opacity: 0; }
 }
 
-.exo-orb {
-  position: absolute;
-  left: 50%;
-  top: 55%;
-  width: 100px;
-  height: 100px;
-  margin: -50px 0 0 -50px;
-  border-radius: 50%;
-  background: radial-gradient(circle, #fff 0 30%, #fff7c2 45%, #fbbf24 62%, rgb(245 158 11 / 0) 72%);
-  /* Rasterize once and let the GPU scale it (it grows 40x in the blast). */
-  will-change: transform;
-  animation: exo-orb 4.6s linear both;
-}
-.exo-orb::before {
-  content: '';
-  position: absolute;
-  inset: -70%;
-  border-radius: 50%;
-  background: repeating-conic-gradient(from 0deg, transparent 0deg 9deg, rgb(255 250 210 / 0.8) 11deg, transparent 13deg 24deg);
-  -webkit-mask: radial-gradient(circle, transparent 18%, #000 28%, transparent 70%);
-  mask: radial-gradient(circle, transparent 18%, #000 28%, transparent 70%);
-  animation: fx-spin 0.7s linear infinite;
-}
-/* Appears as the logo arrives (~2.6s), pulses while charging, then blasts
-   out to fill the screen (3.8s -> 4.5s). */
-@keyframes exo-orb {
-  0%, 57% { transform: scale(0); opacity: 0; }
-  60% { transform: scale(0.8); opacity: 1; }
-  66% { transform: scale(1); }
-  70% { transform: scale(0.9); }
-  75% { transform: scale(1.3); }
-  78% { transform: scale(1.15); }
-  82.6% { transform: scale(1.6); animation-timing-function: cubic-bezier(0.6, 0, 0.9, 0.5); }
-  97.8%, 100% { transform: scale(40); opacity: 1; }
-}
-
-/* Full white from 4.5s to 6.6s, then slowly fades back to the start screen
+/* Full white from 6.8s to 7.8s, then slowly fades back to the start screen
    (which itself "comes into focus", see #app.fx-exodia-wake). */
-.exo-white { position: absolute; inset: 0; background: #fff; opacity: 0; will-change: opacity; animation: exo-white 9s linear both; }
+.exo-white { position: absolute; inset: 0; background: #fff; opacity: 0; will-change: opacity; animation: exo-white 10s linear both; }
 @keyframes exo-white {
-  0%, 46.67% { opacity: 0; }
-  50% { opacity: 1; }
-  73.33% { opacity: 1; animation-timing-function: cubic-bezier(0.45, 0, 0.55, 1); }
+  0%, 64% { opacity: 0; }
+  68% { opacity: 1; }
+  78% { opacity: 1; animation-timing-function: cubic-bezier(0.45, 0, 0.55, 1); }
   100% { opacity: 0; }
 }
-#app.fx-exodia-wake { animation: exo-wake 4.4s cubic-bezier(0.4, 0, 0.2, 1) both; }
+#app.fx-exodia-wake { animation: exo-wake 3.2s cubic-bezier(0.4, 0, 0.2, 1) both; }
 @keyframes exo-wake {
-  0%, 45% { filter: brightness(2.2) blur(8px); }
+  0%, 31% { filter: brightness(2.2) blur(8px); }
   100% { filter: brightness(1) blur(0); }
 }
 

@@ -1,4 +1,4 @@
-const CACHE_NAME = 'ygo-skills-mvp-v136';
+const CACHE_NAME = 'ygo-skills-mvp-v143';
 const ASSETS = [
   './',
   './index.html',
@@ -114,4 +114,3 @@ self.addEventListener('fetch', (event) => {
     caches.match(event.request).then((cached) => cached || fetch(event.request))
   );
 });
-
