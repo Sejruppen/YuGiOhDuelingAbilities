@@ -14,6 +14,8 @@ const soloUi = {
   legend: false,
   panel: null,
   input: '',
+  // The input already has the +30% field bonus added (used as-is, no implied "00").
+  inputBoosted: false,
   blockPos: 'atk',
   toast: null,
   confirmAbandon: false,
@@ -305,7 +307,9 @@ function startSoloDuel() {
 }
 
 function soloKey(k) {
-  const v = soloUi.input;
+  // Like the LP editor's exact values, a boosted amount is replaced rather than edited.
+  const v = soloUi.inputBoosted ? '' : soloUi.input;
+  soloUi.inputBoosted = false;
   if (k === 'back') soloUi.input = v.slice(0, -1);
   else if (v === '0') soloUi.input = k === '00' ? '0' : k;
   else if (k === '00' && !v) soloUi.input = '0';
@@ -313,7 +317,24 @@ function soloKey(k) {
   render();
 }
 
-const soloInputValue = () => parseInt(soloUi.input, 10) || 0;
+// Same implied "00" as the LP editor ("14" means 1400), but a lone "0" stays 0.
+const soloInputHasSuffix = () => !!soloUi.input && !soloUi.inputBoosted && soloUi.input !== '0'
+  && soloUi.input.length <= LP_SUFFIX_MAX_DIGITS && !LP_SHORT_INPUTS.includes(soloUi.input);
+
+const soloInputValue = () => (parseInt(soloUi.input, 10) || 0) * (soloInputHasSuffix() ? 100 : 1);
+
+function clearSoloInput() {
+  Object.assign(soloUi, { input: '', inputBoosted: false });
+  render();
+}
+
+// Adds the region's field bonus to the typed ATK, rounded like the enemy's.
+function boostSoloInput() {
+  if (!soloUi.input || soloUi.inputBoosted) return;
+  soloUi.input = String(Math.round(soloInputValue() * (1 + SOLO_FIELD_BONUS)));
+  soloUi.inputBoosted = true;
+  render();
+}
 
 function openSoloPanel(type) {
   soloUi.panel = { type };
@@ -467,6 +488,8 @@ function cancelSoloBlock() {
 
 function setSoloBlockPos(pos) {
   soloUi.blockPos = pos;
+  // DEF gets no field bonus, so a boosted ATK doesn't carry over.
+  if (soloUi.inputBoosted) Object.assign(soloUi, { input: '', inputBoosted: false });
   render();
 }
 

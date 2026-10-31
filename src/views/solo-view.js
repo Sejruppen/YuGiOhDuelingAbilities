@@ -226,13 +226,22 @@ function renderSoloStatus() {
   `;
 }
 
-function soloKeypad(label, actionsHtml) {
+// `boost` adds a +30% button for typing your own monster's ATK in a field-bonus region.
+function soloKeypad(label, actionsHtml, boost = false) {
   const value = soloUi.input;
   const keys = ['1', '2', '3', 'back', '4', '5', '6', '0', '7', '8', '9', '00'];
+  const region = soloRegion();
+  const boosted = !!value && soloUi.inputBoosted;
+  const boostBtn = boost && region.types.length
+    ? `<button type="button" onclick="boostSoloInput()" ${!value || boosted ? 'disabled' : ''} title="${region.name} field bonus" class="shrink-0 rounded-md px-2.5 py-1 text-xs font-bold transition ${boosted ? 'bg-amber-500 text-slate-950' : value ? 'bg-slate-800 hover:bg-slate-700 text-amber-300 border border-amber-500/50' : 'bg-slate-900/60 text-slate-600 border border-slate-800'}"><span class="ce-emoji">${region.icon}</span> +${SOLO_FIELD_BONUS * 100}%</button>`
+    : '';
   return `
-    <div class="flex items-baseline justify-between gap-2 px-1">
-      <p class="text-xs text-slate-400">${label}</p>
-      <p class="text-3xl font-black text-white tabular-nums">${value || '<span class="text-slate-600">0</span>'}</p>
+    <div class="flex items-center justify-between gap-2 px-1">
+      ${value
+        ? '<button type="button" onclick="clearSoloInput()" class="text-xs font-bold text-slate-300 hover:text-white rounded-md bg-slate-800 hover:bg-slate-700 px-2.5 py-1">✕ Clear</button>'
+        : `<p class="text-xs text-slate-400">${label}</p>`}
+      ${boostBtn ? `<span class="ml-auto">${boostBtn}</span>` : ''}
+      <p class="text-3xl font-black text-white tabular-nums">${value ? `${value}${soloInputHasSuffix() ? '<span class="text-slate-600">00</span>' : ''}` : '<span class="text-slate-600">0</span>'}</p>
     </div>
     <div class="grid grid-cols-4 gap-1.5">
       ${keys.map(k => `<button onclick="soloKey('${k}')" class="py-2 rounded-lg bg-slate-800 hover:bg-slate-700 text-lg font-bold text-white">${k === 'back' ? '⌫' : k}</button>`).join('')}
@@ -709,7 +718,7 @@ function renderSoloPanel() {
       ? `<button onclick="toggleSoloAxe()" aria-pressed="${!!panel.axe}" class="w-full py-1.5 rounded-lg text-xs font-bold ${panel.axe ? 'bg-amber-500 text-slate-950' : 'bg-slate-800 text-slate-300 border border-slate-700'}"><span class="ce-emoji">🪓</span> Axe of Despair +${SOLO_RELICS.axe.value} ${panel.axe ? '(on)' : '(off)'}</button>`
       : '';
     return renderSoloPanelShell(title, axe + bonuses.map(b => `<p class="text-xs text-amber-200">${b}</p>`).join('') + soloKeypad("Your attacking monster's ATK",
-      coopBtn('← Back', 'setSoloPanel({ target: null })') + coopBtn('⚔️ Attack!', 'confirmSoloAttack()', 'primary', !soloUi.input)));
+      coopBtn('← Back', 'setSoloPanel({ target: null })') + coopBtn('⚔️ Attack!', 'confirmSoloAttack()', 'primary', !soloUi.input), true));
   }
 
   if (panel.type === 'effect') {
@@ -774,7 +783,7 @@ function renderSoloStepCard() {
     const pos = soloUi.blockPos;
     const toggle = ['atk', 'def'].map(p => `<button onclick="setSoloBlockPos('${p}')" class="flex-1 py-1.5 rounded-lg text-xs font-bold ${pos === p ? 'bg-amber-500 text-slate-950' : 'bg-slate-800 text-slate-300'}">${p === 'atk' ? 'Attack position' : 'Defense position'}</button>`).join('');
     body = `<p class="text-sm font-bold text-white text-center"><span class="ce-emoji">${step.icon}</span> ${step.title.replace(' directly!', '')} (${step.atk})</p><div class="flex gap-2">${toggle}</div>` +
-      soloKeypad(`Your blocking monster's ${pos.toUpperCase()}`, coopBtn('← Back', 'cancelSoloBlock()') + coopBtn('🛡️ Block', 'confirmSoloBlock()', 'primary', !soloUi.input));
+      soloKeypad(`Your blocking monster's ${pos.toUpperCase()}`, coopBtn('← Back', 'cancelSoloBlock()') + coopBtn('🛡️ Block', 'confirmSoloBlock()', 'primary', !soloUi.input), pos === 'atk');
   } else if (step.kind === 'attack') {
     const waboku = soloWabokuActive();
     const relics = SOLO_DEFENSE_RELICS.filter(soloRelicReady).map(id => coopBtn(`<span class="ce-emoji">${SOLO_RELICS[id].icon}</span> ${SOLO_RELICS[id].name}`, `soloRelicDefendClick('${id}')`));
@@ -791,7 +800,7 @@ function renderSoloStepCard() {
       row([coopBtn('🗑️ I discarded one', 'soloCrushClick(true)', 'danger'), coopBtn('🙅 I have none', 'soloCrushClick(false)', 'primary')]);
   } else if (step.kind === 'restrict') {
     body = title + text('It absorbs your strongest monster. Remove it from your field: Restrict takes its ATK.') +
-      soloKeypad("Your strongest monster's ATK", coopBtn('🙅 No monsters', 'soloAbsorbClick(true)') + coopBtn('🧿 Absorb', 'soloAbsorbClick(false)', 'primary', !soloUi.input));
+      soloKeypad("Your strongest monster's ATK", coopBtn('🙅 No monsters', 'soloAbsorbClick(true)') + coopBtn('🧿 Absorb', 'soloAbsorbClick(false)', 'primary', !soloUi.input), true);
   } else {
     body = title + row([cont]);
   }
