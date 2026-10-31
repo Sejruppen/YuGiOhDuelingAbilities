@@ -13852,6 +13852,7 @@ html[data-theme="gold"]::view-transition-new(root) { animation: vt-diamond 1s cu
 }
 .solo-node--special { width: 3.4rem; height: 3.4rem; font-size: 1.9rem; }
 .solo-node--dim { opacity: 0.55; filter: saturate(0.4); }
+.solo-node--hidden { background: #cbd5e1; border-style: dashed; border-color: #64748b; }
 .solo-node--visited { background: #d6c39b; border-color: #f59e0b; box-shadow: 0 0 0 3px rgba(245, 158, 11, 0.35); }
 .solo-node--current { border-color: #fbbf24; box-shadow: 0 0 0 4px rgba(251, 191, 36, 0.7), 0 0 18px rgba(251, 191, 36, 0.8); }
 .solo-node--reachable { border-color: #fbbf24; animation: solo-node-pulse 1.4s ease-in-out infinite; }

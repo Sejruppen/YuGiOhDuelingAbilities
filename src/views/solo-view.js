@@ -252,7 +252,7 @@ function renderSoloIntro() {
     <div class="flex-1 min-h-0 overflow-y-auto p-4 no-scrollbar">
       <p class="text-xs font-semibold uppercase tracking-widest text-slate-400 mb-2">How it works</p>
       <ul class="text-xs text-slate-300 space-y-1.5 leading-relaxed">
-        <li><span class="ce-emoji">🗺️</span> Pick a path up the map. Every node is a duel, a treasure or something stranger.</li>
+        <li><span class="ce-emoji">🗺️</span> Pick a path up the map. Every node is a duel, a treasure or something stranger. A <span class="ce-emoji">❓</span> hides a duelist or a Shadow Game until you get there.</li>
         <li><span class="ce-emoji">🃏</span> Before each duel: shuffle your deck and draw 5. You always go first.</li>
         <li><span class="ce-emoji">❤️</span> You start with ${SOLO_START_LP} LP, and it carries over between duels. Rest at the campfire before the castle.</li>
         <li><span class="ce-emoji">👁️</span> The enemy shows what kind of move it will make next turn. Plan around it!</li>
@@ -331,14 +331,15 @@ function renderSoloMap(mini = false, run = solo) {
   const focusId = run.at || reachable[0];
   const buttons = Object.values(nodes).map(n => {
     const { x, y } = soloNodePos(n);
-    const t = SOLO_NODE_TYPES[n.type];
+    const look = mini ? n.type : soloNodeLook(n, run);
+    const t = SOLO_NODE_TYPES[look];
     const state = n.id === run.at ? 'current' : run.path.includes(n.id) ? 'visited' : reachable.includes(n.id) ? 'reachable' : 'dim';
     const special = n.col === null ? 'solo-node--special' : '';
     const pos = `style="left: ${(x / SOLO_MAP_W) * 100}%; top: ${(y / SOLO_MAP_H) * 100}%;"`;
-    if (mini) return `<span class="solo-node solo-node--${state} solo-node--${n.type} ${special}" ${pos}><span class="ce-emoji">${t.icon}</span></span>`;
+    if (mini) return `<span class="solo-node solo-node--${state} solo-node--${look} ${special}" ${pos}><span class="ce-emoji">${t.icon}</span></span>`;
     return `
       <button onclick="tapSoloNode('${n.id}')" ${n.id === focusId ? 'data-solo-focus' : ''} aria-label="${t.label}"
-        class="solo-node solo-node--${state} solo-node--${n.type} ${special} ${soloUi.preview === n.id ? 'solo-node--picked' : ''}"
+        class="solo-node solo-node--${state} solo-node--${look} ${special} ${soloUi.preview === n.id ? 'solo-node--picked' : ''}"
         ${pos}>
         <span class="ce-emoji">${t.icon}</span>
       </button>
@@ -366,7 +367,8 @@ function renderSoloMap(mini = false, run = solo) {
 function renderSoloPreview() {
   const n = solo.map.nodes[soloUi.preview];
   if (!n) return '';
-  const t = SOLO_NODE_TYPES[n.type];
+  const look = soloNodeLook(n);
+  const t = SOLO_NODE_TYPES[look];
   const r = SOLO_REGIONS[n.region];
   const reachable = soloReachable().includes(n.id);
   let note = '';
@@ -374,7 +376,7 @@ function renderSoloPreview() {
   else if (n.id === 'castle' && solo.chips < SOLO_GATE_CHIPS) note = `The doors are shut. You need ${SOLO_GATE_CHIPS} ⭐.`;
   else if (solo.path.includes(n.id)) note = 'You have been here.';
   else if (!reachable) note = "You can't reach this from where you stand.";
-  const fight = ['duelist', 'elite', 'labyrinth', 'castle'].includes(n.type);
+  const fight = ['duelist', 'elite', 'labyrinth', 'castle'].includes(look);
   const eliteId = n.type === 'elite' ? n.elite || soloEliteFor(n.region) : n.type === 'labyrinth' ? 'paradox' : null;
   const e = eliteId && SOLO_ELITES[eliteId];
   return `

@@ -19,12 +19,15 @@ const SOLO_BRANCH_FLOORS = 8;
 const SOLO_FLOOR = { CAMPFIRE: 9, LABYRINTH: 10, CASTLE: 11 };
 const SOLO_TREASURE_FLOOR = 5;
 const SOLO_MIXED_ODDS = { duelist: 50, event: 30, elite: 20 };
+// Share of mixed nodes (never elites) shown as ❓ until you step on them.
+const SOLO_HIDDEN_CHANCE = 0.33;
 
 const SOLO_NODE_TYPES = {
   duelist: { icon: '⚔️', label: 'Duelist', desc: 'A wandering duelist. Win for +1 ⭐.' },
   elite: { icon: '👹', label: 'Elite', desc:   'A dangerous veteran duelist. Win for +2 ⭐ and a rare relic.' },
     treasure: { icon: '🎁', label: 'Treasure', desc: "A lost Duelist's Case. Pick 1 of 3 relics." },
-  event: { icon: '❓', label: 'Shadow Game', desc: 'A strange encounter. Choose wisely: some choices are a gamble.' },
+  event: { icon: '🌀', label: 'Shadow Game', desc: 'A strange encounter. Choose wisely: some choices are a gamble.' },
+  hidden: { icon: '❓', label: 'Unknown', desc: 'Hidden in the mist: a duelist or a Shadow Game. You find out when you get there.' },
   campfire: { icon: '🔥', label: 'Campfire', desc: `Rest before the castle. Heal ${SOLO_CAMPFIRE_HEAL * 100}% of your max LP.` },
   labyrinth: { icon: '🧱', label: 'Labyrinth', desc: `Only if you have fewer than ${SOLO_GATE_CHIPS} ⭐. The Paradox Brothers guard it. Win to get the missing chips.` },
   castle: { icon: '🏰', label: 'Castle', desc: "Pegasus' castle. Win to finish the run." }

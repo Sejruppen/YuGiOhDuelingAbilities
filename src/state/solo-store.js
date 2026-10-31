@@ -179,6 +179,7 @@ function generateSoloMap() {
         let type = soloWeighted(SOLO_MIXED_ODDS);
         if (type === 'elite' && (afterElite || eliteRegions.has(n.region) || n.region === 'beach')) type = soloWeighted({ ...SOLO_MIXED_ODDS, elite: 0 });
         if (type === 'elite') eliteRegions.add(n.region);
+        else if (Math.random() < SOLO_HIDDEN_CHANCE) n.hidden = true;
         n.type = type;
       }
     });
@@ -194,6 +195,10 @@ function generateSoloMap() {
 }
 
 const soloEliteFor = region => Object.keys(SOLO_ELITES).find(id => SOLO_ELITES[id].region === region) || 'keith';
+
+// What a node shows on the map: 'hidden' until you've been there (or the
+// Fortune Teller foresaw its Shadow Game).
+const soloNodeLook = (n, run = solo) => (n.hidden && !n.event && !run.path.includes(n.id) ? 'hidden' : n.type);
 
 // Where you can go next. After the campfire the Star Chips pick the way.
 // Tristan's Shortcut jumps one floor further along the paths.
