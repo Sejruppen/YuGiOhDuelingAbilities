@@ -11,6 +11,7 @@
 //   millennium  the Millennium Item taken this run (max one); puzzleUsed
 //   event   the Shadow Game being shown (see solo-events.js); seenEvents
 //   mods    Shadow Game effects waiting for the next duel; shortcut = skip a floor
+//   video   the Toon Pegasus opens with, seen on his tape (a Shadow Game)
 const newSolo = () => ({ phase: 'intro' });
 
 function loadSolo() {
@@ -323,7 +324,8 @@ function soloRelicDefend(id) {
 const soloRegion = (key = solo.fight?.region) => SOLO_REGIONS[key] || SOLO_REGIONS.castle;
 const soloName = region => `${soloPick(SOLO_REGIONS[region].titles)} ${soloPick(SOLO_FIRST_NAMES)}`;
 
-function soloPool(fight) {
+function soloPool(fight, opts) {
+  if (fight.pegasus) return soloPegasusPool(fight, opts);
   if (fight.elite) {
     const deck = SOLO_ELITES[fight.elite].monsters.filter(m => !m.special);
     const pool = deck.filter(m => (m.minRound || 1) <= fight.round && !(m.unique && fight.monsters.some(x => x.name === m.name)));
@@ -352,7 +354,7 @@ function createSoloFight(node) {
   } else if (node.type === 'ambush') {
     spec = { kind: 'ambush', maxAtk: tier.maxAtk, actions: 1, chips: 0, ...node.ambush };
   } else {
-    spec = { kind: 'boss', ...SOLO_CASTLE_GUARD, chips: 0 };
+    spec = { kind: 'boss', boss: 'pegasus', name: SOLO_PEGASUS.name, title: SOLO_PEGASUS.title, icon: SOLO_PEGASUS.icon, lp: SOLO_PEGASUS.lp, personality: SOLO_PEGASUS.personality, actions: SOLO_PEGASUS.actions[1], chips: 0 };
   }
   const fight = {
     ...spec,
@@ -374,8 +376,10 @@ function createSoloFight(node) {
     nextUid: 1,
     intro: true
   };
+  if (spec.boss === 'pegasus') fight.pegasus = newSoloPegasus();
   applySoloMods(fight);
   planSoloTurn(fight);
+  if (fight.pegasus && solo.video) soloApplyVideo(fight);
   return fight;
 }
 
@@ -400,12 +404,16 @@ function applySoloMods(f) {
 // Picks the enemy's next intents and rolls their exact cards up front, so the
 // Millennium Eye can show them.
 function planSoloTurn(f) {
-  f.intents = buildSoloIntents(f);
+  f.intents = f.pegasus ? buildPegasusIntents(f) : buildSoloIntents(f);
   const taken = f.monsters.map(m => m.name);
+  let toonWorld = soloToonWorldUp(f);
   f.peek = f.intents.map(action => {
+    if (action === 'toonworld') toonWorld = true;
     if (action === 'equip') return { equip: soloPick(SOLO_EQUIPS) };
+    if (action === 'crush') return { cardType: soloPick(SOLO_PEGASUS.cardTypes) };
+    if (action === 'bluff') return soloPegasusBluff();
     if (action !== 'summon') return {};
-    const pool = soloPool(f);
+    const pool = soloPool(f, { toonWorld, taken });
     const free = pool.filter(c => !(c.unique && taken.includes(c.name)));
     const card = soloPick(free.length ? free : pool);
     taken.push(card.name);
@@ -531,12 +539,18 @@ function healSoloPlayer(amount) {
 function damageSoloEnemy(amount) {
   const f = solo.fight;
   if (!f || amount <= 0) return 0;
+  // Funny Bunny: Pegasus takes no damage while it hops around.
+  if (f.monsters.some(m => m.bunny)) {
+    playSound({ name: 'co-bounce' });
+    return 0;
+  }
   const dealt = Math.min(f.lp, Math.round(amount));
   f.lp -= dealt;
   solo.stats.damage += dealt;
   playSound({ name: 'co-hit' });
   queueSoloFx(() => fxSoloHit('[data-solo-enemy]', -dealt));
   if (f.lp <= 0) soloWin();
+  else if (f.pegasus) soloPegasusStage(f);
   return dealt;
 }
 
@@ -569,12 +583,13 @@ function soloWin() {
 
 function soloDefeat() {
   solo.phase = 'defeat';
-  playSound({ name: 'co-defeat' });
+  playSound({ name: 'co-seal' });
 }
 
 // --- Your turn ----------------------------------------------------------------------
 
-// Battle on the phone with normal Yu-Gi-Oh! rules. uid null = direct attack.
+// Battle on the phone with normal Yu-Gi-Oh! rules. uid null = direct attack,
+// 'book' = Pegasus' Toon World.
 function soloPlayerAttack(uid, atk) {
   const f = solo.fight;
   if (f.trap) {
@@ -583,6 +598,7 @@ function soloPlayerAttack(uid, atk) {
     playSound({ name: 'co-negate' });
     return { tone: 'bad', text: `🪤 ${SOLO_TRAP.name}! ${SOLO_TRAP.text}`, negated: true };
   }
+  if (uid === 'book') return soloTearPage(atk);
   if (uid === null) {
     const dealt = damageSoloEnemy(atk);
     return { tone: 'good', text: `⚔️ Direct attack! ${f.name} takes ${dealt}.` };
@@ -590,11 +606,22 @@ function soloPlayerAttack(uid, atk) {
   const m = soloMonster(uid);
   if (!m) return null;
   const st = soloStats(m);
+  // While Toon World stands, Toons can't be destroyed by battle and Pegasus
+  // takes no battle damage from them.
+  const toon = m.toon && soloToonWorldUp(f);
   if (m.pos === 'atk') {
+    if (atk > st.atk && toon) {
+      playSound({ name: 'co-squash' });
+      return { tone: 'meh', text: `🤪 ${m.name} is squashed flat… and pops right back up! Toon World protects ${f.name}: no damage.` };
+    }
     if (atk > st.atk) {
       removeSoloMonster(uid);
       const dealt = damageSoloEnemy(atk - st.atk);
       return { tone: 'good', text: `💥 ${m.name} is destroyed! ${f.name} takes ${dealt}.` };
+    }
+    if (atk === st.atk && toon) {
+      playSound({ name: 'co-squash' });
+      return { tone: 'meh', text: `🤪 Your monster is destroyed, but ${m.name} just bounces back. Send yours to the Graveyard.` };
     }
     if (atk === st.atk) {
       removeSoloMonster(uid);
@@ -662,7 +689,7 @@ function prepareSoloStep() {
       if (attackers.length && f.round === 1 && soloHas('swords')) {
         step.type = 'swords';
       } else {
-        f.steps.splice(f.stepIndex, 1, ...attackers.map(m => ({ type: 'attack', uid: m.uid })));
+        f.steps.splice(f.stepIndex, 1, ...attackers.flatMap(soloAttackSteps));
         continue;
       }
     }
@@ -675,8 +702,13 @@ function prepareSoloStep() {
   }
 }
 
+// Toon Barrel Dragon fires its barrels instead; Toon Gemini Elf hits twice.
+const soloAttackSteps = m => (m.barrels ? [{ type: 'barrel', uid: m.uid }]
+  : m.hits ? Array.from({ length: m.hits }, (_, i) => ({ type: 'attack', uid: m.uid, hit: i + 1 }))
+  : [{ type: 'attack', uid: m.uid }]);
+
 function prepareSoloStepType(step, f) {
-  const info = (icon, title, text, note = '') => Object.assign(step, { kind: 'info', icon, title, text, note });
+  const info = (icon, title, text, note = '') => Object.assign(step, { kind: 'info', icon, title, text, note: [note, step.bluffNote].filter(Boolean).join('<br>') });
 
   if (step.type === 'summon' && f.monsters.length >= SOLO_MAX_MONSTERS) step.type = 'equip';
   if (step.type === 'equip' && !f.monsters.length) step.type = 'summon';
@@ -690,9 +722,10 @@ function prepareSoloStepType(step, f) {
       const pos = pk ? pk.pos : soloSummonPos(f, card);
       const m = { ...card, uid: f.nextUid++, pos, equip: 0 };
       f.monsters.push(m);
-      playSound({ name: 'co-summon' });
+      playSound({ name: m.toon ? 'co-toon' : 'co-summon' });
       const st = soloStats(m, f);
       const notes = [];
+      if (m.toon) notes.push("🤪 Toons attack you directly and can't be blocked.");
       if (soloBoosted(f, m)) notes.push(`${soloRegion(f.region).icon} ${soloRegion(f.region).name} field bonus: ATK ${m.atk} → ${st.atk}`);
       if (soloRelicReady('spellbinding')) {
         m.bound = true;
@@ -736,7 +769,9 @@ function prepareSoloStepType(step, f) {
     case 'attack': {
       const m = soloMonster(step.uid);
       if (!m || m.pos !== 'atk' || m.bound) return false;
-      Object.assign(step, { kind: 'attack', icon: m.icon, title: `${m.name} attacks directly!`, atk: soloStats(m, f).atk, sub: null, rex: f.elite === 'rex' && m.type === 'Dinosaur' });
+      const atk = step.hit ? m.hitAtk + (m.equip || 0) : soloStats(m, f).atk;
+      const title = `${m.name} attacks directly!${step.hit ? ` (${step.hit}/${m.hits})` : ''}`;
+      Object.assign(step, { kind: 'attack', icon: m.icon, title, atk, sub: null, rex: f.elite === 'rex' && m.type === 'Dinosaur', toon: !!m.toon, note: m.seal ? soloToonSeal(f) : '' });
       return true;
     }
     case 'swords':
@@ -775,7 +810,7 @@ function prepareSoloStepType(step, f) {
       return info('🃏', 'A card up his sleeve!', `${SOLO_GIMMICK_CARDS.nuzzler.name}: ${target.icon} ${target.name} gains ${SOLO_GIMMICK_CARDS.nuzzler.atk} ATK (now ${soloStats(target, f).atk}).`, '"Cheating? Prove it, punk."');
     }
     default:
-      return false;
+      return f.pegasus ? soloPegasusStep(step, f, info) : false;
   }
 }
 

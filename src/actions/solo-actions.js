@@ -273,7 +273,7 @@ function confirmSoloAttack() {
   const bonus = (axe ? SOLO_RELICS.axe.value : 0) + (sword ? SOLO_RELICS['legendary-sword'].value : 0) + pep - lunch;
   const total = Math.max(0, atk + bonus);
   soloAct(() => {
-    const result = soloPlayerAttack(target === 'direct' ? null : Number(target), total);
+    const result = soloPlayerAttack(target === 'direct' ? null : target === 'book' ? 'book' : Number(target), total);
     // A negated attack keeps the relics for the next try.
     if (!result || result.negated) return result;
     if (axe) useSoloRelic('axe');
@@ -384,6 +384,28 @@ function confirmSoloBlock() {
   commitSolo();
 }
 
+// --- Fight: Pegasus -----------------------------------------------------------------
+
+function dismissSoloCutscene() {
+  if (!solo.fight?.cutscene) return;
+  solo.fight.cutscene = null;
+  commitSolo();
+}
+
+function soloCrushClick(had) {
+  soloSnapshot();
+  soloMindCrush(had);
+  commitSolo();
+}
+
+function soloAbsorbClick(none) {
+  if (!none && !soloUi.input) return;
+  soloSnapshot();
+  soloAbsorb(none ? 0 : soloInputValue());
+  soloUi.input = '';
+  commitSolo();
+}
+
 // --- Back button --------------------------------------------------------------------
 
 function backInSolo() {
@@ -393,6 +415,7 @@ function backInSolo() {
     return render();
   }
   if (solo.phase === 'fight' && solo.fight) {
+    if (solo.fight.cutscene) return dismissSoloCutscene();
     if (soloUi.panel) {
       const p = soloUi.panel;
       soloUi.panel = p.target ? { ...p, target: null } : p.kind ? { ...p, kind: null } : null;

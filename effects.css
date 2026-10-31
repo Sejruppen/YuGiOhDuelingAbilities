@@ -13891,6 +13891,60 @@ html[data-theme="gold"]::view-transition-new(root) { animation: vt-diamond 1s cu
   30% { transform: scale(1.35); box-shadow: 0 0 18px 6px rgba(251, 191, 36, 0.8); }
   100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(251, 191, 36, 0); }
 }
+/* Pegasus: Toon World on his field, stage cutscenes, the end-screen map */
+.solo-book { animation: coop-pop-in 0.3s ease-out; }
+.solo-cutscene { background: radial-gradient(ellipse at 50% 35%, rgba(112, 26, 117, 0.85), rgba(2, 6, 23, 0.97) 70%); }
+.solo-map--mini { border-radius: 0.75rem; }
+.solo-map--mini .solo-node { width: 0.95rem; height: 0.95rem; font-size: 0.5rem; border-width: 1px; animation: none; }
+.solo-map--mini .solo-node--special { width: 1.3rem; height: 1.3rem; font-size: 0.75rem; }
+.solo-map--mini .solo-node--current { box-shadow: 0 0 0 2px rgba(251, 191, 36, 0.8), 0 0 8px rgba(251, 191, 36, 0.8); }
+.solo-map--mini .solo-region-label { display: none; }
+/* Defeat: your soul sealed in a card */
+.solo-sealed-card {
+  width: 9rem;
+  padding: 0.45rem;
+  border-radius: 0.5rem;
+  background: linear-gradient(160deg, #b45309, #78350f);
+  border: 3px solid #44403c;
+  box-shadow: 0 0 30px rgba(168, 85, 247, 0.55);
+  animation: solo-seal-in 1.4s ease-out both;
+}
+.solo-sealed-card__name {
+  font-family: 'Cinzel', serif;
+  font-size: 0.7rem;
+  font-weight: 800;
+  color: #1c1917;
+  background: rgba(254, 243, 199, 0.85);
+  border-radius: 0.2rem;
+  padding: 0.1rem 0.3rem;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.solo-sealed-card__art {
+  margin: 0.35rem 0;
+  aspect-ratio: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 3.5rem;
+  border: 2px solid #44403c;
+  background: radial-gradient(circle, #4c1d95, #0f0a1e 75%);
+  filter: grayscale(0.4);
+}
+.solo-sealed-card__text {
+  font-size: 0.6rem;
+  font-style: italic;
+  color: #1c1917;
+  background: rgba(254, 243, 199, 0.85);
+  border-radius: 0.2rem;
+  padding: 0.15rem 0.3rem;
+}
+@keyframes solo-seal-in {
+  0% { opacity: 0; transform: scale(1.6) rotate(-12deg); filter: brightness(3); }
+  60% { opacity: 1; transform: scale(0.95) rotate(2deg); filter: brightness(1.4); }
+  100% { opacity: 1; transform: none; filter: none; }
+}
 
 /* =========================================================================
    Respect the OS "reduce motion" setting.

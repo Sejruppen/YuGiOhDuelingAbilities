@@ -4,7 +4,8 @@
 // in their own region.
 //
 // Outcome effects: cost (LP lost), heal, maxLp, chips (±), relic, loseRelic,
-// mod (see SOLO_EVENT_MODS), shortcut, fortune, ambush (a duelist spec).
+// mod (see SOLO_EVENT_MODS), shortcut, fortune, ambush (a duelist spec),
+// video (the Toon Pegasus will open with).
 const SOLO_FALLBACK_EVENT = 'spring';
 
 const soloRelicName = id => `<span class="ce-emoji">${SOLO_RELICS[id].icon}</span> ${SOLO_RELICS[id].name}`;
@@ -26,6 +27,7 @@ function soloEffectText(e = {}) {
   if (e.shortcut) parts.push('skip the next floor');
   if (e.fortune) parts.push('see the Shadow Games ahead');
   if (e.ambush) parts.push(`a duel against ${e.ambush.name} (${e.ambush.lp} LP)`);
+  if (e.video) parts.push("see Pegasus' first Toon");
   return parts.join(' · ') || 'Nothing happens.';
 }
 
@@ -115,6 +117,20 @@ const SOLO_EVENTS = {
         soloLeave('Move on', 'You leave the spring behind.')
       ]
     })
+  },
+  video: {
+    name: "Pegasus's Video", icon: '📼',
+    when: () => !solo.video,
+    build: () => {
+      const toon = soloPick(SOLO_PEGASUS.toons);
+      return {
+        text: 'A VCR crackles to life on a tree stump. “Hello, duelist! Care to see a little preview of our duel?”',
+        choices: [
+          soloChoice('📺', 'Watch it to the end', null, soloOutcome('meh', `The tape shows ${toon.icon} ${toon.name}… then Pegasus' Eye glows and your head spins.`, { cost: 500, video: toon.name })),
+          soloLeave('Smash the tape', '“How rude!” the tape squeals as it cracks.')
+        ]
+      };
+    }
   },
   hats: {
     name: 'Magical Hats', icon: '🎩',
@@ -364,6 +380,10 @@ function chooseSoloEvent(i) {
   }
   if (e.fortune) parts.push(soloTellFortune());
   if (e.ambush) ev.ambush = e.ambush;
+  if (e.video) {
+    solo.video = e.video;
+    parts.push("📼 You know which Toon Pegasus opens with.");
+  }
   // Costs come last: the Millennium Puzzle may still save you.
   if (e.cost) {
     hurtSoloPlayer(e.cost);

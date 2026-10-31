@@ -1,4 +1,4 @@
-const CACHE_NAME = 'ygo-skills-mvp-v164';
+const CACHE_NAME = 'ygo-skills-mvp-v166';
 const ASSETS = [
   './',
   './index.html',
@@ -17,6 +17,7 @@ const ASSETS = [
   './src/config/solo-config.js',
   './src/state/solo-store.js',
   './src/state/solo-events.js',
+  './src/state/solo-pegasus.js',
   './src/utils/format.js',
   './src/actions/navigation-actions.js',
   './src/actions/duel-actions.js',

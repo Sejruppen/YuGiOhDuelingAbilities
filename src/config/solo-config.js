@@ -195,8 +195,82 @@ const SOLO_SPECIAL_WEIGHT = 6;
 // Bandit Keith's sleeve card: from round 2, 50% each turn, surely by round 4.
 const SOLO_SLEEVE = { fromRound: 2, chance: 0.5, byRound: 4 };
 const SOLO_PARADOX_TRIO = ['Sanga of the Thunder', 'Kazejin', 'Suijin'];
-// Stand-in until Pegasus arrives: his bodyguard guards the castle.
-const SOLO_CASTLE_GUARD = { name: 'Croquet', title: "Pegasus' bodyguard", icon: '🎩', lp: 6000, maxAtk: 2000, actions: 2 };
+
+// Pegasus guards the castle: three stages by LP (Toon World, the Millennium
+// Eye, the Final Read). `weights` per stage pick his intents.
+const SOLO_PEGASUS = {
+  name: 'Pegasus J. Crawford', title: 'Final duel', icon: '👁️', lp: 8000, personality: 'trickster',
+  stage2At: 5000,
+  stage3At: 2000,
+  actions: { 1: 2, 2: 2, 3: 3 },
+  pages: 4,
+  pageMinAtk: 1500,
+  maxToons: 3,
+  crushMiss: 1000,
+  glare: 1500,
+  finalGlare: 2000,
+  barrage: 1000,
+  barrels: 3,
+  barrelHit: 1000,
+  cardTypes: ['Monster', 'Spell', 'Trap'],
+  weights: {
+    1: { summon: 5, trap: 2, bunny: 2, equip: 1 },
+    2: { summon: 3, crush: 3, glare: 3, trap: 1, equip: 1 },
+    3: { summon: 2, crush: 2, glare: 2, equip: 1 }
+  },
+  toons: [
+    { name: 'Toon Mermaid', type: 'Toon', atk: 1400, def: 1500, icon: '🧜‍♀️', pos: 'atk', toon: true, unique: true },
+    { name: 'Toon Summoned Skull', type: 'Toon', atk: 2500, def: 1200, icon: '💀', pos: 'atk', toon: true, unique: true },
+    { name: 'Toon Dark Magician Girl', type: 'Toon', atk: 2000, def: 1700, icon: '🪄', pos: 'atk', toon: true, unique: true, seal: true },
+    { name: 'Toon Barrel Dragon', type: 'Toon', atk: 2600, def: 2200, icon: '🔫', pos: 'atk', toon: true, unique: true, barrels: true },
+    { name: 'Toon Gemini Elf', type: 'Toon', atk: 1900, def: 900, icon: '👯', pos: 'atk', toon: true, unique: true, hits: 2, hitAtk: 1000 }
+  ],
+  // When Toon World is gone (or three Toons are out) he plays these instead.
+  deck: [
+    { name: 'Dark Rabbit', type: 'Beast', atk: 1100, def: 1500, icon: '🐇' },
+    { name: 'Illusionist Faceless Mage', type: 'Spellcaster', atk: 1200, def: 2200, icon: '🎭' },
+    { name: 'Bickuribox', type: 'Fiend', atk: 2300, def: 2000, icon: '🎁' }
+  ],
+  bunny: { name: 'Funny Bunny', type: 'Beast', atk: 100, def: 100, icon: '🐰', pos: 'def', bunny: true },
+  restrict: { name: 'Thousand-Eyes Restrict', type: 'Spellcaster', icon: '🧿', unique: true },
+  bluffs: {
+    glare: { icon: '👁️', text: 'Millennium Glare (2000 damage)' },
+    crush: { icon: '🧠', text: 'Mind Crush' },
+    barrage: { icon: '🌪️', text: 'Illusion Barrage (1000 damage)' }
+  },
+  cutscenes: {
+    intro: {
+      quote: "Welcome to my castle, little duelist! Let's see if you can survive my Toon World.",
+      rules: [
+        '📖 Toon World: his Toons attack you directly and <b>can\'t be blocked</b>. While the book stands, they can\'t be destroyed by battle and Pegasus takes no battle damage from them.',
+        '📄 Attack Toon World with 1500+ ATK to tear out one of its 4 pages. The last page takes every Toon with it.',
+        '🐰 While Funny Bunny hops around, Pegasus takes no damage.',
+        '👁️ At 5000 LP his Millennium Eye opens. At 2000 LP comes the Final Read.'
+      ]
+    },
+    stage2: {
+      icon: '👁️', title: 'The Millennium Eye opens',
+      quote: "Enough playtime. Let's see what's in that pretty little head of yours…",
+      rules: [
+        '❓ You can no longer see his next moves. A Millennium Eye of your own would cancel his.',
+        '🧠 Mind Crush: he names a card type. Discard one, or if you have none, he read you wrong and takes 1000.',
+        '👁️ Millennium Glare: 1500 damage straight to your LP.'
+      ]
+    },
+    stage3: {
+      icon: '🃏', title: 'The Final Read',
+      quote: 'Your soul will make a lovely addition to my collection!',
+      rules: [
+        '🧿 Thousand-Eyes Restrict absorbs your strongest monster and takes its ATK.',
+        '🎭 He bluffs: he shows two moves, but only one is real.',
+        '⚡ Three actions every turn. Finish him!'
+      ]
+    }
+  },
+  win: '"Impossible! My Millennium Eye… it could not read the heart of your cards!"',
+  lose: '"Don\'t worry, you will look lovely in my card collection!"',
+  eyeLine: '"Another Millennium Eye?! You see through me as I see through you…"'
+};
 
 // Enemy actions. `weights` per personality pick the intents.
 const SOLO_ACTIONS = {
@@ -205,7 +279,13 @@ const SOLO_ACTIONS = {
   trap: { icon: '🪤', label: 'Set a trap' },
   removal: { icon: '💥', label: 'Destroy one of your monsters' },
   heal: { icon: '💚', label: 'Restore LP' },
-  special: { icon: '✨', label: 'Play a special card' }
+  special: { icon: '✨', label: 'Play a special card' },
+  toonworld: { icon: '📖', label: 'Play Toon World' },
+  bunny: { icon: '🐰', label: 'Summon Funny Bunny' },
+  crush: { icon: '🧠', label: 'Mind Crush: name a card type you must discard' },
+  glare: { icon: '👁️', label: 'Millennium Glare: damage to your LP' },
+  restrict: { icon: '🧿', label: 'Thousand-Eyes Restrict: absorb your strongest monster' },
+  bluff: { icon: '🎭', label: 'Bluff' }
 };
 
 const SOLO_PERSONALITIES = {
