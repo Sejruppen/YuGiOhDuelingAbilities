@@ -251,6 +251,8 @@ function renderSoloPreview() {
   else if (solo.path.includes(n.id)) note = 'You have been here.';
   else if (!reachable) note = "You can't reach this from where you stand.";
   const fight = ['duelist', 'elite', 'labyrinth', 'castle'].includes(n.type);
+  const eliteId = n.type === 'elite' ? n.elite || soloEliteFor(n.region) : n.type === 'labyrinth' ? 'paradox' : null;
+  const e = eliteId && SOLO_ELITES[eliteId];
   return `
     <div class="solo-sheet absolute inset-x-0 bottom-0 z-20 p-4 rounded-t-2xl border-t border-amber-500/50 bg-slate-900/95 backdrop-blur shadow-2xl">
       <div class="flex items-start gap-3">
@@ -259,6 +261,7 @@ function renderSoloPreview() {
           <p class="font-black text-white text-lg leading-tight">${t.label}</p>
           <p class="text-xs text-slate-400"><span class="ce-emoji">${r.icon}</span> ${r.name} · Floor ${n.floor}</p>
           <p class="text-sm text-slate-200 mt-1 leading-snug">${t.desc}</p>
+          ${e ? `<p class="text-sm text-rose-200 mt-1 leading-snug"><span class="ce-emoji">${e.icon}</span> <b>${e.name}</b> ${e.plural ? 'wait' : 'waits'} here. ${e.gimmick}</p>` : ''}
           ${fight && r.types.length ? `<p class="text-xs text-emerald-300 mt-1">Field: ${soloFieldText(n.region)}.</p>` : ''}
           ${note ? `<p class="text-xs text-amber-200 mt-1">${note}</p>` : ''}
         </div>
@@ -368,7 +371,7 @@ function renderSoloEnemyBoard(f, p) {
           <span class="block text-xs font-bold text-white truncate">${m.name}</span>
           <span class="block text-[0.7rem] tabular-nums">
             <b class="${m.pos === 'atk' ? 'text-rose-300' : 'text-slate-400'}">${st.atk}</b><span class="text-slate-500"> / </span><b class="${m.pos === 'def' ? 'text-sky-300' : 'text-slate-400'}">${st.def}</b>
-            ${boosted ? `<span class="ce-emoji" title="Field bonus">${r.icon}</span>` : ''}${m.equip ? `<span class="text-amber-300"> +${m.equip}⚔️</span>` : ''}${m.bound ? '<span class="ce-emoji" title="Spellbinding Circle: can\'t attack"> 🔯</span>' : ''}
+            ${boosted ? `<span class="ce-emoji" title="Field bonus">${r.icon}</span>` : ''}${m.equip ? `<span class="text-amber-300"> +${m.equip}⚔️</span>` : ''}${m.bound ? '<span class="ce-emoji" title="Spellbinding Circle: can\'t attack"> 🔯</span>' : ''}${m.hatch ? `<span class="text-amber-200" title="Hatches into Great Moth"> <span class="ce-emoji">🦋</span> in ${m.hatch}</span>` : ''}${m.risen ? '<span class="ce-emoji" title="Risen: stays dead next time"> 🧟</span>' : ''}
           </span>
         </span>
         <span class="text-[0.6rem] font-black uppercase ${m.pos === 'atk' ? 'text-rose-300' : 'text-sky-300'}">${m.pos === 'atk' ? '⚔️ ATK' : '🛡️ DEF'}</span>
@@ -405,6 +408,8 @@ function renderSoloPlayer(f) {
     </button>
   `;
   const intents = f.intents.map(a => SOLO_ACTIONS[a]);
+  if (f.grave?.length) intents.unshift({ icon: '🧟', label: `Raise ${f.grave.map(m => m.name).join(', ')} from the Graveyard` });
+  if (f.monsters.some(m => m.hatch === 1)) intents.unshift({ icon: '🦋', label: 'Hatch the cocoon into Great Moth' });
   return `
     <div class="rounded-xl border border-rose-500/30 bg-rose-950/20 px-3 py-2">
       <p class="text-[0.65rem] font-bold uppercase tracking-widest text-rose-300 mb-1"><span class="ce-emoji">👁️</span> Next turn the enemy will</p>
@@ -522,6 +527,10 @@ function renderSoloStepCard() {
 
   if (step.sub === 'done') {
     body = title + `<div class="coop-toast coop-toast--${step.result?.tone || 'meh'} rounded-lg px-3 py-2 text-sm text-center leading-snug">${step.result?.text || ''}</div>` + row([cont]);
+  } else if (step.sub === 'rex') {
+    body = title + `<div class="coop-toast coop-toast--${step.result?.tone || 'meh'} rounded-lg px-3 py-2 text-sm text-center leading-snug">${step.result?.text || ''}</div>` +
+      text('<span class="ce-emoji">🦖</span> Rex Raptor: <b>is your field empty of monsters?</b> Then his Dinosaur attacks again!', 'text-amber-200') +
+      row([coopBtn('No, I have monsters', 'soloRexAgainClick(false)'), coopBtn(`🦖 Yes, take ${step.atk}`, 'soloRexAgainClick(true)', 'danger')]);
   } else if (step.kind === 'info') {
     body = title + text(step.text) + text(step.note, 'text-xs text-rose-300') + row([cont]);
   } else if (step.kind === 'attack' && step.sub === 'block') {
@@ -563,6 +572,8 @@ function renderSoloFightIntro(f, kind, p) {
   ];
   if (f.chips) lines.push(`<span class="ce-emoji">⭐</span> Win to earn ${f.chips} Star Chip${f.chips === 1 ? '' : 's'}.`);
   if (f.kind === 'elite') lines.push('<span class="ce-emoji">🎁</span> Win to choose a rare relic.');
+  const e = f.elite && SOLO_ELITES[f.elite];
+  if (e) lines.unshift(`<span class="text-rose-200">${e.gimmick}</span>`);
   if (soloHas('swords')) lines.push("<span class=\"ce-emoji\">🌟</span> Swords of Revealing Light: they can't attack on their first turn.");
   if (soloHas('spellbinding')) lines.push("<span class=\"ce-emoji\">🔯</span> Spellbinding Circle: their first monster can't attack.");
   return `
@@ -572,6 +583,7 @@ function renderSoloFightIntro(f, kind, p) {
         <p class="text-[0.7rem] font-bold uppercase tracking-widest text-rose-300">${kind}</p>
         <p class="text-2xl font-black text-white">${f.name}</p>
         <p class="text-sm text-slate-300">${f.maxLp} LP</p>
+        ${e ? `<p class="text-sm italic text-amber-100 max-w-sm">“${e.quote}”</p>` : ''}
         <ul class="text-left text-sm text-slate-200 space-y-1.5 max-w-sm leading-snug mt-2">${lines.map(l => `<li>${l}</li>`).join('')}</ul>
         <button onclick="startSoloDuel()" class="mt-3 px-8 py-3 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold text-lg">It's time to duel!</button>
       </div>
@@ -591,7 +603,7 @@ function renderSoloReward() {
     <div class="coop-end coop-end--win flex-1 min-h-0 overflow-y-auto no-scrollbar p-6 flex flex-col items-center text-center gap-3">
       <div class="my-auto w-full flex flex-col items-center gap-3">
         <div class="coop-end-icon text-7xl leading-none ce-emoji">${gate ? '🚪' : '⭐'}</div>
-        <h2 class="text-2xl font-black text-white">${r.name} is defeated!</h2>
+        <h2 class="text-2xl font-black text-white">${r.name} ${r.plural ? 'are' : 'is'} defeated!</h2>
         <p class="text-sm text-slate-300">${gate ? 'The Labyrinth opens. The castle is straight ahead.' : 'They hand over their Star Chips.'}</p>
         ${r.chips ? `<p class="text-3xl font-black text-amber-300">+${r.chips} <span class="ce-emoji">⭐</span></p>` : ''}
         ${r.healed ? `<p class="text-sm text-emerald-300"><span class="ce-emoji">🌿</span> Dian Keto Charm: +${r.healed} LP</p>` : ''}

@@ -332,6 +332,12 @@ function soloTakeHitClick() {
   commitSolo();
 }
 
+function soloRexAgainClick(empty) {
+  soloSnapshot();
+  soloRexAgain(empty);
+  commitSolo();
+}
+
 function startSoloBlock() {
   const step = soloStep();
   if (!step) return;

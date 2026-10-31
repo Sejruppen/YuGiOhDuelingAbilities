@@ -119,8 +119,17 @@ function generateSoloMap() {
       }
     });
   }
+  // Who waits at each elite node. Bandit Keith turns up at most once.
+  let keithUsed = false;
+  Object.values(nodes).filter(n => n.type === 'elite').forEach(n => {
+    const keith = !keithUsed && Math.random() < SOLO_KEITH_CHANCE;
+    if (keith) keithUsed = true;
+    n.elite = keith ? 'keith' : soloEliteFor(n.region);
+  });
   return { nodes, edges };
 }
+
+const soloEliteFor = region => Object.keys(SOLO_ELITES).find(id => SOLO_ELITES[id].region === region) || 'keith';
 
 // Where you can go next. After the campfire the Star Chips pick the way.
 function soloReachable() {
@@ -219,10 +228,8 @@ function takeSoloRelic(id) {
 function soloRaigeki() {
   const f = solo.fight;
   if (!soloHas('raigeki') || !f?.monsters.length) return null;
-  const count = f.monsters.length;
-  f.monsters = [];
+  const count = destroySoloMonsters(() => true);
   useSoloRelic('raigeki');
-  playSound({ name: 'co-destroy' });
   return { tone: 'good', text: `⚡ Raigeki! ${count === 1 ? 'The enemy monster is' : `All ${count} enemy monsters are`} destroyed.` };
 }
 
@@ -261,9 +268,7 @@ function soloRelicDefend(id) {
     const dealt = damageSoloEnemy(step.atk);
     result = { tone: 'good', text: `🌀 Magic Cylinder! The attack hits ${f.name} for ${dealt}.` };
   } else {
-    const count = f.monsters.filter(m => m.pos === 'atk').length;
-    f.monsters = f.monsters.filter(m => m.pos !== 'atk');
-    playSound({ name: 'co-destroy' });
+    const count = destroySoloMonsters(m => m.pos === 'atk');
     result = { tone: 'good', text: `🪞 Mirror Force! ${count === 1 ? 'The attacker is' : `${count} monsters are`} destroyed.` };
   }
   if (solo.phase === 'fight') finishSoloStep(result);
@@ -275,6 +280,11 @@ const soloRegion = (key = solo.fight?.region) => SOLO_REGIONS[key] || SOLO_REGIO
 const soloName = region => `${soloPick(SOLO_REGIONS[region].titles)} ${soloPick(SOLO_FIRST_NAMES)}`;
 
 function soloPool(fight) {
+  if (fight.elite) {
+    const deck = SOLO_ELITES[fight.elite].monsters.filter(m => !m.special);
+    const pool = deck.filter(m => (m.minRound || 1) <= fight.round && !(m.unique && fight.monsters.some(x => x.name === m.name)));
+    return pool.length ? pool : deck.filter(m => !m.unique);
+  }
   const all = SOLO_MONSTERS[fight.region] || Object.values(SOLO_MONSTERS).flat();
   const pool = all.filter(m => m.atk <= fight.maxAtk);
   return pool.length ? pool : all;
@@ -282,13 +292,17 @@ function soloPool(fight) {
 
 function createSoloFight(node) {
   const tier = SOLO_TIERS.find(t => node.floor <= t.maxFloor);
+  const elite = id => {
+    const e = SOLO_ELITES[id];
+    return { elite: id, name: e.name, icon: e.icon, personality: e.personality, plural: !!e.plural, ...SOLO_ELITE };
+  };
   let spec;
   if (node.type === 'duelist') {
     spec = { kind: 'duelist', name: soloName(node.region), icon: '👤', lp: tier.lp, maxAtk: tier.maxAtk, actions: 1, chips: 1 };
   } else if (node.type === 'elite') {
-    spec = { kind: 'elite', name: `Veteran ${soloName(node.region)}`, icon: '👹', ...SOLO_ELITE };
+    spec = { kind: 'elite', ...elite(node.elite || soloEliteFor(node.region)) };
   } else if (node.type === 'labyrinth') {
-    spec = { kind: 'gate', name: soloName('labyrinth'), icon: '🧱', ...SOLO_ELITE, chips: Math.max(0, SOLO_GATE_CHIPS - solo.chips) };
+    spec = { kind: 'gate', ...elite('paradox'), chips: Math.max(0, SOLO_GATE_CHIPS - solo.chips) };
   } else {
     spec = { kind: 'boss', ...SOLO_CASTLE_GUARD, chips: 0 };
   }
@@ -296,11 +310,13 @@ function createSoloFight(node) {
     ...spec,
     region: node.region,
     floor: node.floor,
-    personality: soloPick(Object.keys(SOLO_PERSONALITIES)),
+    personality: spec.personality || soloPick(Object.keys(SOLO_PERSONALITIES)),
     maxLp: spec.lp,
     monsters: [],
     trap: false,
     used: { removal: false, heal: false },
+    gimmick: {},
+    grave: [],
     turn: 'player',
     round: 1,
     battleOver: false,
@@ -323,9 +339,36 @@ function soloStats(m, fight = solo.fight) {
 
 const soloMonster = uid => solo.fight?.monsters.find(m => m.uid === uid);
 
+// Bonz' Zombies wait in the Graveyard to rise once.
+function soloBury(m) {
+  const f = solo.fight;
+  if (f.elite === 'bonz' && m.type === 'Zombie' && !m.risen) f.grave = [...(f.grave || []), m];
+}
+
 function removeSoloMonster(uid) {
-  solo.fight.monsters = solo.fight.monsters.filter(m => m.uid !== uid);
+  const m = soloMonster(uid);
+  solo.fight.monsters = solo.fight.monsters.filter(x => x.uid !== uid);
+  if (m) soloBury(m);
   playSound({ name: 'co-destroy' });
+}
+
+// Removes every enemy monster that matches, with a single sound.
+function destroySoloMonsters(match) {
+  const f = solo.fight;
+  const hit = f.monsters.filter(match);
+  f.monsters = f.monsters.filter(m => !match(m));
+  hit.forEach(soloBury);
+  if (hit.length) playSound({ name: 'co-destroy' });
+  return hit.length;
+}
+
+// Elite special cards: can the gimmick be played right now?
+function soloSpecialReady(f) {
+  const g = f.gimmick || {};
+  if (f.elite === 'weevil') return !g.cocoon && f.monsters.length < SOLO_MAX_MONSTERS;
+  if (f.elite === 'mai') return !g.egotist && f.monsters.some(m => m.name === 'Harpie Lady');
+  if (f.elite === 'paradox') return !g.fuse && SOLO_PARADOX_TRIO.every(name => f.monsters.some(m => m.name === name));
+  return false;
 }
 
 // The enemy's next turn, shown to the player as categories only.
@@ -335,6 +378,7 @@ function buildSoloIntents(f) {
   let trap = f.trap;
   let removal = f.used.removal || f.floor < SOLO_REMOVAL_FROM_FLOOR;
   let heal = f.used.heal || f.lp >= f.maxLp;
+  let special = !soloSpecialReady(f);
   const intents = [];
   for (let k = 0; k < f.actions; k++) {
     let action;
@@ -342,6 +386,7 @@ function buildSoloIntents(f) {
     else {
       action = soloWeighted({
         ...p.weights,
+        special: special ? 0 : SOLO_SPECIAL_WEIGHT,
         summon: monsters < SOLO_MAX_MONSTERS ? p.weights.summon : 0,
         equip: monsters ? p.weights.equip : 0,
         trap: trap ? 0 : p.weights.trap,
@@ -353,6 +398,7 @@ function buildSoloIntents(f) {
     if (action === 'trap') trap = true;
     if (action === 'removal') removal = true;
     if (action === 'heal') heal = true;
+    if (action === 'special') special = true;
     intents.push(action);
   }
   return intents;
@@ -398,7 +444,7 @@ function soloWin() {
     return;
   }
   solo.chips += f.chips;
-  solo.reward = { name: f.name, icon: f.icon, kind: f.kind, chips: f.chips };
+  solo.reward = { name: f.name, icon: f.icon, kind: f.kind, chips: f.chips, plural: !!f.plural };
   solo.phase = 'reward';
   if (f.kind === 'elite') solo.offer = { source: 'elite', ids: rollSoloRelics('rare', SOLO_ELITE_CHOICES) };
   playSound({ name: 'co-victory' });
@@ -459,8 +505,17 @@ const soloStep = () => solo.fight?.steps[solo.fight.stepIndex];
 
 function startSoloEnemyTurn() {
   const f = solo.fight;
+  const g = f.gimmick || {};
   f.turn = 'enemy';
-  f.steps = [...f.intents.map(type => ({ type })), { type: 'attacks' }];
+  const pre = [];
+  if (f.grave?.length) pre.push({ type: 'rise' });
+  f.monsters.filter(m => m.hatch).forEach(m => {
+    m.hatch--;
+    if (m.hatch <= 0) pre.push({ type: 'hatch', uid: m.uid });
+  });
+  const sleeve = f.elite === 'keith' && !g.sleeve && f.round >= SOLO_SLEEVE.fromRound &&
+    (f.round >= SOLO_SLEEVE.byRound || Math.random() < SOLO_SLEEVE.chance);
+  f.steps = [...pre, ...f.intents.map(type => ({ type })), ...(sleeve ? [{ type: 'sleeve' }] : []), { type: 'attacks' }];
   f.stepIndex = 0;
   playSound({ name: 'co-boss-turn' });
   prepareSoloStep();
@@ -516,7 +571,7 @@ function prepareSoloStepType(step, f) {
   switch (step.type) {
     case 'summon': {
       const card = soloPick(soloPool(f));
-      const pos = card.atk <= 500 || Math.random() >= SOLO_PERSONALITIES[f.personality].atkChance ? 'def' : 'atk';
+      const pos = card.pos || (card.atk <= 500 || Math.random() >= SOLO_PERSONALITIES[f.personality].atkChance ? 'def' : 'atk');
       const m = { ...card, uid: f.nextUid++, pos, equip: 0 };
       f.monsters.push(m);
       playSound({ name: 'co-summon' });
@@ -560,16 +615,73 @@ function prepareSoloStepType(step, f) {
     case 'attack': {
       const m = soloMonster(step.uid);
       if (!m || m.pos !== 'atk' || m.bound) return false;
-      Object.assign(step, { kind: 'attack', icon: m.icon, title: `${m.name} attacks directly!`, atk: soloStats(m, f).atk, sub: null });
+      Object.assign(step, { kind: 'attack', icon: m.icon, title: `${m.name} attacks directly!`, atk: soloStats(m, f).atk, sub: null, rex: f.elite === 'rex' && m.type === 'Dinosaur' });
       return true;
     }
     case 'swords':
       playSound({ name: 'co-shield' });
       flashSoloRelic('swords');
       return info('🌟', 'Swords of Revealing Light!', "The enemy's monsters can't attack this turn.");
+    case 'special':
+      return soloSpecialStep(f, info);
+    case 'hatch': {
+      const m = soloMonster(step.uid);
+      if (!m) return false;
+      Object.assign(m, SOLO_GIMMICK_CARDS.moth, { pos: 'atk', hatch: 0 });
+      playSound({ name: 'co-summon' });
+      return info('🦋', 'The cocoon hatches!', `🦋 Great Moth spreads its wings: ${soloStats(m, f).atk} ATK in <b>Attack Position</b>.`, 'Swap the cocoon on the table for the moth.');
+    }
+    case 'rise': {
+      const room = SOLO_MAX_MONSTERS - f.monsters.length;
+      const risen = f.grave.slice(0, Math.max(0, room)).map(m => ({ ...m, uid: f.nextUid++, equip: 0, bound: false, risen: true }));
+      f.grave = [];
+      if (!risen.length) return false;
+      f.monsters.push(...risen);
+      playSound({ name: 'co-summon' });
+      return info('🧟', risen.length === 1 ? `${risen[0].name} rises again!` : 'The dead rise again!', risen.map(m => `${m.icon} ${m.name} (${soloStats(m, f).atk} ATK) in <b>${m.pos === 'atk' ? 'Attack' : 'Defense'} Position</b>`).join('<br>'), 'Risen Zombies stay dead next time.');
+    }
+    case 'sleeve': {
+      f.gimmick = { ...f.gimmick, sleeve: true };
+      playSound({ name: 'co-negate' });
+      const card = SOLO_ELITES.keith.monsters.find(m => m.special);
+      if (f.monsters.length < SOLO_MAX_MONSTERS) {
+        const m = { ...card, uid: f.nextUid++, pos: 'atk', equip: 0 };
+        f.monsters.push(m);
+        return info('🃏', 'A card up his sleeve!', `${m.icon} ${m.name} appears out of nowhere: ${soloStats(m, f).atk} ATK in <b>Attack Position</b>.`, '"Cheating? Prove it, punk."');
+      }
+      const target = f.monsters.reduce((a, b) => (soloStats(b, f).atk > soloStats(a, f).atk ? b : a));
+      target.equip = (target.equip || 0) + SOLO_GIMMICK_CARDS.nuzzler.atk;
+      return info('🃏', 'A card up his sleeve!', `${SOLO_GIMMICK_CARDS.nuzzler.name}: ${target.icon} ${target.name} gains ${SOLO_GIMMICK_CARDS.nuzzler.atk} ATK (now ${soloStats(target, f).atk}).`, '"Cheating? Prove it, punk."');
+    }
     default:
       return false;
   }
+}
+
+// Elite special cards. If the moment has passed, the card fizzles.
+function soloSpecialStep(f, info) {
+  if (!soloSpecialReady(f)) {
+    playSound({ name: 'co-bounce' });
+    return info('💨', 'It fizzles!', `${f.name} ${f.plural ? 'try' : 'tries'} a special card, but the moment has passed.`);
+  }
+  playSound({ name: 'co-summon' });
+  if (f.elite === 'weevil') {
+    f.gimmick = { ...f.gimmick, cocoon: true };
+    const m = { ...SOLO_GIMMICK_CARDS.cocoon, uid: f.nextUid++, pos: 'def', equip: 0, hatch: SOLO_COCOON_TURNS };
+    f.monsters.push(m);
+    return info('🥚', 'Cocoon of Evolution!', `${m.icon} ${m.name} (0 ATK / ${m.def} DEF) in <b>Defense Position</b>.`, `It hatches into Great Moth (2600 ATK) at the start of his turn in ${SOLO_COCOON_TURNS} turns. Destroy it first!`);
+  }
+  if (f.elite === 'mai') {
+    f.gimmick = { ...f.gimmick, egotist: true };
+    const m = f.monsters.find(x => x.name === 'Harpie Lady');
+    Object.assign(m, SOLO_GIMMICK_CARDS.sisters);
+    return info('🪞', 'Elegant Egotist!', `Harpie Lady becomes ${m.icon} ${m.name}: ${soloStats(m, f).atk} ATK / ${m.def} DEF.`, 'Swap the card on the table. It keeps its position and equips.');
+  }
+  f.gimmick = { ...f.gimmick, fuse: true };
+  f.monsters = f.monsters.filter(m => !SOLO_PARADOX_TRIO.includes(m.name));
+  const m = { ...SOLO_ELITES.paradox.monsters.find(x => x.special), uid: f.nextUid++, pos: 'atk', equip: 0 };
+  f.monsters.push(m);
+  return info('🗿', 'Polymerization: Gate Guardian!', `Sanga, Kazejin and Suijin fuse into ${m.icon} ${m.name}: ${soloStats(m, f).atk} ATK in <b>Attack Position</b>.`, 'Replace the three cards on the table with Gate Guardian.');
 }
 
 function finishSoloStep(result) {
@@ -582,7 +694,24 @@ function finishSoloStep(result) {
 function soloTakeHit() {
   const step = soloStep();
   const dealt = soloBattleDamage(step.atk);
-  finishSoloStep(dealt ? { tone: 'bad', text: `💔 You take ${dealt}.` } : { tone: 'good', text: '🛐 Waboku protects you. You take 0.' });
+  const result = dealt ? { tone: 'bad', text: `💔 You take ${dealt}.` } : { tone: 'good', text: '🛐 Waboku protects you. You take 0.' };
+  if (step.rex && solo.phase === 'fight') {
+    step.sub = 'rex';
+    step.result = result;
+    return;
+  }
+  finishSoloStep(result);
+}
+
+// Rex Raptor: a Dinosaur hits twice when your field is empty (honour system).
+function soloRexAgain(empty) {
+  const step = soloStep();
+  if (!step || step.sub !== 'rex') return;
+  if (!empty) return finishSoloStep(step.result);
+  const dealt = soloBattleDamage(step.atk);
+  if (solo.phase === 'fight') {
+    finishSoloStep(dealt ? { tone: 'bad', text: `🦖 It attacks again! You take ${dealt} more.` } : { tone: 'good', text: '🛐 It attacks again, but Waboku protects you.' });
+  }
 }
 
 // You block an enemy attack with one of your monsters (normal battle rules).

@@ -23,7 +23,7 @@ const SOLO_NODE_TYPES = {
     treasure: { icon: '🎁', label: 'Treasure', desc: "A lost Duelist's Case. Pick 1 of 3 relics." },
   event: { icon: '❓', label: 'Shadow Game', desc: 'Something strange is going on here…' },
   campfire: { icon: '🔥', label: 'Campfire', desc: `Rest before the castle. Heal ${SOLO_CAMPFIRE_HEAL * 100}% of your max LP.` },
-  labyrinth: { icon: '🧱', label: 'Labyrinth', desc: `Only if you have fewer than ${SOLO_GATE_CHIPS} ⭐. Win to get the missing chips.` },
+  labyrinth: { icon: '🧱', label: 'Labyrinth', desc: `Only if you have fewer than ${SOLO_GATE_CHIPS} ⭐. The Paradox Brothers guard it. Win to get the missing chips.` },
   castle: { icon: '🏰', label: 'Castle', desc: "Pegasus' castle. Win to finish the run." }
 };
 
@@ -102,6 +102,99 @@ const SOLO_TIERS = [
   { maxFloor: 99, lp: 2500, maxAtk: 2000 }
 ];
 const SOLO_ELITE = { lp: 4000, maxAtk: 2000, actions: 2, chips: 2 };
+
+// Anime elites. Each has a fixed deck, a personality and a gimmick.
+//   minRound  the card only shows up from that round (aces)
+//   unique    never twice on the field; special = only via the gimmick
+//   pos       always summoned in this position
+// One elite per region; Bandit Keith can show up in any region instead.
+const SOLO_KEITH_CHANCE = 0.2;
+const SOLO_ELITES = {
+  weevil: {
+    name: 'Weevil Underwood', icon: '🐛', region: 'forest', personality: 'trickster',
+    quote: 'Heh heh heh… my insects are hungry, and you look delicious!',
+    gimmick: '🥚 Cocoon of Evolution: a cocoon hatches into Great Moth (2600 ATK) after 2 of his turns, unless you destroy it first.',
+    monsters: [
+      { name: 'Basic Insect', type: 'Insect', atk: 500, def: 700, icon: '🐞' },
+      { name: 'Kumootoko', type: 'Insect', atk: 700, def: 1400, icon: '🕷️' },
+      { name: 'Killer Needle', type: 'Insect', atk: 1200, def: 1000, icon: '🐝' },
+      { name: 'Flying Kamakiri #1', type: 'Insect', atk: 1400, def: 900, icon: '🦗' },
+      { name: 'Hercules Beetle', type: 'Insect', atk: 1500, def: 2000, icon: '🪲' },
+      { name: 'Neo Bug', type: 'Insect', atk: 1800, def: 1700, icon: '🐜', minRound: 2 }
+    ]
+  },
+  mai: {
+    name: 'Mai Valentine', icon: '💅', region: 'meadow', personality: 'aggressive',
+    quote: "Don't take it personally, hon. My Harpies just love a fresh target.",
+    gimmick: '🪞 Elegant Egotist: turns a Harpie Lady into Harpie Lady Sisters (1950 ATK).',
+    monsters: [
+      { name: 'Harpie Lady', type: 'Winged Beast', atk: 1300, def: 1400, icon: '🪶' },
+      { name: 'Harpie Lady', type: 'Winged Beast', atk: 1300, def: 1400, icon: '🪶' },
+      { name: 'Cyber Harpie', type: 'Winged Beast', atk: 1800, def: 1300, icon: '🦅' },
+      { name: "Harpie's Pet Dragon", type: 'Dragon', atk: 2000, def: 2500, icon: '🐉', minRound: 3, unique: true }
+    ]
+  },
+  rex: {
+    name: 'Rex Raptor', icon: '🦖', region: 'mountain', personality: 'aggressive',
+    quote: 'Dinosaurs ruled the earth, and they rule this duel too!',
+    gimmick: '🦖 When your field is empty, his Dinosaurs attack twice.',
+    monsters: [
+      { name: 'Uraby', type: 'Dinosaur', atk: 1500, def: 800, icon: '🦖' },
+      { name: 'Two-Headed King Rex', type: 'Dinosaur', atk: 1600, def: 1200, icon: '🦕' },
+      { name: 'Sword Arm of Dragon', type: 'Dinosaur', atk: 1750, def: 2030, icon: '🦕' },
+      { name: 'Megazowler', type: 'Dinosaur', atk: 1800, def: 2000, icon: '🦏' },
+      { name: 'Red-Eyes Black Dragon', type: 'Dragon', atk: 2400, def: 2000, icon: '🐲', minRound: 3, unique: true }
+    ]
+  },
+  bonz: {
+    name: 'Bonz', icon: '⚰️', region: 'wasteland', personality: 'wall',
+    quote: 'Welcome to my graveyard… you will be staying a while.',
+    gimmick: "🧟 His Zombies rise again on his next turn after they're destroyed (once each).",
+    monsters: [
+      { name: 'Skull Servant', type: 'Zombie', atk: 300, def: 200, icon: '💀' },
+      { name: 'Clown Zombie', type: 'Zombie', atk: 1350, def: 0, icon: '🤡' },
+      { name: 'Armored Zombie', type: 'Zombie', atk: 1500, def: 0, icon: '🧟' },
+      { name: 'Dragon Zombie', type: 'Zombie', atk: 1600, def: 0, icon: '🦴' },
+      { name: 'Ryu Kokki', type: 'Zombie', atk: 2400, def: 2000, icon: '👹', minRound: 3, unique: true }
+    ]
+  },
+  keith: {
+    name: 'Bandit Keith', icon: '🕶️', region: null, personality: 'trickster',
+    quote: "Listen up, punk. Here's a lesson in American dueling!",
+    gimmick: '🃏 Once per duel he plays a card up his sleeve, without warning.',
+    monsters: [
+      { name: 'Robotic Knight', type: 'Machine', atk: 1600, def: 1800, icon: '🤖' },
+      { name: 'Mechanicalchaser', type: 'Machine', atk: 1850, def: 800, icon: '⚙️' },
+      { name: 'Slot Machine', type: 'Machine', atk: 2000, def: 2300, icon: '🎰' },
+      { name: 'Launcher Spider', type: 'Machine', atk: 2200, def: 2500, icon: '🕷️', minRound: 2, unique: true },
+      { name: 'Barrel Dragon', type: 'Machine', atk: 2600, def: 2200, icon: '🔫', special: true }
+    ]
+  },
+  paradox: {
+    name: 'Paradox Brothers', icon: '👬', region: 'labyrinth', personality: 'wall', plural: true,
+    quote: 'Two doors, two brothers, one way out. Only one of us tells the truth…',
+    gimmick: '🚪 With Sanga, Kazejin and Suijin on the field, they fuse into Gate Guardian (3750 ATK). Labyrinth Wall (0/3000) guards them.',
+    monsters: [
+      { name: 'Labyrinth Wall', type: 'Rock', atk: 0, def: 3000, icon: '🧱', unique: true, pos: 'def' },
+      { name: 'Sanga of the Thunder', type: 'Thunder', atk: 2600, def: 2200, icon: '⚡', unique: true },
+      { name: 'Kazejin', type: 'Spellcaster', atk: 2400, def: 2200, icon: '🌪️', unique: true },
+      { name: 'Suijin', type: 'Aqua', atk: 2500, def: 2400, icon: '🌊', unique: true },
+      { name: 'Gate Guardian', type: 'Warrior', atk: 3750, def: 3400, icon: '🗿', special: true }
+    ]
+  }
+};
+// Cards the gimmicks bring in.
+const SOLO_GIMMICK_CARDS = {
+  cocoon: { name: 'Cocoon of Evolution', type: 'Insect', atk: 0, def: 2000, icon: '🥚' },
+  moth: { name: 'Great Moth', type: 'Insect', atk: 2600, def: 2500, icon: '🦋' },
+  sisters: { name: 'Harpie Lady Sisters', type: 'Winged Beast', atk: 1950, def: 2100, icon: '👯‍♀️' },
+  nuzzler: { name: 'Malevolent Nuzzler', atk: 700 }
+};
+const SOLO_COCOON_TURNS = 2;
+const SOLO_SPECIAL_WEIGHT = 6;
+// Bandit Keith's sleeve card: from round 2, 50% each turn, surely by round 4.
+const SOLO_SLEEVE = { fromRound: 2, chance: 0.5, byRound: 4 };
+const SOLO_PARADOX_TRIO = ['Sanga of the Thunder', 'Kazejin', 'Suijin'];
 // Stand-in until Pegasus arrives: his bodyguard guards the castle.
 const SOLO_CASTLE_GUARD = { name: 'Croquet', title: "Pegasus' bodyguard", icon: '🎩', lp: 6000, maxAtk: 2000, actions: 2 };
 
@@ -111,7 +204,8 @@ const SOLO_ACTIONS = {
   equip: { icon: '⚔️', label: 'Power up a monster' },
   trap: { icon: '🪤', label: 'Set a trap' },
   removal: { icon: '💥', label: 'Destroy one of your monsters' },
-  heal: { icon: '💚', label: 'Restore LP' }
+  heal: { icon: '💚', label: 'Restore LP' },
+  special: { icon: '✨', label: 'Play a special card' }
 };
 
 const SOLO_PERSONALITIES = {
