@@ -17,6 +17,7 @@ A mobile-first PWA that two players use side by side during physical Yu-Gi-Oh! d
 
 - Vanilla JS with **global scripts and no modules or bundler**. Tailwind comes from the CDN (`src/config/tailwind-config.js`), and the fonts are Cinzel and Cinzel Decorative.
 - Every script is listed in **both** `index.html` (load order matters) **and** the `sw.js` precache list. A new file must be added to both.
+- Exodia (logo egg) is drawn from pre-rendered `img/exodia-*.webp` copies of `EXODIA_SVG` (the SVG is the fallback). After editing the drawing, re-export them with `tools/export-exodia-art.js` (see its header).
 - All top-level names share one global scope. **Grep for a name before declaring a new `const` or `function`**, because a duplicate `const` breaks the whole file silently.
 - Rendering: `render()` in `app.js` rebuilds the current view from `state` (`src/state/store.js`). The views in `src/views/` return HTML strings, and inline `onclick=` handlers call global functions in `src/actions/`.
 - Folders and files:

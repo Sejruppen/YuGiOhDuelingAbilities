@@ -1434,35 +1434,30 @@ html[data-theme] .logo-egg:active { transform: none; filter: var(--logo-glow); }
   background: linear-gradient(to bottom, #5a1a06 0%, #b8400c 14%, #ea6a10 32%, #f59a1c 55%, #f8b632 75%, #e8891a 100%);
   animation: fx-fade-in 0.9s ease-out 0.5s both;
 }
-.exo-flame {
+/* The flames are radial gradients on three shared layers (two back, one
+   front) that flicker out of step, instead of one animated layer per flame. */
+.exo-flames {
   position: absolute;
-  left: var(--x);
-  bottom: var(--b);
-  width: var(--w);
-  height: var(--h);
-  translate: -50% 0;
-  border-radius: 50% 50% 45% 45% / 70% 70% 30% 30%;
-  background: radial-gradient(closest-side, rgb(255 238 170 / 0.75), rgb(255 176 60 / 0.4) 55%, rgb(255 140 30 / 0));
+  inset: 0;
+  background-repeat: no-repeat;
   transform-origin: 50% 100%;
   animation: fx-fade-in 0.8s ease-out var(--in) both, exo-flame var(--d) ease-in-out var(--in) infinite alternate;
 }
+.exo-flames--back0 { --in: 0.5s; --d: 0.45s; }
+.exo-flames--back1 { --in: 0.8s; --d: 0.6s; animation-direction: normal, alternate-reverse; }
+.exo-flames--front0 { --in: 0.7s; --d: 0.35s; }
 @keyframes exo-flame {
-  from { transform: scale(0.9, 0.85) skewX(-4deg); }
-  to { transform: scale(1.05, 1.15) skewX(4deg); }
+  from { transform: scale(0.95, 0.88) skewX(-3deg); }
+  to { transform: scale(1.03, 1.1) skewX(3deg); }
 }
-/* Dark smoke rolling along the top. */
+/* Dark smoke rolling along the top: one layer of gradients. */
 .exo-smoke {
   position: absolute;
-  left: var(--x);
-  top: var(--y);
-  width: var(--s);
-  aspect-ratio: 1.4;
-  translate: -50% -50%;
-  border-radius: 50%;
-  background: radial-gradient(closest-side, rgb(46 14 3 / 0.9), rgb(70 22 4 / 0.55) 45%, rgb(70 22 4 / 0));
-  animation: fx-fade-in 1s ease-out 0.6s both, exo-drift var(--d) ease-in-out infinite alternate;
+  inset: 0;
+  background-repeat: no-repeat;
+  animation: fx-fade-in 1s ease-out 0.6s both, exo-drift 4s ease-in-out infinite alternate;
 }
-@keyframes exo-drift { to { transform: translate(var(--dx), 4vh) scale(1.15); } }
+@keyframes exo-drift { to { transform: translate(3vw, 3vh) scale(1.06); } }
 
 /* Exodia: the energy ball (1010/1600 of the art) sits at EXODIA_ORB_Y. */
 .exo-figure-wrap {
@@ -1495,6 +1490,13 @@ html[data-theme] .logo-egg:active { transform: none; filter: var(--logo-glow); }
   /* Keeps the fists and claws at one raster scale while they scale. */
   will-change: transform;
 }
+/* The WebP layers are cropped to the art (see the boxes in
+   tools/export-exodia-art.js), in units of the 1000x1600 drawing.
+   transform-origin stays on the ball at (500, 1010). */
+.exo-img--body { inset: auto; left: -10%; top: 15%; width: 120%; max-width: none; height: 85%; transform-origin: 50% 56.6176%; }
+.exo-img--hands { inset: auto; left: 5.5%; top: 48.125%; width: 89%; height: 25%; transform-origin: 50% 60%; }
+/* The silhouette image is already darkened and softened. */
+img.exo-sil { filter: none; }
 /* Fades the hem of his skirt into the fire. It used to be a mask on every
    layer, which phones redo on every frame. */
 .exo-hem {
@@ -1669,21 +1671,23 @@ html[data-theme] .logo-egg:active { transform: none; filter: var(--logo-glow); }
   62% { opacity: 1; transform: none; }
   100% { opacity: 0; transform: translate(var(--dx), var(--dy)); visibility: hidden; }
 }
+/* The embers sit still on one tall layer (two identical halves) that scrolls
+   up and loops, instead of one animated layer per ember. */
+.exo-embers {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 200%;
+  animation: fx-fade-in 1s ease-out 0.8s both, exo-embers 5s linear 0.8s infinite;
+}
+@keyframes exo-embers { to { transform: translateY(-50%); } }
 .exo-ember {
   position: absolute;
-  left: var(--x);
-  bottom: -2%;
   width: calc(var(--s) * 3);
   height: calc(var(--s) * 3);
   border-radius: 50%;
   background: radial-gradient(closest-side, #ffe08a 33%, rgb(255 179 64 / 0.6) 50%, rgb(255 179 64 / 0));
-  opacity: 0;
-  animation: exo-ember var(--d) linear var(--dl) infinite;
-}
-@keyframes exo-ember {
-  0% { opacity: 0; transform: none; }
-  10% { opacity: 1; }
-  100% { opacity: 0; transform: translate(var(--dx), -105vh); }
 }
 
 /* As the ball swells everything is drowned in yellow light. */

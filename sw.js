@@ -1,4 +1,4 @@
-const CACHE_NAME = 'ygo-skills-mvp-v146';
+const CACHE_NAME = 'ygo-skills-mvp-v147';
 const ASSETS = [
   './',
   './index.html',
@@ -77,7 +77,11 @@ const ASSETS = [
   './src/service-worker-registration.js',
   './app.js',
   './manifest.json',
-  './icon.jpg'
+  './icon.jpg',
+  './img/exodia-sil.webp',
+  './img/exodia-lit.webp',
+  './img/exodia-fists.webp',
+  './img/exodia-open.webp'
 ];
 
 // Cache versions up to v76 belong to app code without the update banner; that

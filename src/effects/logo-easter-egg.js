@@ -20,6 +20,31 @@ const EXODIA_ORB_Y = 0.6;
 
 const logoEgg = { taps: 0, timer: null, busy: false };
 
+// Pre-rendered WebP copies of the SVG layers in EXODIA_SVG (re-export them
+// with tools/export-exodia-art.js after changing the drawing). Phones decode
+// an image far faster than they rasterize the detailed SVG. The images are
+// decoded ahead of time (on the first logo tap or Exodia card), and the SVG
+// is the fallback until they're ready.
+const EXODIA_ART = [['sil', 'body'], ['lit', 'body'], ['fists', 'hands'], ['open', 'hands']]
+  .map(([name, box]) => ({ name, box, src: `./img/exodia-${name}.webp` }));
+const exodiaArt = { images: null, ready: false };
+
+function warmExodiaArt() {
+  if (exodiaArt.images) return;
+  exodiaArt.images = EXODIA_ART.map(({ src }) => {
+    const img = new Image();
+    img.src = src;
+    return img;
+  });
+  Promise.all(exodiaArt.images.map(img => img.decode()))
+    .then(() => { exodiaArt.ready = true; })
+    .catch(() => { exodiaArt.images = null; });
+}
+
+const exodiaArtHtml = () => exodiaArt.ready
+  ? EXODIA_ART.map(({ name, box, src }) => `<img class="exo-layer exo-${name} exo-img--${box}" src="${src}" alt="" />`).join('')
+  : EXODIA_SVG;
+
 const getLogoCharge = () => Math.min(1, logoEgg.taps / LOGO_TAPS_TO_SUMMON);
 const getLogoPieces = () => Math.floor(logoEgg.taps / LOGO_TAPS_PER_PIECE);
 
@@ -52,6 +77,7 @@ function tapLogo(logo) {
   if (logoEgg.busy) return;
 
   clearTimeout(logoEgg.timer);
+  warmExodiaArt();
   logoEgg.taps++;
   paintLogoEgg(logo);
   const pieces = getLogoPieces();
@@ -93,17 +119,34 @@ function summonExodia(logo) {
   // that waits at Exodia's chest and ignites into the energy ball.
   // The Duel Disk game passes the Exodia card instead of the logo.
   const r = (logo.querySelector('img') || logo).getBoundingClientRect();
-  const flame = (i, n, front) => `<span class="exo-flame" style="--x: ${((i + 0.5) * 100 / n + ceRand(-5, 5)).toFixed(1)}%; --b: ${(front ? ceRand(-10, -2) : ceRand(-5, 30)).toFixed(0)}%; --w: ${ceRand(24, 40).toFixed(0)}vw; --h: ${(front ? ceRand(16, 30) : ceRand(45, 90)).toFixed(0)}vh; --d: ${ceRand(0.3, 0.6).toFixed(2)}s; --in: ${ceRand(0.5, 1.1).toFixed(2)}s"></span>`;
+  // The flames and smoke are gradients on a few shared layers, and the embers
+  // ride on one tall layer, instead of a separate animated layer per blob.
+  const flameGradient = (i, n, front) => {
+    const h = front ? ceRand(16, 30) : ceRand(45, 90);
+    const b = front ? ceRand(-10, -2) : ceRand(-5, 30);
+    return `radial-gradient(${(ceRand(24, 40) / 2).toFixed(0)}vw ${(h / 2).toFixed(0)}vh at ${((i + 0.5) * 100 / n + ceRand(-5, 5)).toFixed(1)}% calc(${(100 - b).toFixed(0)}% - ${(h / 2).toFixed(0)}vh), rgb(255 238 170 / 0.75), rgb(255 176 60 / 0.4) 55%, rgb(255 140 30 / 0))`;
+  };
+  const flameWall = (n, front, cls) => {
+    const layers = [[], []];
+    for (let i = 0; i < n; i++) layers[front ? 0 : i % 2].push(flameGradient(i, n, front));
+    return layers.filter(l => l.length).map((l, j) => `<div class="exo-flames ${cls}${j}" style="background-image: ${l.join(', ')}"></div>`).join('');
+  };
   const hazeColors = ['rgb(251 146 60 / 0.9)', 'rgb(234 108 24 / 0.85)', 'rgb(253 186 80 / 0.8)', 'rgb(250 160 60 / 0.9)', 'rgb(70 22 4 / 0.7)'];
   const haze = ceRange(fxCount(5), i => {
     const x = ceRand(5, 95);
     return `<span class="exo-haze" style="--x: ${x.toFixed(0)}%; --y: ${ceRand(20, 85).toFixed(0)}%; --s: ${ceRand(55, 80).toFixed(0)}vw; --c: ${hazeColors[i % hazeColors.length]}; --dx: ${((x < 50 ? -1 : 1) * ceRand(35, 60)).toFixed(0)}vw; --dy: ${ceRand(-18, 4).toFixed(0)}vh"></span>`;
   });
   const smokeCount = fxCount(4);
-  const smoke = ceRange(smokeCount, i => `<span class="exo-smoke" style="--x: ${((i + 0.5) * 100 / smokeCount + ceRand(-6, 6)).toFixed(0)}%; --y: ${ceRand(-14, 6).toFixed(0)}%; --s: ${ceRand(55, 85).toFixed(0)}vw; --dx: ${ceRand(-9, 9).toFixed(0)}vw; --d: ${ceRand(3, 5).toFixed(1)}s"></span>`);
-  const embers = ceRange(fxCount(14), () => `<span class="exo-ember" style="--x: ${ceRand(0, 100).toFixed(0)}%; --s: ${ceRand(2, 5).toFixed(1)}px; --d: ${ceRand(2.5, 5).toFixed(1)}s; --dl: ${ceRand(0.8, 4.5).toFixed(2)}s; --dx: ${ceRand(-10, 10).toFixed(0)}vw"></span>`);
-  const backFlames = fxCount(6);
-  const frontFlames = fxCount(4);
+  const smoke = Array.from({ length: smokeCount }, (_, i) => {
+    const s = ceRand(55, 85);
+    return `radial-gradient(${(s / 2).toFixed(0)}vw ${(s / 2.8).toFixed(0)}vw at ${((i + 0.5) * 100 / smokeCount + ceRand(-6, 6)).toFixed(0)}% ${ceRand(-14, 6).toFixed(0)}%, rgb(46 14 3 / 0.9), rgb(70 22 4 / 0.55) 45%, rgb(70 22 4 / 0))`;
+  }).join(', ');
+  // Each ember appears in both halves of the 200%-tall layer so it loops.
+  const embers = ceRange(fxCount(14), () => {
+    const style = `left: ${ceRand(0, 100).toFixed(0)}%; --s: ${ceRand(2, 5).toFixed(1)}px`;
+    const y = ceRand(0, 50);
+    return `<span class="exo-ember" style="${style}; top: ${y.toFixed(1)}%"></span><span class="exo-ember" style="${style}; top: ${(y + 50).toFixed(1)}%"></span>`;
+  });
   // Each ray of the burst is its own thin layer, which is far cheaper than
   // one huge masked layer that the phone has to rasterize as the ball fires.
   const rayCount = fxCount(24);
@@ -121,10 +164,10 @@ function summonExodia(logo) {
       <div class="exo-scene">
         <div class="exo-black"></div>
         <div class="exo-bg"></div>
-        <div class="exo-fill">${ceRange(backFlames, i => flame(i, backFlames, false))}</div>
-        <div class="exo-fill">${smoke}</div>
+        ${flameWall(fxCount(6), false, 'exo-flames--back')}
+        <div class="exo-smoke" style="background-image: ${smoke}"></div>
         <div class="exo-figure-wrap"><div class="exo-body">
-          ${EXODIA_SVG}
+          ${exodiaArtHtml()}
           <span class="exo-hem"></span>
           <span class="exo-eye" style="--x: 46.865%"></span>
           <span class="exo-eye" style="--x: 53.135%"></span>
@@ -132,10 +175,10 @@ function summonExodia(logo) {
           <span class="exo-orb">${EXO_ORB_RAYS_SVG}</span>
         </div></div>
         <div class="exo-floor"></div>
-        <div class="exo-fill">${ceRange(frontFlames, i => flame(i, frontFlames, true))}</div>
+        ${flameWall(fxCount(4), true, 'exo-flames--front')}
         <div class="exo-veil"></div>
         <div class="exo-fill">${haze}</div>
-        <div class="exo-fill">${embers}</div>
+        <div class="exo-fill"><div class="exo-embers">${embers}</div></div>
         <div class="exo-wash"></div>
         <div class="exo-blast"></div>
         <div class="exo-burst">${rays}</div>

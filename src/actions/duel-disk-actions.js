@@ -232,6 +232,7 @@ function cancelDiskShuffle() {
 
 function checkDiskExodia() {
   if (!disk || disk.result) return false;
+  if (disk.hand.some(card => EXODIA_PIECE_IDS.includes(card.id))) warmExodiaArt();
   if (!EXODIA_PIECE_IDS.every(id => disk.hand.some(card => card.id === id))) return false;
 
   disk.busy = true;
