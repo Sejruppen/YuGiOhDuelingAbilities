@@ -1404,9 +1404,12 @@ html[data-theme] .logo-egg:active { transform: none; filter: var(--logo-glow); }
    (6.3-6.8s), the white holds, then fades back to the start screen (7.8-10s).
    Keep in sync with EXODIA_* in logo-easter-egg.js and 'logo-obliterate'.
    Only transform/opacity animate on the big layers (compositor-only, so the
-   detailed SVG isn't re-rasterized every frame on phones). */
+   detailed SVG isn't re-rasterized every frame on phones). Nothing scales up
+   past 1x at the end and layers that move later are promoted from the start,
+   so phones never have to draw a huge texture mid-animation (which showed
+   as square chunks missing). */
 .fx-exodia { position: fixed; inset: 0; z-index: 5; overflow: hidden; pointer-events: auto; }
-.exo-scene { position: absolute; inset: 0; overflow: hidden; animation: exo-hide 0.01s linear 6.8s forwards, exo-quake 0.6s linear 6.3s; }
+.exo-scene { position: absolute; inset: 0; overflow: hidden; will-change: transform; animation: exo-hide 0.01s linear 6.8s forwards, exo-quake 0.6s linear 6.3s; }
 @keyframes exo-hide { to { visibility: hidden; } }
 @keyframes exo-quake {
   0%, 100% { transform: none; }
@@ -1421,7 +1424,8 @@ html[data-theme] .logo-egg:active { transform: none; filter: var(--logo-glow); }
 .exo-floor,
 .exo-veil,
 .exo-wash { position: absolute; inset: 0; pointer-events: none; }
-.exo-black { background: #000; animation: fx-fade-in 0.5s ease-in both; }
+/* Hidden once the opaque fire wall has faded in over it. */
+.exo-black { background: #000; animation: fx-fade-in 0.5s ease-in both, exo-hide 0.01s linear 1.5s forwards; }
 
 /* The fire wall: deep red at the top, bright orange-yellow behind him. */
 .exo-bg {
@@ -1471,8 +1475,10 @@ html[data-theme] .logo-egg:active { transform: none; filter: var(--logo-glow); }
   transform-origin: 50% 63.125%;
   animation: exo-rise 2.2s cubic-bezier(0.2, 0.7, 0.2, 1) 0.8s both;
 }
-@keyframes exo-rise { from { transform: scale(1.14); } }
-.exo-body { position: absolute; inset: 0; animation: exo-rumble 0.09s linear 5s 14; }
+/* Rises rather than zooms: a scale change would make the phone redraw the
+   detailed SVG layers when it ends. */
+@keyframes exo-rise { from { transform: translateY(7%); } }
+.exo-body { position: absolute; inset: 0; will-change: transform; animation: exo-rumble 0.09s linear 5s 14; }
 @keyframes exo-rumble {
   25% { transform: translate(2px, -1px); }
   50% { transform: translate(-2px, 1px); }
@@ -1486,6 +1492,8 @@ html[data-theme] .logo-egg:active { transform: none; filter: var(--logo-glow); }
   height: 100%;
   overflow: visible;
   transform-origin: 50% 63.125%;
+  /* Keeps the fists and claws at one raster scale while they scale. */
+  will-change: transform;
 }
 /* Fades the hem of his skirt into the fire. It used to be a mask on every
    layer, which phones redo on every frame. */
@@ -1510,7 +1518,7 @@ html[data-theme] .logo-egg:active { transform: none; filter: var(--logo-glow); }
 @keyframes exo-fists {
   0% { opacity: 1; transform: none; }
   45% { opacity: 1; transform: scale(0.96) translateY(4px); }
-  100% { opacity: 0; transform: scale(1.08); }
+  100% { opacity: 0; transform: scale(1.08); visibility: hidden; }
 }
 .exo-open { opacity: 0; animation: exo-open 0.45s cubic-bezier(0.2, 0.8, 0.3, 1.3) 4.12s forwards, exo-spread 1.7s ease-in 4.6s forwards; }
 @keyframes exo-open {
@@ -1563,9 +1571,10 @@ html[data-theme] .logo-egg:active { transform: none; filter: var(--logo-glow); }
   100% { opacity: 0; transform: scale(0.6, 0.5); visibility: hidden; }
 }
 
-/* The energy ball ignites between his claws (4.22s), swells with pulses,
-   draws in a breath and fires, growing 30x to fill the screen (6.33-6.82s).
-   1% = 26ms. */
+/* The energy ball ignites between his claws (4.22s), swells with pulses and
+   draws in a breath. When it fires (6.33s) a separate full-size blast takes
+   over (blowing the ball itself up 30x made phones rasterize a giant
+   texture). 1% = 26ms. */
 .exo-orb {
   position: absolute;
   left: 50%;
@@ -1579,8 +1588,7 @@ html[data-theme] .logo-egg:active { transform: none; filter: var(--logo-glow); }
   will-change: transform;
   animation: exo-orb 2.6s linear 4.22s both;
 }
-/* The halo is a gradient rather than a box-shadow, so blowing the ball up
-   30x doesn't redraw a huge blurred shadow. */
+/* The halo is a gradient rather than a box-shadow. */
 .exo-orb::after {
   content: '';
   position: absolute;
@@ -1588,14 +1596,12 @@ html[data-theme] .logo-egg:active { transform: none; filter: var(--logo-glow); }
   border-radius: 50%;
   background: radial-gradient(closest-side, rgb(253 210 90 / 0) 22%, rgb(253 210 90 / 0.5) 32%, rgb(251 160 40 / 0.28) 60%, rgb(251 160 40 / 0));
 }
-.exo-orb::before {
-  content: '';
+.exo-orb .exo-orb-rays {
   position: absolute;
-  border-radius: 50%;
-  inset: -60%;
-  background: repeating-conic-gradient(from 0deg, rgb(255 250 210 / 0) 0deg 9deg, rgb(255 250 210 / 0.8) 11deg, rgb(255 250 210 / 0) 13deg 24deg);
-  -webkit-mask: radial-gradient(circle, transparent 18%, #000 28%, transparent 70%);
-  mask: radial-gradient(circle, transparent 18%, #000 28%, transparent 70%);
+  left: -60%;
+  top: -60%;
+  width: 220%;
+  height: 220%;
   animation: fx-spin 0.8s linear infinite;
 }
 @keyframes exo-orb {
@@ -1609,8 +1615,26 @@ html[data-theme] .logo-egg:active { transform: none; filter: var(--logo-glow); }
   62% { transform: scale(1.35); }
   70% { transform: scale(1.25); }
   78% { transform: scale(1.7); }
-  81% { transform: scale(1.5); animation-timing-function: cubic-bezier(0.6, 0, 0.9, 0.5); }
-  100% { transform: scale(30); }
+  81% { opacity: 1; transform: scale(1.5); }
+  100% { opacity: 0; transform: scale(2.2); visibility: hidden; }
+}
+/* The blast fills the screen from the ball's position (the ball sits at
+   60% height). It only ever scales down from its full size. */
+.exo-blast {
+  position: absolute;
+  left: 50%;
+  top: 60%;
+  width: 90vmax;
+  aspect-ratio: 1;
+  translate: -50% -50%;
+  border-radius: 50%;
+  background: radial-gradient(closest-side, #fff 34%, #fffbe0 50%, rgb(253 230 138 / 0.8) 68%, rgb(251 191 36 / 0));
+  opacity: 0;
+  animation: exo-blast 0.5s cubic-bezier(0.6, 0, 0.9, 0.5) 6.33s both;
+}
+@keyframes exo-blast {
+  0% { opacity: 1; transform: scale(0.18); }
+  100% { opacity: 1; transform: none; }
 }
 
 /* Ground the bottom of the figure in smoke and low flames. */
@@ -1643,7 +1667,7 @@ html[data-theme] .logo-egg:active { transform: none; filter: var(--logo-glow); }
   0% { opacity: 0; transform: scale(0.8); }
   15% { opacity: 1; }
   62% { opacity: 1; transform: none; }
-  100% { opacity: 0; transform: translate(var(--dx), var(--dy)) scale(1.5); visibility: hidden; }
+  100% { opacity: 0; transform: translate(var(--dx), var(--dy)); visibility: hidden; }
 }
 .exo-ember {
   position: absolute;
@@ -1675,25 +1699,26 @@ html[data-theme] .logo-egg:active { transform: none; filter: var(--logo-glow); }
   80% { opacity: 0.85; }
   100% { opacity: 1; }
 }
-/* Rays shooting out as it fires. Sized so the mask ends at the edge (no
-   invisible texture to rasterize). */
-.exo-burst {
+/* Rays shooting out as it fires: thin separate layers that stretch out from
+   the ball (the ellipse shape tapers each ray at both ends). */
+.exo-burst { position: absolute; left: 50%; top: 60%; }
+.exo-ray {
   position: absolute;
-  left: 50%;
-  top: 60%;
-  width: 115vmax;
-  aspect-ratio: 1;
-  translate: -50% -50%;
-  background: repeating-conic-gradient(from 0deg, rgb(255 255 255 / 0) 0deg 5deg, rgb(255 252 225 / 0.9) 7deg, rgb(255 255 255 / 0) 9deg 15deg);
-  -webkit-mask: radial-gradient(circle closest-side, transparent 6%, #000 24%, #000 60%, transparent 100%);
-  mask: radial-gradient(circle closest-side, transparent 6%, #000 24%, #000 60%, transparent 100%);
+  left: 0;
+  top: 0;
+  width: 66vmax;
+  height: 2.6vmax;
+  margin-top: -1.3vmax;
+  transform-origin: 0 50%;
+  border-radius: 50%;
+  background: linear-gradient(to right, rgb(255 252 225 / 0) 8%, rgb(255 252 225 / 0.9) 24%, rgb(255 252 225 / 0.75) 62%, rgb(255 252 225 / 0));
   opacity: 0;
-  animation: exo-burst 0.6s ease-out 6.28s both;
+  animation: exo-ray 0.6s ease-out 6.28s both;
 }
-@keyframes exo-burst {
-  0% { opacity: 0; transform: scale(0.15); }
+@keyframes exo-ray {
+  0% { opacity: 0; transform: rotate(var(--a)) scaleX(0.15); }
   30% { opacity: 1; }
-  100% { opacity: 1; transform: scale(1.2) rotate(12deg); }
+  100% { opacity: 1; transform: rotate(calc(var(--a) + 12deg)); }
 }
 
 /* The logo glows, shrinks into a spark at his chest and waits there until
@@ -1743,21 +1768,13 @@ html[data-theme] .logo-egg:active { transform: none; filter: var(--logo-glow); }
   33%, 100% { opacity: 0.95; }
 }
 
-/* Full white from 6.8s to 7.8s, then slowly fades back to the start screen
-   (which itself "comes into focus", see #app.fx-exodia-wake). */
+/* Full white from 6.8s to 7.8s, then slowly fades back to the start screen. */
 .exo-white { position: absolute; inset: 0; background: #fff; opacity: 0; will-change: opacity; animation: exo-white 10s linear both; }
 @keyframes exo-white {
   0%, 64% { opacity: 0; }
   68% { opacity: 1; }
   78% { opacity: 1; animation-timing-function: cubic-bezier(0.45, 0, 0.55, 1); }
   100% { opacity: 0; }
-}
-/* A gentle zoom instead of a whole-app blur, which phones can't redraw fast
-   enough. */
-#app.fx-exodia-wake { animation: exo-wake 3.2s cubic-bezier(0.4, 0, 0.2, 1) both; }
-@keyframes exo-wake {
-  0%, 31% { transform: scale(1.06); }
-  100% { transform: none; }
 }
 
 /* =========================================================================

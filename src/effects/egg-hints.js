@@ -80,8 +80,9 @@ const EGG_HINTS = {
   // LP modal
   'change-of-heart': { where: 'Life Points', text: 'Your Life Points have a heart. Is it loyal enough to hold on to?' },
   'noah-delete': { where: 'Life Points', text: 'Some duelists keep erasing long after there\'s nothing left.' },
-  'kaiba-rip': { where: 'Life Points', text: 'Cutting things in half is a quick job. Some rivals prefer to take their time and make it dramatic.' },
-  'kuriboh-dash': { where: 'Life Points', text: 'Starting over at full Life Points? A certain furball thinks a fresh start should be taken at full speed.' },
+  'kaiba-rip': { where: 'Life Points', text: 'Cutting things in half is a quick job. Some rivals prefer to take their time and make it dramatic.' },
+
+  'kuriboh-dash': { where: 'Life Points', text: 'Lingering on starting over is very common.' },
   // Hints
   'hint-of-the-cards': { where: 'Settings', text: 'Desperate for answers? Grandpa has seen impatient duelists before. Keep asking and he might just hand you one.' }
 };

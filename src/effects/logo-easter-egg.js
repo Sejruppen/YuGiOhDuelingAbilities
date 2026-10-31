@@ -95,12 +95,19 @@ function summonExodia(logo) {
   const r = (logo.querySelector('img') || logo).getBoundingClientRect();
   const flame = (i, n, front) => `<span class="exo-flame" style="--x: ${((i + 0.5) * 100 / n + ceRand(-5, 5)).toFixed(1)}%; --b: ${(front ? ceRand(-10, -2) : ceRand(-5, 30)).toFixed(0)}%; --w: ${ceRand(24, 40).toFixed(0)}vw; --h: ${(front ? ceRand(16, 30) : ceRand(45, 90)).toFixed(0)}vh; --d: ${ceRand(0.3, 0.6).toFixed(2)}s; --in: ${ceRand(0.5, 1.1).toFixed(2)}s"></span>`;
   const hazeColors = ['rgb(251 146 60 / 0.9)', 'rgb(234 108 24 / 0.85)', 'rgb(253 186 80 / 0.8)', 'rgb(250 160 60 / 0.9)', 'rgb(70 22 4 / 0.7)'];
-  const haze = ceRange(fxCount(6), i => {
+  const haze = ceRange(fxCount(5), i => {
     const x = ceRand(5, 95);
-    return `<span class="exo-haze" style="--x: ${x.toFixed(0)}%; --y: ${ceRand(20, 85).toFixed(0)}%; --s: ${ceRand(60, 95).toFixed(0)}vw; --c: ${hazeColors[i % hazeColors.length]}; --dx: ${((x < 50 ? -1 : 1) * ceRand(35, 60)).toFixed(0)}vw; --dy: ${ceRand(-18, 4).toFixed(0)}vh"></span>`;
+    return `<span class="exo-haze" style="--x: ${x.toFixed(0)}%; --y: ${ceRand(20, 85).toFixed(0)}%; --s: ${ceRand(55, 80).toFixed(0)}vw; --c: ${hazeColors[i % hazeColors.length]}; --dx: ${((x < 50 ? -1 : 1) * ceRand(35, 60)).toFixed(0)}vw; --dy: ${ceRand(-18, 4).toFixed(0)}vh"></span>`;
   });
-  const smoke = ceRange(4, i => `<span class="exo-smoke" style="--x: ${(i * 33 + ceRand(-6, 6)).toFixed(0)}%; --y: ${ceRand(-14, 6).toFixed(0)}%; --s: ${ceRand(55, 85).toFixed(0)}vw; --dx: ${ceRand(-9, 9).toFixed(0)}vw; --d: ${ceRand(3, 5).toFixed(1)}s"></span>`);
+  const smokeCount = fxCount(4);
+  const smoke = ceRange(smokeCount, i => `<span class="exo-smoke" style="--x: ${((i + 0.5) * 100 / smokeCount + ceRand(-6, 6)).toFixed(0)}%; --y: ${ceRand(-14, 6).toFixed(0)}%; --s: ${ceRand(55, 85).toFixed(0)}vw; --dx: ${ceRand(-9, 9).toFixed(0)}vw; --d: ${ceRand(3, 5).toFixed(1)}s"></span>`);
   const embers = ceRange(fxCount(14), () => `<span class="exo-ember" style="--x: ${ceRand(0, 100).toFixed(0)}%; --s: ${ceRand(2, 5).toFixed(1)}px; --d: ${ceRand(2.5, 5).toFixed(1)}s; --dl: ${ceRand(0.8, 4.5).toFixed(2)}s; --dx: ${ceRand(-10, 10).toFixed(0)}vw"></span>`);
+  const backFlames = fxCount(6);
+  const frontFlames = fxCount(4);
+  // Each ray of the burst is its own thin layer, which is far cheaper than
+  // one huge masked layer that the phone has to rasterize as the ball fires.
+  const rayCount = fxCount(24);
+  const rays = ceRange(rayCount, i => `<span class="exo-ray" style="--a: ${(i * 360 / rayCount + ceRand(-3, 3)).toFixed(0)}deg"></span>`);
 
   const overlay = spawnFx('fx-exodia', EXODIA_TOTAL_MS + 100, {
     vars: {
@@ -114,7 +121,7 @@ function summonExodia(logo) {
       <div class="exo-scene">
         <div class="exo-black"></div>
         <div class="exo-bg"></div>
-        <div class="exo-fill">${ceRange(6, i => flame(i, 6, false))}</div>
+        <div class="exo-fill">${ceRange(backFlames, i => flame(i, backFlames, false))}</div>
         <div class="exo-fill">${smoke}</div>
         <div class="exo-figure-wrap"><div class="exo-body">
           ${EXODIA_SVG}
@@ -122,15 +129,16 @@ function summonExodia(logo) {
           <span class="exo-eye" style="--x: 46.865%"></span>
           <span class="exo-eye" style="--x: 53.135%"></span>
           <span class="exo-glint"></span>
-          <span class="exo-orb"></span>
+          <span class="exo-orb">${EXO_ORB_RAYS_SVG}</span>
         </div></div>
         <div class="exo-floor"></div>
-        <div class="exo-fill">${ceRange(4, i => flame(i, 4, true))}</div>
+        <div class="exo-fill">${ceRange(frontFlames, i => flame(i, frontFlames, true))}</div>
         <div class="exo-veil"></div>
         <div class="exo-fill">${haze}</div>
         <div class="exo-fill">${embers}</div>
         <div class="exo-wash"></div>
-        <div class="exo-burst"></div>
+        <div class="exo-blast"></div>
+        <div class="exo-burst">${rays}</div>
         <div class="exo-logo"><span class="exo-logo-glow"></span><img src="./logo.jpg" alt="" /><span class="exo-logo-flash"></span></div>
       </div>
       <div class="exo-white"></div>
@@ -138,12 +146,11 @@ function summonExodia(logo) {
   });
 
   setTimeout(() => {
-    // The hidden scene keeps its infinite animations (and the 30x blown-up
-    // orb) running, which starves the white fade of frames so it pops
-    // instead of fading. Drop it once the screen is fully white.
+    // The hidden scene keeps its infinite animations running, which starves
+    // the white fade of frames so it pops instead of fading. Drop it once
+    // the screen is fully white.
     overlay?.querySelector('.exo-scene')?.remove();
     resetLogoEgg();
-    restartClass(document.getElementById('app'), 'fx-exodia-wake', EXODIA_TOTAL_MS - EXODIA_WHITEOUT_MS);
   }, EXODIA_WHITEOUT_MS);
   setTimeout(() => { logoEgg.busy = false; }, EXODIA_TOTAL_MS);
 }
@@ -165,6 +172,21 @@ const EXO_SHINE = '#fff0bb';
 const EXO_SHACKLE = '#8e3b1b';
 
 const svgNum = n => Math.round(n * 10) / 10;
+
+// The rays spinning around the energy ball: thin wedges whose fade is baked
+// into a gradient (a CSS mask would add a second texture the size of the ball).
+const EXO_ORB_RAYS_SVG = `<svg class="exo-orb-rays" viewBox="-100 -100 200 200" aria-hidden="true">
+  <defs><radialGradient id="exo-ray-fade" gradientUnits="userSpaceOnUse" cx="0" cy="0" r="100">
+    <stop offset="0.25" stop-color="#fffad2" stop-opacity="0" />
+    <stop offset="0.4" stop-color="#fffad2" stop-opacity="0.8" />
+    <stop offset="1" stop-color="#fffad2" stop-opacity="0" />
+  </radialGradient></defs>
+  <g fill="url(#exo-ray-fade)">${Array.from({ length: 15 }, (_, i) => {
+    const a = (i * 24 + 11) * Math.PI / 180;
+    const h = 2 * Math.PI / 180;
+    return `<polygon points="0,0 ${svgNum(100 * Math.cos(a - h))},${svgNum(100 * Math.sin(a - h))} ${svgNum(100 * Math.cos(a + h))},${svgNum(100 * Math.sin(a + h))}" />`;
+  }).join('')}</g>
+</svg>`;
 
 const exoMirror = (id, body, centreX = 500) => `<g id="${id}">${body}</g><use href="#${id}" transform="matrix(-1 0 0 1 ${centreX * 2} 0)"/>`;
 
