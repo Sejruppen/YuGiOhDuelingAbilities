@@ -119,34 +119,6 @@ function summonExodia(logo) {
   // that waits at Exodia's chest and ignites into the energy ball.
   // The Duel Disk game passes the Exodia card instead of the logo.
   const r = (logo.querySelector('img') || logo).getBoundingClientRect();
-  // The flames and smoke are gradients on a few shared layers, and the embers
-  // ride on one tall layer, instead of a separate animated layer per blob.
-  const flameGradient = (i, n, front) => {
-    const h = front ? ceRand(16, 30) : ceRand(45, 90);
-    const b = front ? ceRand(-10, -2) : ceRand(-5, 30);
-    return `radial-gradient(${(ceRand(24, 40) / 2).toFixed(0)}vw ${(h / 2).toFixed(0)}vh at ${((i + 0.5) * 100 / n + ceRand(-5, 5)).toFixed(1)}% calc(${(100 - b).toFixed(0)}% - ${(h / 2).toFixed(0)}vh), rgb(255 238 170 / 0.75), rgb(255 176 60 / 0.4) 55%, rgb(255 140 30 / 0))`;
-  };
-  const flameWall = (n, front, cls) => {
-    const layers = [[], []];
-    for (let i = 0; i < n; i++) layers[front ? 0 : i % 2].push(flameGradient(i, n, front));
-    return layers.filter(l => l.length).map((l, j) => `<div class="exo-flames ${cls}${j}" style="background-image: ${l.join(', ')}"></div>`).join('');
-  };
-  const hazeColors = ['rgb(251 146 60 / 0.9)', 'rgb(234 108 24 / 0.85)', 'rgb(253 186 80 / 0.8)', 'rgb(250 160 60 / 0.9)', 'rgb(70 22 4 / 0.7)'];
-  const haze = ceRange(fxCount(5), i => {
-    const x = ceRand(5, 95);
-    return `<span class="exo-haze" style="--x: ${x.toFixed(0)}%; --y: ${ceRand(20, 85).toFixed(0)}%; --s: ${ceRand(55, 80).toFixed(0)}vw; --c: ${hazeColors[i % hazeColors.length]}; --dx: ${((x < 50 ? -1 : 1) * ceRand(35, 60)).toFixed(0)}vw; --dy: ${ceRand(-18, 4).toFixed(0)}vh"></span>`;
-  });
-  const smokeCount = fxCount(4);
-  const smoke = Array.from({ length: smokeCount }, (_, i) => {
-    const s = ceRand(55, 85);
-    return `radial-gradient(${(s / 2).toFixed(0)}vw ${(s / 2.8).toFixed(0)}vw at ${((i + 0.5) * 100 / smokeCount + ceRand(-6, 6)).toFixed(0)}% ${ceRand(-14, 6).toFixed(0)}%, rgb(46 14 3 / 0.9), rgb(70 22 4 / 0.55) 45%, rgb(70 22 4 / 0))`;
-  }).join(', ');
-  // Each ember appears in both halves of the 200%-tall layer so it loops.
-  const embers = ceRange(fxCount(14), () => {
-    const style = `left: ${ceRand(0, 100).toFixed(0)}%; --s: ${ceRand(2, 5).toFixed(1)}px`;
-    const y = ceRand(0, 50);
-    return `<span class="exo-ember" style="${style}; top: ${y.toFixed(1)}%"></span><span class="exo-ember" style="${style}; top: ${(y + 50).toFixed(1)}%"></span>`;
-  });
   // Each ray of the burst is its own thin layer, which is far cheaper than
   // one huge masked layer that the phone has to rasterize as the ball fires.
   const rayCount = fxCount(24);
@@ -162,10 +134,7 @@ function summonExodia(logo) {
     },
     html: `
       <div class="exo-scene">
-        <div class="exo-black"></div>
-        <div class="exo-bg"></div>
-        ${flameWall(fxCount(6), false, 'exo-flames--back')}
-        <div class="exo-smoke" style="background-image: ${smoke}"></div>
+        <canvas class="exo-canvas exo-canvas--back"></canvas>
         <div class="exo-figure-wrap"><div class="exo-body">
           ${exodiaArtHtml()}
           <span class="exo-hem"></span>
@@ -174,19 +143,14 @@ function summonExodia(logo) {
           <span class="exo-glint"></span>
           <span class="exo-orb">${EXO_ORB_RAYS_SVG}</span>
         </div></div>
-        <div class="exo-floor"></div>
-        ${flameWall(fxCount(4), true, 'exo-flames--front')}
-        <div class="exo-veil"></div>
-        <div class="exo-fill">${haze}</div>
-        <div class="exo-fill"><div class="exo-embers">${embers}</div></div>
-        <div class="exo-wash"></div>
-        <div class="exo-blast"></div>
+        <canvas class="exo-canvas exo-canvas--front"></canvas>
         <div class="exo-burst">${rays}</div>
         <div class="exo-logo"><span class="exo-logo-glow"></span><img src="./logo.jpg" alt="" /><span class="exo-logo-flash"></span></div>
       </div>
       <div class="exo-white"></div>
     `
   });
+  if (overlay) startExodiaFire(overlay.querySelector('.exo-scene'));
 
   setTimeout(() => {
     // The hidden scene keeps its infinite animations running, which starves
@@ -196,6 +160,284 @@ function summonExodia(logo) {
     resetLogoEgg();
   }, EXODIA_WHITEOUT_MS);
   setTimeout(() => { logoEgg.busy = false; }, EXODIA_TOTAL_MS);
+}
+
+// --- The fire ------------------------------------------------------------------
+// The backdrop, flames, smoke, haze, embers, yellow wash and blast are painted
+// on two low-resolution canvases (behind and in front of Exodia). They are
+// all soft gradients, so they look the same at a fraction of the pixels, and
+// two small canvas textures replace a dozen full-screen layers that made the
+// phone's GPU skip tiles (the missing square chunks).
+const EXO_FIRE_SCALE = FX_LITE ? 0.4 : 0.6;
+const EXO_FIRE_PAD = 30; // the canvases overhang the screen by this, like the old fire wall
+
+const exoClamp = p => Math.min(1, Math.max(0, p));
+
+// A CSS cubic-bezier timing function.
+function exoBezier(x1, y1, x2, y2) {
+  const at = (a, b, s) => 3 * a * s * (1 - s) * (1 - s) + 3 * b * s * s * (1 - s) + s * s * s;
+  return p => {
+    if (p <= 0 || p >= 1) return p;
+    let lo = 0, hi = 1, s = p;
+    for (let i = 0; i < 20; i++) {
+      s = (lo + hi) / 2;
+      if (at(x1, x2, s) < p) lo = s; else hi = s;
+    }
+    return at(y1, y2, s);
+  };
+}
+const EXO_EASE = {
+  in: exoBezier(0.42, 0, 1, 1),
+  out: exoBezier(0, 0, 0.58, 1),
+  inOut: exoBezier(0.42, 0, 0.58, 1),
+  linear: p => p,
+  blast: exoBezier(0.6, 0, 0.9, 0.5)
+};
+
+// Value of a CSS-style keyframe track [[offset, value], ...] at progress p,
+// with the easing applied per segment.
+function exoKeys(p, keys, ease) {
+  if (p <= keys[0][0]) return keys[0][1];
+  for (let i = 1; i < keys.length; i++) {
+    const [o, v] = keys[i];
+    if (p <= o) {
+      const [o0, v0] = keys[i - 1];
+      return v0 + (v - v0) * ease((p - o0) / (o - o0));
+    }
+  }
+  return keys[keys.length - 1][1];
+}
+
+// Progress of a one-shot animation (fill: both).
+const exoOnce = (t, delay, dur) => exoClamp((t - delay) / dur);
+
+// Progress of an infinite alternating animation, eased per cycle.
+function exoAlternate(t, delay, dur, ease) {
+  if (t <= delay) return 0;
+  const c = (t - delay) / dur;
+  const f = c % 1;
+  return ease(Math.floor(c) % 2 ? 1 - f : f);
+}
+
+// A radial gradient in unit space (radius 1 around 0,0); transforms size it.
+function exoRadial(ctx, stops) {
+  const g = ctx.createRadialGradient(0, 0, 0, 0, 0, 1);
+  stops.forEach(([o, c]) => g.addColorStop(o, c));
+  return g;
+}
+
+// Fill a unit circle in the current transform.
+function exoBlob(ctx, fill) {
+  ctx.fillStyle = fill;
+  ctx.beginPath();
+  ctx.arc(0, 0, 1, 0, Math.PI * 2);
+  ctx.fill();
+}
+
+function startExodiaFire(scene) {
+  const [back, front] = scene.querySelectorAll('.exo-canvas');
+  const W = window.innerWidth;
+  const H = window.innerHeight;
+  const vw = W / 100;
+  const vh = H / 100;
+  const k = EXO_FIRE_SCALE;
+  const pad = EXO_FIRE_PAD;
+  const setup = canvas => {
+    canvas.width = Math.ceil((W + pad * 2) * k);
+    canvas.height = Math.ceil((H + pad * 2) * k);
+    return canvas.getContext('2d');
+  };
+  const bc = setup(back);
+  const fc = setup(front);
+
+  const flame = (i, n, isFront) => {
+    const h = (isFront ? ceRand(16, 30) : ceRand(45, 90)) * vh;
+    const b = isFront ? ceRand(-10, -2) : ceRand(-5, 30);
+    return {
+      x: ((i + 0.5) * 100 / n + ceRand(-5, 5)) * vw,
+      y: H * (1 - b / 100),
+      w: ceRand(24, 40) * vw,
+      h,
+      d: ceRand(0.3, 0.6),
+      in: ceRand(0.5, 1.1)
+    };
+  };
+  const flames = (n, isFront) => Array.from({ length: n }, (_, i) => flame(i, n, isFront));
+  const backFlames = flames(fxCount(6), false);
+  const frontFlames = flames(fxCount(4), true);
+  const smokeCount = fxCount(4);
+  const smoke = Array.from({ length: smokeCount }, (_, i) => {
+    const s = ceRand(55, 85) * vw;
+    return {
+      x: ((i + 0.5) * 100 / smokeCount + ceRand(-6, 6)) * vw,
+      y: ceRand(-14, 6) * vh,
+      rx: s / 2,
+      ry: s / 2.8,
+      dx: ceRand(-9, 9) * vw,
+      d: ceRand(3, 5)
+    };
+  });
+  const hazeColors = ['rgba(251, 146, 60, 0.9)', 'rgba(234, 108, 24, 0.85)', 'rgba(253, 186, 80, 0.8)', 'rgba(250, 160, 60, 0.9)', 'rgba(70, 22, 4, 0.7)'];
+  const haze = Array.from({ length: fxCount(5) }, (_, i) => {
+    const x = ceRand(5, 95);
+    return {
+      x: x * vw,
+      y: ceRand(20, 85) * vh,
+      r: ceRand(55, 80) * vw / 2,
+      dx: (x < 50 ? -1 : 1) * ceRand(35, 60) * vw,
+      dy: ceRand(-18, 4) * vh,
+      fill: exoRadial(fc, [[0, hazeColors[i % hazeColors.length]], [1, 'rgba(250, 150, 50, 0)']])
+    };
+  });
+  const embers = Array.from({ length: fxCount(14) }, () => ({
+    x: ceRand(0, 100) * vw,
+    r: 1.5 * ceRand(2, 5),
+    dx: ceRand(-10, 10) * vw,
+    d: ceRand(2.5, 5),
+    dl: ceRand(0.8, 4.5)
+  }));
+
+  const wall = bc.createLinearGradient(0, -pad, 0, H + pad);
+  [[0, '#5a1a06'], [0.14, '#b8400c'], [0.32, '#ea6a10'], [0.55, '#f59a1c'], [0.75, '#f8b632'], [1, '#e8891a']].forEach(([o, c]) => wall.addColorStop(o, c));
+  const floor = fc.createLinearGradient(0, H, 0, 0);
+  [[0, 'rgba(92, 28, 4, 0.95)'], [0.12, 'rgba(160, 60, 10, 0.55)'], [0.26, 'rgba(160, 60, 10, 0)']].forEach(([o, c]) => floor.addColorStop(o, c));
+  const flameStops = [[0, 'rgba(255, 238, 170, 0.75)'], [0.55, 'rgba(255, 176, 60, 0.4)'], [1, 'rgba(255, 140, 30, 0)']];
+  const backFlameFill = exoRadial(bc, flameStops);
+  const frontFlameFill = exoRadial(fc, flameStops);
+  const smokeFill = exoRadial(bc, [[0, 'rgba(46, 14, 3, 0.9)'], [0.45, 'rgba(70, 22, 4, 0.55)'], [1, 'rgba(70, 22, 4, 0)']]);
+  const veilFill = exoRadial(fc, [[0, 'rgba(253, 170, 70, 0.72)'], [1, 'rgba(234, 110, 26, 0.7)']]);
+  const emberFill = exoRadial(fc, [[0, '#ffe08a'], [0.33, '#ffe08a'], [0.5, 'rgba(255, 179, 64, 0.6)'], [1, 'rgba(255, 179, 64, 0)']]);
+  const washR = Math.hypot(W / 2, 0.6 * H);
+  const wash = fc.createRadialGradient(W / 2, 0.6 * H, 0, W / 2, 0.6 * H, washR);
+  [[0, 'rgba(255, 250, 200, 0.95)'], [0.25, 'rgba(253, 224, 71, 0.7)'], [0.55, 'rgba(251, 191, 36, 0.35)'], [0.85, 'rgba(245, 158, 11, 0)']].forEach(([o, c]) => wash.addColorStop(o, c));
+  const blastFill = exoRadial(fc, [[0, '#fff'], [0.34, '#fff'], [0.5, '#fffbe0'], [0.68, 'rgba(253, 230, 138, 0.8)'], [1, 'rgba(251, 191, 36, 0)']]);
+
+  const base = ctx => ctx.setTransform(k, 0, 0, k, pad * k, pad * k);
+  const all = ctx => ctx.fillRect(-pad, -pad, W + pad * 2, H + pad * 2);
+
+  // A flame flickers between squat and tall from its bottom centre.
+  const drawFlame = (ctx, f, t, fill) => {
+    const a = EXO_EASE.out(exoOnce(t, f.in, 0.8));
+    if (!a) return;
+    const p = exoAlternate(t, f.in, f.d, EXO_EASE.inOut);
+    base(ctx);
+    ctx.globalAlpha = a;
+    ctx.translate(f.x, f.y);
+    ctx.scale(0.9 + 0.15 * p, 0.85 + 0.3 * p);
+    ctx.transform(1, 0, Math.tan((-4 + 8 * p) * Math.PI / 180), 1, 0, 0);
+    ctx.translate(0, -f.h / 2);
+    ctx.scale(f.w / 2, f.h / 2);
+    exoBlob(ctx, fill);
+  };
+
+  const paintBack = t => {
+    base(bc);
+    bc.globalAlpha = 1;
+    bc.clearRect(-pad, -pad, W + pad * 2, H + pad * 2);
+    const wallA = EXO_EASE.out(exoOnce(t, 0.5, 0.9));
+    if (wallA < 1) {
+      bc.globalAlpha = EXO_EASE.in(exoOnce(t, 0, 0.5));
+      bc.fillStyle = '#000';
+      all(bc);
+    }
+    if (!wallA) return;
+    bc.globalAlpha = wallA;
+    bc.fillStyle = wall;
+    all(bc);
+    backFlames.forEach(f => drawFlame(bc, f, t, backFlameFill));
+    const smokeA = EXO_EASE.out(exoOnce(t, 0.6, 1));
+    if (!smokeA) return;
+    smoke.forEach(s => {
+      const p = exoAlternate(t, 0, s.d, EXO_EASE.inOut);
+      base(bc);
+      bc.globalAlpha = smokeA;
+      bc.translate(s.x + s.dx * p, s.y + 4 * vh * p);
+      bc.scale(1 + 0.15 * p, 1 + 0.15 * p);
+      bc.scale(s.rx, s.ry);
+      exoBlob(bc, smokeFill);
+    });
+  };
+
+  const paintFront = t => {
+    base(fc);
+    fc.globalAlpha = 1;
+    fc.clearRect(-pad, -pad, W + pad * 2, H + pad * 2);
+
+    const floorA = EXO_EASE.out(exoOnce(t, 0.5, 0.9));
+    if (floorA) {
+      fc.globalAlpha = floorA;
+      fc.fillStyle = floor;
+      all(fc);
+    }
+    frontFlames.forEach(f => drawFlame(fc, f, t, frontFlameFill));
+
+    // The orange haze he looms in, which parts to reveal him (2.1-3.4s).
+    const veilP = exoOnce(t, 0, 3.4);
+    if (veilP < 1) {
+      const veilA = exoKeys(veilP, [[0, 0], [0.12, 0], [0.3, 1], [0.6, 1], [1, 0]], EXO_EASE.inOut);
+      if (veilA) {
+        const cx = W / 2, cy = 0.55 * H, rx = 0.5 * W * 1.58, ry = 0.45 * H * 1.58;
+        base(fc);
+        fc.globalAlpha = veilA;
+        fc.translate(cx, cy);
+        fc.scale(rx, ry);
+        fc.fillStyle = veilFill;
+        fc.fillRect((-pad - cx) / rx, (-pad - cy) / ry, (W + pad * 2) / rx, (H + pad * 2) / ry);
+      }
+      haze.forEach(h => {
+        const a = exoKeys(veilP, [[0, 0], [0.15, 1], [0.62, 1], [1, 0]], EXO_EASE.inOut);
+        if (!a) return;
+        const s = exoKeys(veilP, [[0, 0.8], [0.62, 1]], EXO_EASE.inOut);
+        const m = exoKeys(veilP, [[0, 0], [0.62, 0], [1, 1]], EXO_EASE.inOut);
+        base(fc);
+        fc.globalAlpha = a;
+        fc.translate(h.x + h.dx * m, h.y + h.dy * m);
+        fc.scale(h.r * s, h.r * s);
+        exoBlob(fc, h.fill);
+      });
+    }
+
+    embers.forEach(e => {
+      if (t < e.dl) return;
+      const p = ((t - e.dl) % e.d) / e.d;
+      base(fc);
+      fc.globalAlpha = exoKeys(p, [[0, 0], [0.1, 1], [1, 0]], EXO_EASE.linear);
+      fc.translate(e.x + e.dx * p, H * 1.02 - e.r - 105 * vh * p);
+      fc.scale(e.r, e.r);
+      exoBlob(fc, emberFill);
+    });
+
+    // As the ball swells everything is drowned in yellow light.
+    const washP = exoOnce(t, 4.22, 2.6);
+    if (washP) {
+      base(fc);
+      fc.globalAlpha = exoKeys(washP, [[0, 0], [0.3, 0.3], [0.62, 0.6], [0.8, 0.85], [1, 1]], EXO_EASE.in);
+      fc.fillStyle = wash;
+      all(fc);
+    }
+
+    // The blast swells from the ball (60% height) to fill the screen.
+    if (t >= 6.33) {
+      const r = 45 * Math.max(vw, vh) * (0.18 + 0.82 * EXO_EASE.blast(exoOnce(t, 6.33, 0.5)));
+      base(fc);
+      fc.globalAlpha = 1;
+      fc.translate(W / 2, 0.6 * H);
+      fc.scale(r, r);
+      exoBlob(fc, blastFill);
+    }
+  };
+
+  const t0 = performance.now();
+  const frame = now => {
+    if (!scene.isConnected) return;
+    const t = (now - t0) / 1000;
+    paintBack(t);
+    paintFront(t);
+    requestAnimationFrame(frame);
+  };
+  paintBack(0);
+  paintFront(0);
+  requestAnimationFrame(frame);
 }
 
 // --- The drawing ---------------------------------------------------------------

@@ -1403,13 +1403,14 @@ html[data-theme] .logo-egg:active { transform: none; filter: var(--logo-glow); }
    his chest drowns in light (4.25-6.3s). It fires and whites out the screen
    (6.3-6.8s), the white holds, then fades back to the start screen (7.8-10s).
    Keep in sync with EXODIA_* in logo-easter-egg.js and 'logo-obliterate'.
-   Only transform/opacity animate on the big layers (compositor-only, so the
-   detailed SVG isn't re-rasterized every frame on phones). Nothing scales up
-   past 1x at the end and layers that move later are promoted from the start,
-   so phones never have to draw a huge texture mid-animation (which showed
-   as square chunks missing). */
+   Phones only have so much GPU memory for layers, and every full-screen CSS
+   layer costs a full-resolution texture; too many left square chunks
+   undrawn. So all the soft stuff (fire wall, flames, smoke, haze, embers,
+   the yellow wash and the blast) is painted on two small canvases (behind
+   and in front of him, see startExodiaFire), and only transform/opacity
+   animate on the rest. */
 .fx-exodia { position: fixed; inset: 0; z-index: 5; overflow: hidden; pointer-events: auto; }
-.exo-scene { position: absolute; inset: 0; overflow: hidden; will-change: transform; animation: exo-hide 0.01s linear 6.8s forwards, exo-quake 0.6s linear 6.3s; }
+.exo-scene { position: absolute; inset: 0; overflow: hidden; animation: exo-hide 0.01s linear 6.8s forwards, exo-quake 0.6s linear 6.3s; }
 @keyframes exo-hide { to { visibility: hidden; } }
 @keyframes exo-quake {
   0%, 100% { transform: none; }
@@ -1419,45 +1420,15 @@ html[data-theme] .logo-egg:active { transform: none; filter: var(--logo-glow); }
   60% { transform: translate(6px, 5px); }
   80% { transform: translate(-3px, 2px); }
 }
-.exo-black,
-.exo-fill,
-.exo-floor,
-.exo-veil,
-.exo-wash { position: absolute; inset: 0; pointer-events: none; }
-/* Hidden once the opaque fire wall has faded in over it. */
-.exo-black { background: #000; animation: fx-fade-in 0.5s ease-in both, exo-hide 0.01s linear 1.5s forwards; }
-
-/* The fire wall: deep red at the top, bright orange-yellow behind him. */
-.exo-bg {
+/* Overhangs the screen so the quake shows no edge (EXO_FIRE_PAD). */
+.exo-canvas {
   position: absolute;
-  inset: -30px;
-  background: linear-gradient(to bottom, #5a1a06 0%, #b8400c 14%, #ea6a10 32%, #f59a1c 55%, #f8b632 75%, #e8891a 100%);
-  animation: fx-fade-in 0.9s ease-out 0.5s both;
+  left: -30px;
+  top: -30px;
+  width: calc(100% + 60px);
+  height: calc(100% + 60px);
+  pointer-events: none;
 }
-/* The flames are radial gradients on three shared layers (two back, one
-   front) that flicker out of step, instead of one animated layer per flame. */
-.exo-flames {
-  position: absolute;
-  inset: 0;
-  background-repeat: no-repeat;
-  transform-origin: 50% 100%;
-  animation: fx-fade-in 0.8s ease-out var(--in) both, exo-flame var(--d) ease-in-out var(--in) infinite alternate;
-}
-.exo-flames--back0 { --in: 0.5s; --d: 0.45s; }
-.exo-flames--back1 { --in: 0.8s; --d: 0.6s; animation-direction: normal, alternate-reverse; }
-.exo-flames--front0 { --in: 0.7s; --d: 0.35s; }
-@keyframes exo-flame {
-  from { transform: scale(0.95, 0.88) skewX(-3deg); }
-  to { transform: scale(1.03, 1.1) skewX(3deg); }
-}
-/* Dark smoke rolling along the top: one layer of gradients. */
-.exo-smoke {
-  position: absolute;
-  inset: 0;
-  background-repeat: no-repeat;
-  animation: fx-fade-in 1s ease-out 0.6s both, exo-drift 4s ease-in-out infinite alternate;
-}
-@keyframes exo-drift { to { transform: translate(3vw, 3vh) scale(1.06); } }
 
 /* Exodia: the energy ball (1010/1600 of the art) sits at EXODIA_ORB_Y. */
 .exo-figure-wrap {
@@ -1473,7 +1444,7 @@ html[data-theme] .logo-egg:active { transform: none; filter: var(--logo-glow); }
 /* Rises rather than zooms: a scale change would make the phone redraw the
    detailed SVG layers when it ends. */
 @keyframes exo-rise { from { transform: translateY(7%); } }
-.exo-body { position: absolute; inset: 0; will-change: transform; animation: exo-rumble 0.09s linear 5s 14; }
+.exo-body { position: absolute; inset: 0; animation: exo-rumble 0.09s linear 5s 14; }
 @keyframes exo-rumble {
   25% { transform: translate(2px, -1px); }
   50% { transform: translate(-2px, 1px); }
@@ -1487,9 +1458,9 @@ html[data-theme] .logo-egg:active { transform: none; filter: var(--logo-glow); }
   height: 100%;
   overflow: visible;
   transform-origin: 50% 63.125%;
-  /* Keeps the fists and claws at one raster scale while they scale. */
-  will-change: transform;
 }
+/* Keeps the fists and claws at one raster scale while they scale. */
+.exo-fists, .exo-open { will-change: transform; }
 /* The WebP layers are cropped to the art (see the boxes in
    tools/export-exodia-art.js), in units of the 1000x1600 drawing.
    transform-origin stays on the ball at (500, 1010). */
@@ -1619,89 +1590,6 @@ img.exo-sil { filter: none; }
   78% { transform: scale(1.7); }
   81% { opacity: 1; transform: scale(1.5); }
   100% { opacity: 0; transform: scale(2.2); visibility: hidden; }
-}
-/* The blast fills the screen from the ball's position (the ball sits at
-   60% height). It only ever scales down from its full size. */
-.exo-blast {
-  position: absolute;
-  left: 50%;
-  top: 60%;
-  width: 90vmax;
-  aspect-ratio: 1;
-  translate: -50% -50%;
-  border-radius: 50%;
-  background: radial-gradient(closest-side, #fff 34%, #fffbe0 50%, rgb(253 230 138 / 0.8) 68%, rgb(251 191 36 / 0));
-  opacity: 0;
-  animation: exo-blast 0.5s cubic-bezier(0.6, 0, 0.9, 0.5) 6.33s both;
-}
-@keyframes exo-blast {
-  0% { opacity: 1; transform: scale(0.18); }
-  100% { opacity: 1; transform: none; }
-}
-
-/* Ground the bottom of the figure in smoke and low flames. */
-.exo-floor {
-  background: linear-gradient(to top, rgb(92 28 4 / 0.95), rgb(160 60 10 / 0.55) 12%, rgb(160 60 10 / 0) 26%);
-  animation: fx-fade-in 0.9s ease-out 0.5s both;
-}
-/* The orange haze he looms in, which parts to reveal him (2.1-3.4s). */
-.exo-veil {
-  background: radial-gradient(ellipse at 50% 55%, rgb(253 170 70 / 0.72), rgb(234 110 26 / 0.7));
-  animation: exo-veil 3.4s ease-in-out both;
-}
-@keyframes exo-veil {
-  0%, 12% { opacity: 0; }
-  30%, 60% { opacity: 1; }
-  100% { opacity: 0; visibility: hidden; }
-}
-.exo-haze {
-  position: absolute;
-  left: var(--x);
-  top: var(--y);
-  width: var(--s);
-  aspect-ratio: 1;
-  translate: -50% -50%;
-  border-radius: 50%;
-  background: radial-gradient(closest-side, var(--c), rgb(250 150 50 / 0));
-  animation: exo-haze 3.4s ease-in-out both;
-}
-@keyframes exo-haze {
-  0% { opacity: 0; transform: scale(0.8); }
-  15% { opacity: 1; }
-  62% { opacity: 1; transform: none; }
-  100% { opacity: 0; transform: translate(var(--dx), var(--dy)); visibility: hidden; }
-}
-/* The embers sit still on one tall layer (two identical halves) that scrolls
-   up and loops, instead of one animated layer per ember. */
-.exo-embers {
-  position: absolute;
-  left: 0;
-  top: 0;
-  width: 100%;
-  height: 200%;
-  animation: fx-fade-in 1s ease-out 0.8s both, exo-embers 5s linear 0.8s infinite;
-}
-@keyframes exo-embers { to { transform: translateY(-50%); } }
-.exo-ember {
-  position: absolute;
-  width: calc(var(--s) * 3);
-  height: calc(var(--s) * 3);
-  border-radius: 50%;
-  background: radial-gradient(closest-side, #ffe08a 33%, rgb(255 179 64 / 0.6) 50%, rgb(255 179 64 / 0));
-}
-
-/* As the ball swells everything is drowned in yellow light. */
-.exo-wash {
-  background: radial-gradient(circle at 50% 60%, rgb(255 250 200 / 0.95), rgb(253 224 71 / 0.7) 25%, rgb(251 191 36 / 0.35) 55%, rgb(245 158 11 / 0) 85%);
-  opacity: 0;
-  animation: exo-wash 2.6s ease-in 4.22s both;
-}
-@keyframes exo-wash {
-  0% { opacity: 0; }
-  30% { opacity: 0.3; }
-  62% { opacity: 0.6; }
-  80% { opacity: 0.85; }
-  100% { opacity: 1; }
 }
 /* Rays shooting out as it fires: thin separate layers that stretch out from
    the ball (the ellipse shape tapers each ray at both ends). */
