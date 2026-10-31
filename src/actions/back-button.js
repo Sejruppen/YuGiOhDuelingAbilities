@@ -55,7 +55,7 @@ function handleAppBack() {
       else openResetConfirm();
       return true;
     case SCREENS.TOURNAMENT:
-      if (tournamentDraw.active && !tournamentDraw.done) skipTournamentDraw();
+      if (tournamentUi.view !== 'menu') showTournamentMenu();
       else leaveTournament();
       return true;
     case SCREENS.COOP:

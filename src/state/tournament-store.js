@@ -9,13 +9,14 @@
 //   randomIds the entrants that were drawn at random (for the draw animation)
 //   slots     round-1 positions (length = next power of 2), null = bye
 //   results   { 'round:match': 'a' | 'b' } winners of played duels
+//   id        set when the bracket is drawn, links it to its history entry
 const TOURNAMENT_STORAGE_KEY = 'ygo_tournament';
 const TOURNAMENT_MIN_SIZE = 2;
 const TOURNAMENT_DEFAULT_SIZE = 8;
 // Only ever in a tournament when picked by hand.
 const TOURNAMENT_PICK_ONLY_IDS = [NEUTRAL_CHARACTER_ID, CUSTOM_CHARACTER_ID, 'theotaur', 'trizze'];
 
-const newTournament = () => ({ phase: 'setup', size: TOURNAMENT_DEFAULT_SIZE, picks: [], entrants: [], randomIds: [], slots: [], results: {} });
+const newTournament = () => ({ id: null, phase: 'setup', size: TOURNAMENT_DEFAULT_SIZE, picks: [], entrants: [], randomIds: [], slots: [], results: {} });
 
 function loadTournament() {
   try {
@@ -142,6 +143,73 @@ function canChangeResult(rounds, match) {
   if (!match.winnerId || match.bye) return false;
   const next = rounds[match.round + 1]?.[Math.floor(match.index / 2)];
   return !next || !next.winnerId;
+}
+
+// --- History ------------------------------------------------------------------
+// Finished tournaments, newest first: { id, finishedAt, slots, results }.
+// The bracket is rebuilt from slots + results with getTournamentRounds().
+// An entry is added when the champion is decided and removed again if the
+// final's result is changed.
+const TOURNAMENT_HISTORY_KEY = 'ygo_tournament_history';
+const TOURNAMENT_HISTORY_MAX = 100;
+
+function loadTournamentHistory() {
+  try {
+    const saved = JSON.parse(localStorage.getItem(TOURNAMENT_HISTORY_KEY));
+    return Array.isArray(saved) ? saved.filter(e => e && Array.isArray(e.slots) && e.results) : [];
+  } catch {
+    return [];
+  }
+}
+
+let tournamentHistory = loadTournamentHistory();
+
+function saveTournamentHistory() {
+  try {
+    localStorage.setItem(TOURNAMENT_HISTORY_KEY, JSON.stringify(tournamentHistory));
+  } catch {}
+}
+
+function syncTournamentHistory() {
+  if (tournament.phase !== 'bracket') return;
+  if (!tournament.id) {
+    tournament = { ...tournament, id: String(Date.now()) };
+    saveTournament();
+  }
+  const others = tournamentHistory.filter(e => e.id !== tournament.id);
+  tournamentHistory = getTournamentChampion()
+    ? [{ id: tournament.id, finishedAt: Date.now(), slots: tournament.slots, results: tournament.results }, ...others].slice(0, TOURNAMENT_HISTORY_MAX)
+    : others;
+  saveTournamentHistory();
+}
+
+function clearTournamentHistory() {
+  tournamentHistory = [];
+  saveTournamentHistory();
+}
+
+// A tournament finished before history existed (no id yet) is added once.
+if (tournament.phase === 'bracket' && !tournament.id && getTournamentChampion()) syncTournamentHistory();
+
+// Titles per duelist (both Yugi decks count for Yugi), most first:
+// [{ key, name, titles, runnerUps }].
+function getTournamentLeaderboard() {
+  const byKey = new Map();
+  const bump = (id, field) => {
+    const char = getTournamentChar(id);
+    if (!char) return;
+    const key = getDuelistKey(char);
+    if (!byKey.has(key)) byKey.set(key, { key, name: char.name.replace(/\s*\(.*\)\s*$/, '').trim(), titles: 0, runnerUps: 0 });
+    byKey.get(key)[field]++;
+  };
+  for (const entry of tournamentHistory) {
+    const final = getTournamentRounds(entry).at(-1)[0];
+    if (!final.winnerId) continue;
+    bump(final.winnerId, 'titles');
+    const runnerUp = final.winnerId === final.a ? final.b : final.a;
+    if (runnerUp) bump(runnerUp, 'runnerUps');
+  }
+  return [...byKey.values()].sort((x, y) => y.titles - x.titles || y.runnerUps - x.runnerUps || x.name.localeCompare(y.name));
 }
 
 function getRoundName(round, totalRounds) {

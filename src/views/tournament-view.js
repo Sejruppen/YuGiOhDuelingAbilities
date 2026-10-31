@@ -15,19 +15,22 @@ function renderTournamentButton() {
 }
 
 function renderTournamentView() {
+  if (tournamentUi.view === 'history') return renderTournamentHistory();
+  if (tournamentUi.view !== 'play') return renderTournamentMenu();
   if (tournament.phase !== 'bracket') return renderTournamentSetup();
   if (tournamentDraw.active) return renderTournamentDraw();
   return renderTournamentBracket();
 }
 
-function renderTournamentHeader(title, rightHtml = '<div class="w-16"></div>') {
+// Sub-views go back to the menu, the menu goes back to the start screen.
+function renderTournamentHeader(title, rightHtml = '<div class="w-16"></div>', backAction = 'showTournamentMenu()') {
   // Holding the 🏆 for 2s collects ten star chips (tournament-size-eggs.js).
   const heading = title.startsWith('🏆')
     ? `<span class="tn-trophy cegg-press" onpointerdown="startStartEggPress(this, 'star-chips')" onpointerup="cancelStartEggPress(this)" onpointerleave="cancelStartEggPress(this)" onpointercancel="cancelStartEggPress(this)" oncontextmenu="return false">🏆</span>${title.slice('🏆'.length)}`
     : title;
   return `
     <header class="px-4 py-3.5 border-b border-slate-800 flex items-center justify-between bg-slate-900/80 backdrop-blur">
-      <button onclick="leaveTournament()" class="text-slate-300 text-base font-medium px-2 py-1 w-16 text-left">← Back</button>
+      <button onclick="${backAction}" class="text-slate-300 text-base font-medium px-2 py-1 w-16 text-left">← Back</button>
       <h2 class="text-lg font-bold text-white">${heading}</h2>
       ${rightHtml}
     </header>
@@ -220,11 +223,9 @@ function renderTournamentBracket() {
   const champion = getTournamentChampion(rounds);
   const deal = tournamentUi.dealBracket;
   tournamentUi.dealBracket = false;
-  const newLabel = tournamentUi.confirmNew ? 'Sure?' : 'New';
-  const newBtn = `<button onclick="newTournamentClick()" class="text-sm font-semibold w-16 text-right px-2 py-1 ${tournamentUi.confirmNew ? 'text-rose-400' : 'text-slate-300'}">${newLabel}</button>`;
 
   return `
-    ${renderTournamentHeader('🏆 Tournament', newBtn)}
+    ${renderTournamentHeader('🏆 Tournament')}
     ${renderTournamentStatus(rounds, champion)}
     <div class="tn-bracket flex-1 min-h-0 overflow-auto no-scrollbar">
       <div class="${deal ? 'tn-deal ' : ''}flex gap-4 p-4 min-h-full" style="width: max-content">
@@ -237,6 +238,142 @@ function renderTournamentBracket() {
           </div>
         `).join('')}
       </div>
+    </div>
+  `;
+}
+
+// --- History --------------------------------------------------------------------
+
+const tnCharName = id => tnEsc(getTournamentChar(id)?.name || '???');
+const tnDate = ms => new Date(ms).toLocaleDateString('en-GB', { weekday: 'short', day: 'numeric', month: 'short', year: 'numeric' });
+
+// --- Menu -----------------------------------------------------------------------
+
+function renderTournamentMenuButton({ icon, label, sub, onclick, primary = false, danger = false, disabled = false }) {
+  const style = danger
+    ? 'border-rose-500 bg-rose-600 text-white'
+    : primary
+      ? 'border-amber-400 bg-amber-500 hover:bg-amber-400 text-slate-950 shadow-lg shadow-amber-500/20'
+      : 'border-slate-700 bg-slate-900/90 hover:border-amber-500/50 text-white';
+  const subStyle = danger ? 'text-rose-100' : primary ? 'text-slate-900/80' : 'text-slate-400';
+  return `
+    <button onclick="${onclick}" ${disabled ? 'disabled' : ''} class="w-full text-left px-4 py-4 rounded-2xl border ${style} transition flex items-center gap-4 disabled:opacity-40">
+      <span class="text-3xl leading-none"><span class="ce-emoji">${icon}</span></span>
+      <span class="flex-1 min-w-0">
+        <span class="block text-lg font-black leading-tight">${label}</span>
+        <span class="block text-xs mt-0.5 truncate ${subStyle}">${sub}</span>
+      </span>
+    </button>
+  `;
+}
+
+function renderTournamentMenu() {
+  const inBracket = tournament.phase === 'bracket';
+  const rounds = inBracket ? getTournamentRounds() : null;
+  const champion = inBracket ? getTournamentChampion(rounds) : null;
+  const unfinished = inBracket && !champion;
+
+  let continueSub = 'No tournament in progress';
+  if (champion) continueSub = `Finished · Champion: ${tnCharName(champion)}`;
+  else if (unfinished) {
+    const left = rounds.flat().filter(m => !m.bye && !m.winnerId).length;
+    const current = rounds.find(matches => matches.some(m => m.ready));
+    continueSub = `${current ? `${getRoundName(current[0].round, rounds.length)} · ` : ''}${left} duel${left === 1 ? '' : 's'} left`;
+  }
+
+  const n = tournamentHistory.length;
+  const top = n ? getTournamentLeaderboard()[0] : null;
+  const historySub = n
+    ? `${n} played${top ? ` · Most titles: ${tnEsc(top.name)} (${top.titles})` : ''}`
+    : 'No finished tournaments yet';
+
+  const armed = tournamentUi.confirmNew;
+  return `
+    ${renderTournamentHeader('🏆 Tournament', undefined, 'leaveTournament()')}
+    <div class="flex-1 min-h-0 overflow-y-auto p-4 no-scrollbar flex flex-col justify-center gap-3">
+      ${renderTournamentMenuButton({ icon: '▶️', label: 'Continue', sub: continueSub, onclick: 'continueTournament()', primary: unfinished, disabled: !inBracket })}
+      ${renderTournamentMenuButton({
+        icon: '✨',
+        label: armed ? 'Tap again for a new one' : 'New tournament',
+        sub: armed ? 'The current tournament will be abandoned' : 'Pick duelists and draw a bracket',
+        onclick: 'newTournamentClick()',
+        primary: !unfinished,
+        danger: armed
+      })}
+      ${renderTournamentMenuButton({ icon: '📜', label: 'History', sub: historySub, onclick: 'openTournamentHistory()' })}
+    </div>
+  `;
+}
+
+function renderTournamentLeaderboard() {
+  const medals = ['🥇', '🥈', '🥉'];
+  const rows = getTournamentLeaderboard().slice(0, 8).map((d, i) => `
+    <li class="flex items-center gap-3 px-3 py-2 ${i ? 'border-t border-slate-800' : ''}">
+      <span class="w-6 text-center ${medals[i] ? 'text-lg' : 'text-sm font-bold text-slate-500'}">${medals[i] ? `<span class="ce-emoji">${medals[i]}</span>` : i + 1}</span>
+      <span class="flex-1 min-w-0 font-bold text-white truncate">${tnEsc(d.name)}</span>
+      <span class="text-sm tabular-nums ${d.titles ? 'text-amber-300 font-bold' : 'text-slate-500'}"><span class="ce-emoji">🏆</span> ${d.titles}</span>
+      <span class="w-12 text-right text-xs tabular-nums text-slate-400">2nd ${d.runnerUps}</span>
+    </li>
+  `).join('');
+  return `
+    <p class="text-xs font-semibold uppercase tracking-widest text-slate-400 mb-2">Hall of Fame</p>
+    <ol class="rounded-2xl border border-slate-800 bg-slate-900/90 overflow-hidden mb-5">${rows}</ol>
+  `;
+}
+
+// Every played duel, round by round ("Winner def. Loser"). Byes are skipped.
+function renderTournamentHistoryRounds(rounds) {
+  return rounds.map((matches, round) => {
+    const duels = matches.filter(m => !m.bye && m.winnerId).map(m => {
+      const loser = m.winnerId === m.a ? m.b : m.a;
+      return `<li class="text-sm leading-snug"><b class="text-white">${tnCharName(m.winnerId)}</b> <span class="text-slate-500">def.</span> <span class="text-slate-400">${tnCharName(loser)}</span></li>`;
+    }).join('');
+    if (!duels) return '';
+    return `
+      <div>
+        <p class="text-[0.65rem] font-bold uppercase tracking-widest text-amber-400/80 mb-1">${getRoundName(round, rounds.length)}</p>
+        <ul class="space-y-0.5">${duels}</ul>
+      </div>
+    `;
+  }).join('');
+}
+
+function renderTournamentHistoryEntry(entry) {
+  const rounds = getTournamentRounds(entry);
+  const final = rounds.at(-1)[0];
+  const runnerUp = final.winnerId === final.a ? final.b : final.a;
+  const champ = getTournamentChar(final.winnerId);
+  const open = tournamentUi.openHistoryId === entry.id;
+  const size = entry.slots.filter(Boolean).length;
+  return `
+    <div class="rounded-2xl border ${open ? 'border-amber-500/50' : 'border-slate-800'} bg-slate-900/90 overflow-hidden">
+      <button onclick="toggleTournamentHistoryEntry('${tnEsc(entry.id)}')" aria-expanded="${open}" class="w-full text-left px-4 py-3 flex items-center gap-3">
+        <span class="text-2xl leading-none"><span class="ce-emoji">🏆</span></span>
+        <span class="flex-1 min-w-0">
+          <span class="block text-[0.7rem] text-slate-400">${tnDate(entry.finishedAt)} · ${size} duelists</span>
+          <span class="block font-black text-white leading-tight truncate">${tnEsc(champ?.name || '???')}</span>
+          <span class="block text-xs text-amber-400/80 truncate">${tnEsc(champ?.theme || '')}</span>
+          ${runnerUp ? `<span class="block text-xs text-slate-400 mt-0.5 truncate">beat ${tnCharName(runnerUp)} in the final</span>` : ''}
+        </span>
+        <span class="text-slate-400 text-sm">${open ? '▲' : '▼'}</span>
+      </button>
+      ${open ? `<div class="px-4 pb-3 pt-2 border-t border-slate-800 space-y-2.5">${renderTournamentHistoryRounds(rounds)}</div>` : ''}
+    </div>
+  `;
+}
+
+function renderTournamentHistory() {
+  const empty = !tournamentHistory.length;
+  return `
+    ${renderTournamentHeader('<span class="ce-emoji">📜</span> History')}
+    <div class="flex-1 min-h-0 overflow-y-auto p-4 no-scrollbar">
+      ${empty
+        ? '<p class="text-sm text-slate-400 text-center mt-10 leading-relaxed">No finished tournaments yet.<br>Crown a champion and they will be remembered here.</p>'
+        : `
+          ${renderTournamentLeaderboard()}
+          <p class="text-xs font-semibold uppercase tracking-widest text-slate-400 mb-2">Tournaments</p>
+          <div class="space-y-2">${tournamentHistory.map(renderTournamentHistoryEntry).join('')}</div>
+        `}
     </div>
   `;
 }
