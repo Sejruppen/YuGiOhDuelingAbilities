@@ -27,6 +27,7 @@ A mobile-first PWA that two players use side by side during physical Yu-Gi-Oh! d
     - `restartClass(el, cls, ms)`
     - `getFxLayer()`
     - `prefersReducedMotion()`
+    - `FX_LITE` / `fxCount(n)`: lite mode on low-end phones (≤4 cores or ≤4 GB). `fxCount` halves particle counts, and `html.fx-lite` lets CSS drop heavy layers.
   - `src/effects/sounds.js`: all audio, **synthesised with Web Audio (no audio files)**.
     - `playSound({ name })` looks the name up in the current theme's kit.
     - `COOP_SOUNDS` is spread into every kit, and egg sounds usually live there.

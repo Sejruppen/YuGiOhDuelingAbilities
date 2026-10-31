@@ -90,6 +90,7 @@ const DARK_PALADIN_SVG = `
       <path d="M66 252 L51 50" stroke="#0f172a" stroke-width="6" stroke-linecap="round" />
       <path d="M66 252 L51 50" stroke="#475569" stroke-width="2" stroke-linecap="round" />
       <path class="dp-blade" d="M51 62 C28 30 32 -2 48 -34 C45 -2 58 24 78 40 C66 44 58 52 51 62 Z" fill="url(#dp-g-blade)" stroke="#0f172a" stroke-width="1.5" />
+      <path class="dp-blade-glow" d="M51 62 C28 30 32 -2 48 -34 C45 -2 58 24 78 40 C66 44 58 52 51 62 Z" fill="#f0fdfa" stroke="#5eead4" stroke-width="4" />
       <path d="M41 6 Q49 18 61 26 M40 28 Q48 38 60 44" fill="none" stroke="#334155" stroke-width="3" />
       <path d="M28 72 L52 62 L82 52 L73 64 L54 73 L33 82 Z" fill="url(#dp-g-gold)" />
       <path d="M36 100 L56 92 L78 85 L71 96 L56 102 Z" fill="url(#dp-g-gold)" />
@@ -126,7 +127,7 @@ const DP_BOLTS = [
   '20,0 28,18 18,26 30,46 22,52 34,72',
   '78,0 70,16 82,28 68,44 76,50 64,70',
   '52,0 44,14 58,24 42,42 54,50 46,64'
-].map((points, i) => `<svg class="dp-bolt" style="--t: ${900 + i * 1000}ms;" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true"><polyline points="${points}" /></svg>`);
+].map((points, i) => `<svg class="dp-bolt" style="--t: ${900 + i * 1000}ms;" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true"><polyline class="dp-bolt-glow" points="${points}" /><polyline points="${points}" /></svg>`);
 
 // --- TRISTAN: the Blue-Eyes Ultimate Dragon ------------------------------------
 // Reuses the Ultimate Dragon parts from the Kaiba character egg
@@ -151,42 +152,55 @@ const NAME_EGGS = {
     msg: 'Ah… Theodor. The Dark Paladin has been waiting for you.',
     html: () => {
       const dragons = DP_DRAGONS.slice().sort(() => Math.random() - 0.5).slice(0, DP_SLOTS.length);
-      const sky = `
+      // Each dragon only lives in the half of the sky it hovers over (the cut
+      // runs from (0, 15%) to (100%, 85%)), so none is drawn twice. The white
+      // .dp-ice copy fades in when the blade hits them.
+      const dragonHtml = dragons.map(([name, emoji, filter], i) => {
+        const [x, y] = DP_SLOTS[i];
+        return {
+          upper: y < 15 + 0.7 * x,
+          html: `<div class="dp-dragon ce-at" style="left: ${x}%; top: ${y}%; --sx: ${x < 50 ? -60 : 60}vw; --t: ${DP_DRAGON_AT + i * DP_DRAGON_GAP}ms;"><span class="dp-dragon-art"><span class="ce-emoji" style="filter: ${filter};">${emoji}</span><span class="ce-emoji dp-ice">${emoji}</span></span><small>${name}</small></div>`
+        };
+      });
+      const sky = upper => `
         <div class="dp-sky"></div>
-        <div class="dp-moon ce-at"></div>
-        ${dragons.map(([name, emoji, filter], i) => {
-          const [x, y] = DP_SLOTS[i];
-          return `<div class="dp-dragon ce-at" style="left: ${x}%; top: ${y}%; --sx: ${x < 50 ? -60 : 60}vw; --t: ${DP_DRAGON_AT + i * DP_DRAGON_GAP}ms;"><span class="ce-emoji" style="filter: ${filter};">${emoji}</span><small>${name}</small></div>`;
-        }).join('')}`;
+        ${upper ? '<div class="dp-moon ce-at"></div>' : ''}
+        ${dragonHtml.filter(d => d.upper === upper).map(d => d.html).join('')}`;
       const atk = ceRange(dragons.length + 1, i => `<b style="--t: ${DP_DRAGON_AT - 200 + i * DP_DRAGON_GAP}ms;">${DP_BASE_ATK + i * 500}</b>`);
       // Dragon power sucked into the blade during the charge.
-      const motes = ceRange(22, i => {
+      const moteCount = fxCount(14);
+      const motes = ceRange(moteCount, i => {
         const a = ceRand(0, Math.PI * 2);
         const d = ceRand(30, 60);
-        return `<span class="dp-mote ce-at" style="--mx: ${(Math.cos(a) * d).toFixed(1)}vw; --my: ${(Math.sin(a) * d).toFixed(1)}vh; --t: ${6150 + i * 30}ms;"></span>`;
+        return `<span class="dp-mote ce-at" style="--mx: ${(Math.cos(a) * d).toFixed(1)}vw; --my: ${(Math.sin(a) * d).toFixed(1)}vh; --t: ${Math.round(6150 + (i * 630) / moteCount)}ms;"></span>`;
       });
-      const shards = ceRange(16, i => {
-        const a = (i / 16) * Math.PI * 2 + ceRand(-0.2, 0.2);
+      const shardCount = fxCount(12);
+      const shards = ceRange(shardCount, i => {
+        const a = (i / shardCount) * Math.PI * 2 + ceRand(-0.2, 0.2);
         const d = ceRand(45, 80);
         return `<span class="dp-shard ce-at" style="--dx: ${(Math.cos(a) * d).toFixed(1)}vw; --dy: ${(Math.sin(a) * d).toFixed(1)}vh; --r: ${Math.round(ceRand(-540, 540))}deg; --s: ${ceRand(0.6, 1.4).toFixed(2)};"></span>`;
       });
-      const slash = (cls, t, [x1, y1, x2, y2], from) =>
-        `<svg class="dp-slash ${cls}" style="--t: ${t}ms; --from: ${from};" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true"><line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" /></svg>`;
+      // The glow is a wider, translucent copy of the line underneath it.
+      const slash = (cls, t, [x1, y1, x2, y2], from) => {
+        const pts = `x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}"`;
+        return `<svg class="dp-slash ${cls}" style="--t: ${t}ms; --from: ${from};" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true"><line class="dp-slash-glow" ${pts} /><line ${pts} /></svg>`;
+      };
+      const arc = 'M-8 8 Q58 14 108 92 Q46 34 -8 8 Z';
       return `
         <div class="dp-light"></div>
-        <div class="dp-split dp-split--a">${sky}</div>
-        <div class="dp-split dp-split--b">${sky}</div>
+        <div class="dp-split dp-split--a">${sky(true)}</div>
+        <div class="dp-split dp-split--b">${sky(false)}</div>
         ${[900, 1900, 2900].map((t, i) => `<div class="dp-flash" style="--t: ${t}ms;"></div>${DP_BOLTS[i]}`).join('')}
         <div class="dp-dark"></div>
         <div class="dp-rays ce-at"></div>
         <div class="dp-aura ce-at"></div>
         ${motes}
-        <div class="dp-knight ce-at">${DARK_PALADIN_SVG}</div>
+        <div class="dp-knight ce-at"><span class="dp-glow"></span>${DARK_PALADIN_SVG}<span class="dp-shade">${DARK_PALADIN_SVG}</span></div>
         <div class="dp-title ce-at">DARK PALADIN<small>Dragon-Slaying Spellsword</small></div>
         <div class="dp-atk ce-at"><span>ATK</span><div class="dp-atk-num">${atk}</div><small>+500 for every Dragon</small></div>
         <div class="dp-banner ce-at">DRAGON SLAYER BLADE!!</div>
         <div class="dp-flash" style="--t: 7000ms;"></div>
-        <svg class="dp-arc" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true"><path d="M-8 8 Q58 14 108 92 Q46 34 -8 8 Z" /></svg>
+        <svg class="dp-arc" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true"><path class="dp-arc-glow" d="${arc}" /><path d="${arc}" /></svg>
         ${slash('dp-slash--1', 7000, [-2, 13.6, 102, 86.4], 'inset(0 100% 100% 0)')}
         ${slash('dp-slash--2', 7150, [102, 22, -2, 74], 'inset(0 0 100% 100%)')}
         ${slash('dp-slash--3', 7300, [-2, 47, 102, 53], 'inset(0 100% 0 0)')}
@@ -210,7 +224,7 @@ const NAME_EGGS = {
     title: 'White lightning strikes the tomb.',
     msg: 'Ah… Trizze. Three dragons answer your call.',
     html: () => {
-      const bolt = '<svg viewBox="0 0 20 100" preserveAspectRatio="none" aria-hidden="true"><polyline points="10,0 4,16 13,28 5,46 15,60 6,78 10,100" /></svg>';
+      const bolt = '<svg viewBox="0 0 20 100" preserveAspectRatio="none" aria-hidden="true"><polyline class="ud-bolt-glow" points="10,0 4,16 13,28 5,46 15,60 6,78 10,100" /><polyline points="10,0 4,16 13,28 5,46 15,60 6,78 10,100" /></svg>';
       const cards = UD_CARDS.map(([a, t]) => `
         <div class="ud-arm ce-at" style="--a: ${a}deg;">
           <div class="ud-reach"><div class="ud-up">
@@ -229,12 +243,13 @@ const NAME_EGGS = {
         <span class="ud-head ud-head--${side}" style="left: ${x}%; top: ${y}%;"><span class="ud-face">${BUD_HEAD_SVG}<i class="ud-orb"></i><i class="ud-beam"></i></span></span>`).join('');
       const atk = ceRange(6, i => `<b style="--t: ${UD_ATK_AT + i * UD_ATK_GAP}ms;">${3000 + i * 300}</b>`);
       // White power sucked into the three mouths during the charge.
-      const motes = ceRange(26, i => {
+      const moteCount = fxCount(16);
+      const motes = ceRange(moteCount, i => {
         const a = ceRand(0, Math.PI * 2);
         const d = ceRand(35, 65);
-        return `<span class="ud-mote ce-at" style="--mx: ${(Math.cos(a) * d).toFixed(1)}vw; --my: ${(Math.sin(a) * d).toFixed(1)}vh; --t: ${8400 + i * 40}ms;"></span>`;
+        return `<span class="ud-mote ce-at" style="--mx: ${(Math.cos(a) * d).toFixed(1)}vw; --my: ${(Math.sin(a) * d).toFixed(1)}vh; --t: ${Math.round(8400 + (i * 1040) / moteCount)}ms;"></span>`;
       });
-      const sparks = ceRange(18, () => `<span class="ud-spark" style="--x: ${ceRand(4, 96).toFixed(0)}%; --s: ${ceRand(4, 9).toFixed(0)}px; --t: ${ceRand(11200, 13600).toFixed(0)}ms; --dur: ${ceRand(2200, 3600).toFixed(0)}ms;"></span>`);
+      const sparks = ceRange(fxCount(12), () => `<span class="ud-spark" style="--x: ${ceRand(4, 96).toFixed(0)}%; --s: ${ceRand(4, 9).toFixed(0)}px; --t: ${ceRand(11200, 13600).toFixed(0)}ms; --dur: ${ceRand(2200, 3600).toFixed(0)}ms;"></span>`);
       return `
         <div class="ud-shake">
           <div class="ud-dark"></div>
@@ -245,6 +260,7 @@ const NAME_EGGS = {
           ${cards}
           <div class="ud-night"></div>
           <div class="ud-rig ce-at">
+            <span class="ud-aura"></span>
             <span class="ud-layer">${BUD_BODY_SVG}</span>
             <span class="ud-layer">${ULTIMATE_NECKS}</span>
             ${heads}

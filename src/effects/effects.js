@@ -23,6 +23,12 @@ function prefersReducedMotion() {
   return window.matchMedia?.('(prefers-reduced-motion: reduce)').matches ?? false;
 }
 
+// Lite mode for weaker phones: the heaviest eggs spawn half the particles
+// (fxCount) and drop their spinning ray layers (.fx-lite in effects.css).
+const FX_LITE = (navigator.deviceMemory || 8) <= 4 || (navigator.hardwareConcurrency || 8) <= 4;
+const fxCount = n => (FX_LITE ? Math.ceil(n / 2) : n);
+document.documentElement.classList.toggle('fx-lite', FX_LITE);
+
 // For effects that can't be derived from a state diff (e.g. a duel reset).
 function queueEffect(name, detail = {}) {
   fxQueue.push({ name, ...detail });

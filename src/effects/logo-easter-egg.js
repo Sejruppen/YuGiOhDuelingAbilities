@@ -93,14 +93,14 @@ function summonExodia(logo) {
   // that waits at Exodia's chest and ignites into the energy ball.
   // The Duel Disk game passes the Exodia card instead of the logo.
   const r = (logo.querySelector('img') || logo).getBoundingClientRect();
-  const flame = (i, n, front) => `<span class="exo-flame" style="--x: ${((i + 0.5) * 100 / n + ceRand(-5, 5)).toFixed(1)}%; --b: ${(front ? ceRand(-10, -2) : ceRand(-5, 30)).toFixed(0)}%; --w: ${ceRand(18, 34).toFixed(0)}vw; --h: ${(front ? ceRand(16, 30) : ceRand(45, 90)).toFixed(0)}vh; --d: ${ceRand(0.3, 0.6).toFixed(2)}s; --in: ${ceRand(0.5, 1.1).toFixed(2)}s"></span>`;
+  const flame = (i, n, front) => `<span class="exo-flame" style="--x: ${((i + 0.5) * 100 / n + ceRand(-5, 5)).toFixed(1)}%; --b: ${(front ? ceRand(-10, -2) : ceRand(-5, 30)).toFixed(0)}%; --w: ${ceRand(24, 40).toFixed(0)}vw; --h: ${(front ? ceRand(16, 30) : ceRand(45, 90)).toFixed(0)}vh; --d: ${ceRand(0.3, 0.6).toFixed(2)}s; --in: ${ceRand(0.5, 1.1).toFixed(2)}s"></span>`;
   const hazeColors = ['rgb(251 146 60 / 0.9)', 'rgb(234 108 24 / 0.85)', 'rgb(253 186 80 / 0.8)', 'rgb(250 160 60 / 0.9)', 'rgb(70 22 4 / 0.7)'];
-  const haze = ceRange(10, i => {
+  const haze = ceRange(fxCount(6), i => {
     const x = ceRand(5, 95);
-    return `<span class="exo-haze" style="--x: ${x.toFixed(0)}%; --y: ${ceRand(20, 85).toFixed(0)}%; --s: ${ceRand(55, 95).toFixed(0)}vw; --c: ${hazeColors[i % hazeColors.length]}; --dx: ${((x < 50 ? -1 : 1) * ceRand(35, 60)).toFixed(0)}vw; --dy: ${ceRand(-18, 4).toFixed(0)}vh"></span>`;
+    return `<span class="exo-haze" style="--x: ${x.toFixed(0)}%; --y: ${ceRand(20, 85).toFixed(0)}%; --s: ${ceRand(60, 95).toFixed(0)}vw; --c: ${hazeColors[i % hazeColors.length]}; --dx: ${((x < 50 ? -1 : 1) * ceRand(35, 60)).toFixed(0)}vw; --dy: ${ceRand(-18, 4).toFixed(0)}vh"></span>`;
   });
-  const smoke = ceRange(6, i => `<span class="exo-smoke" style="--x: ${(i * 20 + ceRand(-6, 6)).toFixed(0)}%; --y: ${ceRand(-14, 6).toFixed(0)}%; --s: ${ceRand(45, 80).toFixed(0)}vw; --dx: ${ceRand(-9, 9).toFixed(0)}vw; --d: ${ceRand(3, 5).toFixed(1)}s"></span>`);
-  const embers = ceRange(22, () => `<span class="exo-ember" style="--x: ${ceRand(0, 100).toFixed(0)}%; --s: ${ceRand(2, 5).toFixed(1)}px; --d: ${ceRand(2.5, 5).toFixed(1)}s; --dl: ${ceRand(0.8, 4.5).toFixed(2)}s; --dx: ${ceRand(-10, 10).toFixed(0)}vw"></span>`);
+  const smoke = ceRange(4, i => `<span class="exo-smoke" style="--x: ${(i * 33 + ceRand(-6, 6)).toFixed(0)}%; --y: ${ceRand(-14, 6).toFixed(0)}%; --s: ${ceRand(55, 85).toFixed(0)}vw; --dx: ${ceRand(-9, 9).toFixed(0)}vw; --d: ${ceRand(3, 5).toFixed(1)}s"></span>`);
+  const embers = ceRange(fxCount(14), () => `<span class="exo-ember" style="--x: ${ceRand(0, 100).toFixed(0)}%; --s: ${ceRand(2, 5).toFixed(1)}px; --d: ${ceRand(2.5, 5).toFixed(1)}s; --dl: ${ceRand(0.8, 4.5).toFixed(2)}s; --dx: ${ceRand(-10, 10).toFixed(0)}vw"></span>`);
 
   const overlay = spawnFx('fx-exodia', EXODIA_TOTAL_MS + 100, {
     vars: {
@@ -114,23 +114,24 @@ function summonExodia(logo) {
       <div class="exo-scene">
         <div class="exo-black"></div>
         <div class="exo-bg"></div>
-        <div class="exo-fill">${ceRange(9, i => flame(i, 9, false))}</div>
+        <div class="exo-fill">${ceRange(6, i => flame(i, 6, false))}</div>
         <div class="exo-fill">${smoke}</div>
         <div class="exo-figure-wrap"><div class="exo-body">
           ${EXODIA_SVG}
+          <span class="exo-hem"></span>
           <span class="exo-eye" style="--x: 46.865%"></span>
           <span class="exo-eye" style="--x: 53.135%"></span>
           <span class="exo-glint"></span>
           <span class="exo-orb"></span>
         </div></div>
         <div class="exo-floor"></div>
-        <div class="exo-fill">${ceRange(5, i => flame(i, 5, true))}</div>
+        <div class="exo-fill">${ceRange(4, i => flame(i, 4, true))}</div>
         <div class="exo-veil"></div>
         <div class="exo-fill">${haze}</div>
         <div class="exo-fill">${embers}</div>
         <div class="exo-wash"></div>
         <div class="exo-burst"></div>
-        <div class="exo-logo"><img src="./logo.jpg" alt="" /></div>
+        <div class="exo-logo"><span class="exo-logo-glow"></span><img src="./logo.jpg" alt="" /><span class="exo-logo-flash"></span></div>
       </div>
       <div class="exo-white"></div>
     `
@@ -529,7 +530,7 @@ const EXO_SKIRT_LINES = [240, 330, 415, 500, 585, 670, 760]
   .map(x => `M${500 + (x - 500) * 0.3} 1180 L${x} 1600`).join(' ');
 
 // The static body is one layer; the silhouette that looms in the smoke is a
-// darkened, blurred <use> copy of it. Everything here is rasterized once, so
+// darkened <use> copy of it. Everything here is rasterized once, so
 // only transform/opacity animate (no re-rasterizing on phones).
 const EXODIA_SVG = `
 <svg class="exo-layer exo-sil" viewBox="0 0 1000 1600" aria-hidden="true"><use href="#exo-body"/><use href="#exo-fists-art"/></svg>
