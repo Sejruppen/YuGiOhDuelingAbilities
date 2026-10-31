@@ -3054,6 +3054,111 @@ const COOP_SOUNDS = {
     darkCluster({ t, notes: [38, 39, 45], dur: 2, gain: 0.05, out: room });
     eyeHum(t + 0.3, 1.6, 0.05, room);
     ceSadTrombone(t + 1.2, 0.03);
+  },
+  // Duelist's Road History hold: Bonz's Graveyard (bonz-graveyard-egg.js).
+  // Thunder, a creepy organ chord and Bonz's cackle.
+  'bz-start': t => {
+    const room = darkBus({ reverb: 0.6, echo: 0.2 });
+    noise({ t, dur: 1.4, gain: 0.09, type: 'lowpass', freq: 1800, to: 120, attack: 0.01, out: room });
+    boom(t + 0.05, 0.7, room);
+    darkCluster({ t: t + 0.4, notes: [50, 53, 56, 62], dur: 1.6, gain: 0.04, attack: 0.15, out: room });
+    ceGiggle(t + 1.1, 380, 6, room, 'sawtooth');
+  },
+  'bz-groan': t => {
+    const f = rnd(110, 150);
+    tone({ t, freq: f, to: f * 0.7, dur: 0.7, type: 'sawtooth', gain: 0.025, filter: [500, 900], q: 4, attack: 0.15, detune: 20 });
+  },
+  'bz-chip': t => {
+    tone({ t, freq: midi(84), dur: 0.08, type: 'triangle', gain: 0.05, attack: 0.003 });
+    bell({ t: t + 0.05, freq: midi(91), dur: 0.6, gain: 0.035 });
+  },
+  'bz-place': t => {
+    cardFlip(t, 0.08);
+    tone({ t: t + 0.06, freq: 160, to: 80, dur: 0.15, type: 'sine', gain: 0.08, attack: 0.002 });
+    bell({ t: t + 0.08, freq: midi(79), dur: 0.5, gain: 0.02 });
+  },
+  'bz-slash': t => {
+    ceWhoosh(t, 0.15, 0.04, 1500, 5000);
+    tone({ t: t + 0.08, freq: 2400, to: 1800, dur: 0.08, type: 'triangle', gain: 0.02, attack: 0.002 });
+  },
+  'bz-bolt': t => {
+    tone({ t, freq: 500, to: 1400, dur: 0.18, type: 'sawtooth', gain: 0.025, filter: 2500, attack: 0.003 });
+    tone({ t, freq: 1000, to: 2200, dur: 0.15, type: 'sine', gain: 0.02, attack: 0.003 });
+  },
+  'bz-hit': t => noise({ t, dur: 0.08, gain: 0.05, type: 'lowpass', freq: 1500, to: 400, attack: 0.002 }),
+  'bz-bite': t => {
+    noise({ t, dur: 0.07, gain: 0.06, type: 'bandpass', freq: 900, q: 2, attack: 0.002 });
+    noise({ t: t + 0.09, dur: 0.06, gain: 0.04, type: 'bandpass', freq: 700, q: 2, attack: 0.002 });
+  },
+  'bz-zdie': t => {
+    tone({ t, freq: 180, to: 60, dur: 0.6, type: 'sawtooth', gain: 0.035, filter: 700, q: 3, attack: 0.02 });
+    noise({ t, dur: 0.3, gain: 0.04, type: 'lowpass', freq: 800, to: 200, attack: 0.005 });
+  },
+  'bz-mdie': t => {
+    tone({ t, freq: 440, to: 140, dur: 0.4, type: 'square', gain: 0.03, filter: 1400, attack: 0.003 });
+    cardFlip(t + 0.05, 0.06);
+  },
+  'bz-kuri': t => {
+    boing(t, { from: 300, to: 900, dur: 0.25, gain: 0.05 });
+    kuriChirp(t + 0.1, 0.05);
+    kuriChirp(t + 0.25, 0.05);
+  },
+  'bz-hop': t => {
+    noise({ t, dur: 0.35, gain: 0.04, freq: 400, to: 1200, q: 2, attack: 0.05 });
+    monsterRoar(t, 0.04);
+  },
+  // Call of the Haunted: the ground rumbles and a zombie claws its way out.
+  'bz-rise': t => {
+    const room = darkBus({ reverb: 0.5 });
+    noise({ t, dur: 0.6, gain: 0.07, type: 'lowpass', freq: 300, to: 120, attack: 0.1, out: room });
+    tone({ t: t + 0.2, freq: 220, to: 330, dur: 0.5, type: 'sawtooth', gain: 0.02, filter: 900, attack: 0.1, out: room });
+    tone({ t: t + 0.2, freq: 233, to: 349, dur: 0.5, type: 'sawtooth', gain: 0.015, filter: 900, attack: 0.1, out: room });
+  },
+  'bz-banish': t => {
+    tone({ t, freq: 600, to: 1800, dur: 0.25, type: 'triangle', gain: 0.04, attack: 0.005 });
+    healSparkles(t + 0.05, 0.3, 4);
+  },
+  // Destiny Board: a deep bell per letter, one step lower each time.
+  'bz-letter': (t, s) => {
+    const room = darkBus({ reverb: 0.6 });
+    const n = s.n || 1;
+    bell({ t, freq: midi(62 - n * 2), dur: 2, gain: 0.06, out: room });
+    darkCluster({ t, notes: [38, 39 + n], dur: 1.2, gain: 0.035, out: room });
+  },
+  'bz-wave': t => {
+    const room = darkBus({ reverb: 0.5 });
+    bell({ t, freq: midi(45), dur: 2.4, gain: 0.07, out: room });
+    for (let i = 0; i < 3; i++) tone({ t: t + 0.3 + i * 0.25, freq: rnd(110, 150), to: 90, dur: 0.6, type: 'sawtooth', gain: 0.02, filter: 700, q: 4, attack: 0.1, out: room });
+  },
+  'bz-board': t => {
+    const room = darkBus({ reverb: 0.7, echo: 0.2 });
+    boom(t, 0.8, room);
+    darkCluster({ t, notes: [36, 37, 43, 48], dur: 2.2, gain: 0.05, out: room });
+    eyeHum(t + 0.3, 1.8, 0.04, room);
+    ceGiggle(t + 1.2, 420, 5, room, 'square');
+  },
+  'bz-swords': t => {
+    for (let i = 0; i < 3; i++) {
+      ceWhoosh(t + i * 0.12, 0.3, 0.04, 3000, 600);
+      tone({ t: t + 0.25 + i * 0.12, freq: 2600, to: 1900, dur: 0.12, type: 'triangle', gain: 0.03, attack: 0.002 });
+    }
+    healPad({ t: t + 0.4, notes: [72, 76, 79, 84], dur: 1.4, gain: 0.025, attack: 0.05 });
+  },
+  'bz-nope': t => tone({ t, freq: 200, to: 150, dur: 0.15, type: 'square', gain: 0.03, filter: 900, attack: 0.003 }),
+  'bz-win': t => {
+    brass({ t, notes: [60, 64, 67], dur: 0.18, gain: 0.05 });
+    brass({ t: t + 0.2, notes: [62, 65, 69], dur: 0.18, gain: 0.05 });
+    brass({ t: t + 0.4, notes: [64, 67, 72, 76], dur: 1.2, gain: 0.055 });
+    choir({ t: t + 0.4, notes: [64, 67, 72], dur: 1.6, gain: 0.014, attack: 0.3 });
+    arpeggio(t + 0.8, [84, 88, 91, 96], 0.07, (tt, n) => bell({ t: tt, freq: midi(n), dur: 0.8, gain: 0.025 }));
+    slideWhistle({ t: t + 1.3, freqs: [700, 300, 150], dur: 0.7, gain: 0.03 });
+  },
+  'bz-lose': t => {
+    const room = darkBus({ reverb: 0.7 });
+    boom(t, 0.9, room);
+    darkCluster({ t, notes: [38, 39, 45], dur: 2.2, gain: 0.05, out: room });
+    ceGiggle(t + 0.6, 360, 8, room, 'sawtooth');
+    ceSadTrombone(t + 1.6, 0.03);
   }
 };
 

@@ -65,7 +65,7 @@ function renderSoloMenu() {
         primary: !active,
         danger: armed
       })}
-      ${renderTournamentMenuButton({ icon: '📜', label: 'History', sub: historySub, onclick: 'openSoloHistory()' })}
+      ${renderTournamentMenuButton({ icon: '📜', label: 'History', sub: historySub, onclick: 'openSoloHistory()', egg: 'bonz-graveyard' })}
      </div>
     </div>
   `;

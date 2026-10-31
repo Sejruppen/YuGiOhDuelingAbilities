@@ -8354,6 +8354,266 @@ html.nd-deleting .modal-panel { animation: nd-panel 6000ms linear both; }
 }
 .fx-lb .lb-btn--back { color: #fff; background: rgb(15 23 42 / 0.9); border: 1px solid #fbbf24; }
 
+/* --- Duelist's Road History hold: "Bonz's Graveyard" (interactive, until closed) ---
+   (bonz-graveyard-egg.js) A tiny Plants vs. Zombies on a canvas, with a card
+   tray below and Ryou's Destiny Board (F-I-N-A-L) above. .is-show on the
+   banner runs 2800ms, .is-hit flashes the stage purple (a letter), .is-swords
+   flashes it gold (Swords of Revealing Light), .is-end shows the result panel
+   (.is-won: Monster Reborn and Bonz faints, .is-lost: Bonz cackles). */
+.fx-bz {
+  pointer-events: auto;
+  touch-action: none;
+  user-select: none;
+  -webkit-user-select: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  animation: bz-in 400ms ease-out both;
+}
+@keyframes bz-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+.fx-bz .bz-bg {
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(circle at 50% 35%, rgb(20 83 45 / 0.5), rgb(2 6 23 / 0.96) 70%);
+}
+.fx-bz .bz-wrap {
+  position: relative;
+  width: min(100vw, 440px);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.4rem;
+}
+.fx-bz .bz-hud {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 0 0.75rem;
+  font-weight: 800;
+  font-size: 0.8rem;
+  color: #bbf7d0;
+  font-variant-numeric: tabular-nums;
+}
+.fx-bz .bz-title {
+  flex: 1;
+  font-family: "Cinzel Decorative", Cinzel, serif;
+  color: #fde68a;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.fx-bz .bz-wave,
+.fx-bz .bz-chips { white-space: nowrap; }
+.fx-bz .bz-chips.is-bump { animation: bz-bump 400ms ease-out; }
+@keyframes bz-bump {
+  40% { transform: scale(1.35); color: #fde047; }
+}
+.fx-bz .bz-quit {
+  width: 2rem;
+  height: 2rem;
+  border-radius: 9999px;
+  color: #fff;
+  background: rgb(15 23 42 / 0.85);
+  border: 1px solid rgb(134 239 172 / 0.5);
+}
+
+/* Ryou's Destiny Board */
+.fx-bz .bz-board { display: flex; gap: 0.35rem; }
+.fx-bz .bz-letter {
+  width: 1.6rem;
+  height: 1.9rem;
+  display: grid;
+  place-items: center;
+  border-radius: 0.3rem;
+  font-family: Cinzel, serif;
+  font-weight: 900;
+  color: rgb(233 213 255 / 0.18);
+  background: rgb(30 27 46 / 0.9);
+  border: 1px solid rgb(168 85 247 / 0.3);
+}
+.fx-bz .bz-letter.is-lit {
+  color: #f5d0fe;
+  border-color: #e879f9;
+  text-shadow: 0 0 8px #e879f9;
+  box-shadow: 0 0 12px rgb(192 38 211 / 0.6);
+  animation: bz-letter 700ms cubic-bezier(0.3, 1.6, 0.5, 1) both;
+}
+@keyframes bz-letter {
+  from { transform: translateY(-1.2rem) scale(1.6); opacity: 0; }
+}
+
+.fx-bz .bz-stage {
+  position: relative;
+  border: 2px solid #4ade80;
+  border-radius: 0.4rem;
+  box-shadow: 0 0 24px rgb(74 222 128 / 0.3);
+  overflow: hidden;
+}
+.fx-bz .bz-canvas { display: block; touch-action: none; }
+.fx-bz .bz-stage.is-hit::after,
+.fx-bz .bz-stage.is-swords::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: rgb(192 38 211 / 0.45);
+  animation: bz-flash 600ms ease-out forwards;
+}
+.fx-bz .bz-stage.is-swords::after { background: rgb(254 240 138 / 0.6); animation-duration: 900ms; }
+@keyframes bz-flash {
+  to { opacity: 0; }
+}
+
+.fx-bz .bz-banner {
+  position: absolute;
+  inset: 32% 0.5rem auto;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.2rem;
+  padding: 0.6rem;
+  text-align: center;
+  border-radius: 0.6rem;
+  background: rgb(2 6 23 / 0.8);
+  border: 1px solid rgb(168 85 247 / 0.6);
+  pointer-events: none;
+  opacity: 0;
+}
+.fx-bz .bz-banner.is-show { animation: bz-banner 2800ms ease-out both; }
+@keyframes bz-banner {
+  0% { opacity: 0; transform: scale(0.7); }
+  10%, 80% { opacity: 1; transform: scale(1); }
+  100% { opacity: 0; transform: scale(1); }
+}
+.fx-bz .bz-banner-title {
+  font-family: Cinzel, serif;
+  font-size: 1rem;
+  color: #fde68a;
+  text-shadow: 0 0 10px rgb(168 85 247 / 0.9);
+}
+.fx-bz .bz-banner-sub { font-size: 0.72rem; font-weight: 700; color: #e9d5ff; }
+
+.fx-bz .bz-end {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.45rem;
+  padding: 0.9rem;
+  text-align: center;
+  background: rgb(2 6 23 / 0.8);
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 400ms, visibility 0s linear 400ms;
+}
+.fx-bz.is-end .bz-end { opacity: 1; visibility: visible; transition: opacity 400ms 300ms, visibility 0s linear 300ms; }
+.fx-bz .bz-end-art { position: relative; display: flex; align-items: center; justify-content: center; height: 4rem; }
+.fx-bz .bz-bonz { font-size: 2.6rem; }
+.fx-bz.is-won .bz-bonz { animation: bz-faint 1200ms ease-in 900ms both; }
+@keyframes bz-faint {
+  0% { rotate: 0deg; }
+  25% { rotate: -12deg; }
+  100% { rotate: 95deg; translate: 0.6rem 0.8rem; opacity: 0.7; }
+}
+.fx-bz.is-lost .bz-bonz { animation: bz-cackle 260ms ease-in-out 600ms 8 alternate both; }
+@keyframes bz-cackle {
+  from { transform: translateY(0) rotate(-6deg); }
+  to { transform: translateY(-0.35rem) rotate(6deg); }
+}
+.fx-bz .bz-reborn {
+  margin-right: 0.6rem;
+  font-size: 3rem;
+  line-height: 1;
+  color: #fde68a;
+  text-shadow: 0 0 14px #fbbf24, 0 0 30px rgb(251 191 36 / 0.7);
+  animation: bz-reborn 900ms cubic-bezier(0.3, 1.6, 0.5, 1) 300ms both;
+}
+@keyframes bz-reborn {
+  from { transform: scale(0.2) rotate(-180deg); opacity: 0; }
+}
+.fx-bz .bz-end-title {
+  font-family: "Cinzel Decorative", Cinzel, serif;
+  font-size: clamp(1.3rem, 6vw, 1.9rem);
+  color: #fde68a;
+  text-shadow: 0 0 12px rgb(251 191 36 / 0.8), 0 3px 0 #14532d;
+}
+.fx-bz.is-lost .bz-end-title { color: #f5d0fe; text-shadow: 0 0 14px #c026d3, 0 3px 0 #3b0764; }
+.fx-bz .bz-end-sub { font-size: 0.78rem; font-weight: 700; color: #e9d5ff; }
+.fx-bz .bz-end-btns { display: flex; gap: 0.5rem; margin-top: 0.25rem; }
+.fx-bz .bz-btn {
+  padding: 0.45rem 0.9rem;
+  border-radius: 0.6rem;
+  font-weight: 800;
+  font-size: 0.8rem;
+  color: #1c1917;
+  background: #fbbf24;
+}
+.fx-bz .bz-btn--back { color: #fff; background: rgb(15 23 42 / 0.9); border: 1px solid #fbbf24; }
+
+/* The card tray */
+.fx-bz .bz-tray {
+  width: 100%;
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 0.35rem;
+  padding: 0 0.5rem;
+}
+.fx-bz .bz-card {
+  --cd: 0;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.1rem;
+  padding: 0.3rem 0.2rem;
+  border-radius: 0.5rem;
+  overflow: hidden;
+  color: #fff;
+  background: linear-gradient(160deg, #92400e, #451a03);
+  border: 2px solid #b45309;
+  transition: transform 150ms, border-color 150ms, opacity 150ms;
+}
+.fx-bz .bz-card--spell { background: linear-gradient(160deg, #0f766e, #134e4a); border-color: #14b8a6; }
+.fx-bz .bz-card.is-picked { transform: translateY(-0.3rem); border-color: #fde047; box-shadow: 0 0 14px rgb(253 224 71 / 0.7); }
+.fx-bz .bz-card.is-poor { opacity: 0.45; }
+.fx-bz .bz-card-art { height: 1.9rem; display: grid; place-items: center; font-size: 1.5rem; line-height: 1; }
+.fx-bz .bz-card-art img { width: 1.9rem; height: 1.9rem; }
+.fx-bz .bz-card-name {
+  max-width: 100%;
+  font-size: 0.55rem;
+  font-weight: 800;
+  line-height: 1.1;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.fx-bz .bz-card-cost { font-size: 0.7rem; font-weight: 900; color: #fde68a; }
+.fx-bz .bz-card-cost .ce-emoji { font-size: 0.6rem; margin-right: 0.1rem; }
+.fx-bz .bz-card-cd {
+  position: absolute;
+  inset: auto 0 0;
+  height: calc(var(--cd) * 100%);
+  display: grid;
+  place-items: center;
+  font-weight: 900;
+  color: #fff;
+  background: rgb(2 6 23 / 0.6);
+  pointer-events: none;
+}
+.fx-bz .bz-help {
+  padding: 0 0.75rem;
+  text-align: center;
+  font-size: 0.7rem;
+  font-weight: 700;
+  color: #86efac;
+}
+
 /* --- Settings "Get a hint" spam: "The Hint of the Cards" (7000ms) ---
    (egg-hints.js) Hint cards scatter 0-1s, Grandpa rises 0.3s, "Enough,
    enough" 0.95s, "The only egg…" 2.3s, arm swings up from behind his back

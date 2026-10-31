@@ -42,6 +42,7 @@ const EGG_HINTS = {
   // Duelist's Road
   'field-power': { where: HINT_VIEW.solo, text: 'Every corner of Pegasus\' island has its favourites. Study the map long enough and the land itself might take your side.' },
   'exodia-overboard': { where: HINT_VIEW.solo, text: 'The boat ride to the island is long. Dither before setting sail and a bug-loving passenger might take an interest in your rarest cards.' },
+  'bonz-graveyard': { where: HINT_VIEW.solo, text: 'Your past runs don\'t rest easy. Dwell on them long enough and something in the graveyard might come to collect them.' },
   // Co-op setup
   'duel-school': { where: HINT_VIEW.coop, text: 'Every rookie has to learn somewhere. Does the easy road have something to teach you?' },
   'time-to-duel': { where: HINT_VIEW.coop, text: 'It\'s time to d-d-d-duel! But are you a true duelist? Prove you can commit.' },
