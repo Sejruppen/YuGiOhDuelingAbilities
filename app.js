@@ -56,9 +56,13 @@ function getScrollableElements(app) {
   });
 }
 
+// The screen currently on display. state.screen has already changed by the
+// time render() runs, so it can't tell a screen change from a re-render.
+let renderedScreen = null;
+
 function captureScroll(app) {
   return {
-    screen: state.screen,
+    screen: renderedScreen,
     window: { x: window.scrollX, y: window.scrollY },
     elements: getScrollableElements(app).map(el => ({ top: el.scrollTop, left: el.scrollLeft })),
   };
@@ -84,6 +88,7 @@ function render() {
   const beforeFx = beforeRenderEffects(app);
 
   renderCurrentView(app);
+  renderedScreen = state.screen;
   restoreScroll(app, savedScroll);
 
   afterRenderEffects(app, beforeFx);

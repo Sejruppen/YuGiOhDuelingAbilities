@@ -12,6 +12,7 @@ function goToCharacters() {
 
 function selectCharacter(id) {
   resetPeek();
+  ui.abilitySearch = '';
   setState({
     screen: SCREENS.ABILITIES,
     characterId: id,
@@ -26,6 +27,23 @@ function pickAbility(type, index) {
   const abilityType = ABILITY_TYPES[type];
   if (!abilityType) return;
   setState({ [abilityType.selectionKey]: index });
+}
+
+// Custom's ability search: filters the lists in place (no re-render).
+function setAbilitySearch(value) {
+  ui.abilitySearch = value;
+  applyAbilitySearch();
+  const list = document.getElementById(ABILITIES_SCROLL_CONTAINER_ID);
+  if (list) list.scrollTop = 0;
+}
+
+function clearAbilitySearch() {
+  const input = document.getElementById(ABILITY_SEARCH_INPUT_ID);
+  if (input) {
+    input.value = '';
+    input.focus();
+  }
+  setAbilitySearch('');
 }
 
 function startDuel() {

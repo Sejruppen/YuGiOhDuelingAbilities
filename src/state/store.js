@@ -39,7 +39,8 @@ const ui = {
   lpModalOpen: false,
   lpInput: '',
   lpInputExact: false,
-  resetModalOpen: false
+  resetModalOpen: false,
+  abilitySearch: ''
 };
 
 function setState(patch) {
