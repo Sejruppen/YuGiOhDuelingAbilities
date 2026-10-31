@@ -13798,6 +13798,76 @@ html[data-theme="gold"]::view-transition-new(root) { animation: vt-diamond 1s cu
   to { clip-path: inset(0); filter: none; }
 }
 
+/* --- Solo mode: Duelist's Road (solo-view.js) --- */
+.solo-map {
+  border-radius: 1.25rem;
+  overflow: hidden;
+  background: radial-gradient(ellipse at 50% 40%, #3b3020, #1c160d 75%);
+  box-shadow: inset 0 0 40px rgba(0, 0, 0, 0.6), 0 0 0 1px rgba(251, 191, 36, 0.25);
+}
+.solo-band { opacity: 0.5; }
+.solo-band--beach { fill: #1e5a74; }
+.solo-band--forest { fill: #1f4d2b; }
+.solo-band--meadow { fill: #4d5c1f; }
+.solo-band--mountain { fill: #4a4a55; }
+.solo-band--wasteland { fill: #4d2f24; }
+.solo-band--campfire { fill: #5c3410; }
+.solo-band--labyrinth { fill: #2d2a3a; }
+.solo-band--castle { fill: #3d1d4d; }
+.solo-edge {
+  stroke: rgba(253, 230, 138, 0.35);
+  stroke-width: 2.5;
+  stroke-dasharray: 4 7;
+  stroke-linecap: round;
+}
+.solo-edge--open { stroke: rgba(253, 230, 138, 0.85); animation: solo-march 0.8s linear infinite; }
+.solo-edge--walked { stroke: #f59e0b; stroke-width: 4; stroke-dasharray: none; }
+@keyframes solo-march { to { stroke-dashoffset: -11; } }
+.solo-region-label {
+  position: absolute;
+  transform: translateY(-50%);
+  font-size: 0.6rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: rgba(254, 243, 199, 0.7);
+  pointer-events: none;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.8);
+}
+.solo-node {
+  position: absolute;
+  translate: -50% -50%;
+  width: 2.6rem;
+  height: 2.6rem;
+  border-radius: 9999px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.35rem;
+  line-height: 1;
+  background: #f5e6c4;
+  border: 2px solid #8a6d3b;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.5);
+  transition: transform 0.2s, opacity 0.2s, filter 0.2s;
+}
+.solo-node--special { width: 3.4rem; height: 3.4rem; font-size: 1.9rem; }
+.solo-node--dim { opacity: 0.55; filter: saturate(0.4); }
+.solo-node--visited { background: #d6c39b; border-color: #f59e0b; box-shadow: 0 0 0 3px rgba(245, 158, 11, 0.35); }
+.solo-node--current { border-color: #fbbf24; box-shadow: 0 0 0 4px rgba(251, 191, 36, 0.7), 0 0 18px rgba(251, 191, 36, 0.8); }
+.solo-node--reachable { border-color: #fbbf24; animation: solo-node-pulse 1.4s ease-in-out infinite; }
+.solo-node--picked { transform: scale(1.18); }
+@keyframes solo-node-pulse {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(251, 191, 36, 0.8); }
+  50% { box-shadow: 0 0 0 9px rgba(251, 191, 36, 0); }
+}
+.solo-sheet { animation: solo-sheet-up 0.25s ease-out; }
+@keyframes solo-sheet-up { from { transform: translateY(100%); } to { transform: none; } }
+.solo-monster { border-color: rgba(244, 63, 94, 0.35); background: rgba(15, 23, 42, 0.9); animation: coop-pop-in 0.3s ease-out; }
+.solo-monster--def { border-color: rgba(56, 189, 248, 0.35); background: rgba(12, 74, 110, 0.2); }
+.solo-trap { animation: coop-pop-in 0.3s ease-out; }
+.solo-intro { animation: coop-fade-in 0.4s ease-out; }
+.solo-node-icon--campfire { filter: drop-shadow(0 0 18px rgba(251, 146, 60, 0.9)); }
+
 /* =========================================================================
    Respect the OS "reduce motion" setting.
    ========================================================================= */

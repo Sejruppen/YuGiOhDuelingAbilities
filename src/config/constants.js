@@ -10,6 +10,7 @@ const SCREENS = {
   DISK: 'disk',
   TOURNAMENT: 'tournament',
   COOP: 'coop',
+  SOLO: 'solo',
   SETTINGS: 'settings'
 };
 

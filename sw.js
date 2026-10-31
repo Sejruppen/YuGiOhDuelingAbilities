@@ -1,4 +1,4 @@
-const CACHE_NAME = 'ygo-skills-mvp-v160';
+const CACHE_NAME = 'ygo-skills-mvp-v161';
 const ASSETS = [
   './',
   './index.html',
@@ -14,12 +14,15 @@ const ASSETS = [
   './src/state/tournament-store.js',
   './src/config/coop-pegasus.js',
   './src/state/coop-store.js',
+  './src/config/solo-config.js',
+  './src/state/solo-store.js',
   './src/utils/format.js',
   './src/actions/navigation-actions.js',
   './src/actions/duel-actions.js',
   './src/actions/life-point-actions.js',
   './src/actions/tournament-actions.js',
   './src/actions/coop-actions.js',
+  './src/actions/solo-actions.js',
   './src/actions/settings-actions.js',
   './src/components/modal.js',
   './src/components/ability-picker.js',
@@ -34,6 +37,7 @@ const ASSETS = [
   './src/views/duel-view.js',
   './src/views/tournament-view.js',
   './src/views/coop-view.js',
+  './src/views/solo-view.js',
   './src/views/settings-view.js',
   './src/effects/sounds.js',
   './src/effects/effects.js',

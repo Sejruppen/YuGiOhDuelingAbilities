@@ -30,6 +30,11 @@ function renderCurrentView(app) {
     return;
   }
 
+  if (state.screen === SCREENS.SOLO) {
+    app.innerHTML = renderSoloView();
+    return;
+  }
+
   const char = getSelectedCharacter();
   if (!char) {
     resetApp();

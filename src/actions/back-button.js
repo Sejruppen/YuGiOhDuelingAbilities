@@ -61,6 +61,9 @@ function handleAppBack() {
     case SCREENS.COOP:
       backInCoop();
       return true;
+    case SCREENS.SOLO:
+      backInSolo();
+      return true;
     case SCREENS.SETTINGS:
       leaveSettings();
       return true;

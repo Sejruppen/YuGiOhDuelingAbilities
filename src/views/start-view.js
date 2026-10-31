@@ -52,7 +52,7 @@ function renderStartView() {
           <h1 class="brand-title text-4xl font-extrabold tracking-tight text-white mb-2">Yu-Gi-Oh!</h1>
           <p class="text-amber-400 font-semibold tracking-widest uppercase text-sm mb-5">Character Abilities</p>
           <p class="text-slate-300 text-sm max-w-xs mb-6 leading-relaxed">
-            Pick a character, choose your Skill, Comeback and Quest, and track Life Points in the duel. Run a knockout Tournament, or team up against a Co-op Boss.
+            Pick a character, choose your Skill, Comeback and Quest, and track Life Points in the duel. Run a knockout Tournament, team up against a Co-op Boss, or walk the Duelist's Road alone.
           </p>
           <button onclick="if (diskAllowsClick()) goToCharacters()" onpointerdown="startDiskPress(this)" onpointerup="cancelDiskPress(this)" onpointerleave="cancelDiskPress(this)" onpointercancel="cancelDiskPress(this)" oncontextmenu="return false" class="disk-press w-full max-w-xs py-4 rounded-xl bg-amber-500 hover:bg-amber-400 active:scale-98 text-slate-950 font-bold text-xl shadow-lg shadow-amber-500/20 transition">
             Start Duel Setup
@@ -60,6 +60,7 @@ function renderStartView() {
           <div class="w-full max-w-xs mt-3 grid grid-cols-2 gap-3">
             ${renderTournamentButton()}
             ${renderCoopButton()}
+            ${renderSoloButton()}
           </div>
           ${renderSettingsButton()}
         </div>
