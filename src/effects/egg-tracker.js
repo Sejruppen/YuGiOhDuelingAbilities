@@ -26,7 +26,7 @@ const EGG_IDS = [
   'true-name', 'architect', 'name-theodor', 'name-tristan', 'name-otto', 'name-frida', 'name-marie',
   'time-to-duel', 'duel-school', 'relinquished',
   // Duelist's Road
-  'field-power',
+  'field-power', 'exodia-overboard',
   // Abilities screen
   'dark-paladin', 'divine-offering',
   // Duel screen

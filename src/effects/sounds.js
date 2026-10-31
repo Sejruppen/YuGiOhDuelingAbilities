@@ -2935,6 +2935,51 @@ const COOP_SOUNDS = {
     healPad({ t: t + 9.3, notes: [60, 64, 67, 72], dur: 1.8, gain: 0.025, attack: 0.1, out: room });
     bell({ t: t + 9.3, freq: midi(84), dur: 1.4, gain: 0.04, out: room });
   },
+  // Duelist's Road "New run" hold: Exodia Overboard (10s). Rolling sea and a
+  // creaking hull throughout, a narrator bell (0.4s), Weevil's footsteps
+  // (0.8-1.5s), the five cards fanning out (1.6s), his giggles (2.0s, 3.6s),
+  // a flick (3.9s), five card whooshes 170ms apart from 4.0s each ending in a
+  // plop 0.9s later, a cackle (4.8s), Joey's charge sting and running feet
+  // (5.4-6.1s), a slide-whistle leap (6.1s), the big splash (6.9s), bubbles
+  // as he surfaces (7.3s), Joey bawling with sniffles (7.6-9.1s), Weevil's last
+  // giggle (8.1s) and a sad trombone for the toast (8.5s).
+  'egg-exodia-overboard': t => {
+    const room = darkBus({ reverb: 0.4 });
+    for (let k = 0; k < 5; k++) noise({ t: t + k * 2, dur: 2.3, gain: 0.05, type: 'lowpass', freq: 250, to: 900, attack: 1, out: room });
+    [0.5, 2.7, 5.0].forEach(at => tone({ t: t + at, freq: 150, to: 105, dur: 0.6, type: 'sawtooth', gain: 0.014, filter: 600, q: 6, attack: 0.15, out: room }));
+    bell({ t: t + 0.4, freq: midi(74), dur: 1.4, gain: 0.03, out: room });
+    bell({ t: t + 0.55, freq: midi(79), dur: 1.4, gain: 0.025, out: room });
+    for (let i = 0; i < 4; i++) tone({ t: t + 0.85 + i * 0.2, freq: 180, to: 120, dur: 0.06, type: 'triangle', gain: 0.04, attack: 0.002, out: room });
+    for (let i = 0; i < 5; i++) cardFlip(t + 1.6 + i * 0.06, 0.06);
+    healSparkles(t + 1.7, 0.4, 4, room);
+    ceGiggle(t + 2.0, 820, 5, room, 'square');
+    ceGiggle(t + 3.6, 860, 4, room, 'square');
+    ceWhoosh(t + 3.9, 0.25, 0.04, 800, 3000, room);
+    for (let i = 0; i < 5; i++) {
+      const at = t + 4.0 + i * 0.17;
+      ceWhoosh(at, 0.5, 0.03, 500, 2200, room);
+      cardFlip(at + 0.05, 0.05);
+      tone({ t: at + 0.86, freq: 700, to: 160, dur: 0.12, type: 'sine', gain: 0.05, attack: 0.002, out: room });
+      noise({ t: at + 0.86, dur: 0.1, gain: 0.04, type: 'highpass', freq: 2500, attack: 0.002, out: room });
+    }
+    ceGiggle(t + 4.8, 900, 8, room, 'square');
+    brass({ t: t + 5.4, notes: [55, 59, 62], dur: 0.25, gain: 0.04 });
+    brass({ t: t + 5.7, notes: [60, 64, 67], dur: 0.4, gain: 0.045 });
+    for (let i = 0; i < 7; i++) tone({ t: t + 5.4 + i * 0.1, freq: 200, to: 130, dur: 0.05, type: 'triangle', gain: 0.045, attack: 0.002, out: room });
+    slideWhistle({ t: t + 6.1, freqs: [500, 1200, 300], dur: 0.8, gain: 0.03, out: room });
+    boom(t + 6.9, 0.6, room);
+    noise({ t: t + 6.9, dur: 0.15, gain: 0.16, type: 'highpass', freq: 1200, attack: 0.001, out: room });
+    noise({ t: t + 6.95, dur: 1.1, gain: 0.07, type: 'lowpass', freq: 1800, to: 200, attack: 0.05, out: room });
+    for (let i = 0; i < 10; i++) noise({ t: t + 7.0 + rnd(0, 0.8), dur: 0.05, gain: 0.035, type: 'highpass', freq: rnd(3000, 6000), attack: 0.002, out: room });
+    for (let i = 0; i < 5; i++) bubble({ t: t + 7.25 + i * 0.07, from: rnd(250, 400), to: rnd(700, 1000), gain: 0.04, dur: 0.07 });
+    [[7.6, 0.55, 720, 560], [8.2, 0.4, 680, 520], [8.65, 0.5, 640, 420]].forEach(([at, dur, from, to]) => {
+      tone({ t: t + at, freq: from, to, dur, type: 'sawtooth', gain: 0.03, filter: 1800, attack: 0.04, detune: 25, out: room });
+      tone({ t: t + at, freq: from * 1.01, to: to * 0.99, dur, type: 'triangle', gain: 0.025, attack: 0.04, out: room });
+    });
+    [8.05, 8.12, 8.55].forEach(at => noise({ t: t + at, dur: 0.06, gain: 0.03, type: 'bandpass', freq: 2200, q: 2, attack: 0.01, out: room }));
+    ceGiggle(t + 8.1, 840, 6, room, 'square');
+    ceSadTrombone(t + 8.6, 0.035);
+  },
   // Start screen Solo hold: the Paradox Labyrinth (paradox-labyrinth-egg.js).
   'lb-start': t => {
     const room = darkBus({ reverb: 0.5, echo: 0.2 });

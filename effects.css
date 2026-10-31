@@ -11379,6 +11379,279 @@ html[data-theme] .solo-map-icon.cegg-charging { animation-name: fp-icon-charge; 
   100% { transform: translate(-50%, -8px); opacity: 0; }
 }
 
+/* --- Duelist's Road "New run" hold: EXODIA OVERBOARD (10000ms, 1% = 100ms) ---
+   (exodia-overboard-egg.js) Night sea and ship fade in 0-0.4s, caption
+   0.3-2.9s. Weevil walks on 0.8-1.6s, the five cards fan out 1.6s, his
+   bubbles 2.0s and 3.6s, a lunge 3.9s. The cards fly 900ms each from 4.0s
+   (--at, 170ms apart) and plop into the sea. Cackle 4.8-6.0s. Joey runs on
+   5.4-6.0s, leaps 6.15s and splashes down 6.9s (flash). He surfaces with two
+   cards 7.3s, Weevil's last word 8.1s, toast 8.6s, fade out 9.5s. Deck line
+   62%, water line 71%. */
+/* --hx/--hy: Weevil's raised hand (the .eo-wv-arm at -150deg), measured from
+   his centre and the deck line; the card flights aim from there. */
+.fx-sbe--overboard { --wh: min(118px, 17vh); --jh: min(132px, 19vh); --hx: calc(var(--wh) * 0.227); --hy: calc(var(--wh) * 0.8 - 5px); }
+.eo-scene { position: absolute; inset: 0; animation: eo-scene 10000ms ease-out both; }
+.eo-sky { position: absolute; inset: 0; background: linear-gradient(#020617, #1e1b4b 55%, #312e81 72%); }
+.eo-star {
+  position: absolute;
+  width: 3px;
+  height: 3px;
+  border-radius: 50%;
+  background: #fff;
+  animation: eo-twinkle 1600ms ease-in-out var(--tw) infinite alternate;
+}
+.eo-moon { position: absolute; left: 78%; top: 10%; font-size: 2.6rem; filter: drop-shadow(0 0 14px rgb(254 249 195 / 0.7)); }
+.eo-sea { position: absolute; left: 0; right: 0; top: 71%; bottom: 0; background: linear-gradient(#1d4ed8, #0b1e4d 55%, #020617); }
+.eo-wave {
+  position: absolute;
+  left: -40px;
+  right: -40px;
+  top: -12px;
+  height: 16px;
+  background: radial-gradient(circle at 20px 22px, #1d4ed8 15px, transparent 16px) 0 0 / 40px 16px repeat-x;
+  animation: eo-wave 2400ms linear infinite;
+}
+.eo-wave--back { top: -16px; opacity: 0.6; background-image: radial-gradient(circle at 20px 22px, #3b82f6 15px, transparent 16px); animation-direction: reverse; animation-duration: 3200ms; }
+.eo-ship { position: absolute; inset: 0; transform-origin: 30% 70%; animation: eo-bob 3000ms ease-in-out infinite; }
+.eo-hull {
+  position: absolute;
+  left: -5%;
+  width: 68%;
+  top: 62%;
+  height: 16%;
+  background: linear-gradient(#5b3a1e, #1c120a);
+  clip-path: polygon(0 0, 100% 0, 88% 100%, 0 100%);
+}
+.eo-rail {
+  position: absolute;
+  left: -5%;
+  width: 66%;
+  top: calc(62% - 16px);
+  height: 16px;
+  border-top: 3px solid #b45309;
+  background: repeating-linear-gradient(90deg, #b45309 0 3px, transparent 3px 22px);
+}
+.eo-mast { position: absolute; left: 10%; top: 16%; width: 6px; height: 46%; background: #3f2a1a; }
+.eo-mast::after {
+  content: '';
+  position: absolute;
+  left: 6px;
+  top: 8%;
+  width: 72px;
+  height: 50%;
+  background: linear-gradient(90deg, #e7e5e4, #a8a29e);
+  clip-path: polygon(0 0, 100% 78%, 0 100%);
+}
+.eo-weevil { left: -10%; top: calc(62% - var(--wh) / 2 + 3px); width: calc(var(--wh) * 0.625); height: var(--wh); animation: eo-weevil 10000ms ease-out both; }
+.eo-weevil-body { position: relative; width: 100%; height: 100%; }
+/* The cackle shakes both SVG layers, not the wrapper, so cards still in flight don't wobble. */
+.eo-weevil-body > svg { transform-origin: 50% 100%; animation: eo-cackle 1200ms ease-in-out 4800ms both; }
+.eo-wv-arm-layer { position: absolute; inset: 0; }
+/* Weevil's right arm: up with the cards 1.6s, flick 3.9s, back on the hip. */
+.eo-wv-arm { transform-box: view-box; transform-origin: 69px 66px; animation: eo-wv-arm 10000ms ease-in-out both; }
+/* In his raised hand (86,34 of 100×160), between the body and arm layers. */
+.eo-fan { left: 86%; top: calc(20% + 2px); width: 0; height: 0; }
+.eo-card {
+  position: absolute;
+  left: -15px;
+  bottom: 0;
+  width: 30px;
+  height: 44px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  padding: 2px;
+  border-radius: 3px;
+  background: linear-gradient(#e7c27a, #b98a3c);
+  border: 1.5px solid #4a3410;
+  box-shadow: 0 3px 8px rgb(0 0 0 / 0.5);
+  transform-origin: 50% 100%;
+  opacity: 0;
+  animation: eo-pop 400ms ease-out 1600ms both, eo-fly 900ms linear var(--at) forwards;
+}
+.eo-card--head { background: linear-gradient(#f59e0b, #c2410c); }
+.eo-card b { font: 700 6px/1 Georgia, serif; color: #1c1917; white-space: nowrap; }
+.eo-card .ce-emoji { flex: 1; display: grid; place-items: center; font-size: 17px; }
+.eo-splash { position: absolute; top: 71%; width: 0; height: 0; }
+.eo-ring {
+  position: absolute;
+  left: -20px;
+  top: -5px;
+  width: 40px;
+  height: 10px;
+  border: 2px solid rgb(219 234 254 / 0.9);
+  border-radius: 50%;
+  opacity: 0;
+  animation: eo-ring 700ms ease-out var(--at) both;
+}
+.eo-drop {
+  position: absolute;
+  left: -3px;
+  top: -4px;
+  width: 6px;
+  height: 9px;
+  border-radius: 50%;
+  background: #dbeafe;
+  opacity: 0;
+  animation: eo-drop 750ms ease-out var(--at) both;
+}
+.eo-splash--big .eo-ring { left: -55px; top: -12px; width: 110px; height: 24px; animation-duration: 1200ms; }
+.eo-splash--big .eo-drop { width: 8px; height: 11px; animation-duration: 1100ms; }
+.eo-flash {
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(circle at 80% 71%, rgb(255 255 255 / 0.85), transparent 60%);
+  opacity: 0;
+  animation: eo-flash 600ms ease-out 6900ms both;
+}
+.eo-joey { left: -10%; top: calc(62% - var(--jh) / 2 + 3px); width: calc(var(--jh) * 100 / 170); height: var(--jh); animation: eo-joey 10000ms linear both; }
+.eo-surface {
+  left: 80%;
+  top: calc(71% - 26px);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  opacity: 0;
+  animation: eo-surface 10000ms ease-out both;
+}
+.eo-joey-head { display: block; width: 48px; height: 48px; transform-origin: 50% 100%; animation: eo-sob 520ms ease-in-out 7300ms infinite; }
+.eo-tear { stroke-dasharray: 4 3; animation: eo-tear-flow 380ms linear infinite; }
+.eo-tear-drop { transform-box: fill-box; transform-origin: center; opacity: 0; animation: eo-tear-drop 700ms ease-out calc(var(--d, 0) * 350ms) infinite; }
+.eo-held { display: flex; gap: 4px; margin-bottom: -4px; }
+.eo-held .eo-card { position: relative; left: auto; bottom: auto; opacity: 1; animation: none; transform: rotate(-12deg); }
+.eo-held .eo-card + .eo-card { transform: rotate(12deg); }
+.eo-caption {
+  position: absolute;
+  left: 50%;
+  top: calc(env(safe-area-inset-top, 0px) + 7%);
+  translate: -50% 0;
+  width: max-content;
+  max-width: 90vw;
+  padding: 0.35rem 0.8rem;
+  border: 2px solid #facc15;
+  border-radius: 4px;
+  background: rgb(0 0 0 / 0.75);
+  font: italic 700 clamp(0.8rem, 4vw, 0.95rem)/1.2 'Cinzel', Georgia, serif;
+  color: #fde047;
+  text-align: center;
+  opacity: 0;
+  animation: eo-caption 2600ms ease-out 300ms both;
+}
+.eo-say {
+  z-index: 2;
+  width: max-content;
+  max-width: 78vw;
+  white-space: normal;
+  text-align: center;
+  opacity: 0;
+  animation: eo-say var(--len) ease-out var(--at) both;
+}
+.fx-sbe--overboard .cegg-toast { z-index: 3; animation: eo-toast 10000ms ease-out both; }
+@keyframes eo-scene {
+  0% { opacity: 0; }
+  4%, 95% { opacity: 1; }
+  100% { opacity: 0; }
+}
+@keyframes eo-twinkle {
+  from { opacity: 0.25; }
+  to { opacity: 1; }
+}
+@keyframes eo-wave {
+  to { transform: translateX(40px); }
+}
+@keyframes eo-bob {
+  0%, 100% { transform: translateY(0) rotate(0deg); }
+  50% { transform: translateY(3px) rotate(0.6deg); }
+}
+@keyframes eo-weevil {
+  0%, 8% { left: -10%; }
+  16%, 38% { left: 36%; }
+  39.5% { left: 40%; }
+  42%, 100% { left: 36%; }
+}
+@keyframes eo-cackle {
+  0%, 100% { transform: rotate(0deg) translateY(0); }
+  12.5%, 37.5%, 62.5% { transform: rotate(-6deg) translateY(-3px); }
+  25%, 50%, 75% { transform: rotate(6deg) translateY(0); }
+  87.5% { transform: rotate(-3deg) translateY(-2px); }
+}
+@keyframes eo-pop {
+  from { opacity: 0; transform: translate(0, 20px) rotate(var(--fan)) scale(0); }
+  to { opacity: 1; transform: translate(0, 0) rotate(var(--fan)) scale(1); }
+}
+@keyframes eo-fly {
+  0% { opacity: 1; transform: translate(0, 0) rotate(var(--fan)) scale(1); animation-timing-function: ease-out; }
+  45% { transform: translate(calc(var(--dx) * 0.55), -14vh) rotate(calc(var(--fan) + 300deg)) scale(0.85); animation-timing-function: ease-in; }
+  92% { opacity: 1; }
+  100% { opacity: 0; transform: translate(var(--dx), var(--dy)) rotate(calc(var(--fan) + 640deg)) scale(0.6); }
+}
+@keyframes eo-ring {
+  0% { opacity: 0; transform: scale(0.2); }
+  15% { opacity: 1; }
+  100% { opacity: 0; transform: scale(1.8); }
+}
+@keyframes eo-drop {
+  0% { opacity: 0; transform: translate(0, 0) scale(0.4); }
+  10% { opacity: 1; }
+  50% { transform: translate(calc(var(--dx) * 0.6), var(--dy)) scale(1); }
+  100% { opacity: 0; transform: translate(var(--dx), 12px) scale(0.6); }
+}
+@keyframes eo-flash {
+  0% { opacity: 0; }
+  15% { opacity: 1; }
+  100% { opacity: 0; }
+}
+@keyframes eo-wv-arm {
+  0%, 15% { transform: rotate(0deg); }
+  17.5%, 37% { transform: rotate(-150deg); }
+  38.5% { transform: rotate(-175deg); }
+  40% { transform: rotate(-35deg); }
+  44%, 100% { transform: rotate(0deg); }
+}
+@keyframes eo-joey {
+  0%, 54% { left: -10%; top: calc(62% - var(--jh) / 2 + 3px); transform: rotate(0deg) translateY(0); opacity: 1; }
+  60% { left: 46%; top: calc(62% - var(--jh) / 2 + 3px); transform: rotate(0deg) translateY(0); }
+  61.5% { left: 52%; top: calc(62% - var(--jh) / 2 + 3px); transform: rotate(8deg) translateY(6px); }
+  65% { left: 66%; top: 38%; transform: rotate(70deg) translateY(0); }
+  69% { left: 80%; top: 71%; transform: rotate(160deg) translateY(0); opacity: 1; }
+  69.5%, 100% { left: 80%; top: 74%; transform: rotate(160deg) translateY(0); opacity: 0; }
+}
+@keyframes eo-surface {
+  0%, 73% { opacity: 0; transform: translateY(30px); }
+  76% { opacity: 1; transform: translateY(-8px); }
+  79%, 87% { transform: translateY(2px); }
+  83%, 91% { transform: translateY(-3px); }
+  95%, 100% { opacity: 1; transform: translateY(0); }
+}
+@keyframes eo-sob {
+  0%, 100% { transform: translateY(0) rotate(0deg); }
+  30% { transform: translateY(-2px) rotate(-3deg); }
+  60% { transform: translateY(1px) rotate(3deg); }
+}
+@keyframes eo-tear-flow {
+  to { stroke-dashoffset: -7; }
+}
+@keyframes eo-tear-drop {
+  0% { opacity: 1; transform: translate(0, 0) scale(1); }
+  100% { opacity: 0; transform: translate(calc(var(--s, 1) * 8px), 9px) scale(0.5); }
+}
+@keyframes eo-caption {
+  0% { opacity: 0; transform: translateY(-10px); }
+  12%, 85% { opacity: 1; transform: none; }
+  100% { opacity: 0; transform: none; }
+}
+@keyframes eo-say {
+  0% { opacity: 0; transform: scale(0.6); }
+  12%, 88% { opacity: 1; transform: scale(1); }
+  100% { opacity: 0; transform: scale(0.95); }
+}
+@keyframes eo-toast {
+  0%, 85% { transform: translate(-50%, 12px); opacity: 0; }
+  87%, 97% { transform: translate(-50%, 0); opacity: 1; }
+  100% { transform: translate(-50%, -8px); opacity: 0; }
+}
+
 /* --- "Draw the Tournament" hold: the Penalty Game dice duel ---
    Intro timeline (from spawn) uses ms delays; after the player's roll the
    JS adds is-landed / is-pathetic / is-crack / is-split / is-wha /

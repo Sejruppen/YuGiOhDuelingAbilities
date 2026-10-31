@@ -20,6 +20,7 @@
 //  - Start screen "Solo": the Paradox Brothers' Labyrinth mini-game
 //    (paradox-labyrinth-egg.js).
 //  - Duelist's Road header "🗺️": Field Power Bonus (field-power-egg.js).
+//  - Duelist's Road "New run": Exodia Overboard (exodia-overboard-egg.js).
 const START_EGG_PRESS_MS = 2000;
 const INVITE_EGG_MS = 6000;
 const FRIENDSHIP_EGG_MS = 5500;
@@ -48,6 +49,7 @@ function startStartEggPress(el, kind) {
     else if (kind === 'orichalcos') playOrichalcosEgg();
     else if (kind === 'paradox-labyrinth') playParadoxLabyrinthEgg();
     else if (kind === 'field-power') playFieldPowerEgg();
+    else if (kind === 'exodia-overboard') playExodiaOverboardEgg();
     else playInvitationEgg();
   }, START_EGG_PRESS_MS);
 }

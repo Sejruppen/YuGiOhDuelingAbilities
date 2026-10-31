@@ -61,6 +61,7 @@ function renderSoloMenu() {
         label: armed ? 'Tap again for a new run' : 'New run',
         sub: armed ? 'The current run will be abandoned' : 'A new map of Duelist Kingdom',
         onclick: 'newSoloRunClick()',
+        egg: 'exodia-overboard',
         primary: !active,
         danger: armed
       })}
