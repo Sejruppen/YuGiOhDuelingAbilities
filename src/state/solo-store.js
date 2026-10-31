@@ -123,8 +123,8 @@ function soloWeighted(weights) {
 }
 
 function soloRegionAt(floor, col) {
-  if (floor === 1) return 'beach';
-  if (floor <= 3) return col < 2 ? 'forest' : 'meadow';
+  if (floor <= 2) return 'beach';
+  if (floor <= 5) return col < 2 ? 'forest' : 'meadow';
   if (floor <= SOLO_BRANCH_FLOORS) return col < 2 ? 'mountain' : 'wasteland';
   if (floor === SOLO_FLOOR.CAMPFIRE) return 'campfire';
   return floor === SOLO_FLOOR.LABYRINTH ? 'labyrinth' : 'castle';
@@ -168,6 +168,7 @@ function generateSoloMap() {
   addEdge('labyrinth', 'castle');
 
   // Node types, floor by floor so an elite never follows an elite.
+  // The beach has no elite of its own, so it stays a warm-up.
   const eliteRegions = new Set();
   for (let floor = 1; floor <= SOLO_BRANCH_FLOORS; floor++) {
     Object.values(nodes).filter(n => n.floor === floor).forEach(n => {
@@ -176,7 +177,7 @@ function generateSoloMap() {
       else {
         const afterElite = edges.some(([a, b]) => b === n.id && nodes[a].type === 'elite');
         let type = soloWeighted(SOLO_MIXED_ODDS);
-        if (type === 'elite' && (afterElite || eliteRegions.has(n.region))) type = soloWeighted({ ...SOLO_MIXED_ODDS, elite: 0 });
+        if (type === 'elite' && (afterElite || eliteRegions.has(n.region) || n.region === 'beach')) type = soloWeighted({ ...SOLO_MIXED_ODDS, elite: 0 });
         if (type === 'elite') eliteRegions.add(n.region);
         n.type = type;
       }

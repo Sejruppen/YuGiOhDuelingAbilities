@@ -1,7 +1,7 @@
 // Solo mode screen ("Duelist's Road"): the intro, the island map, nodes,
 // fights against a virtual duelist and the end of a run.
 const SOLO_MAP_W = 360;
-const SOLO_MAP_H = 820;
+const SOLO_MAP_H = SOLO_FLOOR.CASTLE * 100 + 20;
 
 // Start screen entry, below Tournament and Co-op.
 function renderSoloButton() {
@@ -70,12 +70,12 @@ function renderSoloMenu() {
 
 // The island from beach to castle; [regions, floorFrom, floorTo]. Lights up where the current run is.
 const SOLO_ROUTE = [
-  [['beach'], 1, 1],
-  [['forest', 'meadow'], 2, 3],
-  [['mountain', 'wasteland'], 4, 5],
-  [['campfire'], 6, 6],
-  [['labyrinth'], 7, 7],
-  [['castle'], 8, 8]
+  [['beach'], 1, 2],
+  [['forest', 'meadow'], 3, 5],
+  [['mountain', 'wasteland'], 6, 8],
+  [['campfire'], SOLO_FLOOR.CAMPFIRE, SOLO_FLOOR.CAMPFIRE],
+  [['labyrinth'], SOLO_FLOOR.LABYRINTH, SOLO_FLOOR.LABYRINTH],
+  [['castle'], SOLO_FLOOR.CASTLE, SOLO_FLOOR.CASTLE]
 ];
 
 function renderSoloRoute(floor) {
@@ -280,14 +280,14 @@ function soloNodePos(n) {
 
 // Background bands per region: [region, floorFrom, floorTo, side].
 const SOLO_MAP_BANDS = [
-  ['beach', 1, 1, 'all'],
-  ['forest', 2, 3, 'left'],
-  ['meadow', 2, 3, 'right'],
-  ['mountain', 4, 5, 'left'],
-  ['wasteland', 4, 5, 'right'],
-  ['campfire', 6, 6, 'all'],
-  ['labyrinth', 7, 7, 'all'],
-  ['castle', 8, 8, 'all']
+  ['beach', 1, 2, 'all'],
+  ['forest', 3, 5, 'left'],
+  ['meadow', 3, 5, 'right'],
+  ['mountain', 6, 8, 'left'],
+  ['wasteland', 6, 8, 'right'],
+  ['campfire', SOLO_FLOOR.CAMPFIRE, SOLO_FLOOR.CAMPFIRE, 'all'],
+  ['labyrinth', SOLO_FLOOR.LABYRINTH, SOLO_FLOOR.LABYRINTH, 'all'],
+  ['castle', SOLO_FLOOR.CASTLE, SOLO_FLOOR.CASTLE, 'all']
 ];
 
 function renderSoloMapBands() {

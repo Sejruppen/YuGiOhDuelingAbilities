@@ -6,17 +6,18 @@ const SOLO_HISTORY_MAX = 30;
 const SOLO_START_LP = 8000;
 const SOLO_MAX_LP = 8000;
 const SOLO_START_CHIPS = 2;
-const SOLO_GATE_CHIPS = 6;
+const SOLO_GATE_CHIPS = 10;
 const SOLO_CAMPFIRE_HEAL = 0.3;
 const SOLO_FIELD_BONUS = 0.3;
 const SOLO_MAX_MONSTERS = 5;
 
-// Map: floors 1-5 branch over 4 columns, then one node per floor.
+// Map: floors 1-8 branch over 4 columns (Beach 1-2, Forest/Meadow 3-5,
+// Mountain/Wasteland 6-8), then one node per floor.
 const SOLO_COLS = 4;
 const SOLO_WALKS = 4;
-const SOLO_BRANCH_FLOORS = 5;
-const SOLO_FLOOR = { CAMPFIRE: 6, LABYRINTH: 7, CASTLE: 8 };
-const SOLO_TREASURE_FLOOR = 3;
+const SOLO_BRANCH_FLOORS = 8;
+const SOLO_FLOOR = { CAMPFIRE: 9, LABYRINTH: 10, CASTLE: 11 };
+const SOLO_TREASURE_FLOOR = 5;
 const SOLO_MIXED_ODDS = { duelist: 50, event: 30, elite: 20 };
 
 const SOLO_NODE_TYPES = {
@@ -99,8 +100,8 @@ const SOLO_MONSTERS = {
 
 // Floor tiers for generic duelists. Elites and the castle have their own.
 const SOLO_TIERS = [
-  { maxFloor: 2, lp: 1500, maxAtk: 1400 },
-  { maxFloor: 4, lp: 2000, maxAtk: 1800 },
+  { maxFloor: 3, lp: 1500, maxAtk: 1400 },
+  { maxFloor: 6, lp: 2000, maxAtk: 1800 },
   { maxFloor: 99, lp: 2500, maxAtk: 2000 }
 ];
 const SOLO_ELITE = { lp: 4000, maxAtk: 2000, actions: 2, chips: 2 };
@@ -304,7 +305,7 @@ const SOLO_EQUIPS = [
 ];
 const SOLO_TRAP = { name: 'Negate Attack', text: 'Your attack is negated and your Battle Phase ends.' };
 const SOLO_REMOVAL = { name: 'Fissure', text: 'Destroy your face-up monster with the lowest ATK.' };
-const SOLO_REMOVAL_FROM_FLOOR = 3;
+const SOLO_REMOVAL_FROM_FLOOR = 4;
 const SOLO_HEAL = { name: "Goblin's Secret Remedy", lp: 600 };
 
 // Relics: Treasure offers 3 commons, an elite win 2 rares. `value` is the
