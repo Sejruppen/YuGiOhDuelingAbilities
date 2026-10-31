@@ -13867,6 +13867,7 @@ html[data-theme="gold"]::view-transition-new(root) { animation: vt-diamond 1s cu
 .solo-trap { animation: coop-pop-in 0.3s ease-out; }
 .solo-intro { animation: coop-fade-in 0.4s ease-out; }
 .solo-node-icon--campfire { filter: drop-shadow(0 0 18px rgba(251, 146, 60, 0.9)); }
+.solo-node-icon--event { filter: drop-shadow(0 0 18px rgba(167, 139, 250, 0.9)); }
 .solo-relic {
   width: 2.1rem;
   height: 2.1rem;
@@ -13881,6 +13882,7 @@ html[data-theme="gold"]::view-transition-new(root) { animation: vt-diamond 1s cu
   transition: opacity 0.2s, filter 0.2s, transform 0.2s;
 }
 .solo-relic--rare { border-color: rgba(56, 189, 248, 0.75); box-shadow: 0 0 8px rgba(56, 189, 248, 0.35); }
+.solo-relic--millennium { border-color: rgba(251, 191, 36, 0.9); background: rgba(69, 46, 8, 0.9); box-shadow: 0 0 10px rgba(251, 191, 36, 0.5); }
 .solo-relic--used { opacity: 0.4; filter: grayscale(1); }
 .solo-relic--picked { transform: scale(1.15); border-color: #fbbf24; }
 .solo-relic--flash { animation: solo-relic-flash 0.9s ease-out; }

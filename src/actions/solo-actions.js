@@ -124,6 +124,17 @@ function leaveSoloNode() {
   commitSolo();
 }
 
+function pickSoloEventChoice(i) {
+  if (chooseSoloEvent(i)) commitSolo();
+}
+
+function soloAmbushClick() {
+  closeSoloPanels();
+  soloUi.undo = [];
+  soloUi.toast = null;
+  if (startSoloAmbush()) commitSolo();
+}
+
 function soloContinueReward() {
   soloUi.undo = [];
   soloBackToMap();
@@ -194,7 +205,7 @@ function undoSolo() {
 
 function startSoloDuel() {
   if (!solo.fight) return;
-  solo.fight.intro = false;
+  beginSoloDuel();
   commitSolo();
 }
 
@@ -254,11 +265,15 @@ function confirmSoloAttack() {
   if (!target || !soloUi.input || f?.battleOver) return;
   const atk = soloInputValue();
   // Axe of Despair (switched on) and Legendary Sword (first attack each turn).
+  // Shadow Games: Joey's pep talk (+500 every attack), a full stomach (−500 once).
   const axe = !!soloUi.panel.axe && soloRelicReady('axe');
   const sword = soloHas('legendary-sword') && f.swordRound !== f.round;
-  const bonus = (axe ? SOLO_RELICS.axe.value : 0) + (sword ? SOLO_RELICS['legendary-sword'].value : 0);
+  const pep = f.pep || 0;
+  const lunch = f.lunch ? SOLO_EVENT_MODS.lunch.value : 0;
+  const bonus = (axe ? SOLO_RELICS.axe.value : 0) + (sword ? SOLO_RELICS['legendary-sword'].value : 0) + pep - lunch;
+  const total = Math.max(0, atk + bonus);
   soloAct(() => {
-    const result = soloPlayerAttack(target === 'direct' ? null : Number(target), atk + bonus);
+    const result = soloPlayerAttack(target === 'direct' ? null : Number(target), total);
     // A negated attack keeps the relics for the next try.
     if (!result || result.negated) return result;
     if (axe) useSoloRelic('axe');
@@ -266,8 +281,9 @@ function confirmSoloAttack() {
       f.swordRound = f.round;
       flashSoloRelic('legendary-sword');
     }
-    const tags = [axe && `🪓 +${SOLO_RELICS.axe.value}`, sword && `🗡️ +${SOLO_RELICS['legendary-sword'].value}`].filter(Boolean);
-    if (tags.length) result.text = `${tags.join(' ')} → ${atk + bonus} ATK. ${result.text}`;
+    if (lunch) f.lunch = false;
+    const tags = [axe && `🪓 +${SOLO_RELICS.axe.value}`, sword && `🗡️ +${SOLO_RELICS['legendary-sword'].value}`, pep && `💪 +${pep}`, lunch && `🍙 −${lunch}`].filter(Boolean);
+    if (tags.length) result.text = `${tags.join(' ')} → ${total} ATK. ${result.text}`;
     return result;
   });
 }

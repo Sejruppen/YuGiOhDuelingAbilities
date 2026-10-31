@@ -21,7 +21,7 @@ const SOLO_NODE_TYPES = {
   duelist: { icon: '⚔️', label: 'Duelist', desc: 'A wandering duelist. Win for +1 ⭐.' },
   elite: { icon: '👹', label: 'Elite', desc:   'A dangerous veteran duelist. Win for +2 ⭐ and a rare relic.' },
     treasure: { icon: '🎁', label: 'Treasure', desc: "A lost Duelist's Case. Pick 1 of 3 relics." },
-  event: { icon: '❓', label: 'Shadow Game', desc: 'Something strange is going on here…' },
+  event: { icon: '❓', label: 'Shadow Game', desc: 'A strange encounter. Choose wisely: some choices are a gamble.' },
   campfire: { icon: '🔥', label: 'Campfire', desc: `Rest before the castle. Heal ${SOLO_CAMPFIRE_HEAL * 100}% of your max LP.` },
   labyrinth: { icon: '🧱', label: 'Labyrinth', desc: `Only if you have fewer than ${SOLO_GATE_CHIPS} ⭐. The Paradox Brothers guard it. Win to get the missing chips.` },
   castle: { icon: '🏰', label: 'Castle', desc: "Pegasus' castle. Win to finish the run." }
@@ -111,7 +111,7 @@ const SOLO_ELITE = { lp: 4000, maxAtk: 2000, actions: 2, chips: 2 };
 const SOLO_KEITH_CHANCE = 0.2;
 const SOLO_ELITES = {
   weevil: {
-    name: 'Weevil Underwood', icon: '🐛', region: 'forest', personality: 'trickster',
+    name: 'Weevil Underwood', icon: '🐛', region: 'forest', personality: 'trickster', specialCard: 'Cocoon of Evolution',
     quote: 'Heh heh heh… my insects are hungry, and you look delicious!',
     gimmick: '🥚 Cocoon of Evolution: a cocoon hatches into Great Moth (2600 ATK) after 2 of his turns, unless you destroy it first.',
     monsters: [
@@ -124,7 +124,7 @@ const SOLO_ELITES = {
     ]
   },
   mai: {
-    name: 'Mai Valentine', icon: '💅', region: 'meadow', personality: 'aggressive',
+    name: 'Mai Valentine', icon: '💅', region: 'meadow', personality: 'aggressive', specialCard: 'Elegant Egotist',
     quote: "Don't take it personally, hon. My Harpies just love a fresh target.",
     gimmick: '🪞 Elegant Egotist: turns a Harpie Lady into Harpie Lady Sisters (1950 ATK).',
     monsters: [
@@ -171,7 +171,7 @@ const SOLO_ELITES = {
     ]
   },
   paradox: {
-    name: 'Paradox Brothers', icon: '👬', region: 'labyrinth', personality: 'wall', plural: true,
+    name: 'Paradox Brothers', icon: '👬', region: 'labyrinth', personality: 'wall', plural: true, specialCard: 'Polymerization: Gate Guardian',
     quote: 'Two doors, two brothers, one way out. Only one of us tells the truth…',
     gimmick: '🚪 With Sanga, Kazejin and Suijin on the field, they fuse into Gate Guardian (3750 ATK). Labyrinth Wall (0/3000) guards them.',
     monsters: [
@@ -243,7 +243,24 @@ const SOLO_RELICS = {
   cylinder: { name: 'Magic Cylinder', icon: '🌀', rarity: 'rare', text: "Once per duel, when attacked: the attack hits the enemy's LP instead." },
   swords: { name: 'Swords of Revealing Light', icon: '🌟', rarity: 'rare', text: "The enemy can't attack on its first turn of each duel." },
   'mirror-force': { name: 'Mirror Force', icon: '🪞', rarity: 'rare', text: "Once per duel, when attacked: destroy all the enemy's Attack Position monsters." },
-  raigeki: { name: 'Raigeki', icon: '⚡', rarity: 'rare', consumable: true, text: "Use once, on your turn (✨ Effect): destroy all the enemy's monsters." }
+  raigeki: { name: 'Raigeki', icon: '⚡', rarity: 'rare', consumable: true, text: "Use once, on your turn (✨ Effect): destroy all the enemy's monsters." },
+  // Millennium Items: max one per run, and all but the Puzzle have a price.
+  puzzle: { name: 'Millennium Puzzle', icon: '🔺', rarity: 'millennium', value: 1000, text: 'Once per run, when your LP would hit 0, you survive with 1000 LP.' },
+  eye: { name: 'Millennium Eye', icon: '👁️', rarity: 'millennium', value: 500, text: "See exactly which cards the enemy will play. Costs 500 LP at the start of every duel." },
+  rod: { name: 'Millennium Rod', icon: '🪄', rarity: 'millennium', value: 1000, text: "Once per duel, when attacked: the attacker turns on its owner. They take its ATK and it's destroyed. Costs 1000 max LP when you take it." },
+  ring: { name: 'Millennium Ring', icon: '💍', rarity: 'millennium', text: "The enemy's first face-down card each duel is destroyed as it is set. The campfire heals only half." },
+  key: { name: 'Millennium Key', icon: '🗝️', rarity: 'millennium', text: 'See the outcome of every Shadow Game choice before you pick. Costs 1 ⭐ when you take it.' }
 };
 // Relics offered as buttons when an enemy monster attacks.
-const SOLO_DEFENSE_RELICS = ['kuriboh', 'waboku', 'cylinder', 'mirror-force'];
+const SOLO_DEFENSE_RELICS = ['kuriboh', 'waboku', 'cylinder', 'mirror-force', 'rod'];
+// Chance that one of an elite's two rare relics is a Millennium Item instead.
+const SOLO_MILLENNIUM_CHANCE = 0.25;
+
+// Shadow Game effects that wait for your next duel.
+const SOLO_EVENT_MODS = {
+  insect: { icon: '🐝', text: 'Your next enemy starts with Killer Needle on the field.' },
+  storm: { icon: '⛈️', value: 500, text: 'Your next enemy has +500 LP.' },
+  pep: { icon: '💪', value: 500, text: 'Next duel, all your attacks get +500 ATK.' },
+  lunch: { icon: '🍙', value: 500, text: 'Next duel, your first attack gets −500 ATK.' },
+  swarm: { icon: '🧸', text: 'Next duel, the Kuriboh swarm blocks one attack for you.' }
+};

@@ -8,6 +8,9 @@
 //   fight   the current duel (see createSoloFight)
 //   reward  { name, chips } after a won duel
 //   relics  relic ids you own; offer = { source, ids } when you may pick one
+//   millennium  the Millennium Item taken this run (max one); puzzleUsed
+//   event   the Shadow Game being shown (see solo-events.js); seenEvents
+//   mods    Shadow Game effects waiting for the next duel; shortcut = skip a floor
 const newSolo = () => ({ phase: 'intro' });
 
 function loadSolo() {
@@ -15,6 +18,8 @@ function loadSolo() {
     const saved = JSON.parse(localStorage.getItem(SOLO_STORAGE_KEY));
     if (!saved || !saved.phase) return newSolo();
     if (!saved.relics) saved.relics = [];
+    if (!saved.seenEvents) saved.seenEvents = [];
+    if (!saved.mods) saved.mods = {};
     return saved;
   } catch {
     return newSolo();
@@ -132,11 +137,14 @@ function generateSoloMap() {
 const soloEliteFor = region => Object.keys(SOLO_ELITES).find(id => SOLO_ELITES[id].region === region) || 'keith';
 
 // Where you can go next. After the campfire the Star Chips pick the way.
+// Tristan's Shortcut jumps one floor further along the paths.
 function soloReachable() {
   if (!solo.map) return [];
   if (!solo.at) return Object.values(solo.map.nodes).filter(n => n.floor === 1).map(n => n.id);
   if (solo.at === 'campfire') return [solo.chips >= SOLO_GATE_CHIPS ? 'castle' : 'labyrinth'];
-  return solo.map.edges.filter(([a]) => a === solo.at).map(([, b]) => b);
+  const next = from => solo.map.edges.filter(([a]) => from.includes(a)).map(([, b]) => b);
+  const ids = next([solo.at]);
+  return solo.shortcut ? [...new Set(next(ids))] : ids;
 }
 
 // --- Run ----------------------------------------------------------------------------
@@ -155,6 +163,12 @@ function createSoloRun() {
     reward: null,
     relics: [],
     offer: null,
+    millennium: null,
+    puzzleUsed: false,
+    event: null,
+    seenEvents: [],
+    mods: {},
+    shortcut: false,
     stats: { duels: 0, damage: 0 }
   };
 }
@@ -164,6 +178,7 @@ function enterSoloNode(id) {
   const node = solo.map.nodes[id];
   solo.at = id;
   solo.path.push(id);
+  solo.shortcut = false;
   if (['duelist', 'elite', 'labyrinth', 'castle'].includes(node.type)) {
     solo.fight = createSoloFight(node);
     solo.phase = 'fight';
@@ -172,12 +187,16 @@ function enterSoloNode(id) {
     solo.node = id;
     solo.phase = 'node';
     if (node.type === 'treasure') solo.offer = { source: 'treasure', ids: rollSoloRelics('common', SOLO_TREASURE_CHOICES) };
+    if (node.type === 'event') solo.event = buildSoloEvent(node);
   }
   return true;
 }
 
+// The Millennium Ring halves the campfire.
+const soloCampfireHeal = () => SOLO_CAMPFIRE_HEAL * (soloHas('ring') ? 0.5 : 1);
+
 function soloRest() {
-  const heal = Math.round((solo.maxLp * SOLO_CAMPFIRE_HEAL) / 100) * 100;
+  const heal = Math.round((solo.maxLp * soloCampfireHeal()) / 100) * 100;
   healSoloPlayer(heal);
   return heal;
 }
@@ -189,6 +208,7 @@ function soloBackToMap() {
   solo.fight = null;
   solo.reward = null;
   solo.offer = null;
+  solo.event = null;
 }
 
 // --- Relics -------------------------------------------------------------------------
@@ -198,6 +218,7 @@ const soloRelicReady = id => soloHas(id) && !solo.fight?.relicUsed?.[id];
 const flashSoloRelic = id => queueSoloFx(() => fxSoloRelic(id));
 
 function rollSoloRelics(rarity, count) {
+  if (rarity === 'millennium' && solo.millennium) return [];
   const pool = Object.keys(SOLO_RELICS).filter(id => SOLO_RELICS[id].rarity === rarity && !soloHas(id));
   return shuffled(pool).slice(0, count);
 }
@@ -210,18 +231,28 @@ function useSoloRelic(id) {
   flashSoloRelic(id);
 }
 
-function takeSoloRelic(id) {
-  if (!solo.offer?.ids.includes(id)) return false;
+function gainSoloRelic(id) {
   const r = SOLO_RELICS[id];
   solo.relics.push(id);
-  solo.offer = null;
+  if (r.rarity === 'millennium') solo.millennium = id;
   if (id === 'duelist-glove') solo.chips++;
+  if (id === 'key') solo.chips = Math.max(0, solo.chips - 1);
   if (id === 'elf') {
     solo.maxLp += r.value;
     healSoloPlayer(r.value);
   }
+  if (id === 'rod') {
+    solo.maxLp -= r.value;
+    solo.lp = Math.min(solo.lp, solo.maxLp);
+  }
   playSound({ name: 'co-bond' });
   flashSoloRelic(id);
+}
+
+function takeSoloRelic(id) {
+  if (!solo.offer?.ids.includes(id)) return false;
+  solo.offer = null;
+  gainSoloRelic(id);
   return true;
 }
 
@@ -249,11 +280,19 @@ function soloBattleDamage(amount) {
   return amount;
 }
 
-// Kuriboh, Waboku, Magic Cylinder and Mirror Force answer an enemy attack.
+// Kuriboh, Waboku, Magic Cylinder, Mirror Force and the Millennium Rod answer
+// an enemy attack. 'swarm' is the Kuriboh Swarm from a Shadow Game.
 function soloRelicDefend(id) {
   const step = soloStep();
   const f = solo.fight;
-  if (!step || step.kind !== 'attack' || step.sub || !soloRelicReady(id)) return;
+  if (!step || step.kind !== 'attack' || step.sub) return;
+  if (id === 'swarm') {
+    if (!f.swarm) return;
+    f.swarm = false;
+    playSound({ name: 'co-shield' });
+    return finishSoloStep({ tone: 'good', text: '🧸 The Kuriboh swarm piles on the attacker! You take 0.' });
+  }
+  if (!soloRelicReady(id)) return;
   useSoloRelic(id);
   let result;
   if (id === 'kuriboh') {
@@ -267,6 +306,11 @@ function soloRelicDefend(id) {
     playSound({ name: 'co-negate' });
     const dealt = damageSoloEnemy(step.atk);
     result = { tone: 'good', text: `🌀 Magic Cylinder! The attack hits ${f.name} for ${dealt}.` };
+  } else if (id === 'rod') {
+    const m = soloMonster(step.uid);
+    if (m) removeSoloMonster(m.uid);
+    const dealt = damageSoloEnemy(step.atk);
+    result = { tone: 'good', text: `🪄 Millennium Rod! ${m ? m.name : 'The attacker'} turns on its owner: ${f.name} ${f.plural ? 'take' : 'takes'} ${dealt}, and it's destroyed.` };
   } else {
     const count = destroySoloMonsters(m => m.pos === 'atk');
     result = { tone: 'good', text: `🪞 Mirror Force! ${count === 1 ? 'The attacker is' : `${count} monsters are`} destroyed.` };
@@ -285,11 +329,13 @@ function soloPool(fight) {
     const pool = deck.filter(m => (m.minRound || 1) <= fight.round && !(m.unique && fight.monsters.some(x => x.name === m.name)));
     return pool.length ? pool : deck.filter(m => !m.unique);
   }
-  const all = SOLO_MONSTERS[fight.region] || Object.values(SOLO_MONSTERS).flat();
+  let all = SOLO_MONSTERS[fight.region] || Object.values(SOLO_MONSTERS).flat();
+  if (fight.only) all = all.filter(m => m.type === fight.only);
   const pool = all.filter(m => m.atk <= fight.maxAtk);
   return pool.length ? pool : all;
 }
 
+// node.type 'ambush' comes from a Shadow Game; node.ambush holds its duelist.
 function createSoloFight(node) {
   const tier = SOLO_TIERS.find(t => node.floor <= t.maxFloor);
   const elite = id => {
@@ -303,6 +349,8 @@ function createSoloFight(node) {
     spec = { kind: 'elite', ...elite(node.elite || soloEliteFor(node.region)) };
   } else if (node.type === 'labyrinth') {
     spec = { kind: 'gate', ...elite('paradox'), chips: Math.max(0, SOLO_GATE_CHIPS - solo.chips) };
+  } else if (node.type === 'ambush') {
+    spec = { kind: 'ambush', maxAtk: tier.maxAtk, actions: 1, chips: 0, ...node.ambush };
   } else {
     spec = { kind: 'boss', ...SOLO_CASTLE_GUARD, chips: 0 };
   }
@@ -326,8 +374,57 @@ function createSoloFight(node) {
     nextUid: 1,
     intro: true
   };
-  fight.intents = buildSoloIntents(fight);
+  applySoloMods(fight);
+  planSoloTurn(fight);
   return fight;
+}
+
+// Shadow Game effects land on the next duel, then they're gone.
+function applySoloMods(f) {
+  const mods = Object.keys(solo.mods || {}).filter(k => SOLO_EVENT_MODS[k]);
+  solo.mods = {};
+  f.mods = mods;
+  if (mods.includes('insect')) {
+    const card = SOLO_MONSTERS.forest.find(m => m.name === 'Killer Needle');
+    f.monsters.push({ ...card, uid: f.nextUid++, pos: 'atk', equip: 0 });
+  }
+  if (mods.includes('storm')) {
+    f.lp += SOLO_EVENT_MODS.storm.value;
+    f.maxLp += SOLO_EVENT_MODS.storm.value;
+  }
+  if (mods.includes('pep')) f.pep = SOLO_EVENT_MODS.pep.value;
+  if (mods.includes('lunch')) f.lunch = true;
+  if (mods.includes('swarm')) f.swarm = true;
+}
+
+// Picks the enemy's next intents and rolls their exact cards up front, so the
+// Millennium Eye can show them.
+function planSoloTurn(f) {
+  f.intents = buildSoloIntents(f);
+  const taken = f.monsters.map(m => m.name);
+  f.peek = f.intents.map(action => {
+    if (action === 'equip') return { equip: soloPick(SOLO_EQUIPS) };
+    if (action !== 'summon') return {};
+    const pool = soloPool(f);
+    const free = pool.filter(c => !(c.unique && taken.includes(c.name)));
+    const card = soloPick(free.length ? free : pool);
+    taken.push(card.name);
+    return { card, pos: soloSummonPos(f, card) };
+  });
+}
+
+const soloSummonPos = (f, card) => card.pos || (card.atk <= 500 || Math.random() >= SOLO_PERSONALITIES[f.personality].atkChance ? 'def' : 'atk');
+
+// Dismissing the duel intro. The Millennium Eye takes its toll (never your last LP).
+function beginSoloDuel() {
+  const f = solo.fight;
+  if (!f?.intro) return;
+  f.intro = false;
+  if (soloHas('eye')) {
+    const cost = Math.min(SOLO_RELICS.eye.value, solo.lp - 1);
+    hurtSoloPlayer(cost);
+    flashSoloRelic('eye');
+  }
 }
 
 const soloBoosted = (fight, m) => soloRegion(fight.region).types.includes(m.type);
@@ -411,6 +508,14 @@ function hurtSoloPlayer(amount) {
   solo.lp = Math.max(0, solo.lp - amount);
   playSound({ name: 'co-hurt' });
   queueSoloFx(() => fxSoloHit('[data-solo-me]', -amount));
+  if (solo.lp === 0 && soloHas('puzzle') && !solo.puzzleUsed) {
+    // The Millennium Puzzle: once per run, Yami steps in.
+    solo.puzzleUsed = true;
+    solo.lp = SOLO_RELICS.puzzle.value;
+    playSound({ name: 'co-bond' });
+    flashSoloRelic('puzzle');
+    queueSoloFx(() => fxSoloHit('[data-solo-me]', SOLO_RELICS.puzzle.value));
+  }
   if (solo.lp === 0) soloDefeat();
 }
 
@@ -446,7 +551,15 @@ function soloWin() {
   solo.chips += f.chips;
   solo.reward = { name: f.name, icon: f.icon, kind: f.kind, chips: f.chips, plural: !!f.plural };
   solo.phase = 'reward';
-  if (f.kind === 'elite') solo.offer = { source: 'elite', ids: rollSoloRelics('rare', SOLO_ELITE_CHOICES) };
+  if (f.kind === 'elite') {
+    const ids = rollSoloRelics('rare', SOLO_ELITE_CHOICES);
+    const item = Math.random() < SOLO_MILLENNIUM_CHANCE && rollSoloRelics('millennium', 1)[0];
+    if (item) {
+      if (ids.length >= SOLO_ELITE_CHOICES) ids.pop();
+      ids.push(item);
+    }
+    solo.offer = { source: 'elite', ids };
+  }
   playSound({ name: 'co-victory' });
   if (soloHas('dian-keto')) {
     solo.reward.healed = healSoloPlayer(SOLO_RELICS['dian-keto'].value);
@@ -515,7 +628,7 @@ function startSoloEnemyTurn() {
   });
   const sleeve = f.elite === 'keith' && !g.sleeve && f.round >= SOLO_SLEEVE.fromRound &&
     (f.round >= SOLO_SLEEVE.byRound || Math.random() < SOLO_SLEEVE.chance);
-  f.steps = [...pre, ...f.intents.map(type => ({ type })), ...(sleeve ? [{ type: 'sleeve' }] : []), { type: 'attacks' }];
+  f.steps = [...pre, ...f.intents.map((type, i) => ({ type, peek: f.peek?.[i] })), ...(sleeve ? [{ type: 'sleeve' }] : []), { type: 'attacks' }];
   f.stepIndex = 0;
   playSound({ name: 'co-boss-turn' });
   prepareSoloStep();
@@ -528,7 +641,7 @@ function endSoloEnemyTurn() {
   f.battleOver = false;
   f.steps = [];
   f.stepIndex = 0;
-  f.intents = buildSoloIntents(f);
+  planSoloTurn(f);
   playSound({ name: 'co-turn' });
 }
 
@@ -570,8 +683,11 @@ function prepareSoloStepType(step, f) {
 
   switch (step.type) {
     case 'summon': {
-      const card = soloPick(soloPool(f));
-      const pos = card.pos || (card.atk <= 500 || Math.random() >= SOLO_PERSONALITIES[f.personality].atkChance ? 'def' : 'atk');
+      // The card rolled with the intents, unless the field changed since.
+      const pool = soloPool(f);
+      const pk = step.peek?.card && pool.some(c => c.name === step.peek.card.name) ? step.peek : null;
+      const card = pk ? pk.card : soloPick(pool);
+      const pos = pk ? pk.pos : soloSummonPos(f, card);
       const m = { ...card, uid: f.nextUid++, pos, equip: 0 };
       f.monsters.push(m);
       playSound({ name: 'co-summon' });
@@ -588,13 +704,18 @@ function prepareSoloStepType(step, f) {
     case 'equip': {
       const targets = f.monsters.filter(m => m.pos === 'atk');
       const target = (targets.length ? targets : f.monsters).reduce((a, b) => (soloStats(b, f).atk > soloStats(a, f).atk ? b : a));
-      const eq = soloPick(SOLO_EQUIPS);
+      const eq = step.peek?.equip || soloPick(SOLO_EQUIPS);
       target.equip = (target.equip || 0) + eq.atk;
       playSound({ name: 'co-shield' });
       return info('⚔️', `${eq.name}!`, `${target.icon} ${target.name} gains ${eq.atk} ATK (now ${soloStats(target, f).atk}).`);
     }
     case 'trap':
       if (f.trap) return false;
+      if (soloRelicReady('ring')) {
+        useSoloRelic('ring');
+        playSound({ name: 'co-destroy' });
+        return info('💍', 'Sets a card face-down…', `The Millennium Ring points at it: ${SOLO_TRAP.name}! It is destroyed before it can spring.`);
+      }
       f.trap = true;
       playSound({ name: 'co-negate' });
       return info('🪤', 'Sets a card face-down…', 'It will spring on your first attack next turn.');
