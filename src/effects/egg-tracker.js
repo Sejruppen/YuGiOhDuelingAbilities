@@ -32,7 +32,7 @@ const EGG_IDS = [
   'pot-of-greed', 'gaia', 'mind-crush', 'millennium-puzzle', 'pharaoh-nap', 'heart-of-the-cards',
   'time-wizard', 'end-credits',
   // LP modal
-  'change-of-heart', 'noah-delete', 'kaiba-rip',
+  'change-of-heart', 'noah-delete', 'kaiba-rip', 'kuriboh-dash',
   // Settings: spamming "Get a hint"
   'hint-of-the-cards',
   // Character select (hold a character for 2s)

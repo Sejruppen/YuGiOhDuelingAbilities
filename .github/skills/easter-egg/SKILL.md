@@ -54,6 +54,7 @@ When the owner says "jam", "ideas" or "what could we do for X", reply with a num
 | Co-op setup | `duel-school` (hold Rookie), `time-to-duel` (hold Duelist), `true-name` (hold Pharaoh: the tomb), `relinquished` (hold Face Pegasus), `architect` plus `name-*` (typed on the tomb keyboard) | `start-button-eggs.js`, `true-name-egg.js`, `name-eggs.js` |
 | Abilities | `dark-paladin`, `divine-offering` | their own files |
 | Duel | `shadow-realm`, `screw-the-rules`, `trap-hole`, `pot-of-greed`, `gaia`, `mind-crush`, `millennium-puzzle`, `pharaoh-nap`, `heart-of-the-cards`, `time-wizard` / `end-credits` (header holds) | `*-easter-egg.js`, `duel-header-eggs.js` |
+| LP modal | `change-of-heart` (hold ❤️), `noah-delete` (spam ⌫), `kaiba-rip` (hold ÷2), `kuriboh-dash` (hold Reset: a canvas Geometry Dash mini-game) | `lp-modal-eggs.js`, `kuriboh-dash-egg.js` |
 | Character select | `char-<id>` (hold a character for 2s), one per deck | `character-eggs*.js` |
 
 ## The Pharaoh's tomb (`true-name-egg.js`)

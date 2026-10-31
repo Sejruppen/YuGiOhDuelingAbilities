@@ -58,7 +58,7 @@ function renderLpModal() {
       </div>
       <div class="flex gap-2 [&>button]:min-w-0 [&>button]:px-1">
         <button type="button" onclick="if (lpEggAllowsClick()) halveLpQuick()" onpointerdown="startLpEggPress(this, 'halve')" onpointerup="cancelLpEggPress(this)" onpointerleave="cancelLpEggPress(this)" onpointercancel="cancelLpEggPress(this)" oncontextmenu="return false" class="cegg-press flex-1 min-w-0 py-2.5 px-1 rounded-xl font-bold text-sm transition bg-slate-800 hover:bg-slate-700 text-white border border-slate-700">÷2 Halve</button>
-        ${coopBtn(`Reset (${STARTING_LP})`, 'resetLp()')}
+        <button type="button" onclick="if (lpEggAllowsClick()) resetLp()" onpointerdown="startLpEggPress(this, 'reset')" onpointerup="cancelLpEggPress(this)" onpointerleave="cancelLpEggPress(this)" onpointercancel="cancelLpEggPress(this)" oncontextmenu="return false" class="cegg-press flex-1 min-w-0 py-2.5 px-1 rounded-xl font-bold text-sm transition bg-slate-800 hover:bg-slate-700 text-white border border-slate-700">Reset (${STARTING_LP})</button>
       </div>
     </div>
     ${renderLpLog()}

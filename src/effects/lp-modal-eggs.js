@@ -18,6 +18,8 @@
 //         and RIIIPs it in half (just like Grandpa's). The halves flutter
 //         away and Grandpa shakes his fist. The click after the hold is
 //         swallowed, so nothing is halved. Sound: 'kaiba-rip' (HEADER_EGG_SOUNDS).
+//   Reset -> Kuriboh Dash. Hold Reset (8000) for LP_EGG_PRESS_MS: a Geometry
+//         Dash style mini-game (kuriboh-dash-egg.js). Nothing is reset.
 //
 // Timelines: COH_MS / ND_MS / KT_MS, "LP MODAL EGGS" in effects.css.
 const LP_EGG_PRESS_MS = 2000;
@@ -42,6 +44,7 @@ function startLpEggPress(el, kind) {
     el.classList.remove('cegg-charging');
     if (kind === 'heart') playChangeOfHeartEgg(el);
     else if (kind === 'halve') playKaibaRipEgg();
+    else if (kind === 'reset') playKuribohDashEgg();
   }, LP_EGG_PRESS_MS);
 }
 
@@ -50,7 +53,7 @@ function cancelLpEggPress(el) {
   el.classList.remove('cegg-charging');
 }
 
-// Halve's onclick asks this first: false right after a hold.
+// Halve's and Reset's onclick ask this first: false right after a hold.
 function lpEggAllowsClick() {
   if (!lpEgg.swallowClick) return true;
   lpEgg.swallowClick = false;

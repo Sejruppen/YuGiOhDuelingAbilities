@@ -1830,6 +1830,53 @@ const HEADER_EGG_SOUNDS = {
     slideWhistle({ t: t + 2.65, freqs: [420, 440, 300, 220], dur: 0.9, gain: 0.035, wobble: 9, out: hall });
     for (let i = 0; i < 7; i++) tone({ t: t + 2.7 + i * 0.3, freq: 160, to: 110, dur: 0.08, type: 'triangle', gain: 0.05, attack: 0.003 });
     ceSadTrombone(t + 3.3, 0.035);
+  },
+  // LP modal Reset hold: Kuriboh Dash (kuriboh-dash-egg.js). 'kd-beat' is one
+  // beat of the 150 BPM chiptune loop (16 beats: Am F C G), scheduled by the
+  // game one beat ahead at `s.at`, so the music stops when Kuriboh does.
+  'kd-start': t => {
+    ceWhoosh(t, 0.35, 0.05, 300, 2600);
+    kuriChirp(t + 0.3, 0.06);
+    arpeggio(t + 0.45, [69, 72, 76, 81], 0.07, (tt, n) => tone({ t: tt, freq: midi(n), dur: 0.12, type: 'square', gain: 0.03, filter: 3000, attack: 0.003 }));
+  },
+  'kd-beat': (t, s) => {
+    const at = Math.max(t, s.at || t);
+    const beat = (s.beat || 0) % 16;
+    const half = KD_BEAT_S / 2;
+    const root = [45, 41, 48, 43][Math.floor(beat / 4)];
+    const lead = [
+      69, 0, 72, 69, 76, 0, 74, 72,
+      72, 0, 69, 72, 77, 76, 74, 72,
+      72, 0, 76, 72, 79, 0, 76, 74,
+      74, 0, 71, 74, 79, 77, 76, 74
+    ];
+    tone({ t: at, freq: 150, to: 45, dur: 0.16, gain: 0.16, attack: 0.002 });
+    if (beat % 2) noise({ t: at, dur: 0.12, gain: 0.05, type: 'bandpass', freq: 1800, q: 0.8, attack: 0.002 });
+    noise({ t: at + half, dur: 0.04, gain: 0.025, type: 'highpass', freq: 7000, attack: 0.001 });
+    tone({ t: at, freq: midi(root), dur: half * 0.9, type: 'sawtooth', gain: 0.035, filter: 900, attack: 0.004 });
+    tone({ t: at + half, freq: midi(root + 12), dur: half * 0.9, type: 'sawtooth', gain: 0.03, filter: 900, attack: 0.004 });
+    [lead[beat * 2], lead[beat * 2 + 1]].forEach((n, i) => {
+      if (n) tone({ t: at + i * half, freq: midi(n), dur: half * 0.85, type: 'square', gain: 0.022, filter: 3200, attack: 0.004 });
+    });
+  },
+  'kd-orb': t => {
+    tone({ t, freq: 880, to: 1760, dur: 0.14, type: 'triangle', gain: 0.06, attack: 0.003 });
+    bell({ t: t + 0.02, freq: midi(88), dur: 0.5, gain: 0.03 });
+  },
+  'kd-pad': t => boing(t, { from: 200, to: 900, dur: 0.35, gain: 0.06 }),
+  'kd-death': (t, s) => {
+    noise({ t, dur: 0.25, gain: 0.12, type: 'lowpass', freq: 3000, to: 300, attack: 0.002 });
+    tone({ t, freq: 220, to: 60, dur: 0.25, type: 'square', gain: 0.05, filter: 1200, attack: 0.002 });
+    if (s.pit) slideWhistle({ t: t + 0.05, freqs: [900, 500, 160], dur: 0.6, gain: 0.04 });
+    kuriChirp(t + 0.12, 0.06);
+    kuriChirp(t + 0.32, 0.05);
+  },
+  'kd-win': t => {
+    brass({ t, notes: [69, 72, 76], dur: 0.16, gain: 0.05 });
+    brass({ t: t + 0.18, notes: [71, 74, 77], dur: 0.16, gain: 0.05 });
+    brass({ t: t + 0.36, notes: [72, 76, 79, 84], dur: 1.1, gain: 0.055 });
+    for (let i = 0; i < 12; i++) kuriChirp(t + 0.5 + i * 0.09 + rnd(0, 0.05), 0.035);
+    arpeggio(t + 0.4, [84, 88, 91, 96], 0.06, (tt, n) => bell({ t: tt, freq: midi(n), dur: 0.8, gain: 0.025 }));
   }
 };
 

@@ -7980,6 +7980,131 @@ html.nd-deleting .modal-panel { animation: nd-panel 6000ms linear both; }
   75% { transform: rotate(12deg); }
 }
 
+/* --- LP modal Reset hold: "Kuriboh Dash" (interactive, until closed) ---
+   (kuriboh-dash-egg.js) A Geometry Dash style runner drawn on a canvas. The
+   overlay fades in over 300ms and blocks the page; .is-won shows the
+   "Level Complete" panel over the canvas. */
+.fx-kd {
+  pointer-events: auto;
+  touch-action: none;
+  user-select: none;
+  -webkit-user-select: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  animation: kd-in 300ms ease-out both;
+}
+@keyframes kd-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+.fx-kd .kd-bg {
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(circle at 50% 45%, rgb(76 29 149 / 0.6), rgb(2 6 23 / 0.94) 70%);
+}
+.fx-kd .kd-wrap {
+  position: relative;
+  width: min(100vw, 720px);
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+.fx-kd .kd-hud {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0 0.75rem;
+  font-weight: 800;
+  font-size: 0.8rem;
+  color: #fde68a;
+  font-variant-numeric: tabular-nums;
+}
+.fx-kd .kd-attempt { font-family: Cinzel, serif; white-space: nowrap; }
+.fx-kd .kd-bar {
+  flex: 1;
+  height: 0.6rem;
+  border-radius: 9999px;
+  background: rgb(15 23 42 / 0.8);
+  border: 1px solid rgb(251 191 36 / 0.5);
+  overflow: hidden;
+}
+.fx-kd .kd-fill {
+  display: block;
+  height: 100%;
+  width: 0;
+  background: linear-gradient(90deg, #a855f7, #fbbf24);
+}
+.fx-kd .kd-pct { white-space: nowrap; }
+.fx-kd .kd-quit {
+  width: 2rem;
+  height: 2rem;
+  border-radius: 9999px;
+  color: #fff;
+  background: rgb(15 23 42 / 0.85);
+  border: 1px solid rgb(251 191 36 / 0.5);
+}
+.fx-kd .kd-stage {
+  position: relative;
+  width: 100%;
+  border-block: 2px solid #fbbf24;
+  box-shadow: 0 0 24px rgb(168 85 247 / 0.45);
+}
+.fx-kd .kd-canvas { display: block; }
+.fx-kd .kd-help {
+  text-align: center;
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: #c4b5fd;
+}
+.fx-kd .kd-win {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.4rem;
+  padding: 0.75rem;
+  text-align: center;
+  background: rgb(2 6 23 / 0.45);
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 400ms ease-out 900ms, visibility 0s linear 1300ms;
+}
+.fx-kd.is-won .kd-win { opacity: 1; visibility: visible; transition: opacity 400ms ease-out 900ms, visibility 0s linear 900ms; }
+.fx-kd .kd-win-title {
+  font-family: "Cinzel Decorative", Cinzel, serif;
+  font-size: clamp(1.3rem, 6vw, 2rem);
+  color: #fde68a;
+  text-shadow: 0 0 12px rgb(251 191 36 / 0.8), 0 3px 0 #3b0764;
+}
+.fx-kd .kd-win-card {
+  padding: 0.2rem 0.8rem;
+  border-radius: 0.35rem;
+  font-family: Cinzel, serif;
+  font-weight: 900;
+  color: #fff;
+  background: linear-gradient(135deg, #0f766e, #134e4a);
+  border: 2px solid #5eead4;
+}
+.fx-kd.is-won .kd-win-card { animation: kd-multiply 600ms cubic-bezier(0.3, 1.6, 0.5, 1) 1000ms both; }
+@keyframes kd-multiply {
+  from { transform: scale(0.3) rotate(-12deg); }
+  to { transform: scale(1) rotate(0deg); }
+}
+.fx-kd .kd-win-sub { font-size: 0.75rem; font-weight: 700; color: #e9d5ff; }
+.fx-kd .kd-win-btns { display: flex; gap: 0.5rem; margin-top: 0.25rem; }
+.fx-kd .kd-btn {
+  padding: 0.45rem 0.9rem;
+  border-radius: 0.6rem;
+  font-weight: 800;
+  font-size: 0.8rem;
+  color: #1c1917;
+  background: #fbbf24;
+}
+.fx-kd .kd-btn--back { color: #fff; background: rgb(15 23 42 / 0.9); border: 1px solid #fbbf24; }
+
 /* --- Settings "Get a hint" spam: "The Hint of the Cards" (7000ms) ---
    (egg-hints.js) Hint cards scatter 0-1s, Grandpa rises 0.3s, "Enough,
    enough" 0.95s, "The only egg…" 2.3s, arm swings up from behind his back
