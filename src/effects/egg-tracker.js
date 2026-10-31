@@ -23,7 +23,7 @@ const EGG_IDS = [
   // Tournament setup
   'kuriboh-multiply', 'rock-paper-scissors', 'star-chips', 'penalty-dice', 'next-time', 'mind-slave', 'stone-tablet', 'orichalcos',
   // Co-op setup
-  'true-name', 'architect', 'name-theodor', 'name-tristan', 'name-otto', 'name-frida', 'name-marie',
+  'true-name', 'architect', 'name-theodor', 'name-tristan', 'name-otto', 'name-frida', 'name-marie', 'name-findus',
   'time-to-duel', 'duel-school', 'relinquished',
   // Duelist's Road
   'field-power', 'exodia-overboard', 'bonz-graveyard',

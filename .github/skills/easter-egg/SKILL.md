@@ -77,6 +77,7 @@ When the owner says "jam", "ideas" or "what could we do for X", reply with a num
 - **TRISTAN**: son who plays the **"Trizze"** deck. His egg is the Blue-Eyes Ultimate Dragon: three Blue-Eyes slam down in white lightning, Polymerization spirals them together, its ATK climbs to 4500, Neutron Blast whites out the screen and he is crowned "Lord Trizze of the Blue-Eyes".
 - **OTTO**: a giant 🦏 charges across the screen.
 - **FRIDA**: a small Maleficent-style girl with an evil laugh, a curse and a raven.
+- **FINDUS**: the family cat, a big grey-and-white tabby with green eyes. Two stone sphinx statues rise, one wakes up as Findus, asks the riddle "four legs in the morning…", answers "FINDUS!" and falls asleep again.
 
 To add another name, add an entry to `NAME_EGGS`, an id to `EGG_IDS` and `EGG_HINTS`, a `'name-<x>'` sound and a CSS block.
 

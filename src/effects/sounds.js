@@ -2723,6 +2723,35 @@ const COOP_SOUNDS = {
     healPad({ t: t + 6.5, notes: [57, 60, 64, 69], dur: 5, gain: 0.025, attack: 1, out: room });
     healSparkles(t + 1.6, 3, 14, room);
   },
+  // Findus the sphinx (matches effects.css): statues rise (0.6s), crack (2.3s),
+  // wake (2.6-4.1s), mrrp (4.1s), riddle (4.3s), purr (7-8.6s), answer (7.9s),
+  // yawn and sleep (10s).
+  'name-findus': t => {
+    const tomb = darkBus({ reverb: 0.8, echo: 0.2 });
+    noise({ t, dur: 2.2, gain: 0.07, type: 'lowpass', freq: 300, to: 900, attack: 1.2, out: tomb });
+    darkCluster({ t, notes: [40, 47, 52], dur: 4, gain: 0.018, out: tomb });
+    noise({ t: t + 0.6, dur: 0.9, gain: 0.07, freq: 350, to: 150, q: 2, attack: 0.1, out: tomb });
+    boom(t + 1.4, 0.5, tomb);
+    noise({ t: t + 2.3, dur: 0.12, gain: 0.12, type: 'highpass', freq: 2500, attack: 0.002, out: tomb });
+    for (let i = 0; i < 6; i++) noise({ t: t + 2.35 + i * 0.07, dur: 0.04, gain: 0.07, freq: rnd(900, 2800), q: 4, attack: 0.001, out: tomb });
+    boom(t + 2.4, 0.7, tomb);
+    tone({ t: t + 2.6, freq: 120, to: 480, dur: 1.4, type: 'sawtooth', gain: 0.03, filter: [300, 2000], attack: 0.5, out: tomb });
+    healPad({ t: t + 2.6, notes: [57, 60, 64], dur: 2.4, gain: 0.02, attack: 0.8, out: tomb });
+    bell({ t: t + 4, freq: midi(84), dur: 1.6, gain: 0.04, out: tomb });
+    [0, 0.2].forEach(o => {
+      tone({ t: t + 4.1 + o, freq: 380, to: 560, dur: 0.14, type: 'triangle', gain: 0.07, attack: 0.01, out: tomb });
+      noise({ t: t + 4.1 + o, dur: 0.1, gain: 0.02, freq: 1600, q: 3, attack: 0.01, out: tomb });
+    });
+    [[64, 0], [67, 0.25], [69, 0.5], [67, 0.75], [64, 1]].forEach(([n, o]) => bell({ t: t + 4.4 + o, freq: midi(n), dur: 1, gain: 0.025, out: tomb }));
+    // Purr: a low hum chopped by quick noise pulses.
+    tone({ t: t + 7, freq: 52, dur: 1.7, gain: 0.05, attack: 0.3, out: tomb });
+    for (let i = 0; i < 40; i++) noise({ t: t + 7 + i * 0.042, dur: 0.025, gain: 0.03, type: 'lowpass', freq: 220, attack: 0.002, out: tomb });
+    brass({ t: t + 7.9, notes: [57, 64, 69], dur: 0.9, gain: 0.04 });
+    bell({ t: t + 7.9, freq: midi(81), dur: 1.4, gain: 0.04, out: tomb });
+    // Yawn, then three soft Zzz notes.
+    tone({ t: t + 10, freq: 520, to: 220, dur: 0.9, type: 'triangle', gain: 0.05, attack: 0.15, out: tomb });
+    [72, 69, 65].forEach((n, i) => bell({ t: t + 10.7 + i * 0.6, freq: midi(n), dur: 1.2, gain: 0.025, out: tomb }));
+  },
   // "IT'S TIME TO DUEL!!!" (original riff, 150 bpm): four stabs for the
   // words, a crash on DUEL, then a driving E-minor power-chord riff.
   'egg-time-to-duel': t => {

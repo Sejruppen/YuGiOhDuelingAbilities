@@ -54,6 +54,7 @@ const EGG_HINTS = {
   'name-otto': { where: TOMB, text: 'Forwards or backwards, this name charges the same way. Brace for a brotherly stampede.' },
   'name-frida': { where: TOMB, text: 'A tiny Mistress sister of All Evil hates not being invited. The tomb is the perfect place for a curse.' },
   'name-marie': { where: TOMB, text: 'Every tomb has a heart. Whose name holds the architect\'s?' },
+  'name-findus': { where: TOMB, text: 'Every tomb has a guardian. This one is large, furry and extremely hard to move off a warm seat.' },
   // Character select
   'dark-paladin': { where: HINT_VIEW.character, text: 'Theotaur is a fusion of more than you think. Maybe he just needs a moment to come together.' },
   'divine-offering': { where: HINT_VIEW.character, text: 'Trizze\'s legends attract the attention of the gods. Will you give them the time they need?' },

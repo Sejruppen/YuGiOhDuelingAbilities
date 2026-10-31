@@ -34,6 +34,50 @@ const FRIDA_SVG = `
     </g>
   </svg>`;
 
+// --- FINDUS: a big grey-and-white tabby with green eyes, dressed as a sphinx ------
+// .fn-lid covers each eye (the statue sleeps); it opens when the stone wakes.
+const FINDUS_SVG = `
+  <svg viewBox="0 0 200 220" aria-hidden="true">
+    <defs>
+      <pattern id="fn-nemes" width="8" height="8" patternUnits="userSpaceOnUse">
+        <rect width="8" height="8" fill="#e8b93f" /><rect y="4" width="8" height="2.5" fill="#1d4ed8" />
+      </pattern>
+    </defs>
+    <path d="M146 200 C186 200 198 172 190 150 C187 143 193 139 198 146" fill="none" stroke="#7a6a55" stroke-width="15" stroke-linecap="round" />
+    <path d="M146 200 C186 200 198 172 190 150" fill="none" stroke="#3b2f26" stroke-width="15" stroke-dasharray="4 11" />
+    <path d="M190 150 C187 143 193 139 198 146" fill="none" stroke="#2a211b" stroke-width="15" stroke-linecap="round" />
+    <path d="M62 72 C46 98 50 130 40 160 L82 142 L82 100 Z M138 72 C154 98 150 130 160 160 L118 142 L118 100 Z" fill="url(#fn-nemes)" stroke="#92400e" stroke-width="2" stroke-linejoin="round" />
+    <path d="M58 212 C38 172 52 122 100 112 C148 122 162 172 142 212 Z" fill="#7a6a55" />
+    <path d="M60 150 q12 2 16 14 M58 176 q12 0 16 12 M140 150 q-12 2 -16 14 M142 176 q-12 0 -16 12" fill="none" stroke="#3b2f26" stroke-width="5" stroke-linecap="round" />
+    <path d="M100 116 C84 122 76 150 80 212 L120 212 C124 150 116 122 100 116 Z" fill="#faf7f0" />
+    <g fill="#faf7f0" stroke="#cfc8b8" stroke-width="1.5">
+      <rect x="74" y="168" width="22" height="42" rx="11" /><rect x="104" y="168" width="22" height="42" rx="11" />
+      <ellipse cx="85" cy="208" rx="14" ry="8" /><ellipse cx="115" cy="208" rx="14" ry="8" />
+    </g>
+    <path d="M80 208 V203 M85 209 V203 M90 208 V203 M110 208 V203 M115 209 V203 M120 208 V203" stroke="#cfc8b8" stroke-width="1.5" stroke-linecap="round" />
+    <g fill="none" stroke="#e8b93f" stroke-width="3" stroke-linecap="round">
+      <ellipse cx="100" cy="138" rx="5.5" ry="7" /><path d="M100 145 V166 M92 152 H108" />
+    </g>
+    <ellipse cx="100" cy="78" rx="45" ry="37" fill="#7a6a55" />
+    <path d="M56 66 Q100 44 144 66 L144 74 Q100 54 56 74 Z" fill="url(#fn-nemes)" stroke="#92400e" stroke-width="2" stroke-linejoin="round" />
+    <path d="M100 46 C94 50 94 58 100 60 C106 58 106 50 100 46 Z" fill="#e8b93f" stroke="#92400e" stroke-width="1.5" />
+    <path d="M64 56 L58 22 L90 44 Z M136 56 L142 22 L110 44 Z" fill="#7a6a55" stroke="#3b2f26" stroke-width="2" stroke-linejoin="round" />
+    <path d="M66 50 L63 32 L80 44 Z M134 50 L137 32 L120 44 Z" fill="#f4a6b4" />
+    <path d="M92 66 V76 M100 64 V76 M108 66 V76 M58 86 L68 88 M58 96 L69 96 M142 86 L132 88 M142 96 L131 96" stroke="#3b2f26" stroke-width="3.5" stroke-linecap="round" />
+    <ellipse cx="100" cy="95" rx="24" ry="18" fill="#faf7f0" />
+    <path d="M70 80 L50 72 M130 80 L150 72" stroke="#111" stroke-width="3.5" stroke-linecap="round" />
+    <g stroke="#3b2f26" stroke-width="1.5">
+      <circle cx="82" cy="78" r="11" fill="#b9e08f" /><circle cx="118" cy="78" r="11" fill="#b9e08f" />
+    </g>
+    <circle cx="82" cy="78" r="6.5" fill="#111" /><circle cx="118" cy="78" r="6.5" fill="#111" />
+    <circle cx="84.5" cy="75.5" r="2" fill="#fff" /><circle cx="120.5" cy="75.5" r="2" fill="#fff" />
+    <ellipse class="fn-lid" cx="82" cy="78" rx="12" ry="12" fill="#7a6a55" stroke="#3b2f26" stroke-width="1.5" />
+    <ellipse class="fn-lid" cx="118" cy="78" rx="12" ry="12" fill="#7a6a55" stroke="#3b2f26" stroke-width="1.5" />
+    <path d="M94 90 L106 90 L100 98 Z" fill="#f4a6b4" />
+    <path d="M100 98 Q94 105 88 100 M100 98 Q106 105 112 100" fill="none" stroke="#3b2f26" stroke-width="1.6" stroke-linecap="round" />
+    <path d="M78 96 L48 90 M78 100 L48 104 M122 96 L152 90 M122 100 L152 104" stroke="#fff" stroke-width="1.2" stroke-linecap="round" opacity=".85" />
+  </svg>`;
+
 const ngToast = (delayMs, title, small) =>
   `<div class="cegg-toast atn-gtoast" style="--td: ${delayMs}ms">${title}<small>${small}</small></div>`;
 
@@ -353,6 +397,30 @@ const NAME_EGGS = {
       </div>
       <div class="mr-sign ce-at">Mathias ♥ Marie</div>
       ${ngToast(5600, 'The heart of the cards?', 'No: the card of my heart. ♥')}`
+  },
+  // Two sphinx statues guard the tomb. One of them wakes up as Findus, asks
+  // the classic riddle, answers it himself and goes back to sleep.
+  FINDUS: {
+    id: 'name-findus',
+    ms: 14000,
+    title: 'The sphinx has awoken.',
+    msg: 'Ah… Findus. Guardian of the tomb. Do not wake him.',
+    html: () => {
+      const say = (cls, text) => `<div class="fn-say fn-say--${cls} ce-at">${text}</div>`;
+      return `
+        <div class="fn-sand"></div>
+        <div class="fn-cat fn-cat--l ce-at" style="left: 22%; top: 70%;"><span class="fn-svg">${FINDUS_SVG}</span></div>
+        <div class="fn-cat fn-cat--live ce-at" style="left: 78%; top: 70%;">
+          <span class="fn-svg">${FINDUS_SVG}</span>
+          <i class="fn-glow" style="left: 41%;"></i><i class="fn-glow" style="left: 59%;"></i>
+        </div>
+        <div class="fn-dust">${ceRange(fxCount(10), () => `<span style="left: ${ceRand(66, 90).toFixed(0)}%; --s: ${ceRand(8, 16).toFixed(0)}px; --dx: ${ceRand(-30, 30).toFixed(0)}px; --d: ${ceRand(2300, 3600).toFixed(0)}ms;"></span>`)}</div>
+        ${say(1, 'What walks on four legs in the morning, four legs at noon, and four legs in the evening?')}
+        ${say(2, 'FINDUS! And no, I am not moving. Go around.')}
+        <div class="fn-purr ce-at">prrrrrrr…</div>
+        <div class="fn-zzz ce-at"><span>z</span><span>Z</span><span>Z</span></div>
+        ${ngToast(8800, 'Findus, Sphinx of the Sofa.', 'Weight: impressive. Loaf: perfect. Moves for no one.')}`;
+    }
   }
 };
 
