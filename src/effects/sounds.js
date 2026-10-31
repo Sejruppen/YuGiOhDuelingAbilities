@@ -108,7 +108,7 @@ function normaliseSoundEvent(event) {
     if (event.to === 0 && event.from > 0) return { name: event.shadowRealm ? 'shadow-realm' : 'defeat', amount };
     return { name: event.to < event.from ? 'damage' : 'heal', amount };
   }
-  if (event.name === 'use' && event.delta < 0) return { ...event, name: 'use-undo' };
+  if ((event.name === 'use' && event.delta < 0) || event.name === 'lp-undo') return { ...event, name: 'use-undo' };
   return event;
 }
 

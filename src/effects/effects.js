@@ -136,6 +136,11 @@ function afterRenderEffects(app, before) {
       .map(e => (e.name === 'lp-change' ? { ...e, silent: true } : e));
   }
 
+  // An LP undo only counts back; no damage, heal or defeat effects.
+  if (events.some(e => e.name === 'lp-undo')) {
+    events = events.map(e => (e.name === 'lp-change' ? { ...e, silent: true } : e));
+  }
+
   if (before.modal && !app.querySelector('.modal-backdrop')) playModalExit(before.modal);
 
   const lpChange = events.find(e => e.name === 'lp-change');
@@ -183,6 +188,10 @@ function playEffect(app, event) {
 
     case 'lp-change':
       playLpChange(app, lpBar, event);
+      break;
+
+    case 'lp-undo':
+      addFx(lpBar, 'fx-undo');
       break;
 
     case 'activate':

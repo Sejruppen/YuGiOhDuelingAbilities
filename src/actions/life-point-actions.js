@@ -60,6 +60,15 @@ function setLp(lp, { reset = false } = {}) {
   setState({ lp, lpLog });
 }
 
+// Takes back the newest LP change and drops it from the log. The editor stays
+// open so several changes can be undone in a row.
+function undoLastLp() {
+  const [last, ...rest] = state.lpLog || [];
+  if (!last) return;
+  queueEffect('lp-undo');
+  setState({ lp: last.lp - last.delta, lpLog: rest });
+}
+
 function adjustLpQuick(delta) {
   setLp(Math.max(0, getCurrentLp() + delta));
 }
