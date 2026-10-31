@@ -2763,6 +2763,71 @@ const COOP_SOUNDS = {
     ceSadTrombone(t + 4.2, 0.035);
     for (let o = 4.4; o < 6.1; o += 0.28) rubberSqueak(t + o, 1300 + rnd(-150, 150), 0.02, room);
     ceWhoosh(t + 5.3, 0.6, 0.04, 400, 1800, room);
+  },
+  // "Next time on Yu-Gi-Oh!" (6.5s): a freeze-frame hit, a whoosh, the logo
+  // slams in on a brass fanfare (0.9s), a card flip for the episode (1.7s),
+  // a tense pulsing build under the title, and the "Don't miss it!" stamp
+  // (4.4s) resolves to a bright major chord.
+  'egg-next-time': t => {
+    const room = darkBus({ reverb: 0.4 });
+    noise({ t, dur: 0.08, gain: 0.08, type: 'highpass', freq: 3000, attack: 0.002, out: room });
+    tone({ t, freq: midi(76), to: midi(64), dur: 0.5, type: 'sawtooth', gain: 0.035, filter: 2400, attack: 0.003, out: room });
+    ceWhoosh(t + 0.3, 0.4, 0.05, 400, 2800, room);
+    const slam = t + 0.91;
+    boom(slam, 0.9, room);
+    brass({ t: slam, notes: [64, 68, 71, 76], dur: 1, gain: 0.05 });
+    noise({ t: slam, dur: 1.1, gain: 0.06, type: 'highpass', freq: 6000, to: 3500, attack: 0.003, out: room });
+    healSparkles(slam + 0.1, 0.6, 5, room);
+    cardFlip(t + 1.7, 0.12, 2400);
+    ceWhoosh(t + 2.2, 0.6, 0.04, 600, 2600, room);
+    for (let i = 0; i < 16; i++) {
+      const at = t + 1.9 + i * 0.15;
+      tone({ t: at, freq: midi(i % 4 === 3 ? 41 : 40), dur: 0.13, type: 'sawtooth', gain: 0.025 + i * 0.002, filter: 600 + i * 90, q: 3, attack: 0.005, out: room });
+      if (i % 2 === 0) rockDrum(at, 'kick', room);
+    }
+    const stamp = t + 4.4;
+    boom(stamp, 1, room);
+    rockDrum(stamp, 'snare', room);
+    brass({ t: stamp, notes: [57, 61, 64, 69], dur: 1.5, gain: 0.055 });
+    chord({ t: stamp + 0.05, notes: [69, 73, 76, 81], dur: 1.6, gain: 0.02, type: 'triangle', attack: 0.05, filter: 3000 });
+    healSparkles(stamp + 0.1, 1.2, 10, room);
+  },
+  // Mind Slave (10.5s): blackout drone, the forehead Eye hums on (1.6s), an
+  // evil sting as his eyes open (2.0s), a woozy theremin glide on every swing
+  // of the Rod (2.6-8.6s) under whispers, the player's branding bell (5.2s)
+  // and monotone "Yes… Master… Marik…" (5.8s), his command (7.2s), then a
+  // slide-whistle as his own eyes spiral (8.8s), his sleepy echo, a thud and
+  // a snore.
+  'egg-mind-slave': t => {
+    const room = darkBus({ reverb: 0.6, echo: 0.15 });
+    boom(t, 0.6, room);
+    darkCluster({ t, notes: [31, 32, 38], dur: 8.8, gain: 0.03, attack: 1.2, filter: [150, 600], out: room });
+    eyeHum(t + 1.6, 2, 0.05, room);
+    bell({ t: t + 1.6, freq: midi(81), dur: 1.5, gain: 0.03, out: room });
+    tone({ t: t + 2.0, freq: midi(62), to: midi(61), dur: 0.5, type: 'sawtooth', gain: 0.04, filter: 1800, attack: 0.005, out: room });
+    bell({ t: t + 2.0, freq: midi(38), dur: 2, gain: 0.1, out: room });
+    for (let k = 0; k < 10; k++) {
+      const at = t + 2.6 + k * 0.6;
+      const [from, to] = k % 2 ? [76, 79] : [79, 76];
+      tone({ t: at, freq: midi(from), to: midi(to), dur: 0.58, type: 'sine', gain: 0.022, attack: 0.15, out: room });
+      noise({ t: at + 0.55, dur: 0.03, gain: 0.03, type: 'highpass', freq: 4000, attack: 0.002, out: room });
+    }
+    shadowWhispers(t + 3, 5, 10, room);
+    boom(t + 4.4, 0.5, room);
+    brass({ t: t + 4.4, notes: [38, 45, 50], dur: 0.7, gain: 0.04 });
+    bell({ t: t + 5.2, freq: midi(45), dur: 3, gain: 0.1, out: room });
+    eyeHum(t + 5.2, 2.5, 0.06, room);
+    [[5.8, 57], [6.25, 57], [6.7, 55]].forEach(([at, n]) =>
+      tone({ t: t + at, freq: midi(n), dur: 0.35, type: 'triangle', gain: 0.04, filter: 1200, attack: 0.02, out: room }));
+    boom(t + 7.2, 0.5, room);
+    brass({ t: t + 7.2, notes: [50, 53, 57], dur: 0.6, gain: 0.04 });
+    slideWhistle({ t: t + 8.8, freqs: [900, 300, 600, 250], dur: 0.8, gain: 0.03, out: room });
+    [[9.0, 50, 49], [9.45, 50, 48], [9.9, 47, 43]].forEach(([at, n, to]) =>
+      tone({ t: t + at, freq: midi(n), to: midi(to), dur: 0.4, type: 'sawtooth', gain: 0.03, filter: 900, attack: 0.03, out: room }));
+    tone({ t: t + 9.6, freq: 120, to: 55, dur: 0.25, type: 'triangle', gain: 0.12, attack: 0.003, out: room });
+    noise({ t: t + 9.6, dur: 0.2, gain: 0.06, type: 'lowpass', freq: 500, attack: 0.003, out: room });
+    noise({ t: t + 10.0, dur: 0.6, gain: 0.04, type: 'lowpass', freq: 380, to: 240, attack: 0.35, out: room });
+    tone({ t: t + 10.6, freq: 900, to: 600, dur: 0.35, type: 'sine', gain: 0.015, attack: 0.05, out: room });
   }
 };
 

@@ -249,15 +249,19 @@ const tnDate = ms => new Date(ms).toLocaleDateString('en-GB', { weekday: 'short'
 
 // --- Menu -----------------------------------------------------------------------
 
-function renderTournamentMenuButton({ icon, label, sub, onclick, primary = false, danger = false, disabled = false }) {
+function renderTournamentMenuButton({ icon, label, sub, onclick, primary = false, danger = false, disabled = false, egg = '' }) {
   const style = danger
     ? 'border-rose-500 bg-rose-600 text-white'
     : primary
       ? 'border-amber-400 bg-amber-500 hover:bg-amber-400 text-slate-950 shadow-lg shadow-amber-500/20'
       : 'border-slate-700 bg-slate-900/90 hover:border-amber-500/50 text-white';
   const subStyle = danger ? 'text-rose-100' : primary ? 'text-slate-900/80' : 'text-slate-400';
+  // `egg`: a start-button-eggs.js hold kind (hold 2s instead of tapping).
+  const eggAttrs = egg
+    ? `onpointerdown="startStartEggPress(this, '${egg}')" onpointerup="cancelStartEggPress(this)" onpointerleave="cancelStartEggPress(this)" onpointercancel="cancelStartEggPress(this)" oncontextmenu="return false"`
+    : '';
   return `
-    <button onclick="${onclick}" ${disabled ? 'disabled' : ''} class="w-full text-left px-4 py-4 rounded-2xl border ${style} transition flex items-center gap-4 disabled:opacity-40">
+    <button onclick="${egg ? 'if (startEggAllowsClick()) ' : ''}${onclick}" ${eggAttrs} ${disabled ? 'disabled' : ''} class="${egg ? 'cegg-press ' : ''}w-full text-left px-4 py-4 rounded-2xl border ${style} transition flex items-center gap-4 disabled:opacity-40">
       <span class="text-3xl leading-none"><span class="ce-emoji">${icon}</span></span>
       <span class="flex-1 min-w-0">
         <span class="block text-lg font-black leading-tight">${label}</span>
@@ -291,12 +295,13 @@ function renderTournamentMenu() {
   return `
     ${renderTournamentHeader('🏆 Tournament', undefined, 'leaveTournament()')}
     <div class="flex-1 min-h-0 overflow-y-auto p-4 no-scrollbar flex flex-col justify-center gap-3">
-      ${renderTournamentMenuButton({ icon: '▶️', label: 'Continue', sub: continueSub, onclick: 'continueTournament()', primary: unfinished, disabled: !inBracket })}
+      ${renderTournamentMenuButton({ icon: '▶️', label: 'Continue', sub: continueSub, onclick: 'continueTournament()', primary: unfinished, disabled: !inBracket, egg: 'next-time' })}
       ${renderTournamentMenuButton({
         icon: '✨',
         label: armed ? 'Tap again for a new one' : 'New tournament',
         sub: armed ? 'The current tournament will be abandoned' : 'Pick duelists and draw a bracket',
         onclick: 'newTournamentClick()',
+        egg: 'mind-slave',
         primary: !unfinished,
         danger: armed
       })}

@@ -33,6 +33,8 @@ const EGG_HINTS = {
   'rock-paper-scissors': { where: 'Tournament', text: 'Can a tournament get any smaller? What would the last two duelists do about it?' },
   'star-chips': { where: 'Tournament', text: 'Every duelist dreams of the trophy. Have you held on to that dream?' },
   'penalty-dice': { where: 'Tournament', text: 'Eager to get the tournament started? The best duelists know that how you begin can matter more than how fast.' },
+  'next-time': { where: 'Tournament', text: 'Every great saga ends on a cliffhanger. Can you hold on long enough to see what happens next?' },
+  'mind-slave': { where: 'Tournament', text: 'Starting fresh is a choice… or is it? Linger too long and someone else might start making your choices for you.' },
   // Co-op setup
   'duel-school': { where: HINT_VIEW.coop, text: 'Every rookie has to learn somewhere. Does the easy road have something to teach you?' },
   'time-to-duel': { where: HINT_VIEW.coop, text: 'It\'s time to d-d-d-duel! But are you a true duelist? Prove you can commit.' },

@@ -9,6 +9,10 @@
 //    robots marches in, doubles its ATK, overheats and blows up.
 //  - Co-op "Face Pegasus": Relinquished rises, absorbs the button into the
 //    Millennium Eye on its chest, gets the hiccups and spits it back out.
+//  - Tournament menu "Continue": "Next time on Yu-Gi-Oh!", an anime episode
+//    preview titled after the next real match.
+//  - Tournament menu "New tournament": Mind Slave. Cloaked Marik hypnotises
+//    the player with the Millennium Rod, then hypnotises himself.
 const START_EGG_PRESS_MS = 2000;
 const INVITE_EGG_MS = 6000;
 const FRIENDSHIP_EGG_MS = 5500;
@@ -31,6 +35,8 @@ function startStartEggPress(el, kind) {
     else if (kind === 'duel-school') playDuelSchoolEgg();
     else if (kind === 'limiter-removal') playLimiterRemovalEgg(el);
     else if (kind === 'relinquished') playRelinquishedEgg(el);
+    else if (kind === 'next-time') playNextTimeEgg();
+    else if (kind === 'mind-slave') playMindSlaveEgg();
     else playInvitationEgg();
   }, START_EGG_PRESS_MS);
 }
@@ -568,4 +574,171 @@ function playRelinquishedEgg(button) {
   overlay.style.setProperty('--rq-w', `${width.toFixed(0)}px`);
   restartClass(button, 'rq-taken', RELINQUISHED_EGG_MS - 100);
   playSound({ name: 'egg-relinquished' });
+}
+
+// --- Tournament menu "Continue": "Next time on Yu-Gi-Oh!" ---------------------------
+// The screen freezes on a white flash like an episode's last frame, then the
+// preview card plays: NEXT TIME ON / YU-GI-OH! slams in, the episode number
+// (duels played + 1) and a dramatic title built from the next real match
+// (or the champion once the final is decided), stamped "Don't miss it!".
+// Only the player holding Continue sees it, so it is shown once, upright.
+const NEXT_TIME_EGG_MS = 6500;
+
+const NEXT_TIME_TITLES = [
+  (a, b) => `${a} vs. ${b}:<br>Duel of Destiny!`,
+  (a, b) => `${a}'s<br>Last Stand!`,
+  (a, b) => `The Heart of the Cards:<br>${a} vs. ${b}!`,
+  (a, b) => `${b} Faces<br>the Shadow Realm!`,
+  (a, b) => `Who Will Survive?<br>${a} vs. ${b}!`,
+  (a, b) => `${a} vs. ${b}:<br>The Final Draw!`
+];
+
+function nextTimeEpisode() {
+  const rounds = getTournamentRounds();
+  const ep = rounds.flat().filter(m => !m.bye && m.winnerId).length + 1;
+  const name = id => tnEsc((getTournamentChar(id)?.name || '???').replace(/\s*\(.*\)\s*$/, '').trim());
+  const champion = getTournamentChampion(rounds);
+  if (champion) return { ep, round: 'Special', title: `${name(champion)}:<br>King of Games!` };
+  const match = rounds.flat().find(m => m.ready);
+  if (!match) return { ep, round: '', title: 'The Duel Continues!' };
+  const [a, b] = Math.random() < 0.5 ? [match.a, match.b] : [match.b, match.a];
+  const round = getRoundName(match.round, rounds.length);
+  const title = round === 'Final'
+    ? `The Final Showdown:<br>${name(a)} vs. ${name(b)}!`
+    : cePick(NEXT_TIME_TITLES)(name(a), name(b));
+  return { ep, round, title };
+}
+
+function playNextTimeEgg() {
+  markEggFound('next-time');
+  const { ep, round, title } = nextTimeEpisode();
+  const stars = ceRange(16, () =>
+    `<span class="ntp-star" style="left: ${ceRand(3, 97).toFixed(0)}%; top: ${ceRand(3, 97).toFixed(0)}%; --d: ${ceRand(0, 1600).toFixed(0)}ms; --s: ${ceRand(0.6, 1.4).toFixed(2)};">✦</span>`);
+  const overlay = spawnStartEgg('next-time', NEXT_TIME_EGG_MS, `
+    <div class="ntp-bg"><div class="ce-at ntp-rays"></div>${stars}</div>
+    <div class="ntp-card">
+      <span class="ntp-next">Next time on</span>
+      <span class="ntp-logo">Yu-Gi-Oh!</span>
+      <span class="ntp-ep">Episode ${ep}${round ? ` · ${round}` : ''}</span>
+      <span class="ntp-title">${title}</span>
+      <span class="ntp-miss">Don't miss it!</span>
+    </div>
+    <div class="ntp-flash"></div>`);
+  if (overlay) playSound({ name: 'egg-next-time' });
+}
+
+// --- Tournament menu "New tournament": Mind Slave ------------------------------------
+// The screen blacks out and Marik appears in his hooded purple cloak: only
+// the glowing Millennium Eye on his forehead and his evil eyes show under
+// the hood. He swings the Millennium Rod like a metronome; a spiral spins,
+// rings pulse from the Rod, and the player is branded with the Eye ("Yes…
+// Master… Marik…", like Joey in Battle City). Then his own eyes start
+// following the Rod, turn into spirals, and he hypnotises himself to sleep.
+// Timeline: the MIND SLAVE section of effects.css.
+const MIND_SLAVE_EGG_MS = 10500;
+
+// An Archimedean spiral path, `turns` turns out to radius `rMax`.
+function mkSpiralPath(cx, cy, turns, rMax) {
+  const perTurn = 24;
+  const steps = turns * perTurn;
+  return Array.from({ length: steps + 1 }, (_, i) => {
+    const a = (i / perTurn) * Math.PI * 2;
+    const r = (i / steps) * rMax;
+    return `${i ? 'L' : 'M'}${(cx + Math.cos(a) * r).toFixed(1)} ${(cy + Math.sin(a) * r).toFixed(1)}`;
+  }).join(' ');
+}
+
+// The Millennium Eye as a glowing line glyph, centred on 0,0 (~26 wide).
+const MK_EYE_GLYPH = `
+  <g fill="none" stroke="#fde047" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M-12 0 Q0 -9 12 0 Q0 9 -12 0 Z"/>
+    <circle r="3.2" fill="#fde047" stroke="none"/>
+    <path d="M-12 -6 Q0 -15 12 -6"/>
+    <path d="M-4 7 L-6 16 M4 7 Q7 14 12 11"/>
+  </g>`;
+
+const MARIK_SVG = `
+  <svg viewBox="0 0 200 260" aria-hidden="true">
+    <defs>
+      <linearGradient id="mk-cloak" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0" stop-color="#6d5aa3"/><stop offset="0.45" stop-color="#4a3a80"/><stop offset="1" stop-color="#2a2050"/>
+      </linearGradient>
+      <linearGradient id="mk-gold" x1="0" y1="0" x2="1" y2="1">
+        <stop offset="0" stop-color="#fef08a"/><stop offset="0.5" stop-color="#d4a017"/><stop offset="1" stop-color="#7c5a10"/>
+      </linearGradient>
+      <radialGradient id="mk-gold-ball" cx="0.35" cy="0.35" r="0.75">
+        <stop offset="0" stop-color="#fffbeb"/><stop offset="0.35" stop-color="#facc15"/><stop offset="1" stop-color="#8a6510"/>
+      </radialGradient>
+      <radialGradient id="mk-halo">
+        <stop offset="0" stop-color="#fef08a" stop-opacity="0.95"/><stop offset="1" stop-color="#a855f7" stop-opacity="0"/>
+      </radialGradient>
+      <filter id="mk-glow" x="-1" y="-1" width="3" height="3">
+        <feGaussianBlur stdDeviation="2.2" result="b"/>
+        <feMerge><feMergeNode in="b"/><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
+      </filter>
+    </defs>
+    <path d="M100 12 C72 12 54 34 50 66 C47 92 44 112 34 134 C22 160 12 210 6 260 L194 260 C188 210 178 160 166 134 C156 112 153 92 150 66 C146 34 128 12 100 12 Z" fill="url(#mk-cloak)" stroke="#140c28" stroke-width="1.5"/>
+    <path d="M100 12 C86 22 78 38 76 52 Q100 40 124 52 C122 38 114 22 100 12 Z" fill="#8b7bc0" opacity="0.35"/>
+    <path d="M88 132 Q100 142 112 132 L122 260 L78 260 Z" fill="#17122a"/>
+    <path d="M56 116 Q100 152 144 116 Q136 138 100 150 Q64 138 56 116 Z" fill="#5b4a8a" stroke="#140c28" stroke-width="1"/>
+    <g fill="none" stroke="#231a45" stroke-width="2" stroke-linecap="round">
+      <path d="M58 160 Q50 210 42 256"/><path d="M76 156 Q70 206 66 256"/><path d="M142 160 Q150 210 158 256"/>
+    </g>
+    <ellipse cx="100" cy="80" rx="35" ry="41" fill="#2a2050"/>
+    <ellipse cx="100" cy="83" rx="28" ry="34" fill="#050208"/>
+    <g class="mk-hood-eye" filter="url(#mk-glow)"><g transform="translate(100 64) scale(0.75)">${MK_EYE_GLYPH}</g></g>
+    <g class="mk-evil" filter="url(#mk-glow)">
+      <path d="M79 90 L97 95 L95 99.5 L82 97 Z" fill="#ddd6fe"/>
+      <path d="M121 90 L103 95 L105 99.5 L118 97 Z" fill="#ddd6fe"/>
+      <circle cx="91" cy="96.3" r="1.7" fill="#4c1d95"/>
+      <circle cx="109" cy="96.3" r="1.7" fill="#4c1d95"/>
+    </g>
+    <g class="mk-dazed" fill="none" stroke="#e9d5ff" stroke-width="1.4" stroke-linecap="round" filter="url(#mk-glow)">
+      <path class="mk-dz" d="${mkSpiralPath(89, 95, 3, 6)}"/>
+      <path class="mk-dz" d="${mkSpiralPath(111, 95, 3, 6)}"/>
+    </g>
+    <path d="M124 170 Q140 152 154 132" fill="none" stroke="#8b5a3c" stroke-width="13" stroke-linecap="round"/>
+    <path d="M132 161 Q139 153 146 144" fill="none" stroke="url(#mk-gold)" stroke-width="15"/>
+    <path d="M131 154 L140 164 M136 149 L145 158 M141 144 L149 152" fill="none" stroke="#7c5a10" stroke-width="1.2"/>
+    <path d="M110 148 Q128 154 136 178 Q120 182 106 170 Z" fill="#3f3170" stroke="#140c28" stroke-width="1"/>
+    <g class="mk-rod">
+      <circle class="mk-rod-glow" cx="158.5" cy="100" r="26" fill="url(#mk-halo)"/>
+      <g class="mk-rings" fill="none" stroke-width="1.5">
+        ${ceRange(4, i => `<circle class="mk-ring" cx="158.5" cy="100" r="9" stroke="${i % 2 ? '#c084fc' : '#fde047'}" style="animation-delay: ${i * 300}ms;"/>`)}
+      </g>
+      <rect x="156.5" y="100" width="4" height="92" fill="url(#mk-gold)"/>
+      <rect x="154.5" y="184" width="8" height="4" rx="1" fill="url(#mk-gold)"/>
+      <path d="M155 192 L162 192 L158.5 205 Z" fill="url(#mk-gold)" stroke="#7c5a10" stroke-width="0.6"/>
+      <path d="M150 100 Q138 97 133 85 Q143 91 152 94 Z M167 100 Q179 97 184 85 Q174 91 165 94 Z" fill="url(#mk-gold)" stroke="#7c5a10" stroke-width="0.8"/>
+      <path d="M155.5 91.5 L158.5 85 L161.5 91.5 Z" fill="url(#mk-gold)"/>
+      <circle cx="158.5" cy="100" r="9.5" fill="url(#mk-gold-ball)" stroke="#7c5a10" stroke-width="0.8"/>
+      <path d="M152 100 Q158.5 95 165 100 Q158.5 105 152 100 Z" fill="#fef3c7" stroke="#7c5a10" stroke-width="0.8"/>
+      <circle cx="158.5" cy="100" r="2" fill="#7c5a10"/>
+    </g>
+    <rect x="150" y="117" width="17" height="15" rx="6" fill="#8b5a3c" stroke="#4a2c1a" stroke-width="1.2"/>
+    <path d="M153 121 H164 M153 125 H164 M153 129 H163" fill="none" stroke="#5c3a24" stroke-width="1"/>
+  </svg>`;
+
+function playMindSlaveEgg() {
+  markEggFound('mind-slave');
+  const line = (text, at, len, y, mod = '') =>
+    `<div class="mk-line" style="top: ${y}%;"><span class="mk-say${mod ? ` mk-say--${mod}` : ''}" style="--at: ${at}ms; --len: ${len}ms;">${text}</span></div>`;
+  const overlay = spawnStartEgg('marik', MIND_SLAVE_EGG_MS, `
+    <div class="mk-black"></div>
+    <div class="ce-at mk-hypno">
+      <svg viewBox="-100 -100 200 200" aria-hidden="true"><path d="${mkSpiralPath(0, 0, 9, 100)}" fill="none" stroke="#7e22ce" stroke-width="5"/></svg>
+    </div>
+    <div class="ce-at mk-figure">
+      ${MARIK_SVG}
+      ${ceRange(3, i => `<span class="mk-z" style="--i: ${i};">Z</span>`)}
+    </div>
+    <div class="mk-haze"></div>
+    <div class="ce-at mk-mark"><svg viewBox="-20 -20 40 40" aria-hidden="true">${MK_EYE_GLYPH}</svg></div>
+    ${line('Look into the Millennium Rod…', 2800, 1500, 8)}
+    ${line('Your mind… is MINE!', 4400, 1300, 8)}
+    ${line('Yes… Master… Marik…', 5800, 1400, 86, 'slave')}
+    ${line('Now, mind slave… make ME the champion!', 7200, 1300, 8)}
+    ${line('…yes… Master… Marik…', 9000, 1400, 8, 'dazed')}
+    <div class="cegg-toast">Marik hypnotised himself.<small>Free will restored. Your tournament awaits!</small></div>`);
+  if (overlay) playSound({ name: 'egg-mind-slave' });
 }
