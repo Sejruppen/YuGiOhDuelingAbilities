@@ -95,4 +95,5 @@ function render() {
 }
 
 registerServiceWorker();
+initBackButton();
 render();

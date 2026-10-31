@@ -9094,6 +9094,30 @@ header:has(+ .tn-draw--done) .tn-draw-skip { visibility: hidden; }
   50% { transform: scale(1.2) rotate(15deg); }
 }
 
+/* --- Back button: "Press back again to exit" --- */
+.back-toast {
+  position: fixed;
+  left: 50%;
+  bottom: calc(1.5rem + env(safe-area-inset-bottom, 0px));
+  z-index: 75;
+  translate: -50% 0;
+  padding: 0.5rem 1rem;
+  border-radius: 9999px;
+  border: 1px solid rgba(100, 116, 139, 0.5);
+  background: rgba(15, 23, 42, 0.95);
+  color: rgb(226 232 240);
+  font-size: 0.875rem;
+  font-weight: 600;
+  white-space: nowrap;
+  pointer-events: none;
+  animation: back-toast 2s ease both;
+}
+@keyframes back-toast {
+  0% { opacity: 0; transform: translateY(8px); }
+  10%, 80% { opacity: 1; transform: none; }
+  100% { opacity: 0; }
+}
+
 /* =========================================================================
    CO-OP BOSS (Pegasus – The Millennium Eye)
    ========================================================================= */

@@ -15,6 +15,7 @@ It is a family hobby project: vanilla JavaScript, no build step, installable and
 - **Tournament:** single-elimination bracket. Choose the size, hand-pick duelists (the rest are drawn at random with a draw animation), then tap the winner of each duel. Byes are seeded classically, only one deck per duelist can enter, and a result can be changed until the winner plays again.
 - **Co-op Boss:** the phone lies between both fields while two players team up against Pegasus across three stages (Toon World, Millennium Eye, Final Read). Player 2's half of the screen is rotated 180°. Includes shared Bond actions (Foresight, Shield, Revive, Protect), silence rules and cutscenes.
 - **Settings:** theme (Dark, Light, Power of Chaos, plus a secret Treasure theme), UI size (four steps), sound on or off, co-op progress reset, and the secrets tracker with hints. Everything is saved on the device.
+- **Android back button:** closes the open popup first, then goes back a screen. During a duel it asks to reset instead of leaving, and on the start screen you press back twice to exit (`src/actions/back-button.js`).
 - **Effects and sound:** every theme has its own animations and synthesised sound kit (Web Audio, no audio files). Honours "reduce motion" and switches to a lighter effects mode on low-end phones.
 - **Easter eggs:** many hidden secrets (hold-to-trigger buttons, family names, anime references). Finding them all unlocks the Treasure theme. See `.github/skills/easter-egg/SKILL.md` before adding new ones.
 
