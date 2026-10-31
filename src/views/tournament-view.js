@@ -292,9 +292,30 @@ function renderTournamentMenu() {
     : 'No finished tournaments yet';
 
   const armed = tournamentUi.confirmNew;
+  const lastFinal = n ? getTournamentRounds(tournamentHistory[0]).at(-1)[0] : null;
+  const reigning = lastFinal?.winnerId ? getTournamentChar(lastFinal.winnerId) : null;
   return `
     ${renderTournamentHeader('🏆 Tournament', undefined, 'leaveTournament()')}
-    <div class="flex-1 min-h-0 overflow-y-auto p-4 no-scrollbar flex flex-col justify-center gap-3">
+    <div class="flex-1 min-h-0 overflow-y-auto p-4 no-scrollbar flex flex-col">
+     <div class="my-auto flex flex-col gap-3">
+      <div class="text-center mb-2">
+        <div class="coop-step-icon text-6xl leading-none ce-emoji">🏆</div>
+        <p class="mt-2 text-xl font-black text-white">The Duelist Tournament</p>
+        <p class="text-sm italic text-emerald-200">"Only one duelist will be crowned King of Games!"</p>
+        <p class="mt-3 text-sm text-slate-300 leading-relaxed">
+          Pick the duelists, draw a single-elimination bracket and duel it out side by side. Every champion is remembered.
+        </p>
+      </div>
+      ${reigning ? `
+        <div class="rounded-2xl border border-amber-500/40 bg-amber-500/10 px-4 py-3 flex items-center gap-3 mb-1">
+          <span class="text-3xl leading-none ce-emoji">👑</span>
+          <span class="flex-1 min-w-0">
+            <span class="block text-[0.65rem] font-semibold uppercase tracking-widest text-amber-300/80">Reigning champion</span>
+            <span class="block font-black text-white leading-tight truncate">${tnEsc(reigning.name)}</span>
+            ${reigning.theme ? `<span class="block text-xs text-amber-400/80 truncate">${tnEsc(reigning.theme)}</span>` : ''}
+          </span>
+        </div>
+      ` : ''}
       ${renderTournamentMenuButton({ icon: '▶️', label: 'Continue', sub: continueSub, onclick: 'continueTournament()', primary: unfinished, disabled: !inBracket, egg: 'next-time' })}
       ${renderTournamentMenuButton({
         icon: '✨',
@@ -306,6 +327,7 @@ function renderTournamentMenu() {
         danger: armed
       })}
       ${renderTournamentMenuButton({ icon: '📜', label: 'History', sub: historySub, onclick: 'openTournamentHistory()', egg: 'stone-tablet' })}
+     </div>
     </div>
   `;
 }
