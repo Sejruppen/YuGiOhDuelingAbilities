@@ -16,7 +16,8 @@ function renderSoloButton() {
 }
 
 function renderSoloView() {
-  const body = {
+  const views = { menu: renderSoloMenu, how: renderSoloIntro, history: renderSoloHistory };
+  const body = views[soloUi.view] || {
     map: renderSoloMapScreen,
     node: renderSoloNode,
     fight: renderSoloFight,
@@ -24,7 +25,132 @@ function renderSoloView() {
     victory: renderSoloEnd,
     defeat: renderSoloEnd
   }[solo.phase] || renderSoloIntro;
-  return `<div class="solo-screen relative flex-1 min-h-0 flex flex-col">${body()}${soloUi.relicInfo ? renderSoloRelicSheet() : ''}</div>`;
+  return `<div class="solo-screen relative flex-1 min-h-0 flex flex-col">${body()}${!soloUi.view && soloUi.relicInfo ? renderSoloRelicSheet() : ''}</div>`;
+}
+
+// --- Menu and history ---------------------------------------------------------------
+
+function renderSoloMenu() {
+  const active = isSoloRunActive();
+  const at = active && solo.at && solo.map.nodes[solo.at];
+  const continueSub = active
+    ? `Floor ${at ? at.floor : 0}/${SOLO_FLOOR.CASTLE} · ❤️ ${solo.lp} LP · ⭐ ${solo.chips}`
+    : 'No run in progress';
+  const n = soloHistory.length;
+  const wins = soloHistory.filter(e => e.result === 'victory').length;
+  const historySub = n ? `${n} run${n === 1 ? '' : 's'} · ${wins} won` : 'No finished runs yet';
+  const armed = soloUi.confirmNew;
+  return `
+    ${renderSoloHeader('<span class="ce-emoji">🗺️</span> Duelist\'s Road')}
+    <div class="flex-1 min-h-0 overflow-y-auto p-4 no-scrollbar flex flex-col">
+     <div class="my-auto flex flex-col gap-3">
+      <div class="text-center mb-2">
+        <div class="coop-step-icon text-6xl leading-none ce-emoji">🏝️</div>
+        <p class="mt-2 text-xl font-black text-white">Welcome to Duelist Kingdom</p>
+        <p class="text-sm italic text-emerald-200">"Collect ${SOLO_GATE_CHIPS} Star Chips and the castle doors will open for you."</p>
+        <p class="mt-3 text-sm text-slate-300 leading-relaxed">
+          A solo run across Pegasus' island. Play your own deck against duelists that live on the phone. Choose your path, collect Star Chips and reach the castle.
+        </p>
+      </div>
+      ${renderSoloRoute(at ? at.floor : 0)}
+      ${renderTournamentMenuButton({ icon: '▶️', label: 'Continue', sub: continueSub, onclick: 'continueSoloRun()', primary: active, disabled: !active })}
+      ${renderTournamentMenuButton({
+        icon: '🏝️',
+        label: armed ? 'Tap again for a new run' : 'New run',
+        sub: armed ? 'The current run will be abandoned' : 'A new map of Duelist Kingdom',
+        onclick: 'newSoloRunClick()',
+        primary: !active,
+        danger: armed
+      })}
+      ${renderTournamentMenuButton({ icon: '📜', label: 'History', sub: historySub, onclick: 'openSoloHistory()' })}
+     </div>
+    </div>
+  `;
+}
+
+// The island from beach to castle; [regions, floorFrom, floorTo]. Lights up where the current run is.
+const SOLO_ROUTE = [
+  [['beach'], 1, 1],
+  [['forest', 'meadow'], 2, 3],
+  [['mountain', 'wasteland'], 4, 5],
+  [['campfire'], 6, 6],
+  [['labyrinth'], 7, 7],
+  [['castle'], 8, 8]
+];
+
+function renderSoloRoute(floor) {
+  const stops = SOLO_ROUTE.map(([regions, from, to]) => {
+    const here = floor >= from && floor <= to;
+    const passed = floor > to;
+    const title = regions.map(r => SOLO_REGIONS[r].name).join(' or ');
+    return `
+      <span title="${title}" class="flex flex-col items-center gap-0.5 rounded-lg px-1.5 py-1 ${here ? 'bg-amber-500/20 ring-1 ring-amber-400' : ''} ${passed ? 'opacity-40' : ''}">
+        ${regions.map(r => `<span class="ce-emoji text-xl leading-none">${SOLO_REGIONS[r].icon}</span>`).join('')}
+      </span>`;
+  });
+  return `
+    <div class="flex items-center justify-center gap-1 mb-2 text-slate-500 text-xs" aria-label="The route: beach, forest or meadow, mountain or wasteland, campfire, labyrinth, castle">
+      ${stops.join('<span aria-hidden="true">›</span>')}
+    </div>
+  `;
+}
+
+const SOLO_RESULTS = {
+  victory: { icon: '🏆', text: () => 'Defeated Pegasus', cls: 'text-amber-300' },
+  defeat: { icon: '🃏', text: e => `Sealed by ${e.foe} on floor ${e.floor}`, cls: 'text-rose-300' },
+  abandoned: { icon: '🏳️', text: e => `Abandoned on floor ${e.floor}`, cls: 'text-slate-400' }
+};
+
+function renderSoloHistoryEntry(e) {
+  const r = SOLO_RESULTS[e.result] || SOLO_RESULTS.abandoned;
+  const open = soloUi.openHistoryId === e.id;
+  const relics = (e.relics || []).filter(id => SOLO_RELICS[id]);
+  return `
+    <div class="rounded-2xl border ${open ? 'border-amber-500/50' : 'border-slate-800'} bg-slate-900/90 overflow-hidden">
+      <button onclick="toggleSoloHistoryEntry('${e.id}')" aria-expanded="${open}" class="w-full text-left px-4 py-3 flex items-center gap-3">
+        <span class="text-2xl leading-none ce-emoji">${r.icon}</span>
+        <span class="flex-1 min-w-0">
+          <span class="block text-[0.7rem] text-slate-400">${tnDate(e.finishedAt)}</span>
+          <span class="block font-black text-white leading-tight truncate">${e.hero}</span>
+          <span class="block text-xs ${r.cls} truncate">${r.text(e)}</span>
+        </span>
+        <span class="text-slate-400 text-sm">${open ? '▲' : '▼'}</span>
+      </button>
+      ${open ? `
+        <div class="px-4 pb-4 pt-3 border-t border-slate-800 flex flex-col items-center gap-3">
+          <div class="grid grid-cols-3 gap-2 w-full text-center">
+            ${soloStat('Duels won', e.duels)}
+            ${soloStat('Damage', e.damage)}
+            ${soloStat(e.result === 'victory' ? 'LP left' : '⭐ Chips', e.result === 'victory' ? e.lp : e.chips)}
+          </div>
+          ${relics.length ? `<p class="text-xl tracking-widest text-center">${relics.map(id => `<span class="ce-emoji" title="${SOLO_RELICS[id].name}">${SOLO_RELICS[id].icon}</span>`).join(' ')}</p>` : ''}
+          ${e.map ? renderSoloMap(true, e) : ''}
+        </div>
+      ` : ''}
+    </div>
+  `;
+}
+
+function renderSoloHistory() {
+  const n = soloHistory.length;
+  const wins = soloHistory.filter(e => e.result === 'victory').length;
+  const best = Math.max(0, ...soloHistory.map(e => e.damage || 0));
+  return `
+    ${renderSoloHeader('<span class="ce-emoji">📜</span> History')}
+    <div class="flex-1 min-h-0 overflow-y-auto p-4 no-scrollbar">
+      ${!n
+        ? '<p class="text-sm text-slate-400 text-center mt-10 leading-relaxed">No finished runs yet.<br>Every run, won or lost, will be remembered here.</p>'
+        : `
+          <div class="grid grid-cols-3 gap-2 text-center mb-5">
+            ${soloStat('Runs', n)}
+            ${soloStat('Won', wins)}
+            ${soloStat('Best damage', best)}
+          </div>
+          <p class="text-xs font-semibold uppercase tracking-widest text-slate-400 mb-2">Runs</p>
+          <div class="space-y-2">${soloHistory.map(renderSoloHistoryEntry).join('')}</div>
+        `}
+    </div>
+  `;
 }
 
 const soloStat = (label, value) => `<div class="rounded-xl bg-slate-900/90 border border-slate-800 px-3 py-2"><p class="text-[0.65rem] uppercase tracking-widest text-slate-400">${label}</p><p class="text-lg font-black text-white">${value}</p></div>`;
@@ -122,16 +248,8 @@ const soloFieldText = region => {
 
 function renderSoloIntro() {
   return `
-    ${renderSoloHeader('<span class="ce-emoji">🗺️</span> Duelist\'s Road')}
+    ${renderSoloHeader('<span class="ce-emoji">🏝️</span> New run')}
     <div class="flex-1 min-h-0 overflow-y-auto p-4 no-scrollbar">
-      <div class="text-center mb-4">
-        <div class="coop-step-icon text-6xl leading-none ce-emoji">🏝️</div>
-        <p class="mt-2 text-xl font-black text-white">Welcome to Duelist Kingdom</p>
-        <p class="text-sm italic text-emerald-200">"Collect ${SOLO_GATE_CHIPS} Star Chips and the castle doors will open for you."</p>
-      </div>
-      <p class="text-sm text-slate-300 leading-relaxed mb-5">
-        A solo run across Pegasus' island. Play your own deck against duelists that live on the phone. Choose your path, collect Star Chips and reach the castle.
-      </p>
       <p class="text-xs font-semibold uppercase tracking-widest text-slate-400 mb-2">How it works</p>
       <ul class="text-xs text-slate-300 space-y-1.5 leading-relaxed">
         <li><span class="ce-emoji">🗺️</span> Pick a path up the map. Every node is a duel, a treasure or something stranger.</li>
@@ -190,31 +308,31 @@ function renderSoloMapBands() {
   return { rects: rects.join(''), labels: labels.join('') };
 }
 
-function soloEdgeWalked(a, b) {
-  const i = solo.path.indexOf(a);
-  return i >= 0 && solo.path[i + 1] === b;
+function soloEdgeWalked(a, b, path = solo.path) {
+  const i = path.indexOf(a);
+  return i >= 0 && path[i + 1] === b;
 }
 
-// `mini` = the read-only map on the end screen.
-function renderSoloMap(mini = false) {
-  const { nodes, edges } = solo.map;
+// `mini` = a small read-only map (end screen and history); `run` = whose route to draw.
+function renderSoloMap(mini = false, run = solo) {
+  const { nodes, edges } = run.map;
   const reachable = mini ? [] : soloReachable();
   const bands = renderSoloMapBands();
 
   const lines = edges.map(([a, b]) => {
     const p = soloNodePos(nodes[a]);
     const q = soloNodePos(nodes[b]);
-    const walked = soloEdgeWalked(a, b);
-    const open = a === solo.at && reachable.includes(b);
+    const walked = soloEdgeWalked(a, b, run.path);
+    const open = a === run.at && reachable.includes(b);
     return `<line class="solo-edge ${walked ? 'solo-edge--walked' : open ? 'solo-edge--open' : ''}" x1="${p.x}" y1="${p.y}" x2="${q.x}" y2="${q.y}" />`;
   }).join('');
 
   // The map scrolls to where you stand; before floor 1 that is the beach.
-  const focusId = solo.at || reachable[0];
+  const focusId = run.at || reachable[0];
   const buttons = Object.values(nodes).map(n => {
     const { x, y } = soloNodePos(n);
     const t = SOLO_NODE_TYPES[n.type];
-    const state = n.id === solo.at ? 'current' : solo.path.includes(n.id) ? 'visited' : reachable.includes(n.id) ? 'reachable' : 'dim';
+    const state = n.id === run.at ? 'current' : run.path.includes(n.id) ? 'visited' : reachable.includes(n.id) ? 'reachable' : 'dim';
     const special = n.col === null ? 'solo-node--special' : '';
     const pos = `style="left: ${(x / SOLO_MAP_W) * 100}%; top: ${(y / SOLO_MAP_H) * 100}%;"`;
     if (mini) return `<span class="solo-node solo-node--${state} solo-node--${n.type} ${special}" ${pos}><span class="ce-emoji">${t.icon}</span></span>`;
@@ -751,8 +869,7 @@ function renderSoloReward() {
 function renderSoloEnd() {
   const win = solo.phase === 'victory';
   const at = solo.at && solo.map?.nodes[solo.at];
-  const hero = getSelectedCharacter();
-  const heroName = hero && hero.id !== 'neutral' ? hero.name : 'Duelist';
+  const heroName = soloHeroName();
   // Lose and your soul is sealed in a card, like in the anime.
   const top = win
     ? `<div class="coop-end-icon text-7xl leading-none ce-emoji">🏆</div>
@@ -779,7 +896,7 @@ function renderSoloEnd() {
       <div class="flex flex-col gap-2 w-full max-w-xs mt-3">
         ${!win && soloUi.undo.length ? '<button onclick="undoSolo()" class="w-full py-3 rounded-xl bg-slate-800 hover:bg-slate-700 text-white font-semibold transition">↩️ Undo last step</button>' : ''}
         <button onclick="startSoloRun()" class="w-full py-3.5 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold text-lg transition"><span class="ce-emoji">🏝️</span> New run</button>
-        <button onclick="soloBackToStartScreen()" class="w-full py-2 text-slate-400 hover:text-white text-sm">Back to start</button>
+        <button onclick="soloBackToMenu()" class="w-full py-2 text-slate-400 hover:text-white text-sm">Back to menu</button>
       </div>
     </div>
   `;

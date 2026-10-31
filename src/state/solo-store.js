@@ -12,6 +12,7 @@
 //   event   the Shadow Game being shown (see solo-events.js); seenEvents
 //   mods    Shadow Game effects waiting for the next duel; shortcut = skip a floor
 //   video   the Toon Pegasus opens with, seen on his tape (a Shadow Game)
+//   runId   ties the run to its entry in soloHistory
 const newSolo = () => ({ phase: 'intro' });
 
 function loadSolo() {
@@ -21,6 +22,7 @@ function loadSolo() {
     if (!saved.relics) saved.relics = [];
     if (!saved.seenEvents) saved.seenEvents = [];
     if (!saved.mods) saved.mods = {};
+    if (saved.map && !saved.runId) saved.runId = `${Date.now()}`;
     return saved;
   } catch {
     return newSolo();
@@ -33,6 +35,61 @@ function saveSolo() {
   try {
     localStorage.setItem(SOLO_STORAGE_KEY, JSON.stringify(solo));
   } catch {}
+}
+
+// Finished runs, newest first: { id, finishedAt, result ('victory' | 'defeat' |
+// 'abandoned'), hero, floor, lp, chips, duels, damage, relics, foe, map, path, at }.
+function loadSoloHistory() {
+  try {
+    const saved = JSON.parse(localStorage.getItem(SOLO_HISTORY_KEY));
+    return Array.isArray(saved) ? saved : [];
+  } catch {
+    return [];
+  }
+}
+
+let soloHistory = loadSoloHistory();
+
+function saveSoloHistory() {
+  try {
+    localStorage.setItem(SOLO_HISTORY_KEY, JSON.stringify(soloHistory));
+  } catch {}
+}
+
+const soloHeroName = () => {
+  const hero = getSelectedCharacter();
+  return hero && hero.id !== 'neutral' ? hero.name : 'Duelist';
+};
+
+// Logs the run once, when it ends. Abandoned runs only count once you've set foot on the island.
+function soloArchiveRun(result) {
+  if (!solo.map || !solo.runId || soloHistory.some(e => e.id === solo.runId)) return;
+  if (result === 'abandoned' && !solo.at) return;
+  const at = solo.at && solo.map.nodes[solo.at];
+  soloHistory = [{
+    id: solo.runId,
+    finishedAt: Date.now(),
+    result,
+    hero: soloHeroName(),
+    floor: at ? at.floor : 0,
+    lp: solo.lp,
+    chips: solo.chips,
+    duels: solo.stats?.duels ?? 0,
+    damage: solo.stats?.damage ?? 0,
+    relics: [...(solo.relics || [])],
+    foe: result === 'defeat' ? solo.fight?.name || 'a Shadow Game' : null,
+    map: solo.map,
+    path: [...solo.path],
+    at: solo.at
+  }, ...soloHistory].slice(0, SOLO_HISTORY_MAX);
+  saveSoloHistory();
+}
+
+// Undo after a defeat brings the run back, so it leaves the history again.
+function soloUnarchiveRun() {
+  const before = soloHistory.length;
+  soloHistory = soloHistory.filter(e => e.id !== solo.runId);
+  if (soloHistory.length !== before) saveSoloHistory();
 }
 
 // Visual effects need the new DOM, so they run right after the render.
@@ -152,6 +209,7 @@ function soloReachable() {
 
 function createSoloRun() {
   solo = {
+    runId: `${Date.now()}`,
     phase: 'map',
     lp: SOLO_START_LP,
     maxLp: SOLO_MAX_LP,
@@ -559,6 +617,7 @@ function soloWin() {
   solo.stats.duels++;
   if (f.kind === 'boss') {
     solo.phase = 'victory';
+    soloArchiveRun('victory');
     playSound({ name: 'co-victory' });
     return;
   }
@@ -583,6 +642,7 @@ function soloWin() {
 
 function soloDefeat() {
   solo.phase = 'defeat';
+  soloArchiveRun('defeat');
   playSound({ name: 'co-seal' });
 }
 

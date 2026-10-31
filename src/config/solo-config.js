@@ -1,6 +1,8 @@
 // Solo mode "Duelist's Road": a short Slay the Spire-style run across
 // Duelist Kingdom. You play your physical deck, the enemies live on the phone.
 const SOLO_STORAGE_KEY = 'ygo_solo';
+const SOLO_HISTORY_KEY = 'ygo_solo_history';
+const SOLO_HISTORY_MAX = 30;
 const SOLO_START_LP = 8000;
 const SOLO_MAX_LP = 8000;
 const SOLO_START_CHIPS = 2;

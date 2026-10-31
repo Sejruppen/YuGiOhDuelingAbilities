@@ -6,6 +6,10 @@ const SOLO_UNDO_MAX = 20;
 
 // Transient UI state (not saved).
 const soloUi = {
+  // 'menu' | 'how' (rules + Set sail) | 'history' | null (the run itself).
+  view: 'menu',
+  confirmNew: false,
+  openHistoryId: null,
   preview: null,
   legend: false,
   panel: null,
@@ -39,18 +43,70 @@ function closeSoloPanels() {
 function goToSolo() {
   resetPeek();
   soloUi.mapFocus = null;
+  soloUi.view = 'menu';
   setState({ screen: SCREENS.SOLO });
 }
 
 function leaveSolo() {
   closeSoloPanels();
+  soloUi.view = 'menu';
   setState({ screen: SCREENS.START });
 }
+
+// --- Menu ---------------------------------------------------------------------------
+
+function showSoloMenu() {
+  closeSoloPanels();
+  soloUi.view = 'menu';
+  render();
+}
+
+function continueSoloRun() {
+  if (!isSoloRunActive()) return;
+  soloUi.view = null;
+  soloUi.mapFocus = null;
+  render();
+}
+
+// Two taps when it would throw away a run in progress.
+function newSoloRunClick() {
+  if (isSoloRunActive() && !soloUi.confirmNew) {
+    soloUi.confirmNew = true;
+    soloLater('new', () => {
+      soloUi.confirmNew = false;
+      soloRerender();
+    }, SOLO_CONFIRM_MS);
+    return render();
+  }
+  clearTimeout(soloUi.timers.new);
+  soloUi.confirmNew = false;
+  if (isSoloRunActive()) {
+    soloArchiveRun('abandoned');
+    solo = newSolo();
+    soloUi.undo = [];
+    saveSolo();
+  }
+  soloUi.view = 'how';
+  render();
+}
+
+function openSoloHistory() {
+  soloUi.view = 'history';
+  soloUi.openHistoryId = null;
+  render();
+}
+
+function toggleSoloHistoryEntry(id) {
+  soloUi.openHistoryId = soloUi.openHistoryId === id ? null : id;
+  render();
+}
+
+// --- The run ------------------------------------------------------------------------
 
 function startSoloRun() {
   createSoloRun();
   closeSoloPanels();
-  Object.assign(soloUi, { undo: [], toast: null, mapFocus: null, confirmAbandon: false });
+  Object.assign(soloUi, { view: null, undo: [], toast: null, mapFocus: null, confirmAbandon: false });
   playSound({ name: 'co-start' });
   commitSolo();
 }
@@ -69,15 +125,18 @@ function abandonSoloClick() {
   soloUi.confirmAbandon = false;
   closeSoloPanels();
   soloUi.undo = [];
+  soloArchiveRun('abandoned');
   solo = newSolo();
+  soloUi.view = 'menu';
   commitSolo();
 }
 
-function soloBackToStartScreen() {
+// From the end screen: the run is already in the history.
+function soloBackToMenu() {
   solo = newSolo();
   soloUi.undo = [];
   saveSolo();
-  leaveSolo();
+  showSoloMenu();
 }
 
 // --- Map ----------------------------------------------------------------------------
@@ -197,6 +256,7 @@ function undoSolo() {
   const snap = soloUi.undo.pop();
   if (!snap) return;
   solo = JSON.parse(snap);
+  if (isSoloRunActive()) soloUnarchiveRun();
   closeSoloPanels();
   soloUi.toast = null;
   playSound({ name: 'co-bounce' });
@@ -409,6 +469,8 @@ function soloAbsorbClick(none) {
 // --- Back button --------------------------------------------------------------------
 
 function backInSolo() {
+  if (soloUi.view === 'menu') return leaveSolo();
+  if (soloUi.view) return showSoloMenu();
   if (soloUi.relicInfo) return closeSoloRelic();
   if (soloUi.preview || soloUi.legend) {
     closeSoloPanels();
@@ -424,7 +486,7 @@ function backInSolo() {
     }
     if (soloStep()?.sub === 'block') return cancelSoloBlock();
   }
-  leaveSolo();
+  showSoloMenu();
 }
 
 // --- Effects (run right after the render, see commitSolo) ---------------------------
