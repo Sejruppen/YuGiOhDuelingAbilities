@@ -19,8 +19,8 @@ const SOLO_MIXED_ODDS = { duelist: 50, event: 30, elite: 20 };
 
 const SOLO_NODE_TYPES = {
   duelist: { icon: '⚔️', label: 'Duelist', desc: 'A wandering duelist. Win for +1 ⭐.' },
-  elite: { icon: '👹', label: 'Elite', desc: 'A dangerous veteran duelist. Win for +2 ⭐.' },
-  treasure: { icon: '🎁', label: 'Treasure', desc: "A lost Duelist's Case." },
+  elite: { icon: '👹', label: 'Elite', desc:   'A dangerous veteran duelist. Win for +2 ⭐ and a rare relic.' },
+    treasure: { icon: '🎁', label: 'Treasure', desc: "A lost Duelist's Case. Pick 1 of 3 relics." },
   event: { icon: '❓', label: 'Shadow Game', desc: 'Something strange is going on here…' },
   campfire: { icon: '🔥', label: 'Campfire', desc: `Rest before the castle. Heal ${SOLO_CAMPFIRE_HEAL * 100}% of your max LP.` },
   labyrinth: { icon: '🧱', label: 'Labyrinth', desc: `Only if you have fewer than ${SOLO_GATE_CHIPS} ⭐. Win to get the missing chips.` },
@@ -130,3 +130,26 @@ const SOLO_TRAP = { name: 'Negate Attack', text: 'Your attack is negated and you
 const SOLO_REMOVAL = { name: 'Fissure', text: 'Destroy your face-up monster with the lowest ATK.' };
 const SOLO_REMOVAL_FROM_FLOOR = 3;
 const SOLO_HEAL = { name: "Goblin's Secret Remedy", lp: 600 };
+
+// Relics: Treasure offers 3 commons, an elite win 2 rares. `value` is the
+// relic's number (LP, ATK). Consumables vanish when used.
+const SOLO_TREASURE_CHOICES = 3;
+const SOLO_ELITE_CHOICES = 2;
+const SOLO_RELICS = {
+  'dian-keto': { name: 'Dian Keto Charm', icon: '🌿', rarity: 'common', value: 500, text: 'After every duel you win, heal 500 LP.' },
+  'red-medicine': { name: 'Red Medicine', icon: '🧪', rarity: 'common', value: 1500, consumable: true, text: 'Use once, any time: heal 1500 LP.' },
+  'legendary-sword': { name: 'Legendary Sword', icon: '🗡️', rarity: 'common', value: 300, text: 'Your first attack each turn gets +300 ATK. Added automatically.' },
+  kuriboh: { name: 'Kuriboh Charm', icon: '🧸', rarity: 'common', text: 'Once per duel, Kuriboh takes an enemy attack for you: 0 damage.' },
+  'pot-of-greed': { name: 'Pot of Greed', icon: '🏺', rarity: 'common', text: 'Draw 6 cards instead of 5 when a duel starts.' },
+  'duelist-glove': { name: 'Duelist Glove', icon: '🧤', rarity: 'common', text: 'Gives you +1 ⭐ when you take it.' },
+  spellbinding: { name: 'Spellbinding Circle', icon: '🔯', rarity: 'common', text: "The enemy's first monster each duel can't attack." },
+  elf: { name: "Mystical Elf's Blessing", icon: '🧝', rarity: 'common', value: 1000, text: '+1000 max LP, and heal 1000 LP when you take it.' },
+  axe: { name: 'Axe of Despair', icon: '🪓', rarity: 'rare', value: 1000, text: 'Once per duel: one attack gets +1000 ATK. Switch it on when you attack.' },
+  waboku: { name: 'Waboku', icon: '🛐', rarity: 'rare', text: 'Once per duel, when attacked: you take no battle damage for the rest of the turn.' },
+  cylinder: { name: 'Magic Cylinder', icon: '🌀', rarity: 'rare', text: "Once per duel, when attacked: the attack hits the enemy's LP instead." },
+  swords: { name: 'Swords of Revealing Light', icon: '🌟', rarity: 'rare', text: "The enemy can't attack on its first turn of each duel." },
+  'mirror-force': { name: 'Mirror Force', icon: '🪞', rarity: 'rare', text: "Once per duel, when attacked: destroy all the enemy's Attack Position monsters." },
+  raigeki: { name: 'Raigeki', icon: '⚡', rarity: 'rare', consumable: true, text: "Use once, on your turn (✨ Effect): destroy all the enemy's monsters." }
+};
+// Relics offered as buttons when an enemy monster attacks.
+const SOLO_DEFENSE_RELICS = ['kuriboh', 'waboku', 'cylinder', 'mirror-force'];

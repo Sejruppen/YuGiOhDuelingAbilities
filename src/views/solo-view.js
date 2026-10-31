@@ -24,10 +24,54 @@ function renderSoloView() {
     victory: renderSoloEnd,
     defeat: renderSoloEnd
   }[solo.phase] || renderSoloIntro;
-  return `<div class="solo-screen relative flex-1 min-h-0 flex flex-col">${body()}</div>`;
+  return `<div class="solo-screen relative flex-1 min-h-0 flex flex-col">${body()}${soloUi.relicInfo ? renderSoloRelicSheet() : ''}</div>`;
 }
 
 const soloStat = (label, value) => `<div class="rounded-xl bg-slate-900/90 border border-slate-800 px-3 py-2"><p class="text-[0.65rem] uppercase tracking-widest text-slate-400">${label}</p><p class="text-lg font-black text-white">${value}</p></div>`;
+
+// --- Relics -------------------------------------------------------------------------
+
+// Spent relics are greyed out until the next duel.
+function soloRelicSpent(id) {
+  const f = solo.phase === 'fight' && solo.fight;
+  if (!f) return false;
+  return !!f.relicUsed?.[id] || (id === 'legendary-sword' && f.swordRound === f.round);
+}
+
+function renderSoloRelicBar() {
+  if (!solo.relics?.length) return '';
+  const relics = solo.relics.map(id => {
+    const r = SOLO_RELICS[id];
+    return `<button data-solo-relic="${id}" onclick="showSoloRelic('${id}')" aria-label="${r.name}" class="solo-relic solo-relic--${r.rarity} ${soloRelicSpent(id) ? 'solo-relic--used' : ''} ${soloUi.relicInfo === id ? 'solo-relic--picked' : ''}"><span class="ce-emoji">${r.icon}</span></button>`;
+  }).join('');
+  return `<div class="shrink-0 flex flex-wrap gap-1.5 justify-center">${relics}</div>`;
+}
+
+const soloRelicOption = id => {
+  const r = SOLO_RELICS[id];
+  return coopOption({ icon: `<span class="ce-emoji">${r.icon}</span>`, label: `${r.name} <span class="text-[0.6rem] uppercase tracking-widest ${r.rarity === 'rare' ? 'text-sky-300' : 'text-slate-400'}">${r.rarity}</span>`, sub: r.text }, `pickSoloRelic('${id}')`);
+};
+
+function renderSoloRelicSheet() {
+  const id = soloUi.relicInfo;
+  const r = SOLO_RELICS[id];
+  if (!r || !soloHas(id)) return '';
+  const use = id === 'red-medicine' ? coopBtn(`<span class="ce-emoji">🧪</span> Drink (+${r.value} LP)`, 'useSoloRedMedicine()', 'heal', solo.lp >= solo.maxLp) : '';
+  return `
+    <div class="solo-sheet absolute inset-x-0 bottom-0 z-20 p-4 rounded-t-2xl border-t border-amber-500/50 bg-slate-900/95 backdrop-blur shadow-2xl">
+      <div class="flex items-start gap-3">
+        <span class="text-4xl leading-none ce-emoji">${r.icon}</span>
+        <div class="flex-1 min-w-0">
+          <p class="font-black text-white text-lg leading-tight">${r.name}</p>
+          <p class="text-[0.65rem] uppercase tracking-widest ${r.rarity === 'rare' ? 'text-sky-300' : 'text-slate-400'}">${r.rarity} relic${r.consumable ? ' · used up when used' : ''}</p>
+          <p class="text-sm text-slate-200 mt-1 leading-snug">${r.text}</p>
+          ${soloRelicSpent(id) ? '<p class="text-xs text-amber-200 mt-1">Already used. It is ready again next duel.</p>' : ''}
+        </div>
+      </div>
+      <div class="flex gap-2 mt-3">${coopBtn('Close', 'closeSoloRelic()')}${use}</div>
+    </div>
+  `;
+}
 
 function renderSoloHeader(title, right = '') {
   return `
@@ -47,6 +91,7 @@ function renderSoloStatus() {
       <span class="${solo.chips >= SOLO_GATE_CHIPS ? 'text-amber-300' : 'text-slate-200'}"><span class="ce-emoji">⭐</span> ${solo.chips}/${SOLO_GATE_CHIPS}</span>
       <span class="text-slate-400">Floor ${at ? at.floor : 0}/${SOLO_FLOOR.CASTLE}</span>
     </div>
+    ${solo.relics?.length ? `<div class="shrink-0 px-4 py-1.5 bg-slate-950/50 border-b border-slate-800">${renderSoloRelicBar()}</div>` : ''}
   `;
 }
 
@@ -94,6 +139,7 @@ function renderSoloIntro() {
         <li><span class="ce-emoji">🛡️</span> Enemy monsters attack you directly. Block with one of your monsters (each one blocks once per turn) or take the hit.</li>
         <li><span class="ce-emoji">🌲</span> Each region has a field: matching monsters gain ${SOLO_FIELD_BONUS * 100}% ATK. That goes for yours too!</li>
         <li><span class="ce-emoji">⭐</span> Start with ${SOLO_START_CHIPS} Star Chips. A duelist gives +1, an elite +2. With fewer than ${SOLO_GATE_CHIPS}, you must go through the Labyrinth.</li>
+        <li><span class="ce-emoji">🎁</span> Find relics in treasure chests and win rare ones from elites. Tap a relic to read what it does.</li>
       </ul>
     </div>
     <footer class="shrink-0 p-4 border-t border-slate-800 bg-slate-900/80">
@@ -264,6 +310,18 @@ function renderSoloNode() {
       ? `<div class="coop-toast coop-toast--good rounded-lg px-3 py-2 text-sm leading-snug">${solo.nodeResult}</div>`
       : `<p class="text-sm text-slate-300">The castle looms above you. Rest by the fire to recover ${SOLO_CAMPFIRE_HEAL * 100}% of your max LP.</p>`;
     buttons = solo.nodeResult ? coopBtn('Continue ➜', 'leaveSoloNode()', 'primary') : coopBtn('<span class="ce-emoji">🔥</span> Rest', 'soloRestClick()', 'heal');
+  } else if (n.type === 'treasure') {
+    const ids = solo.offer?.ids || [];
+    if (solo.nodeResult) {
+      body = `<div class="coop-toast coop-toast--good rounded-lg px-3 py-2 text-sm leading-snug">${solo.nodeResult}</div>`;
+      buttons = coopBtn('Continue ➜', 'leaveSoloNode()', 'primary');
+    } else if (ids.length) {
+      body = `<p class="text-sm text-slate-300">Someone lost their Duelist's Case. You may take one card.</p><div class="w-full max-w-sm space-y-2 text-left">${ids.map(soloRelicOption).join('')}</div>`;
+      buttons = coopBtn('Leave it', 'leaveSoloNode()');
+    } else {
+      body = '<p class="text-sm text-slate-300">The case is empty. Someone got here first.</p>';
+      buttons = coopBtn('Continue ➜', 'leaveSoloNode()', 'primary');
+    }
   } else {
     body = `<p class="text-sm text-slate-300">${t.desc}</p><p class="text-xs text-slate-400 italic">This part of the island opens in a later update.</p>`;
     buttons = coopBtn('Continue ➜', 'leaveSoloNode()', 'primary');
@@ -290,6 +348,7 @@ function renderSoloFight() {
     ${renderSoloHeader(`<span class="ce-emoji">${f.icon}</span> ${kind}`, `<span class="text-[0.65rem] font-bold text-slate-400">Turn ${f.round}</span>`)}
     <div class="flex-1 min-h-0 overflow-y-auto no-scrollbar p-3 flex flex-col gap-2">
       ${renderSoloEnemyBoard(f, p)}
+      ${renderSoloRelicBar()}
       ${f.turn === 'enemy' ? renderSoloStepCard() : soloUi.panel ? renderSoloPanel() : renderSoloPlayer(f)}
     </div>
     ${f.intro ? renderSoloFightIntro(f, kind, p) : ''}
@@ -309,7 +368,7 @@ function renderSoloEnemyBoard(f, p) {
           <span class="block text-xs font-bold text-white truncate">${m.name}</span>
           <span class="block text-[0.7rem] tabular-nums">
             <b class="${m.pos === 'atk' ? 'text-rose-300' : 'text-slate-400'}">${st.atk}</b><span class="text-slate-500"> / </span><b class="${m.pos === 'def' ? 'text-sky-300' : 'text-slate-400'}">${st.def}</b>
-            ${boosted ? `<span class="ce-emoji" title="Field bonus">${r.icon}</span>` : ''}${m.equip ? `<span class="text-amber-300"> +${m.equip}⚔️</span>` : ''}
+            ${boosted ? `<span class="ce-emoji" title="Field bonus">${r.icon}</span>` : ''}${m.equip ? `<span class="text-amber-300"> +${m.equip}⚔️</span>` : ''}${m.bound ? '<span class="ce-emoji" title="Spellbinding Circle: can\'t attack"> 🔯</span>' : ''}
           </span>
         </span>
         <span class="text-[0.6rem] font-black uppercase ${m.pos === 'atk' ? 'text-rose-300' : 'text-sky-300'}">${m.pos === 'atk' ? '⚔️ ATK' : '🛡️ DEF'}</span>
@@ -402,7 +461,12 @@ function renderSoloPanel() {
     }
     const m = panel.target !== 'direct' && soloMonster(Number(panel.target));
     const title = m ? `⚔️ ${m.icon} ${m.name}` : '⚔️ Direct attack';
-    return renderSoloPanelShell(title, soloKeypad("Your attacking monster's ATK",
+    const bonuses = [];
+    if (soloHas('legendary-sword') && f.swordRound !== f.round) bonuses.push(`<span class="ce-emoji">🗡️</span> Legendary Sword adds +${SOLO_RELICS['legendary-sword'].value} to this attack.`);
+    const axe = soloRelicReady('axe')
+      ? `<button onclick="toggleSoloAxe()" aria-pressed="${!!panel.axe}" class="w-full py-1.5 rounded-lg text-xs font-bold ${panel.axe ? 'bg-amber-500 text-slate-950' : 'bg-slate-800 text-slate-300 border border-slate-700'}"><span class="ce-emoji">🪓</span> Axe of Despair +${SOLO_RELICS.axe.value} ${panel.axe ? '(on)' : '(off)'}</button>`
+      : '';
+    return renderSoloPanelShell(title, axe + bonuses.map(b => `<p class="text-xs text-amber-200">${b}</p>`).join('') + soloKeypad("Your attacking monster's ATK",
       coopBtn('← Back', 'setSoloPanel({ target: null })') + coopBtn('⚔️ Attack!', 'confirmSoloAttack()', 'primary', !soloUi.input)));
   }
 
@@ -413,6 +477,9 @@ function renderSoloPanel() {
         coopOption({ icon: '🌪️', label: 'Destroy the face-down card', sub: 'Mystical Space Typhoon, Harpie\'s Feather Duster…', disabled: !f.trap, reason: 'The enemy has no face-down card' }, 'confirmSoloDestroyTrap()'),
         coopOption({ icon: '🔥', label: 'Burn damage', sub: 'Damage straight to the enemy\'s LP' }, "setSoloPanel({ kind: 'burn' })")
       ];
+      if (soloHas('raigeki')) {
+        options.unshift(coopOption({ icon: '<span class="ce-emoji">⚡</span>', label: 'Raigeki (relic)', sub: "Destroy all the enemy's monsters. Used up.", disabled: !f.monsters.length, reason: 'The enemy has no monsters' }, 'confirmSoloRaigeki()'));
+      }
       return renderSoloPanelShell('✨ Card effect', options.join(''));
     }
     if (panel.kind === 'destroy') {
@@ -463,8 +530,12 @@ function renderSoloStepCard() {
     body = `<p class="text-sm font-bold text-white text-center"><span class="ce-emoji">${step.icon}</span> ${step.title.replace(' directly!', '')} (${step.atk})</p><div class="flex gap-2">${toggle}</div>` +
       soloKeypad(`Your blocking monster's ${pos.toUpperCase()}`, coopBtn('← Back', 'cancelSoloBlock()') + coopBtn('🛡️ Block', 'confirmSoloBlock()', 'primary', !soloUi.input));
   } else if (step.kind === 'attack') {
+    const waboku = soloWabokuActive();
+    const relics = SOLO_DEFENSE_RELICS.filter(soloRelicReady).map(id => coopBtn(`<span class="ce-emoji">${SOLO_RELICS[id].icon}</span> ${SOLO_RELICS[id].name}`, `soloRelicDefendClick('${id}')`));
     body = title + text(`ATK <b class="text-rose-300">${step.atk}</b>. Each of your monsters can block once per turn.`) +
-      row([coopBtn('🛡️ Block with a monster', 'startSoloBlock()', 'primary'), coopBtn(`💔 Take ${step.atk}`, 'soloTakeHitClick()', 'danger')]);
+      (waboku ? text('🛐 Waboku protects you this turn: no battle damage.', 'text-xs text-emerald-300') : '') +
+      row([coopBtn('🛡️ Block with a monster', 'startSoloBlock()', 'primary'), waboku ? coopBtn('🛐 Take 0', 'soloTakeHitClick()') : coopBtn(`💔 Take ${step.atk}`, 'soloTakeHitClick()', 'danger')]) +
+      (relics.length ? row(relics) : '');
   } else {
     body = title + row([cont]);
   }
@@ -484,13 +555,16 @@ function renderSoloStepCard() {
 function renderSoloFightIntro(f, kind, p) {
   const r = soloRegion(f.region);
   const lines = [
-    `<span class="ce-emoji">🃏</span> Shuffle your deck, clear your field and draw 5 cards.`,
+    `<span class="ce-emoji">🃏</span> Shuffle your deck, clear your field and draw ${soloHas('pot-of-greed') ? '<b>6</b> cards (<span class="ce-emoji">🏺</span> Pot of Greed)' : '5 cards'}.`,
     `<span class="ce-emoji">⚔️</span> You go first.`,
     `<span class="ce-emoji">❤️</span> Your LP: <b>${solo.lp}</b>.`,
     `<span class="ce-emoji">${r.icon}</span> ${r.types.length ? `${r.name} field: ${soloFieldText(f.region)}. Yours too!` : 'No field bonus here.'}`,
     `<span class="ce-emoji">${p.icon}</span> They look <b>${p.label.toLowerCase()}</b>.`
   ];
   if (f.chips) lines.push(`<span class="ce-emoji">⭐</span> Win to earn ${f.chips} Star Chip${f.chips === 1 ? '' : 's'}.`);
+  if (f.kind === 'elite') lines.push('<span class="ce-emoji">🎁</span> Win to choose a rare relic.');
+  if (soloHas('swords')) lines.push("<span class=\"ce-emoji\">🌟</span> Swords of Revealing Light: they can't attack on their first turn.");
+  if (soloHas('spellbinding')) lines.push("<span class=\"ce-emoji\">🔯</span> Spellbinding Circle: their first monster can't attack.");
   return `
     <div class="solo-intro fixed inset-0 z-50 flex flex-col bg-slate-950/95 backdrop-blur overflow-y-auto no-scrollbar p-6">
       <div class="my-auto flex flex-col items-center text-center gap-2">
@@ -510,15 +584,24 @@ function renderSoloFightIntro(f, kind, p) {
 function renderSoloReward() {
   const r = solo.reward;
   const gate = r.kind === 'gate';
+  const ids = solo.offer?.ids || [];
+  const taken = r.relic && SOLO_RELICS[r.relic];
   return `
     ${renderSoloStatus()}
-    <div class="coop-end coop-end--win flex-1 min-h-0 overflow-y-auto p-6 flex flex-col items-center justify-center text-center gap-3">
-      <div class="coop-end-icon text-7xl leading-none ce-emoji">${gate ? '🚪' : '⭐'}</div>
-      <h2 class="text-2xl font-black text-white">${r.name} is defeated!</h2>
-      <p class="text-sm text-slate-300">${gate ? 'The Labyrinth opens. The castle is straight ahead.' : 'They hand over their Star Chips.'}</p>
-      ${r.chips ? `<p class="text-3xl font-black text-amber-300">+${r.chips} <span class="ce-emoji">⭐</span></p>` : ''}
-      <p class="text-sm text-slate-400">${solo.chips}/${SOLO_GATE_CHIPS} Star Chips · ${solo.lp} LP left</p>
-      <button onclick="soloContinueReward()" class="w-full max-w-xs mt-3 py-3.5 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold text-lg transition">Back to the map ➜</button>
+    <div class="coop-end coop-end--win flex-1 min-h-0 overflow-y-auto no-scrollbar p-6 flex flex-col items-center text-center gap-3">
+      <div class="my-auto w-full flex flex-col items-center gap-3">
+        <div class="coop-end-icon text-7xl leading-none ce-emoji">${gate ? '🚪' : '⭐'}</div>
+        <h2 class="text-2xl font-black text-white">${r.name} is defeated!</h2>
+        <p class="text-sm text-slate-300">${gate ? 'The Labyrinth opens. The castle is straight ahead.' : 'They hand over their Star Chips.'}</p>
+        ${r.chips ? `<p class="text-3xl font-black text-amber-300">+${r.chips} <span class="ce-emoji">⭐</span></p>` : ''}
+        ${r.healed ? `<p class="text-sm text-emerald-300"><span class="ce-emoji">🌿</span> Dian Keto Charm: +${r.healed} LP</p>` : ''}
+        <p class="text-sm text-slate-400">${solo.chips}/${SOLO_GATE_CHIPS} Star Chips · ${solo.lp} LP left</p>
+        ${ids.length ? `<p class="text-xs font-semibold uppercase tracking-widest text-sky-300 mt-2">Choose a rare relic</p><div class="w-full max-w-sm space-y-2 text-left">${ids.map(soloRelicOption).join('')}</div>` : ''}
+        ${taken ? `<div class="coop-toast coop-toast--good rounded-lg px-3 py-2 text-sm"><span class="ce-emoji">${taken.icon}</span> You take the ${taken.name}!</div>` : ''}
+        ${ids.length
+          ? '<button onclick="soloContinueReward()" class="w-full max-w-xs py-2 text-slate-400 hover:text-white text-sm">Skip the relic</button>'
+          : '<button onclick="soloContinueReward()" class="w-full max-w-xs mt-3 py-3.5 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold text-lg transition">Back to the map ➜</button>'}
+      </div>
     </div>
   `;
 }
@@ -536,6 +619,7 @@ function renderSoloEnd() {
         ${soloStat('Damage', solo.stats?.damage ?? 0)}
         ${soloStat(win ? 'LP left' : 'Floor', win ? solo.lp : at ? at.floor : 0)}
       </div>
+      ${solo.relics?.length ? `<p class="text-2xl tracking-widest">${solo.relics.map(id => `<span class="ce-emoji" title="${SOLO_RELICS[id].name}">${SOLO_RELICS[id].icon}</span>`).join(' ')}</p>` : ''}
       <div class="flex flex-col gap-2 w-full max-w-xs mt-3">
         ${!win && soloUi.undo.length ? '<button onclick="undoSolo()" class="w-full py-3 rounded-xl bg-slate-800 hover:bg-slate-700 text-white font-semibold transition">↩️ Undo last step</button>' : ''}
         <button onclick="startSoloRun()" class="w-full py-3.5 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold text-lg transition"><span class="ce-emoji">🏝️</span> New run</button>

@@ -17,6 +17,7 @@ const soloUi = {
   undo: [],
   mapFocus: null,
   shownStep: null,
+  relicInfo: null,
   timers: {}
 };
 
@@ -30,7 +31,7 @@ const soloRerender = () => {
 };
 
 function closeSoloPanels() {
-  Object.assign(soloUi, { preview: null, legend: false, panel: null, input: '' });
+  Object.assign(soloUi, { preview: null, legend: false, panel: null, input: '', relicInfo: null });
 }
 
 // --- Navigation and the run -------------------------------------------------------
@@ -119,7 +120,6 @@ function soloRestClick() {
 }
 
 function leaveSoloNode() {
-  solo.nodeResult = null;
   soloBackToMap();
   commitSolo();
 }
@@ -127,6 +127,51 @@ function leaveSoloNode() {
 function soloContinueReward() {
   soloUi.undo = [];
   soloBackToMap();
+  commitSolo();
+}
+
+// --- Relics -------------------------------------------------------------------------
+
+function pickSoloRelic(id) {
+  if (!takeSoloRelic(id)) return;
+  const r = SOLO_RELICS[id];
+  if (solo.phase === 'node') solo.nodeResult = `<span class="ce-emoji">${r.icon}</span> You take the ${r.name}!`;
+  if (solo.phase === 'reward') solo.reward.relic = id;
+  commitSolo();
+}
+
+function showSoloRelic(id) {
+  soloUi.relicInfo = soloUi.relicInfo === id ? null : id;
+  soloUi.preview = null;
+  soloUi.legend = false;
+  render();
+}
+
+function closeSoloRelic() {
+  soloUi.relicInfo = null;
+  render();
+}
+
+function useSoloRedMedicine() {
+  soloUi.relicInfo = null;
+  if (solo.phase === 'fight') return soloAct(soloRedMedicine);
+  soloRedMedicine();
+  commitSolo();
+}
+
+function confirmSoloRaigeki() {
+  soloAct(soloRaigeki);
+}
+
+function toggleSoloAxe() {
+  if (!soloUi.panel) return;
+  soloUi.panel.axe = !soloUi.panel.axe;
+  render();
+}
+
+function soloRelicDefendClick(id) {
+  soloSnapshot();
+  soloRelicDefend(id);
   commitSolo();
 }
 
@@ -204,10 +249,27 @@ function soloAct(fn) {
 // --- Fight: your turn ---------------------------------------------------------------
 
 function confirmSoloAttack() {
+  const f = solo.fight;
   const target = soloUi.panel?.target;
-  if (!target || !soloUi.input || solo.fight?.battleOver) return;
+  if (!target || !soloUi.input || f?.battleOver) return;
   const atk = soloInputValue();
-  soloAct(() => soloPlayerAttack(target === 'direct' ? null : Number(target), atk));
+  // Axe of Despair (switched on) and Legendary Sword (first attack each turn).
+  const axe = !!soloUi.panel.axe && soloRelicReady('axe');
+  const sword = soloHas('legendary-sword') && f.swordRound !== f.round;
+  const bonus = (axe ? SOLO_RELICS.axe.value : 0) + (sword ? SOLO_RELICS['legendary-sword'].value : 0);
+  soloAct(() => {
+    const result = soloPlayerAttack(target === 'direct' ? null : Number(target), atk + bonus);
+    // A negated attack keeps the relics for the next try.
+    if (!result || result.negated) return result;
+    if (axe) useSoloRelic('axe');
+    if (sword) {
+      f.swordRound = f.round;
+      flashSoloRelic('legendary-sword');
+    }
+    const tags = [axe && `🪓 +${SOLO_RELICS.axe.value}`, sword && `🗡️ +${SOLO_RELICS['legendary-sword'].value}`].filter(Boolean);
+    if (tags.length) result.text = `${tags.join(' ')} → ${atk + bonus} ATK. ${result.text}`;
+    return result;
+  });
 }
 
 function confirmSoloDestroy(uid) {
@@ -303,6 +365,7 @@ function confirmSoloBlock() {
 // --- Back button --------------------------------------------------------------------
 
 function backInSolo() {
+  if (soloUi.relicInfo) return closeSoloRelic();
   if (soloUi.preview || soloUi.legend) {
     closeSoloPanels();
     return render();
@@ -332,4 +395,11 @@ function fxSoloHit(selector, delta) {
     spawnFloatText(el, `+${delta}`, 'heal');
     spawnParticles(el, { type: 'heal', mode: 'rise', count: 12 });
   }
+}
+
+function fxSoloRelic(id) {
+  const el = document.querySelector(`[data-solo-relic="${id}"]`);
+  if (!el) return;
+  restartClass(el, 'solo-relic--flash', 900);
+  spawnParticles(el, { type: 'skill', mode: 'spark', count: 8 });
 }

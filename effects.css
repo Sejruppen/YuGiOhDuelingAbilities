@@ -13867,6 +13867,28 @@ html[data-theme="gold"]::view-transition-new(root) { animation: vt-diamond 1s cu
 .solo-trap { animation: coop-pop-in 0.3s ease-out; }
 .solo-intro { animation: coop-fade-in 0.4s ease-out; }
 .solo-node-icon--campfire { filter: drop-shadow(0 0 18px rgba(251, 146, 60, 0.9)); }
+.solo-relic {
+  width: 2.1rem;
+  height: 2.1rem;
+  border-radius: 0.6rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.15rem;
+  line-height: 1;
+  background: rgba(30, 41, 59, 0.9);
+  border: 1px solid rgba(148, 163, 184, 0.5);
+  transition: opacity 0.2s, filter 0.2s, transform 0.2s;
+}
+.solo-relic--rare { border-color: rgba(56, 189, 248, 0.75); box-shadow: 0 0 8px rgba(56, 189, 248, 0.35); }
+.solo-relic--used { opacity: 0.4; filter: grayscale(1); }
+.solo-relic--picked { transform: scale(1.15); border-color: #fbbf24; }
+.solo-relic--flash { animation: solo-relic-flash 0.9s ease-out; }
+@keyframes solo-relic-flash {
+  0% { transform: scale(1); box-shadow: 0 0 0 0 rgba(251, 191, 36, 0.9); }
+  30% { transform: scale(1.35); box-shadow: 0 0 18px 6px rgba(251, 191, 36, 0.8); }
+  100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(251, 191, 36, 0); }
+}
 
 /* =========================================================================
    Respect the OS "reduce motion" setting.

@@ -7,12 +7,15 @@
 //   node    the campfire/treasure/event being shown
 //   fight   the current duel (see createSoloFight)
 //   reward  { name, chips } after a won duel
+//   relics  relic ids you own; offer = { source, ids } when you may pick one
 const newSolo = () => ({ phase: 'intro' });
 
 function loadSolo() {
   try {
     const saved = JSON.parse(localStorage.getItem(SOLO_STORAGE_KEY));
-    return saved && saved.phase ? saved : newSolo();
+    if (!saved || !saved.phase) return newSolo();
+    if (!saved.relics) saved.relics = [];
+    return saved;
   } catch {
     return newSolo();
   }
@@ -141,6 +144,8 @@ function createSoloRun() {
     node: null,
     fight: null,
     reward: null,
+    relics: [],
+    offer: null,
     stats: { duels: 0, damage: 0 }
   };
 }
@@ -157,6 +162,7 @@ function enterSoloNode(id) {
   } else {
     solo.node = id;
     solo.phase = 'node';
+    if (node.type === 'treasure') solo.offer = { source: 'treasure', ids: rollSoloRelics('common', SOLO_TREASURE_CHOICES) };
   }
   return true;
 }
@@ -170,8 +176,97 @@ function soloRest() {
 function soloBackToMap() {
   solo.phase = 'map';
   solo.node = null;
+  solo.nodeResult = null;
   solo.fight = null;
   solo.reward = null;
+  solo.offer = null;
+}
+
+// --- Relics -------------------------------------------------------------------------
+
+const soloHas = id => (solo.relics || []).includes(id);
+const soloRelicReady = id => soloHas(id) && !solo.fight?.relicUsed?.[id];
+const flashSoloRelic = id => queueSoloFx(() => fxSoloRelic(id));
+
+function rollSoloRelics(rarity, count) {
+  const pool = Object.keys(SOLO_RELICS).filter(id => SOLO_RELICS[id].rarity === rarity && !soloHas(id));
+  return shuffled(pool).slice(0, count);
+}
+
+// Marks a relic as used for this duel; consumables leave your collection.
+function useSoloRelic(id) {
+  const f = solo.fight;
+  if (f) f.relicUsed = { ...f.relicUsed, [id]: true };
+  if (SOLO_RELICS[id].consumable) solo.relics = solo.relics.filter(r => r !== id);
+  flashSoloRelic(id);
+}
+
+function takeSoloRelic(id) {
+  if (!solo.offer?.ids.includes(id)) return false;
+  const r = SOLO_RELICS[id];
+  solo.relics.push(id);
+  solo.offer = null;
+  if (id === 'duelist-glove') solo.chips++;
+  if (id === 'elf') {
+    solo.maxLp += r.value;
+    healSoloPlayer(r.value);
+  }
+  playSound({ name: 'co-bond' });
+  flashSoloRelic(id);
+  return true;
+}
+
+function soloRaigeki() {
+  const f = solo.fight;
+  if (!soloHas('raigeki') || !f?.monsters.length) return null;
+  const count = f.monsters.length;
+  f.monsters = [];
+  useSoloRelic('raigeki');
+  playSound({ name: 'co-destroy' });
+  return { tone: 'good', text: `⚡ Raigeki! ${count === 1 ? 'The enemy monster is' : `All ${count} enemy monsters are`} destroyed.` };
+}
+
+function soloRedMedicine() {
+  if (!soloHas('red-medicine') || solo.lp >= solo.maxLp) return null;
+  useSoloRelic('red-medicine');
+  const healed = healSoloPlayer(SOLO_RELICS['red-medicine'].value);
+  return { tone: 'good', text: `🧪 Red Medicine! You gain ${healed} LP.` };
+}
+
+// Waboku: no battle damage for the rest of the enemy's turn.
+const soloWabokuActive = () => solo.fight?.turn === 'enemy' && solo.fight.waboku === solo.fight.round;
+
+function soloBattleDamage(amount) {
+  if (soloWabokuActive()) return 0;
+  hurtSoloPlayer(amount);
+  return amount;
+}
+
+// Kuriboh, Waboku, Magic Cylinder and Mirror Force answer an enemy attack.
+function soloRelicDefend(id) {
+  const step = soloStep();
+  const f = solo.fight;
+  if (!step || step.kind !== 'attack' || step.sub || !soloRelicReady(id)) return;
+  useSoloRelic(id);
+  let result;
+  if (id === 'kuriboh') {
+    playSound({ name: 'co-shield' });
+    result = { tone: 'good', text: '🧸 Kuriboh jumps in front of the attack! You take 0.' };
+  } else if (id === 'waboku') {
+    f.waboku = f.round;
+    playSound({ name: 'co-shield' });
+    result = { tone: 'good', text: '🛐 Waboku! You take no battle damage for the rest of this turn.' };
+  } else if (id === 'cylinder') {
+    playSound({ name: 'co-negate' });
+    const dealt = damageSoloEnemy(step.atk);
+    result = { tone: 'good', text: `🌀 Magic Cylinder! The attack hits ${f.name} for ${dealt}.` };
+  } else {
+    const count = f.monsters.filter(m => m.pos === 'atk').length;
+    f.monsters = f.monsters.filter(m => m.pos !== 'atk');
+    playSound({ name: 'co-destroy' });
+    result = { tone: 'good', text: `🪞 Mirror Force! ${count === 1 ? 'The attacker is' : `${count} monsters are`} destroyed.` };
+  }
+  if (solo.phase === 'fight') finishSoloStep(result);
 }
 
 // --- Fights -------------------------------------------------------------------------
@@ -305,7 +400,12 @@ function soloWin() {
   solo.chips += f.chips;
   solo.reward = { name: f.name, icon: f.icon, kind: f.kind, chips: f.chips };
   solo.phase = 'reward';
+  if (f.kind === 'elite') solo.offer = { source: 'elite', ids: rollSoloRelics('rare', SOLO_ELITE_CHOICES) };
   playSound({ name: 'co-victory' });
+  if (soloHas('dian-keto')) {
+    solo.reward.healed = healSoloPlayer(SOLO_RELICS['dian-keto'].value);
+    flashSoloRelic('dian-keto');
+  }
 }
 
 function soloDefeat() {
@@ -322,7 +422,7 @@ function soloPlayerAttack(uid, atk) {
     f.trap = false;
     f.battleOver = true;
     playSound({ name: 'co-negate' });
-    return { tone: 'bad', text: `🪤 ${SOLO_TRAP.name}! ${SOLO_TRAP.text}` };
+    return { tone: 'bad', text: `🪤 ${SOLO_TRAP.name}! ${SOLO_TRAP.text}`, negated: true };
   }
   if (uid === null) {
     const dealt = damageSoloEnemy(atk);
@@ -390,9 +490,13 @@ function prepareSoloStep() {
     if (step.ready) return;
     if (step.type === 'attacks') {
       // Monsters summoned this turn attack too: this is Yu-Gi-Oh!
-      const attacks = f.monsters.filter(m => m.pos === 'atk').map(m => ({ type: 'attack', uid: m.uid }));
-      f.steps.splice(f.stepIndex, 1, ...attacks);
-      continue;
+      const attackers = f.monsters.filter(m => m.pos === 'atk' && !m.bound);
+      if (attackers.length && f.round === 1 && soloHas('swords')) {
+        step.type = 'swords';
+      } else {
+        f.steps.splice(f.stepIndex, 1, ...attackers.map(m => ({ type: 'attack', uid: m.uid })));
+        continue;
+      }
     }
     if (prepareSoloStepType(step, f) === false) {
       f.stepIndex++;
@@ -417,8 +521,14 @@ function prepareSoloStepType(step, f) {
       f.monsters.push(m);
       playSound({ name: 'co-summon' });
       const st = soloStats(m, f);
-      const boost = soloBoosted(f, m) ? `${soloRegion(f.region).icon} ${soloRegion(f.region).name} field bonus: ATK ${m.atk} → ${st.atk}` : '';
-      return info('🃏', `Summons ${m.name}!`, `${m.icon} ${st.atk} ATK / ${st.def} DEF in <b>${pos === 'atk' ? 'Attack' : 'Defense'} Position</b>.`, boost);
+      const notes = [];
+      if (soloBoosted(f, m)) notes.push(`${soloRegion(f.region).icon} ${soloRegion(f.region).name} field bonus: ATK ${m.atk} → ${st.atk}`);
+      if (soloRelicReady('spellbinding')) {
+        m.bound = true;
+        useSoloRelic('spellbinding');
+        notes.push("🔯 Spellbinding Circle! It can't attack.");
+      }
+      return info('🃏', `Summons ${m.name}!`, `${m.icon} ${st.atk} ATK / ${st.def} DEF in <b>${pos === 'atk' ? 'Attack' : 'Defense'} Position</b>.`, notes.join('<br>'));
     }
     case 'equip': {
       const targets = f.monsters.filter(m => m.pos === 'atk');
@@ -449,10 +559,14 @@ function prepareSoloStepType(step, f) {
     }
     case 'attack': {
       const m = soloMonster(step.uid);
-      if (!m || m.pos !== 'atk') return false;
+      if (!m || m.pos !== 'atk' || m.bound) return false;
       Object.assign(step, { kind: 'attack', icon: m.icon, title: `${m.name} attacks directly!`, atk: soloStats(m, f).atk, sub: null });
       return true;
     }
+    case 'swords':
+      playSound({ name: 'co-shield' });
+      flashSoloRelic('swords');
+      return info('🌟', 'Swords of Revealing Light!', "The enemy's monsters can't attack this turn.");
     default:
       return false;
   }
@@ -467,8 +581,8 @@ function finishSoloStep(result) {
 
 function soloTakeHit() {
   const step = soloStep();
-  hurtSoloPlayer(step.atk);
-  finishSoloStep({ tone: 'bad', text: `💔 You take ${step.atk}.` });
+  const dealt = soloBattleDamage(step.atk);
+  finishSoloStep(dealt ? { tone: 'bad', text: `💔 You take ${dealt}.` } : { tone: 'good', text: '🛐 Waboku protects you. You take 0.' });
 }
 
 // You block an enemy attack with one of your monsters (normal battle rules).
@@ -481,8 +595,8 @@ function soloBlock(value, pos) {
   let result;
   if (pos === 'atk') {
     if (a > value) {
-      hurtSoloPlayer(a - value);
-      result = { tone: 'bad', text: `💔 Your monster is destroyed and you take ${a - value}.` };
+      const dealt = soloBattleDamage(a - value);
+      result = { tone: 'bad', text: dealt ? `💔 Your monster is destroyed and you take ${dealt}.` : '🛐 Your monster is destroyed, but Waboku stops the damage.' };
     } else if (a === value) {
       removeSoloMonster(m.uid);
       result = { tone: 'meh', text: '💥 Both monsters are destroyed. Send yours to the Graveyard.' };
