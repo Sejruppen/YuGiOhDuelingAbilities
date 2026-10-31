@@ -19,12 +19,14 @@ const CHARACTER_EGG_IDS = [
 const EGG_IDS = [
   // Start screen
   'exodia', 'duel-disk', 'dizzy', 'speaker', 'shrink-ray', 'obelisk-headroom', 'dk-invitation', 'friendship-sign',
-  'limiter-removal',
+  'limiter-removal', 'paradox-labyrinth',
   // Tournament setup
   'kuriboh-multiply', 'rock-paper-scissors', 'star-chips', 'penalty-dice', 'next-time', 'mind-slave', 'stone-tablet', 'orichalcos',
   // Co-op setup
   'true-name', 'architect', 'name-theodor', 'name-tristan', 'name-otto', 'name-frida', 'name-marie',
   'time-to-duel', 'duel-school', 'relinquished',
+  // Duelist's Road
+  'field-power',
   // Abilities screen
   'dark-paladin', 'divine-offering',
   // Duel screen

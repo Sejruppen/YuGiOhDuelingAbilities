@@ -2904,6 +2904,111 @@ const COOP_SOUNDS = {
     boom(t + 8.6, 0.9, room);
     noise({ t: t + 8.6, dur: 0.25, gain: 0.06, type: 'lowpass', freq: 600, attack: 0.003, out: room });
     choir({ t: t + 8.7, notes: [57, 60, 64], dur: 1.3, gain: 0.014, attack: 0.3, out: room });
+  },
+  // Duelist's Road 🗺️ hold: Field Power Bonus (11.5s). The map unfolds with a
+  // rustle and a fanfare (0.3-1.5s). Five stops 1.5s apart from 1.6s: a card
+  // whoosh, the terrain (birds, wind, waves, chimes, dry wind) and a power-up
+  // zap at +0.55s, each a step higher. A sad trombone for Skull Servant
+  // (8.4s), then a bright chord for the toast (9.3s).
+  'egg-field-power': t => {
+    const room = darkBus({ reverb: 0.35 });
+    noise({ t, dur: 0.6, gain: 0.05, freq: 1800, to: 900, q: 0.8, attack: 0.2, out: room });
+    [[0.3, [60, 64, 67], 0.3], [0.65, [62, 65, 69], 0.3], [1.0, [64, 67, 72], 0.7]].forEach(([at, notes, dur]) => brass({ t: t + at, notes, dur, gain: 0.04 }));
+    boom(t + 1.0, 0.4, room);
+    const terrain = [
+      s => [0, 0.25, 0.4].forEach(d => tone({ t: s + d, freq: 2600, to: 3400, dur: 0.09, type: 'sine', gain: 0.025, out: room })),
+      s => noise({ t: s, dur: 1.3, gain: 0.04, freq: 500, to: 1300, q: 6, attack: 0.5, out: room }),
+      s => noise({ t: s, dur: 1.3, gain: 0.06, type: 'lowpass', freq: 300, to: 1400, attack: 0.6, out: room }),
+      s => [79, 84].forEach((n, k) => bell({ t: s + k * 0.2, freq: midi(n), dur: 0.8, gain: 0.025, out: room })),
+      s => noise({ t: s, dur: 1.3, gain: 0.035, freq: 250, to: 600, q: 5, attack: 0.5, out: room })
+    ];
+    terrain.forEach((play, i) => {
+      const s = t + 1.6 + i * 1.5;
+      ceWhoosh(s, 0.3, 0.04, 600, 2400, room);
+      cardFlip(s + 0.12, 0.1);
+      play(s);
+      tone({ t: s + 0.55, freq: midi(52 + i * 2), to: midi(64 + i * 2), dur: 0.3, type: 'square', gain: 0.03, filter: 2600, out: room });
+      bell({ t: s + 0.8, freq: midi(76 + i * 2), dur: 0.9, gain: 0.035, out: room });
+      healSparkles(s + 0.6, 0.4, 3, room);
+    });
+    ceSadTrombone(t + 8.4, 0.04);
+    healPad({ t: t + 9.3, notes: [60, 64, 67, 72], dur: 1.8, gain: 0.025, attack: 0.1, out: room });
+    bell({ t: t + 9.3, freq: midi(84), dur: 1.4, gain: 0.04, out: room });
+  },
+  // Start screen Solo hold: the Paradox Labyrinth (paradox-labyrinth-egg.js).
+  'lb-start': t => {
+    const room = darkBus({ reverb: 0.5, echo: 0.2 });
+    noise({ t, dur: 1.1, gain: 0.07, type: 'lowpass', freq: 260, to: 120, attack: 0.15, out: room });
+    boom(t + 0.9, 0.6, room);
+    // The brothers' giggle: one voice rising, the other falling.
+    for (let i = 0; i < 4; i++) {
+      tone({ t: t + 1.1 + i * 0.12, freq: 420 + i * 40, to: 520 + i * 40, dur: 0.08, type: 'square', gain: 0.025, filter: 1800, out: room });
+      tone({ t: t + 1.16 + i * 0.12, freq: 640 - i * 40, to: 540 - i * 40, dur: 0.08, type: 'square', gain: 0.025, filter: 1800, out: room });
+    }
+  },
+  'lb-chip': t => {
+    tone({ t, freq: midi(84), dur: 0.1, type: 'triangle', gain: 0.05, attack: 0.003 });
+    bell({ t: t + 0.06, freq: midi(91), dur: 0.7, gain: 0.04 });
+  },
+  // Jirai Gumo drops (lands at 0.9s, LB_SPIDER_DROP_S), screeches while it
+  // takes aim, then skitters off on its charge (1.35s).
+  'lb-drop': t => {
+    const room = darkBus({ reverb: 0.4 });
+    ceWhoosh(t, 0.8, 0.05, 2200, 300, room);
+    boom(t + 0.85, 0.7, room);
+    tone({ t: t + 0.95, freq: 1400, to: 900, dur: 0.6, type: 'sawtooth', gain: 0.04, filter: [3000, 1500], q: 4, detune: 30, out: room });
+    tone({ t: t + 0.95, freq: 1900, to: 1200, dur: 0.55, type: 'square', gain: 0.02, filter: 2600, out: room });
+    for (let i = 0; i < 8; i++) noise({ t: t + 1.5 + i * 0.05, dur: 0.02, gain: 0.05, type: 'highpass', freq: 3000, attack: 0.001, out: room });
+  },
+  'lb-skitter': t => {
+    for (let i = 0; i < 3; i++) noise({ t: t + i * 0.04, dur: 0.015, gain: 0.03, type: 'highpass', freq: 3500, attack: 0.001 });
+  },
+  // Jirai Gumo slams into a wall, then scurries back up its thread.
+  'lb-climb': t => {
+    noise({ t, dur: 0.18, gain: 0.08, type: 'lowpass', freq: 900, to: 200, attack: 0.002 });
+    tone({ t, freq: 180, to: 70, dur: 0.2, type: 'square', gain: 0.04, filter: 800, attack: 0.002 });
+    slideWhistle({ t: t + 0.3, freqs: [300, 500, 900], dur: 0.6, gain: 0.025 });
+    for (let i = 0; i < 6; i++) noise({ t: t + 0.3 + i * 0.07, dur: 0.015, gain: 0.025, type: 'highpass', freq: 3500, attack: 0.001 });
+  },
+  'lb-warn': t => {
+    tone({ t, freq: 90, to: 70, dur: 0.5, type: 'sawtooth', gain: 0.04, filter: 500, attack: 0.1 });
+    noise({ t, dur: 0.5, gain: 0.03, type: 'bandpass', freq: 500, q: 3, attack: 0.15 });
+  },
+  'lb-lunge': t => {
+    ceWhoosh(t, 0.25, 0.06, 300, 2400);
+    tone({ t, freq: 140, to: 60, dur: 0.4, type: 'sawtooth', gain: 0.06, filter: 900, attack: 0.01 });
+  },
+  'lb-paradox': t => {
+    tone({ t, freq: 300, to: 900, dur: 0.5, type: 'triangle', gain: 0.04 });
+    tone({ t, freq: 900, to: 300, dur: 0.5, type: 'triangle', gain: 0.04 });
+    bell({ t: t + 0.5, freq: midi(76), dur: 0.6, gain: 0.03 });
+    bell({ t: t + 0.6, freq: midi(71), dur: 0.6, gain: 0.03 });
+  },
+  'lb-death': (t, s) => {
+    const room = darkBus({ reverb: 0.5 });
+    if (s.reason === 'spider') tone({ t, freq: 1600, to: 700, dur: 0.4, type: 'sawtooth', gain: 0.04, filter: 2800, q: 3, out: room });
+    else monsterRoar(t, 0.06, room);
+    tone({ t: t + 0.2, freq: 330, to: 110, dur: 0.9, type: 'square', gain: 0.035, filter: 1400, out: room });
+  },
+  'lb-ask': t => tone({ t, freq: 660, to: 880, dur: 0.1, type: 'triangle', gain: 0.04 }),
+  'lb-door': t => {
+    noise({ t, dur: 0.9, gain: 0.06, type: 'lowpass', freq: 400, to: 200, attack: 0.1 });
+    tone({ t, freq: 60, to: 50, dur: 0.9, type: 'sawtooth', gain: 0.04, filter: 300, attack: 0.1 });
+  },
+  // The brothers bonk heads at ~0.72s (lb-bonk in effects.css).
+  'lb-win': t => {
+    brass({ t, notes: [60, 64, 67], dur: 0.18, gain: 0.05 });
+    brass({ t: t + 0.2, notes: [62, 65, 69], dur: 0.18, gain: 0.05 });
+    brass({ t: t + 0.4, notes: [64, 67, 72, 76], dur: 1.2, gain: 0.055 });
+    tone({ t: t + 0.72, freq: 320, to: 120, dur: 0.12, type: 'square', gain: 0.05, filter: 1500, attack: 0.002 });
+    arpeggio(t + 0.8, [84, 88, 91, 96], 0.07, (tt, n) => bell({ t: tt, freq: midi(n), dur: 0.8, gain: 0.025 }));
+  },
+  'lb-doom': t => {
+    const room = darkBus({ reverb: 0.7 });
+    boom(t, 0.9, room);
+    darkCluster({ t, notes: [38, 39, 45], dur: 2, gain: 0.05, out: room });
+    eyeHum(t + 0.3, 1.6, 0.05, room);
+    ceSadTrombone(t + 1.2, 0.03);
   }
 };
 

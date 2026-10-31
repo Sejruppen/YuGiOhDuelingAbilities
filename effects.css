@@ -8014,6 +8014,346 @@ html.nd-deleting .modal-panel { animation: nd-panel 6000ms linear both; }
 }
 .fx-kd .kd-btn--back { color: #fff; background: rgb(15 23 42 / 0.9); border: 1px solid #fbbf24; }
 
+/* --- Start screen Solo hold: "Paradox Labyrinth" (interactive, until closed) ---
+   (paradox-labyrinth-egg.js) A top-down maze drawn on a canvas, with an arrow
+   pad below. .is-paradox shows the "Paradox!" banner (4000ms, left and right
+   swapped), .is-riddle the two doors and the brothers, .is-end the result
+   panel. .is-won adds the brothers bonking heads (0.3s delay, bonk at 30% =
+   0.72s, matching 'lb-win'). */
+.fx-lb {
+  pointer-events: auto;
+  touch-action: none;
+  user-select: none;
+  -webkit-user-select: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  animation: lb-in 400ms ease-out both;
+}
+@keyframes lb-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+.fx-lb .lb-bg {
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(circle at 50% 40%, rgb(49 46 129 / 0.55), rgb(2 6 23 / 0.96) 70%);
+}
+.fx-lb .lb-wrap {
+  position: relative;
+  width: min(100vw, 520px);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+}
+.fx-lb .lb-hud {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 0 0.75rem;
+  font-weight: 800;
+  font-size: 0.8rem;
+  color: #c7d2fe;
+  font-variant-numeric: tabular-nums;
+}
+.fx-lb .lb-title {
+  flex: 1;
+  font-family: "Cinzel Decorative", Cinzel, serif;
+  color: #fde68a;
+  white-space: nowrap;
+}
+.fx-lb .lb-chips { white-space: nowrap; }
+.fx-lb .lb-chips.is-bump { animation: lb-bump 400ms ease-out; }
+@keyframes lb-bump {
+  40% { transform: scale(1.35); color: #fde047; }
+}
+.fx-lb .lb-puzzle {
+  --lb-glow: 0;
+  width: 1.6rem;
+  height: 1.6rem;
+  opacity: calc(0.35 + var(--lb-glow) * 0.65);
+  filter: drop-shadow(0 0 calc(var(--lb-glow) * 10px) #fde047);
+  transition: opacity 300ms, filter 300ms;
+}
+.fx-lb .lb-puzzle svg { width: 100%; height: 100%; }
+.fx-lb .lb-quit {
+  width: 2rem;
+  height: 2rem;
+  border-radius: 9999px;
+  color: #fff;
+  background: rgb(15 23 42 / 0.85);
+  border: 1px solid rgb(129 140 248 / 0.6);
+}
+.fx-lb .lb-stage {
+  position: relative;
+  border: 2px solid #6366f1;
+  border-radius: 0.4rem;
+  box-shadow: 0 0 24px rgb(99 102 241 / 0.45);
+  overflow: hidden;
+}
+.fx-lb .lb-stage.is-quake { animation: lb-quake 450ms ease-out; }
+@keyframes lb-quake {
+  20% { translate: -4px 3px; }
+  40% { translate: 4px -3px; }
+  60% { translate: -3px 2px; }
+  80% { translate: 2px -1px; }
+}
+.fx-lb .lb-stage.is-hit::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: rgb(220 38 38 / 0.5);
+  pointer-events: none;
+  animation: lb-hit 600ms ease-out forwards;
+}
+@keyframes lb-hit {
+  to { opacity: 0; }
+}
+.fx-lb .lb-canvas { display: block; }
+.fx-lb .lb-help {
+  padding: 0 0.75rem;
+  text-align: center;
+  font-size: 0.7rem;
+  font-weight: 700;
+  color: #a5b4fc;
+}
+
+/* Paradox! */
+.fx-lb .lb-paradox {
+  position: absolute;
+  top: 12%;
+  left: 50%;
+  translate: -50% 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 0.35rem 0.9rem;
+  border-radius: 0.5rem;
+  background: rgb(46 16 101 / 0.9);
+  border: 2px solid #c084fc;
+  color: #f5d0fe;
+  font-size: 0.7rem;
+  font-weight: 700;
+  text-align: center;
+  white-space: nowrap;
+  opacity: 0;
+  pointer-events: none;
+}
+.fx-lb .lb-paradox b {
+  font-family: "Cinzel Decorative", Cinzel, serif;
+  font-size: 1.3rem;
+  color: #fff;
+  text-shadow: 0 0 10px #c084fc;
+}
+.fx-lb.is-paradox .lb-paradox { animation: lb-paradox 4000ms ease-out both; }
+@keyframes lb-paradox {
+  0% { opacity: 0; transform: scaleX(-1); }
+  10% { opacity: 1; transform: scaleX(1); }
+  80% { opacity: 1; }
+  100% { opacity: 0; }
+}
+.fx-lb.is-paradox .lb-key--left,
+.fx-lb.is-paradox .lb-key--right { background: #6b21a8; border-color: #e879f9; }
+
+/* Arrow pad */
+.fx-lb .lb-pad {
+  display: grid;
+  grid-template-columns: repeat(3, 3.6rem);
+  grid-template-rows: repeat(2, 3rem);
+  gap: 0.35rem;
+}
+.fx-lb .lb-key {
+  border-radius: 0.6rem;
+  font-size: 1.1rem;
+  color: #e0e7ff;
+  background: rgb(30 27 75 / 0.9);
+  border: 1px solid #6366f1;
+  touch-action: none;
+  transition: background 150ms;
+}
+.fx-lb .lb-key.is-down { background: #4338ca; transform: scale(0.94); }
+.fx-lb .lb-key--up { grid-column: 2; grid-row: 1; }
+.fx-lb .lb-key--left { grid-column: 1; grid-row: 2; }
+.fx-lb .lb-key--down { grid-column: 2; grid-row: 2; }
+.fx-lb .lb-key--right { grid-column: 3; grid-row: 2; }
+.fx-lb.is-riddle .lb-pad,
+.fx-lb.is-end .lb-pad { visibility: hidden; }
+
+/* The riddle: two doors, Para and Dox */
+.fx-lb .lb-riddle,
+.fx-lb .lb-end {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 0.75rem;
+  text-align: center;
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 400ms, visibility 0s linear 400ms;
+}
+.fx-lb .lb-riddle {
+  gap: 0.6rem;
+  background: radial-gradient(circle at 50% 30%, rgb(49 46 129 / 0.94), rgb(2 6 23 / 0.98));
+}
+.fx-lb.is-riddle .lb-riddle,
+.fx-lb.is-end .lb-end { opacity: 1; visibility: visible; transition: opacity 400ms; }
+.fx-lb .lb-doors { display: flex; gap: 1rem; }
+.fx-lb .lb-door {
+  position: relative;
+  width: 4.6rem;
+  height: 6.4rem;
+  border-radius: 2.3rem 2.3rem 0.2rem 0.2rem;
+  background: #000;
+  border: 3px solid #fbbf24;
+  box-shadow: 0 0 0 4px #4b4f6b;
+  overflow: hidden;
+  perspective: 300px;
+}
+.fx-lb .lb-door-glow { position: absolute; inset: -50%; }
+.fx-lb .lb-door.is-exit .lb-door-glow { background: radial-gradient(circle at 50% 55%, #fffbeb, #fbbf24 30%, #b45309 60%); }
+.fx-lb .lb-door.is-doom .lb-door-glow {
+  background: repeating-conic-gradient(from 0deg at 50% 50%, #3b0764 0deg 20deg, #a21caf 20deg 40deg);
+  animation: lb-vortex 1200ms linear infinite;
+}
+@keyframes lb-vortex {
+  to { rotate: 360deg; }
+}
+.fx-lb .lb-leaf {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 50%;
+  background: linear-gradient(#6b4423, #3b2412);
+  border: 1px solid #1c0f05;
+  transition: transform 900ms ease-in;
+}
+.fx-lb .lb-leaf--l { left: 0; transform-origin: left center; }
+.fx-lb .lb-leaf--r { right: 0; transform-origin: right center; }
+.fx-lb .lb-door.is-open .lb-leaf--l { transform: rotateY(-100deg); }
+.fx-lb .lb-door.is-open .lb-leaf--r { transform: rotateY(100deg); }
+.fx-lb .lb-door-name {
+  position: absolute;
+  bottom: 0.3rem;
+  left: 0;
+  right: 0;
+  font-size: 0.6rem;
+  font-weight: 800;
+  color: #fde68a;
+  text-shadow: 0 1px 2px #000;
+}
+.fx-lb .lb-door.is-open .lb-door-name { opacity: 0; }
+.fx-lb .lb-door.is-pointed {
+  box-shadow: 0 0 0 4px #4b4f6b, 0 0 18px 4px #fde047;
+  animation: lb-point 700ms ease-in-out infinite alternate;
+}
+@keyframes lb-point {
+  to { translate: 0 -4px; }
+}
+.fx-lb .lb-bros { display: flex; gap: 1.6rem; }
+.fx-lb .lb-bro {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  color: #e0e7ff;
+  font-family: Cinzel, serif;
+  font-weight: 900;
+  font-size: 0.8rem;
+  transition: opacity 300ms, transform 300ms;
+}
+.fx-lb .lb-bro svg { width: 4.4rem; height: 5.5rem; }
+.fx-lb .lb-bro:not(:disabled) { animation: lb-bob 900ms ease-in-out infinite alternate; }
+.fx-lb .lb-bro:not(:disabled) + .lb-bro { animation-delay: 450ms; }
+@keyframes lb-bob {
+  to { translate: 0 -5px; }
+}
+.fx-lb .lb-bro.is-asked { transform: scale(1.12); }
+.fx-lb .lb-bro.is-dim { opacity: 0.45; }
+.fx-lb .lb-say {
+  max-width: 22rem;
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: #fef3c7;
+}
+.fx-lb .lb-say small {
+  display: block;
+  margin-top: 0.3rem;
+  font-size: 0.7rem;
+  color: #a5b4fc;
+}
+.fx-lb .lb-asks {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  width: 100%;
+  max-width: 20rem;
+}
+.fx-lb .lb-ask {
+  padding: 0.45rem 0.7rem;
+  border-radius: 0.6rem;
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-align: left;
+  color: #e0e7ff;
+  background: rgb(30 27 75 / 0.95);
+  border: 1px solid #6366f1;
+}
+.fx-lb .lb-ask:disabled { opacity: 0.4; }
+.fx-lb .lb-ask.is-picked { opacity: 1; color: #fde68a; border-color: #fde047; }
+
+/* Result panel */
+.fx-lb .lb-end {
+  gap: 0.5rem;
+  background: rgb(2 6 23 / 0.82);
+}
+.fx-lb .lb-end-title {
+  font-family: "Cinzel Decorative", Cinzel, serif;
+  font-size: clamp(1.2rem, 6vw, 1.8rem);
+  color: #fecaca;
+  text-shadow: 0 0 12px rgb(220 38 38 / 0.7), 0 3px 0 #1e1b4b;
+}
+.fx-lb.is-won .lb-end-title {
+  color: #fde68a;
+  text-shadow: 0 0 12px rgb(251 191 36 / 0.8), 0 3px 0 #1e1b4b;
+}
+.fx-lb .lb-end-sub {
+  max-width: 20rem;
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: #e0e7ff;
+}
+.fx-lb .lb-end-bros { display: none; }
+.fx-lb.is-won .lb-end-bros { display: flex; }
+.fx-lb .lb-end-bro svg { width: 3.4rem; height: 4.2rem; }
+.fx-lb.is-won .lb-end-bro--l { animation: lb-bonk-l 1400ms ease-in 300ms both; }
+.fx-lb.is-won .lb-end-bro--r { animation: lb-bonk-r 1400ms ease-in 300ms both; }
+@keyframes lb-bonk-l {
+  0% { translate: -1.5rem 0; rotate: 0deg; }
+  30% { translate: 0.5rem 0; rotate: 0deg; }
+  45% { translate: -0.3rem 0; rotate: -14deg; }
+  100% { translate: -0.6rem 0.6rem; rotate: -80deg; }
+}
+@keyframes lb-bonk-r {
+  0% { translate: 1.5rem 0; rotate: 0deg; }
+  30% { translate: -0.5rem 0; rotate: 0deg; }
+  45% { translate: 0.3rem 0; rotate: 14deg; }
+  100% { translate: 0.6rem 0.6rem; rotate: 80deg; }
+}
+.fx-lb .lb-end-btns { display: flex; gap: 0.5rem; margin-top: 0.25rem; }
+.fx-lb .lb-btn {
+  padding: 0.45rem 0.9rem;
+  border-radius: 0.6rem;
+  font-weight: 800;
+  font-size: 0.8rem;
+  color: #1c1917;
+  background: #fbbf24;
+}
+.fx-lb .lb-btn--back { color: #fff; background: rgb(15 23 42 / 0.9); border: 1px solid #fbbf24; }
+
 /* --- Settings "Get a hint" spam: "The Hint of the Cards" (7000ms) ---
    (egg-hints.js) Hint cards scatter 0-1s, Grandpa rises 0.3s, "Enough,
    enough" 0.95s, "The only egg…" 2.3s, arm swings up from behind his back
@@ -10805,6 +11145,237 @@ header:has(+ .tn-draw--done) .tn-draw-skip { visibility: hidden; }
 @keyframes orc-toast {
   0%, 87% { transform: translate(-50%, 12px); opacity: 0; }
   89%, 97% { transform: translate(-50%, 0); opacity: 1; }
+  100% { transform: translate(-50%, -8px); opacity: 0; }
+}
+
+/* --- Duelist's Road 🗺️ hold: FIELD POWER BONUS (11500ms, 1% = 115ms) ---
+   Dark 0-0.35s, title 0.25-1.65s, the map strip unfolds 1.0-1.3s. Five stops
+   1.5s apart from 1.6s (--at; the last one lasts 2s): the terrain fades in,
+   the card rises, +30% and the new ATK pop at +0.5-0.6s and the 📍 hops on.
+   "…still pathetic." 8.4s, the map leaves 9.6s, toast 9.3s. */
+.solo-map-icon { display: inline-block; padding: 1px; border-radius: 9999px; cursor: pointer; }
+/* The title truncates (overflow: hidden) with only 8px to spare, so a tighter glow. */
+html[data-theme] .solo-map-icon.cegg-charging { animation-name: fp-icon-charge; }
+@keyframes fp-icon-charge {
+  0% { box-shadow: 0 0 0 0 rgb(251 191 36 / 0); transform: none; }
+  50% { box-shadow: 0 0 4px 1px rgb(251 191 36 / 0.45); transform: none; }
+  62% { transform: translateX(-1px); }
+  72% { transform: translateX(1px); }
+  82% { transform: translateX(-1px) scale(1.04); }
+  92% { transform: translateX(1px) scale(1.04); }
+  100% { box-shadow: 0 0 6px 2px rgb(251 191 36 / 0.85), 0 0 0 1.5px rgb(255 255 255 / 0.9); transform: scale(1.06); }
+}
+.fp-bg {
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(circle at 50% 50%, #0f2a17, #020a05 75%);
+  animation: fp-dim 11500ms ease-out both;
+}
+.fp-field {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  animation: fp-field var(--len) ease-in-out var(--at) both;
+}
+.fp-field--forest { background: radial-gradient(ellipse at 50% 70%, #15803d, #14532d 55%, #052e16); }
+.fp-field--mountain { background: linear-gradient(#94a3b8, #475569 45%, #292524); }
+.fp-field--sea { background: linear-gradient(#0891b2, #0c4a6e 55%, #082f49); }
+.fp-field--meadow { background: linear-gradient(#a3e635, #4d7c0f 50%, #1a2e05); }
+.fp-field--wasteland { background: linear-gradient(#d97706, #78350f 55%, #1c1917); }
+.fp-stop--forest { --fc: #4ade80; --fbg: radial-gradient(circle, #22c55e, #14532d); }
+.fp-stop--mountain { --fc: #e2e8f0; --fbg: linear-gradient(#cbd5e1, #64748b); }
+.fp-stop--sea { --fc: #38bdf8; --fbg: linear-gradient(#7dd3fc, #0369a1); }
+.fp-stop--meadow { --fc: #bef264; --fbg: linear-gradient(#d9f99d, #65a30d); }
+.fp-stop--wasteland { --fc: #fbbf24; --fbg: linear-gradient(#fcd34d, #92400e); }
+.fp-mote {
+  position: absolute;
+  font-size: 1.4rem;
+  opacity: 0;
+  animation: fp-mote 1600ms ease-out var(--at) both;
+}
+.fp-title {
+  left: 50%;
+  top: 45%;
+  z-index: 1;
+  text-align: center;
+  white-space: nowrap;
+  font: 900 clamp(1.6rem, 9vw, 2.4rem)/1.1 'Cinzel Decorative', 'Cinzel', serif;
+  color: #fde047;
+  text-shadow: 0 2px 6px #000, 0 0 18px rgb(250 204 21 / 0.8);
+  opacity: 0;
+  animation: fp-title 1400ms ease-out 250ms both;
+}
+.fp-map {
+  left: 50%;
+  top: calc(env(safe-area-inset-top, 0px) + 12%);
+  z-index: 1;
+  width: min(320px, 88vw);
+  height: 3rem;
+  display: flex;
+  padding: 3px;
+  border-radius: 10px;
+  background: linear-gradient(#f5e6c4, #e3c98f);
+  border: 2px solid #8b5e34;
+  box-shadow: 0 6px 16px rgb(0 0 0 / 0.5);
+  transform-origin: 50% 50%;
+  opacity: 0;
+  animation: fp-map 11500ms ease-out both;
+}
+.fp-slot {
+  flex: 1;
+  display: grid;
+  place-items: center;
+  font-size: 1.5rem;
+  border-radius: 8px;
+  animation: fp-slot 1500ms ease-out var(--at) both;
+}
+.fp-pin {
+  position: absolute;
+  bottom: 62%;
+  left: 10%;
+  translate: -50% 0;
+  font-size: 1.6rem;
+  filter: drop-shadow(0 2px 2px rgb(0 0 0 / 0.6));
+  opacity: 0;
+  animation: fp-pin 11500ms ease-in-out both;
+}
+.fp-stop {
+  left: 50%;
+  top: 58%;
+  z-index: 2;
+  width: min(280px, 86vw);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+  opacity: 0;
+  animation: fp-stop var(--len) ease-out var(--at) both;
+}
+.fp-label {
+  font: 700 clamp(0.85rem, 4.2vw, 1rem)/1.2 'Cinzel', Georgia, serif;
+  color: #fff;
+  text-align: center;
+  text-shadow: 0 2px 6px #000;
+}
+.fp-card {
+  width: min(160px, 42vw);
+  aspect-ratio: 59 / 86;
+  display: flex;
+  flex-direction: column;
+  gap: 3%;
+  padding: 6%;
+  border-radius: 6px;
+  background: linear-gradient(160deg, #e7b75c, #c98b2e 55%, #9a6417);
+  border: 3px solid #5b3a12;
+  box-shadow: 0 8px 20px rgb(0 0 0 / 0.5);
+  animation: fp-card 900ms ease-out calc(var(--at) + 500ms) both;
+}
+.fp-card-name {
+  font: 700 clamp(0.6rem, 3vw, 0.75rem)/1.1 'Cinzel', Georgia, serif;
+  color: #1c1917;
+  padding: 3% 4%;
+  background: rgb(255 255 255 / 0.25);
+  border: 1px solid rgb(0 0 0 / 0.2);
+}
+.fp-card-art {
+  flex: 1;
+  display: grid;
+  place-items: center;
+  font-size: clamp(2.6rem, 14vw, 3.6rem);
+  background: var(--fbg);
+  border: 2px solid #5b3a12;
+}
+.fp-card-type, .fp-card-atk { font: 700 clamp(0.55rem, 2.8vw, 0.7rem)/1 Georgia, serif; color: #292524; }
+.fp-card-atk { text-align: right; }
+.fp-num { display: inline-grid; margin-left: 2px; }
+.fp-num > * { grid-area: 1 / 1; font-weight: 900; }
+.fp-old { text-decoration-color: #dc2626; animation: fp-old 300ms ease-in calc(var(--at) + 550ms) forwards; }
+.fp-new { color: #15803d; opacity: 0; animation: fp-new 500ms ease-out calc(var(--at) + 600ms) forwards; }
+.fp-boost {
+  font: 900 clamp(1rem, 5.4vw, 1.3rem)/1 'Cinzel', Georgia, serif;
+  color: var(--fc);
+  white-space: nowrap;
+  text-shadow: 0 2px 4px #000, 0 0 12px var(--fc);
+  opacity: 0;
+  animation: fp-boost 700ms ease-out calc(var(--at) + 500ms) forwards;
+}
+.fp-meh {
+  font: italic 700 clamp(0.9rem, 4.4vw, 1.05rem)/1.2 Georgia, serif;
+  color: #e7e5e4;
+  text-shadow: 0 2px 4px #000;
+  opacity: 0;
+  animation: fp-meh 500ms ease-out 8400ms forwards;
+}
+.fx-sbe--field-power .cegg-toast { z-index: 3; animation: fp-toast 11500ms ease-out both; }
+@keyframes fp-dim {
+  0% { opacity: 0; }
+  3%, 95% { opacity: 1; }
+  100% { opacity: 0; }
+}
+@keyframes fp-field {
+  0% { opacity: 0; }
+  15%, 85% { opacity: 1; }
+  100% { opacity: 0; }
+}
+@keyframes fp-mote {
+  0% { opacity: 0; transform: none; }
+  20% { opacity: 0.9; }
+  100% { opacity: 0; transform: translate(var(--dx), -16vh) rotate(var(--r)); }
+}
+@keyframes fp-title {
+  0% { opacity: 0; transform: scale(0.5); }
+  20% { opacity: 1; transform: scale(1.12); }
+  30%, 80% { opacity: 1; transform: scale(1); }
+  100% { opacity: 0; transform: scale(1.3); }
+}
+@keyframes fp-map {
+  0%, 8.7% { opacity: 0; transform: scaleX(0); }
+  11%, 83% { opacity: 1; transform: scaleX(1); }
+  85.5%, 100% { opacity: 0; transform: scaleX(1); }
+}
+@keyframes fp-slot {
+  0%, 100% { transform: none; background: transparent; box-shadow: none; }
+  15%, 85% { transform: scale(1.2); background: rgb(255 255 255 / 0.5); box-shadow: 0 0 12px rgb(253 224 71 / 0.8); }
+}
+@keyframes fp-pin {
+  0%, 12% { left: 10%; opacity: 0; }
+  13.9%, 24.4% { left: 10%; opacity: 1; }
+  27%, 37.4% { left: 30%; }
+  40%, 50.4% { left: 50%; }
+  53%, 63.5% { left: 70%; }
+  66%, 83% { left: 90%; opacity: 1; }
+  85.5%, 100% { left: 90%; opacity: 0; }
+}
+@keyframes fp-stop {
+  0% { opacity: 0; transform: translateY(30px) scale(0.85); }
+  10%, 88% { opacity: 1; transform: none; }
+  100% { opacity: 0; transform: translateY(-20px) scale(0.95); }
+}
+@keyframes fp-card {
+  0% { transform: none; box-shadow: 0 8px 20px rgb(0 0 0 / 0.5); }
+  30% { transform: scale(1.07); box-shadow: 0 0 32px 8px var(--fc); }
+  100% { transform: none; box-shadow: 0 0 16px 3px var(--fc); }
+}
+@keyframes fp-old {
+  to { opacity: 0; transform: translateY(-6px); }
+}
+@keyframes fp-new {
+  0% { opacity: 0; transform: scale(1.8); }
+  60% { opacity: 1; transform: scale(0.9); }
+  100% { opacity: 1; transform: scale(1); }
+}
+@keyframes fp-boost {
+  0% { opacity: 0; transform: translateY(10px) scale(0.6); }
+  40% { opacity: 1; transform: scale(1.15); }
+  100% { opacity: 1; transform: none; }
+}
+@keyframes fp-meh {
+  from { opacity: 0; transform: translateY(6px); }
+  to { opacity: 1; transform: none; }
+}
+@keyframes fp-toast {
+  0%, 80.8% { transform: translate(-50%, 12px); opacity: 0; }
+  83%, 97% { transform: translate(-50%, 0); opacity: 1; }
   100% { transform: translate(-50%, -8px); opacity: 0; }
 }
 

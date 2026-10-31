@@ -2,12 +2,14 @@
 // fights against a virtual duelist and the end of a run.
 const SOLO_MAP_W = 360;
 const SOLO_MAP_H = SOLO_FLOOR.CASTLE * 100 + 20;
+// The header 🗺️: hold it for the Field Power Bonus egg (field-power-egg.js).
+const SOLO_MAP_ICON = `<span class="solo-map-icon cegg-press" onpointerdown="startStartEggPress(this, 'field-power')" onpointerup="cancelStartEggPress(this)" onpointerleave="cancelStartEggPress(this)" onpointercancel="cancelStartEggPress(this)" oncontextmenu="return false"><span class="ce-emoji">🗺️</span></span>`;
 
 // Start screen entry, below Tournament and Co-op.
 function renderSoloButton() {
   const running = isSoloRunActive();
   return `
-    <button onclick="goToSolo()" class="solo-start-btn col-span-2 w-full py-2.5 px-2 rounded-xl border border-emerald-500/50 bg-slate-900/80 hover:bg-slate-800 text-emerald-300 font-bold text-sm leading-tight transition flex items-center justify-center gap-2">
+    <button onclick="if (startEggAllowsClick()) goToSolo()" onpointerdown="startStartEggPress(this, 'paradox-labyrinth')" onpointerup="cancelStartEggPress(this)" onpointerleave="cancelStartEggPress(this)" onpointercancel="cancelStartEggPress(this)" oncontextmenu="return false" class="solo-start-btn cegg-press col-span-2 w-full py-2.5 px-2 rounded-xl border border-emerald-500/50 bg-slate-900/80 hover:bg-slate-800 text-emerald-300 font-bold text-sm leading-tight transition flex items-center justify-center gap-2">
       <span class="text-xl leading-none ce-emoji">🗺️</span>
       <span>Solo: Duelist's Road</span>
       ${running ? '<span class="text-[0.65rem] font-semibold opacity-80">▶ Continue</span>' : ''}
@@ -41,7 +43,7 @@ function renderSoloMenu() {
   const historySub = n ? `${n} run${n === 1 ? '' : 's'} · ${wins} won` : 'No finished runs yet';
   const armed = soloUi.confirmNew;
   return `
-    ${renderSoloHeader('<span class="ce-emoji">🗺️</span> Duelist\'s Road')}
+    ${renderSoloHeader(`${SOLO_MAP_ICON} Duelist's Road`)}
     <div class="flex-1 min-h-0 overflow-y-auto p-4 no-scrollbar flex flex-col">
      <div class="my-auto flex flex-col gap-3">
       <div class="text-center mb-2">
@@ -206,7 +208,7 @@ function renderSoloHeader(title, right = '') {
   return `
     <header class="shrink-0 px-4 py-3 border-b border-slate-800 flex items-center justify-between gap-2 bg-slate-900/80 backdrop-blur">
       <button onclick="backInSolo()" class="text-slate-300 text-base font-medium px-2 py-1 w-16 text-left">← Back</button>
-      <h2 class="text-lg font-bold text-white truncate">${title}</h2>
+      <h2 class="text-lg font-bold text-white truncate p-2 -m-2">${title}</h2>
       <div class="w-16 text-right">${right}</div>
     </header>
   `;
@@ -416,7 +418,7 @@ function renderSoloLegend() {
 
 function renderSoloMapScreen() {
   return `
-    ${renderSoloHeader('<span class="ce-emoji">🗺️</span> Duelist\'s Road', `<button onclick="toggleSoloLegend()" aria-label="Map legend" class="text-slate-300 text-lg px-2">ⓘ</button>`)}
+    ${renderSoloHeader(`${SOLO_MAP_ICON} Duelist's Road`, `<button onclick="toggleSoloLegend()" aria-label="Map legend" class="text-slate-300 text-lg px-2">ⓘ</button>`)}
     ${renderSoloStatus()}
     <div class="solo-map-scroll flex-1 min-h-0 overflow-y-auto no-scrollbar px-2 py-3">
       ${renderSoloMap()}

@@ -10,6 +10,7 @@ const HINT_VIEW = {
   settings: 'Settings',
   tournament: 'Tournament',
   coop: 'Co-op Boss',
+  solo: 'Duelist\'s Road',
   character: 'Choose Character',
   duel: 'Duel'
 };
@@ -23,6 +24,7 @@ const EGG_HINTS = {
   'dk-invitation': { where: 'Start screen', text: 'Pegasus likes to send personal invitations. Have you been patient with the tournament?' },
   'friendship-sign': { where: 'Start screen', text: 'Friends stick together. Do you stick with your co-op friends long enough?' },
   'limiter-removal': { where: 'Start screen', text: 'Even the most boring button has a limiter. Some things only break free under steady pressure.' },
+  'paradox-labyrinth': { where: 'Start screen', text: 'Two brothers lie in wait for anyone who hesitates before walking the road alone.' },
   // Settings
   'dizzy': { where: 'Settings', text: 'Can\'t make up your mind about how the app should look? It might not be able to either.' },
   'speaker': { where: 'Settings', text: 'Speakers have feelings too. How much on and off can one speaker take?' },
@@ -37,6 +39,8 @@ const EGG_HINTS = {
   'mind-slave': { where: 'Tournament', text: 'Starting fresh is a choice… or is it? Linger too long and someone else might start making your choices for you.' },
   'stone-tablet': { where: 'Tournament', text: 'Some history runs deeper than any bracket. Hold on to the past long enough and an ancient relic might look… strangely familiar.' },
   'orichalcos': { where: 'Tournament', text: 'The records are written on an old scroll. Clutch it too tightly and an ancient green power from Atlantis may take an interest in its soul.' },
+  // Duelist's Road
+  'field-power': { where: HINT_VIEW.solo, text: 'Every corner of Pegasus\' island has its favourites. Study the map long enough and the land itself might take your side.' },
   // Co-op setup
   'duel-school': { where: HINT_VIEW.coop, text: 'Every rookie has to learn somewhere. Does the easy road have something to teach you?' },
   'time-to-duel': { where: HINT_VIEW.coop, text: 'It\'s time to d-d-d-duel! But are you a true duelist? Prove you can commit.' },
