@@ -92,6 +92,11 @@ function soloUnarchiveRun() {
   if (soloHistory.length !== before) saveSoloHistory();
 }
 
+function clearSoloHistory() {
+  soloHistory = [];
+  saveSoloHistory();
+}
+
 // Visual effects need the new DOM, so they run right after the render.
 const soloFxQueue = [];
 const queueSoloFx = fn => soloFxQueue.push(fn);

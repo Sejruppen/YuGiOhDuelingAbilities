@@ -101,6 +101,41 @@ function toggleSoloHistoryEntry(id) {
   render();
 }
 
+// Settings: first tap arms the button, a second tap within a few seconds wipes the history.
+let soloHistoryResetTimer = null;
+
+function renderSoloHistoryResetButton() {
+  const n = soloHistory.length;
+  if (!n) return '<p class="w-full max-w-xs mt-2 text-xs text-slate-500">No finished runs yet.</p>';
+  const armed = !!soloHistoryResetTimer;
+  return `
+    <p class="w-full max-w-xs mt-2 text-xs text-slate-400"><span class="ce-emoji">📜</span> ${n} run${n === 1 ? '' : 's'} in the history</p>
+    <button type="button" onclick="resetSoloHistory()" class="w-full max-w-xs mt-2 py-2 px-4 rounded-xl text-xs font-bold transition border ${armed
+      ? 'bg-rose-600 border-rose-500 text-white'
+      : 'bg-slate-900/80 border-slate-800 text-rose-400 hover:bg-slate-800'}">
+      ${armed ? 'Tap again to reset Solo history' : '<span class="ce-emoji">🗑️</span> Reset Solo history'}
+    </button>
+  `;
+}
+
+function resetSoloHistory() {
+  if (!soloHistoryResetTimer) {
+    soloHistoryResetTimer = setTimeout(() => {
+      soloHistoryResetTimer = null;
+      render();
+    }, SOLO_CONFIRM_MS);
+    render();
+    return;
+  }
+  clearTimeout(soloHistoryResetTimer);
+  soloHistoryResetTimer = null;
+  clearSoloHistory();
+  soloUi.openHistoryId = null;
+  render();
+  showEggPill('<span class="ce-emoji">📜</span> Solo history reset');
+  playSound({ name: 'theme-locked' });
+}
+
 // --- The run ------------------------------------------------------------------------
 
 function startSoloRun() {
