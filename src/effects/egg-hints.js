@@ -41,7 +41,7 @@ const EGG_HINTS = {
   'orichalcos': { where: 'Tournament', text: 'The records are written on an old scroll. Clutch it too tightly and an ancient green power from Atlantis may take an interest in its soul.' },
   // Duelist's Road
   'field-power': { where: HINT_VIEW.solo, text: 'Every corner of Pegasus\' island has its favourites. Study the map long enough and the land itself might take your side.' },
-  'exodia-overboard': { where: HINT_VIEW.solo, text: 'The boat ride to the island is long. Dither before setting sail and a bug-loving passenger might take an interest in your rarest cards.' },
+  'exodia-overboard': { where: HINT_VIEW.solo, text: 'New beginnings always makes one hesitate, but in this case, hesitating might be the way forward.' },
   'bonz-graveyard': { where: HINT_VIEW.solo, text: 'Your past runs don\'t rest easy. Dwell on them long enough and something in the graveyard might come to collect them.' },
   // Co-op setup
   'duel-school': { where: HINT_VIEW.coop, text: 'Every rookie has to learn somewhere. Does the easy road have something to teach you?' },
@@ -54,7 +54,7 @@ const EGG_HINTS = {
   'name-otto': { where: TOMB, text: 'Forwards or backwards, this name charges the same way. Brace for a brotherly stampede.' },
   'name-frida': { where: TOMB, text: 'A tiny Mistress sister of All Evil hates not being invited. The tomb is the perfect place for a curse.' },
   'name-marie': { where: TOMB, text: 'Every tomb has a heart. Whose name holds the architect\'s?' },
-  'name-findus': { where: TOMB, text: 'Every tomb has a guardian. This one is large, furry and extremely hard to move off a warm seat.' },
+  'name-findus': { where: TOMB, text: 'Every tomb has a guardian. This one is large, furry and always seem to lie where it\'s the most annoying.' },
   // Character select
   'dark-paladin': { where: HINT_VIEW.character, text: 'Theotaur is a fusion of more than you think. Maybe he just needs a moment to come together.' },
   'divine-offering': { where: HINT_VIEW.character, text: 'Trizze\'s legends attract the attention of the gods. Will you give them the time they need?' },
