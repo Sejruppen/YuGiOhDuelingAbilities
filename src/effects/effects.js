@@ -344,6 +344,28 @@ function getFxLayer() {
   return layer;
 }
 
+// Seasonal themes: a persistent particle layer (outside #app, below #fx-layer)
+// that lives as long as the theme is active: snow for Christmas, rising embers
+// for Halloween. Skipped under reduced motion.
+function syncSeasonFx() {
+  const theme = document.documentElement.dataset.theme;
+  const existing = document.getElementById('season-fx');
+  const wanted = (theme === 'xmas' || theme === 'halloween') && !prefersReducedMotion();
+  if (existing && (!wanted || !existing.classList.contains(`season-fx--${theme}`))) existing.remove();
+  if (!wanted || document.getElementById('season-fx') || !document.body) return;
+
+  const layer = document.createElement('div');
+  layer.id = 'season-fx';
+  layer.className = `season-fx--${theme}`;
+  layer.setAttribute('aria-hidden', 'true');
+  layer.innerHTML = Array.from({ length: fxCount(36) }, () => {
+    const vars = `--x:${rand(0, 100).toFixed(1)}%;--s:${rand(3, 8).toFixed(1)}px;--o:${rand(0.45, 0.95).toFixed(2)};` +
+      `--d:${rand(8, 16).toFixed(1)}s;--delay:${(-rand(0, 16)).toFixed(1)}s;--w:${rand(-40, 40).toFixed(0)}px`;
+    return `<i style="${vars}"></i>`;
+  }).join('');
+  document.body.appendChild(layer);
+}
+
 function spawnFx(className, lifetimeMs, { vars = {}, html = '' } = {}) {
   if (prefersReducedMotion()) return null;
   const el = document.createElement('div');

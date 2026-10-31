@@ -101,4 +101,5 @@ function render() {
 
 registerServiceWorker();
 initBackButton();
+syncSeasonFx();
 render();

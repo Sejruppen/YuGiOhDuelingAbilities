@@ -3567,6 +3567,39 @@ const SOUND_KITS = {
   }
 };
 
+// --- Halloween (October theme): the dark kit with a spooky minor-key chime. --
+SOUND_KITS.halloween = {
+  ...SOUND_KITS.dark,
+  theme: t => {
+    tone({ t, freq: 90, to: 55, dur: 0.6, gain: 0.08 });
+    arpeggio(t + 0.1, [69, 72, 75, 81, 84], 0.13, (at, n) => bell({ t: at, freq: midi(n), dur: 1.4, gain: 0.035 }));
+  },
+  'quest-complete': t => {
+    tone({ t, freq: 110, to: 70, dur: 0.5, gain: 0.07 });
+    arpeggio(t + 0.1, [60, 63, 66, 72, 75, 78], 0.12, (at, n) => bell({ t: at, freq: midi(n), dur: 1.5, gain: 0.04 }));
+  }
+};
+
+// --- Christmas (December theme): the dark kit with sleigh bells. -------------
+function sleighBells(t, count = 10, gain = 0.02) {
+  for (let i = 0; i < count; i++) {
+    noise({ t: t + i * 0.07, dur: 0.06, gain, type: 'highpass', freq: 6000 });
+    bell({ t: t + i * 0.07, freq: midi(96 + (i % 3) * 2), dur: 0.2, gain: gain * 0.6 });
+  }
+}
+
+SOUND_KITS.xmas = {
+  ...SOUND_KITS.dark,
+  theme: t => {
+    sleighBells(t);
+    arpeggio(t + 0.1, [72, 76, 79, 84], 0.12, (at, n) => bell({ t: at, freq: midi(n), dur: 1.2, gain: 0.035 }));
+  },
+  'quest-complete': t => {
+    sleighBells(t, 8, 0.025);
+    arpeggio(t + 0.1, [67, 72, 76, 79, 84], 0.14, (at, n) => bell({ t: at, freq: midi(n), dur: 1.4, gain: 0.04 }));
+  }
+};
+
 // --- Treasure (secret theme): crystal chimes, gem clinks and gold coins. -----
 // Starts from the Power of Chaos kit (all the easter-egg sounds, the defeat
 // gong) and swaps the everyday UI sounds for jewellery.

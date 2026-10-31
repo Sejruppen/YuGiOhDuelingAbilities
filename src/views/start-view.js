@@ -11,14 +11,38 @@ function renderThemeButton(theme, activeId = getAppTheme().id) {
   return `<button onclick="setAppTheme('${theme.id}')" aria-pressed="${isActive}" class="py-2 px-1 rounded-lg text-xs font-bold leading-tight transition ${stateClass}${secretClass}">${label}</button>`;
 }
 
+function renderSeasonalThemeButton(theme, activeId) {
+  const isActive = theme.id === activeId;
+  return `
+    <button onclick="setAppTheme('${theme.id}')" aria-pressed="${isActive}" class="theme-btn-seasonal theme-btn-${theme.id} col-span-2 py-2.5 px-2 rounded-lg text-xs font-bold leading-tight transition">
+      <span class="ce-emoji">${theme.season.emoji}</span> ${theme.label} <span class="theme-seasonal-new">NEW</span>
+      <span class="block text-[0.65rem] font-semibold opacity-80 mt-0.5">Available all ${theme.season.monthName}</span>
+    </button>
+  `;
+}
+
+function renderSeasonalBanner() {
+  const theme = getActiveSeasonTheme();
+  if (!theme) return '';
+  return `
+    <button onclick="goToSettings()" class="seasonal-banner seasonal-banner--${theme.id} w-full max-w-xs mt-1 px-5 py-1.5 rounded-xl text-xs font-bold flex items-center gap-2 transition">
+      <span class="seasonal-banner-arrow">↑</span>
+      <span><span class="ce-emoji">${theme.season.emoji}</span> New: ${theme.label} theme</span>
+    </button>
+  `;
+}
+
 function renderThemePicker() {
   const activeId = getAppTheme().id;
+  const regularThemes = APP_THEMES.filter(theme => !theme.season);
+  const seasonTheme = getActiveSeasonTheme();
 
   return `
     <div class="w-full max-w-xs mt-2">
       <p class="text-xs font-semibold uppercase tracking-widest text-slate-400 mb-2">Theme</p>
       <div class="grid grid-cols-2 gap-1 p-1 rounded-xl bg-slate-900/80 border border-slate-800">
-        ${APP_THEMES.map(theme => renderThemeButton(theme, activeId)).join('')}
+        ${regularThemes.map(theme => renderThemeButton(theme, activeId)).join('')}
+        ${seasonTheme ? renderSeasonalThemeButton(seasonTheme, activeId) : ''}
       </div>
     </div>
   `;
@@ -63,6 +87,7 @@ function renderStartView() {
             ${renderSoloButton()}
           </div>
           ${renderSettingsButton()}
+          ${renderSeasonalBanner()}
         </div>
       </div>
     </div>

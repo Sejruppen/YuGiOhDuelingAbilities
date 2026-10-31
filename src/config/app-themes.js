@@ -5,12 +5,18 @@ const THEME_STORAGE_KEY = 'ygo_theme';
 // Set by src/effects/egg-tracker.js once every easter egg has been found.
 const TREASURE_UNLOCK_KEY = 'ygo_theme_treasure_unlocked';
 
+// Seasonal themes are only available (and shown) during their month (0 = January).
 const APP_THEMES = [
   { id: 'dark', label: 'Dark', metaColor: '#090d16' },
   { id: 'light', label: 'Light', metaColor: '#f1f5f9' },
   { id: 'poc', label: 'Power of Chaos', metaColor: '#c99a52' },
-  { id: 'gold', label: 'Treasure', metaColor: '#0d0a08', secret: true }
+  { id: 'gold', label: 'Treasure', metaColor: '#0d0a08', secret: true },
+  { id: 'halloween', label: 'Halloween', metaColor: '#120a1a', season: { month: 9, emoji: '🎃', monthName: 'October' } },
+  { id: 'xmas', label: 'Christmas', metaColor: '#081410', season: { month: 11, emoji: '🎄', monthName: 'December' } }
 ];
+
+const isSeasonActive = theme => !!theme.season && new Date().getMonth() === theme.season.month;
+const getActiveSeasonTheme = () => APP_THEMES.find(isSeasonActive) || null;
 
 function isTreasureThemeUnlocked() {
   try {
@@ -20,7 +26,8 @@ function isTreasureThemeUnlocked() {
   }
 }
 
-const isThemeAvailable = theme => !theme.secret || isTreasureThemeUnlocked();
+const isThemeAvailable = theme =>
+  (!theme.secret || isTreasureThemeUnlocked()) && (!theme.season || isSeasonActive(theme));
 
 function getAppTheme() {
   let savedId = null;
@@ -35,6 +42,7 @@ function applyAppTheme(theme) {
   document.documentElement.dataset.theme = theme.id;
   const meta = document.querySelector('meta[name="theme-color"]');
   if (meta) meta.setAttribute('content', theme.metaColor);
+  if (typeof syncSeasonFx === 'function') syncSeasonFx();
 }
 
 function setAppTheme(id) {
