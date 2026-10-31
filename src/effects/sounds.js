@@ -2828,6 +2828,82 @@ const COOP_SOUNDS = {
     noise({ t: t + 9.6, dur: 0.2, gain: 0.06, type: 'lowpass', freq: 500, attack: 0.003, out: room });
     noise({ t: t + 10.0, dur: 0.6, gain: 0.04, type: 'lowpass', freq: 380, to: 240, attack: 0.35, out: room });
     tone({ t: t + 10.6, freq: 900, to: 600, dur: 0.35, type: 'sine', gain: 0.015, attack: 0.05, out: room });
+  },
+  // Stone Tablet (11.5s): a museum drone and a snake-charmer flute (0.8s),
+  // a shimmer as the torchlight sweeps (1.4s), rumble and crumble of the
+  // brazier (2.8-3.3s), a reveal chord (3.6s), a zoom whoosh (4.6s), the
+  // phone's boot chime (5.4s), Atem's Skill (6.5s), Seto's LP ticking to 0
+  // (6.9-7.2s), the "nope" buzz of his used Comeback (7.7s), a whoosh out
+  // (8.9s) and an Egyptian fanfare for the toast (9.6s).
+  'egg-stone-tablet': t => {
+    const room = darkBus({ reverb: 0.5 });
+    const click = at => tone({ t: at, freq: 1800, dur: 0.03, type: 'square', gain: 0.02, attack: 0.001, out: room });
+    boom(t, 0.4, room);
+    darkCluster({ t, notes: [38, 45, 50], dur: 5, gain: 0.025, attack: 1, filter: [150, 600], out: room });
+    ceWhoosh(t + 0.4, 1, 0.03, 200, 900, room);
+    [69, 70, 69, 66, 67, 63, 62].forEach((n, i) =>
+      tone({ t: t + 0.8 + i * 0.24, freq: midi(n), dur: i === 6 ? 0.6 : 0.3, type: 'triangle', gain: 0.03, filter: 2000, attack: 0.03, out: room }));
+    healSparkles(t + 1.4, 1, 6, room);
+    noise({ t: t + 2.8, dur: 0.5, gain: 0.06, type: 'lowpass', freq: 300, attack: 0.05, out: room });
+    for (let o = 2.8; o < 3.3; o += 0.1) dieCrack(t + o, 0.3);
+    dieCrack(t + 3.3, 1.2);
+    boom(t + 3.3, 0.5, room);
+    for (let i = 0; i < 8; i++) noise({ t: t + 3.35 + i * 0.07, dur: 0.04, gain: 0.03, type: 'highpass', freq: 2500, attack: 0.002, out: room });
+    chord({ t: t + 3.6, notes: [62, 66, 69, 74], dur: 1.4, gain: 0.02, type: 'triangle', attack: 0.1, filter: 3000 });
+    healSparkles(t + 3.6, 0.8, 6, room);
+    tone({ t: t + 3.75, freq: midi(67), to: midi(74), dur: 0.3, type: 'sine', gain: 0.03, attack: 0.02, out: room });
+    ceWhoosh(t + 4.6, 0.7, 0.05, 300, 2600, room);
+    [[5.4, 79], [5.55, 84], [5.7, 91]].forEach(([at, n]) => bell({ t: t + at, freq: midi(n), dur: 1.2, gain: 0.05, out: room }));
+    chord({ t: t + 5.5, notes: [72, 76, 79, 84], dur: 1, gain: 0.015, type: 'triangle', attack: 0.05, filter: 3000 });
+    click(t + 6.5);
+    tone({ t: t + 6.5, freq: 220, to: 880, dur: 0.35, type: 'sawtooth', gain: 0.035, filter: 3000, attack: 0.01, out: room });
+    brass({ t: t + 6.6, notes: [50, 57, 62], dur: 0.6, gain: 0.04 });
+    boom(t + 6.9, 0.7, room);
+    [900, 700, 500, 300].forEach((f, i) => tone({ t: t + 6.9 + i * 0.1, freq: f, dur: 0.06, type: 'square', gain: 0.03, filter: 2500, attack: 0.002, out: room }));
+    tone({ t: t + 7.2, freq: 200, to: 60, dur: 0.5, type: 'sawtooth', gain: 0.04, filter: 900, attack: 0.01, out: room });
+    click(t + 7.7);
+    [7.75, 8.0].forEach(at => tone({ t: t + at, freq: 150, dur: 0.2, type: 'square', gain: 0.04, filter: 800, attack: 0.005, out: room }));
+    ceWhoosh(t + 8.9, 0.7, 0.04, 2400, 300, room);
+    brass({ t: t + 9.6, notes: [62, 66, 69, 74], dur: 1.4, gain: 0.05 });
+    bell({ t: t + 9.6, freq: midi(86), dur: 1.6, gain: 0.05, out: room });
+    healSparkles(t + 9.7, 1.2, 8, room);
+  },
+  // Seal of Orichalcos (10s): a card flip (0.2s) under a low drone, the
+  // activation slam (1.8s), a rising glassy note for each part of the seal
+  // as it draws (2.0-3.5s), Atlantean whispers from the runes (3.6s), the
+  // dome rising (4.6-5.4s), the forehead brand (5.0s) and a +500 ATK power-up
+  // (5.6s), Dartz's threat (6.5s), a ghostly wail as the soul is pulled in
+  // (7.4-8.6s), the seal snapping shut and a dark choir for the toast.
+  'egg-orichalcos': t => {
+    const room = darkBus({ reverb: 0.6, echo: 0.12 });
+    darkCluster({ t, notes: [33, 40, 45], dur: 9.5, gain: 0.025, attack: 1.5, filter: [200, 700], out: room });
+    cardFlip(t + 0.2, 0.12, 1800);
+    brass({ t: t + 0.3, notes: [33, 40], dur: 1.2, gain: 0.035 });
+    boom(t + 1.8, 1, room);
+    noise({ t: t + 1.8, dur: 0.9, gain: 0.07, type: 'highpass', freq: 5000, to: 2500, attack: 0.003, out: room });
+    brass({ t: t + 1.85, notes: [45, 52, 57, 60], dur: 1.6, gain: 0.05 });
+    [[2.0, 69], [2.4, 72], [2.8, 76], [3.1, 79], [3.5, 81]].forEach(([at, n]) => {
+      tone({ t: t + at, freq: midi(n - 12), to: midi(n), dur: 0.6, type: 'sine', gain: 0.03, attack: 0.08, out: room });
+      bell({ t: t + at + 0.3, freq: midi(n + 12), dur: 0.9, gain: 0.025, out: room });
+    });
+    shadowWhispers(t + 3.6, 2.4, 8, room);
+    ceWhoosh(t + 4.2, 0.7, 0.04, 2000, 300, room);
+    tone({ t: t + 4.6, freq: 70, to: 220, dur: 1, type: 'sawtooth', gain: 0.035, filter: [200, 1400], attack: 0.3, out: room });
+    noise({ t: t + 4.6, dur: 1, gain: 0.05, type: 'bandpass', freq: 400, to: 2400, attack: 0.6, out: room });
+    boom(t + 5.4, 0.7, room);
+    bell({ t: t + 5.0, freq: midi(45), dur: 2.5, gain: 0.09, out: room });
+    eyeHum(t + 5.0, 2, 0.05, room);
+    tone({ t: t + 5.6, freq: 220, to: 660, dur: 0.4, type: 'square', gain: 0.035, filter: 2600, out: room });
+    tone({ t: t + 5.6, freq: 330, to: 990, dur: 0.4, type: 'sawtooth', gain: 0.025, filter: 2600, out: room });
+    healSparkles(t + 5.8, 0.6, 5, room);
+    boom(t + 6.5, 0.5, room);
+    brass({ t: t + 6.5, notes: [36, 43, 48, 51], dur: 1.6, gain: 0.045 });
+    ceWhoosh(t + 7.4, 1.2, 0.05, 300, 2200, room);
+    tone({ t: t + 7.5, freq: 880, to: 330, dur: 1.1, type: 'sine', gain: 0.03, attack: 0.15, out: room });
+    tone({ t: t + 7.55, freq: 932, to: 349, dur: 1.1, type: 'triangle', gain: 0.015, attack: 0.15, filter: 1600, out: room });
+    boom(t + 8.6, 0.9, room);
+    noise({ t: t + 8.6, dur: 0.25, gain: 0.06, type: 'lowpass', freq: 600, attack: 0.003, out: room });
+    choir({ t: t + 8.7, notes: [57, 60, 64], dur: 1.3, gain: 0.014, attack: 0.3, out: room });
   }
 };
 

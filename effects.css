@@ -10314,6 +10314,500 @@ header:has(+ .tn-draw--done) .tn-draw-skip { visibility: hidden; }
   100% { transform: translate(-50%, -8px); opacity: 0; }
 }
 
+/* --- Tournament menu History hold: THE STONE TABLET (11500ms, 1% = 115ms) ---
+   Museum fades in 0-0.6s, tablet rises 0.4-1.6s, torchlight sheen 1.4-2.6s.
+   The brazier shakes 2.8s and crumbles 3.3s (chips), revealing a phone that
+   lights up 3.6s. Zoom into it 4.6-5.3s (scale 6 = the big phone's size),
+   crossfade to the big phone 5.1-5.5s. Screen: splash 5.4s, duel UI 6.2s,
+   Atem's Skill 6.5s, Seto's LP 4000 -> 0 6.9-7.2s, his used Comeback 7.7s.
+   Zoom back out 8.9-9.6s, toast 9.6s. --tw is the tablet width. Timed bits
+   inside the phone use --at/--len (ms) or animation delays. */
+.fx-sbe--tablet { --tw: min(320px, 80vw, 56vh); }
+.stb-bg {
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(ellipse at 50% 54%, #4a3418, #120b04 55%, #000 80%);
+  animation: mk-black 11500ms ease-out both;
+}
+.stb-mote {
+  position: absolute;
+  width: 3px;
+  height: 3px;
+  border-radius: 50%;
+  background: #fde68a;
+  opacity: 0;
+  animation: stb-mote 3000ms ease-in-out var(--d) infinite alternate both;
+}
+.fx-lite .stb-mote { display: none; }
+.fx-lite .stb-tablet, .fx-lite .stb-phone { filter: none; }
+.stb-tablet {
+  left: 50%;
+  top: 54%;
+  width: var(--tw);
+  aspect-ratio: 240 / 320;
+  transform-origin: 50% 78.4%;
+  filter: drop-shadow(0 10px 30px rgb(0 0 0 / 0.8)) drop-shadow(0 0 24px rgb(251 191 36 / 0.25));
+  animation: stb-tablet 11500ms ease-in-out both;
+}
+.stb-tablet svg { display: block; width: 100%; height: 100%; }
+.stb-sheen { animation: stb-sheen 1200ms ease-in-out 1400ms both; }
+.stb-fire { transform-box: fill-box; transform-origin: 50% 100%; animation: stb-flicker 260ms ease-in-out infinite alternate; }
+.stb-cover { transform-box: fill-box; transform-origin: 50% 100%; animation: stb-cover 1100ms ease-in 2800ms forwards; }
+.stb-mini-ui { opacity: 0; animation: stb-fade-in 300ms ease-out 3600ms forwards; }
+.stb-chip {
+  position: absolute;
+  left: 50%;
+  top: 78%;
+  width: 5px;
+  height: 5px;
+  background: #8a5e26;
+  border: 1px solid #3b2710;
+  opacity: 0;
+  animation: stb-chip 900ms ease-in 3300ms forwards;
+}
+.stb-phone {
+  left: 50%;
+  top: 54%;
+  width: calc(var(--tw) * 0.7);
+  aspect-ratio: 140 / 230;
+  opacity: 0;
+  filter: drop-shadow(0 0 30px rgb(251 191 36 / 0.35));
+  animation: stb-phone 11500ms ease-in-out both;
+}
+.stb-phone svg { position: absolute; inset: 0; width: 100%; height: 100%; }
+.stb-screen {
+  position: absolute;
+  left: 7.14%;
+  right: 7.14%;
+  top: 9.57%;
+  bottom: 9.57%;
+  border-radius: 3%;
+  overflow: hidden;
+  container-type: inline-size;
+  background: linear-gradient(180deg, #0f172a, #1e1b4b 50%, #0f172a);
+  font-family: 'Cinzel', Georgia, serif;
+  color: #fef3c7;
+  text-align: center;
+}
+.stb-splash {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2cqw;
+  animation: stb-splash 900ms ease-out 5400ms both;
+}
+.stb-splash b { font: 900 15cqw/1 'Cinzel Decorative', 'Cinzel', serif; color: #fbbf24; text-shadow: 0 0 12px rgb(251 191 36 / 0.7); }
+.stb-splash span { font-size: 8cqw; font-weight: 700; }
+.stb-splash small { font-size: 5.5cqw; color: #fde68a; opacity: 0.8; }
+.stb-duel {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  opacity: 0;
+  animation: stb-fade-in 300ms ease-out 6200ms forwards;
+}
+.stb-half {
+  position: relative;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2.5cqw;
+}
+.stb-half--top { transform: rotate(180deg); }
+.stb-half--bottom { border-top: 1px solid rgb(251 191 36 / 0.45); }
+.stb-name { font-size: 7.5cqw; font-weight: 700; color: #fde68a; }
+.stb-lp { display: grid; font: 900 21cqw/1 'Cinzel', Georgia, serif; font-variant-numeric: tabular-nums; }
+.stb-lp > span { grid-area: 1 / 1; }
+.stb-n { opacity: 0; animation: stb-show var(--len) linear var(--at); }
+.stb-abs { display: flex; gap: 2cqw; }
+.stb-ab {
+  padding: 1cqw 2.2cqw;
+  border-radius: 99px;
+  border: 1px solid;
+  font: 700 5.2cqw/1.2 system-ui, sans-serif;
+}
+.stb-ab--skill { color: #bae6fd; border-color: #38bdf8; background: rgb(14 165 233 / 0.2); }
+.stb-ab--comeback { color: #fecdd3; border-color: #fb7185; background: rgb(244 63 94 / 0.2); }
+.stb-ab--quest { color: #fde68a; border-color: #fbbf24; background: rgb(245 158 11 / 0.2); }
+.stb-ab--press { animation: stb-press 600ms ease-out 6500ms both; }
+.stb-ab--used { animation: stb-nope 600ms ease-in-out 7700ms both; }
+.stb-hit { position: absolute; inset: 0; background: #dc2626; opacity: 0; animation: stb-hit 600ms ease-out 6900ms both; }
+.stb-dmg, .stb-note, .stb-shout {
+  position: absolute;
+  left: 0;
+  right: 0;
+  font-weight: 900;
+  opacity: 0;
+}
+.stb-dmg { top: 8%; font-size: 11cqw; color: #f87171; text-shadow: 0 0 8px #dc2626; animation: stb-dmg 1000ms ease-out 6900ms both; }
+.stb-note { bottom: 4%; font: 800 6cqw/1 system-ui, sans-serif; color: #fda4af; animation: mk-say 1100ms ease-out 7800ms both; }
+.stb-shout { top: 4%; font-size: 7cqw; color: #7dd3fc; text-shadow: 0 0 10px #0284c7; animation: mk-say 1300ms ease-out 6600ms both; }
+.stb-line {
+  position: absolute;
+  left: 0;
+  right: 0;
+  z-index: 2;
+  text-align: center;
+  pointer-events: none;
+}
+.stb-say {
+  display: inline-block;
+  max-width: 90vw;
+  font: 700 clamp(0.8rem, 3.8vw, 0.95rem)/1.25 'Cinzel', Georgia, serif;
+  letter-spacing: 0.08em;
+  color: #fde68a;
+  text-shadow: 0 2px 6px #000, 0 0 12px rgb(0 0 0 / 0.9);
+  opacity: 0;
+  animation: mk-say var(--len) ease-out var(--at) both;
+}
+.stb-say--title {
+  font: 900 clamp(1.15rem, 6vw, 1.5rem)/1.2 'Cinzel Decorative', 'Cinzel', serif;
+  color: #fbbf24;
+  text-shadow: 0 2px 6px #000, 0 0 16px rgb(251 191 36 / 0.6);
+}
+.fx-sbe--tablet .cegg-toast { z-index: 3; animation: stb-toast 11500ms ease-out both; }
+@keyframes stb-mote {
+  from { opacity: 0.1; transform: translate(0, 0); }
+  to { opacity: 0.6; transform: translate(12px, -20px); }
+}
+@keyframes stb-tablet {
+  0%, 3.5% { opacity: 0; transform: translateY(4%) scale(0.92); }
+  13.9%, 40% { opacity: 1; transform: translateY(0) scale(1); }
+  46.1% { opacity: 1; transform: translateY(-28.4%) scale(6); }
+  47.8%, 77.4% { opacity: 0; transform: translateY(-28.4%) scale(6); }
+  83.5%, 95.7% { opacity: 1; transform: translateY(0) scale(1); }
+  100% { opacity: 0; transform: translateY(0) scale(1); }
+}
+@keyframes stb-sheen {
+  from { transform: translateX(0); }
+  to { transform: translateX(380px); }
+}
+@keyframes stb-flicker {
+  from { transform: scale(1, 1); }
+  to { transform: scale(0.92, 1.08); }
+}
+@keyframes stb-cover {
+  0% { transform: translate(0, 0); opacity: 1; }
+  10% { transform: translate(-1.5px, 0); }
+  20% { transform: translate(1.5px, 0); }
+  30% { transform: translate(-1.5px, 0); }
+  40% { transform: translate(1.5px, 0); opacity: 1; }
+  45% { transform: translate(0, 0); opacity: 1; }
+  100% { transform: translate(0, 30px); opacity: 0; }
+}
+@keyframes stb-fade-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+@keyframes stb-chip {
+  0% { opacity: 1; transform: translate(0, 0) rotate(0deg); }
+  100% { opacity: 0; transform: translate(var(--dx), var(--dy)) rotate(var(--r)); }
+}
+@keyframes stb-phone {
+  0%, 44.3% { opacity: 0; }
+  47.8%, 77.4% { opacity: 1; }
+  80.9%, 100% { opacity: 0; }
+}
+@keyframes stb-splash {
+  0% { opacity: 0; transform: scale(0.9); }
+  20%, 80% { opacity: 1; transform: scale(1); }
+  100% { opacity: 0; transform: scale(1); }
+}
+@keyframes stb-show {
+  from, to { opacity: 1; }
+}
+@keyframes stb-press {
+  0% { transform: scale(1); box-shadow: none; }
+  30% { transform: scale(0.88); }
+  60% { transform: scale(1.12); box-shadow: 0 0 10px #38bdf8, 0 0 20px #0ea5e9; }
+  100% { transform: scale(1); box-shadow: 0 0 8px #38bdf8; }
+}
+@keyframes stb-nope {
+  0% { transform: translateX(0); filter: none; opacity: 1; }
+  15% { transform: translateX(-4px) scale(0.9); }
+  35% { transform: translateX(4px); }
+  55% { transform: translateX(-4px); }
+  75% { transform: translateX(4px); }
+  100% { transform: translateX(0); filter: grayscale(1); opacity: 0.4; }
+}
+@keyframes stb-hit {
+  0% { opacity: 0; }
+  20% { opacity: 0.6; }
+  100% { opacity: 0; }
+}
+@keyframes stb-dmg {
+  0% { opacity: 0; transform: translateY(0) scale(0.6); }
+  20% { opacity: 1; transform: translateY(0) scale(1.15); }
+  70% { opacity: 1; transform: translateY(-4px) scale(1); }
+  100% { opacity: 0; transform: translateY(-10px) scale(1); }
+}
+@keyframes stb-toast {
+  0%, 83.5% { transform: translate(-50%, 12px); opacity: 0; }
+  86%, 97% { transform: translate(-50%, 0); opacity: 1; }
+  100% { transform: translate(-50%, -8px); opacity: 0; }
+}
+
+/* --- Tournament History 📜 hold: THE SEAL OF ORICHALCOS (10000ms, 1% = 100ms) ---
+   Darkness 0-0.5s. The card rises 0.2-0.8s and is activated 1.8s (flash).
+   The seal draws itself 2.0-4.0s (outer ring, inner ring, two triangles,
+   inner circle, runes), tilts onto the field 4.2-4.9s and the dome rises
+   4.6-5.6s (sparks after). The forehead mark brands 5.0s, eyes glow 5.4s,
+   +500 ATK 5.6s. The soul is pulled into the seal 7.4-8.6s, which snaps
+   shut 8.6s. Toast 8.8s. --os is the seal size. Lines use --at/--len (ms). */
+.fx-sbe--orichalcos { --os: min(300px, 84vw, 60vh); }
+.orc-bg {
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(circle at 50% 52%, #052e16, #010805 60%, #000 85%);
+  animation: mk-black 10000ms ease-out both;
+}
+.orc-card {
+  left: 50%;
+  top: 50%;
+  width: min(170px, 44vw);
+  aspect-ratio: 59 / 86;
+  display: flex;
+  flex-direction: column;
+  gap: 4%;
+  padding: 6%;
+  border-radius: 6px;
+  background: linear-gradient(160deg, #1d9a8a, #0f766e 55%, #134e4a);
+  border: 3px solid #0b3b36;
+  opacity: 0;
+  animation: orc-card 10000ms ease-out both;
+}
+.orc-card-name {
+  font: 700 clamp(0.55rem, 3vw, 0.75rem)/1.1 'Cinzel', Georgia, serif;
+  color: #f8fafc;
+  text-shadow: 0 1px 2px #000;
+  padding: 3% 4%;
+  background: rgb(0 0 0 / 0.2);
+  border: 1px solid rgb(255 255 255 / 0.25);
+}
+.orc-card-art {
+  flex: 1;
+  display: grid;
+  place-items: center;
+  background: radial-gradient(circle, #14532d, #020a05 75%);
+  border: 2px solid #0b3b36;
+}
+.orc-card-art svg { width: 90%; filter: drop-shadow(0 0 4px #22c55e); }
+.orc-card-type { font: 700 clamp(0.55rem, 2.8vw, 0.7rem)/1 Georgia, serif; color: #ccfbf1; text-align: right; }
+.orc-flash {
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(circle at 50% 50%, #dcfce7, #4ade80 40%, rgb(22 163 74 / 0) 75%);
+  opacity: 0;
+  animation: orc-flash 600ms ease-out 1800ms both;
+}
+.orc-stage {
+  left: 50%;
+  top: 52%;
+  width: var(--os);
+  aspect-ratio: 1;
+  perspective: 700px;
+}
+.orc-seal {
+  width: 100%;
+  height: 100%;
+  filter: drop-shadow(0 0 6px #22c55e) drop-shadow(0 0 18px rgb(34 197 94 / 0.7));
+  animation: orc-seal 10000ms ease-in-out both;
+}
+.orc-seal svg { display: block; width: 100%; height: 100%; }
+.orc-draw { stroke-dasharray: 1; stroke-dashoffset: 1; animation: orc-draw 800ms ease-in-out forwards; }
+.orc-d1 { animation-delay: 2000ms; }
+.orc-d2 { animation-delay: 2400ms; animation-duration: 700ms; }
+.orc-d3 { animation-delay: 2800ms; animation-duration: 700ms; }
+.orc-d4 { animation-delay: 3100ms; animation-duration: 700ms; }
+.orc-d5 { animation-delay: 3500ms; animation-duration: 500ms; }
+.orc-runes {
+  opacity: 0;
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: stb-fade-in 600ms ease-out 3600ms forwards, fx-spin 24s linear 3600ms infinite;
+}
+.orc-dome {
+  position: absolute;
+  left: 50%;
+  bottom: 48%;
+  width: var(--os);
+  height: calc(var(--os) * 0.72);
+  translate: -50% 0;
+  border-radius: 50% 50% 0 0 / 100% 100% 0 0;
+  background: radial-gradient(ellipse 50% 100% at 50% 100%, rgb(74 222 128 / 0.06) 55%, rgb(74 222 128 / 0.3) 90%, rgb(187 247 208 / 0.6) 100%);
+  box-shadow: 0 0 30px rgb(34 197 94 / 0.5);
+  transform-origin: 50% 100%;
+  opacity: 0;
+  animation: orc-dome 10000ms ease-out both;
+}
+.orc-spark {
+  position: absolute;
+  bottom: 46%;
+  width: 3px;
+  height: 3px;
+  border-radius: 50%;
+  background: #bbf7d0;
+  box-shadow: 0 0 6px #22c55e;
+  opacity: 0;
+  animation: orc-spark 1400ms ease-out var(--d) both;
+}
+.orc-face {
+  left: 50%;
+  top: 29%;
+  width: min(150px, 40vw);
+  aspect-ratio: 3 / 2;
+  z-index: 1;
+}
+.orc-mark {
+  position: absolute;
+  left: 50%;
+  top: 0;
+  width: 46%;
+  aspect-ratio: 1;
+  translate: -50% 0;
+  opacity: 0;
+  filter: drop-shadow(0 0 6px #22c55e) drop-shadow(0 0 16px #16a34a);
+  animation: orc-mark 10000ms ease-out both;
+}
+.orc-mark svg { display: block; width: 100%; height: 100%; }
+.orc-eye {
+  position: absolute;
+  left: 14%;
+  bottom: 8%;
+  width: 28%;
+  height: 12%;
+  border-radius: 50%;
+  clip-path: polygon(0 20%, 100% 60%, 85% 100%, 10% 90%);
+  background: radial-gradient(circle, #f0fdf4, #4ade80 45%, #15803d);
+  box-shadow: 0 0 14px #22c55e;
+  opacity: 0;
+  animation: orc-eye 10000ms ease-out both;
+}
+.orc-eye--r { left: auto; right: 14%; transform: scaleX(-1); }
+.orc-atk {
+  left: 50%;
+  top: 46%;
+  z-index: 1;
+  font: 900 clamp(1.6rem, 9vw, 2.4rem)/1 'Cinzel', Georgia, serif;
+  color: #bbf7d0;
+  text-shadow: 0 0 10px #22c55e, 0 0 24px #16a34a, 0 2px 4px #000;
+  white-space: nowrap;
+  opacity: 0;
+  animation: orc-atk 1400ms ease-out 5600ms both;
+}
+.orc-soul {
+  left: 50%;
+  top: 84%;
+  z-index: 1;
+  font-size: 3rem;
+  opacity: 0;
+  filter: grayscale(0.6) drop-shadow(0 0 10px #bbf7d0) drop-shadow(0 0 20px #22c55e);
+  animation: orc-soul 1200ms ease-in 7400ms both;
+}
+.fx-lite .orc-spark { display: none; }
+.fx-lite .orc-seal, .fx-lite .orc-mark { filter: none; }
+.orc-line {
+  position: absolute;
+  left: 0;
+  right: 0;
+  z-index: 2;
+  text-align: center;
+  pointer-events: none;
+}
+.orc-say {
+  display: inline-block;
+  max-width: 90vw;
+  font: italic 700 clamp(0.95rem, 4.6vw, 1.15rem)/1.25 Georgia, serif;
+  color: #dcfce7;
+  text-shadow: 0 2px 6px #000, 0 0 12px rgb(34 197 94 / 0.7);
+  opacity: 0;
+  animation: mk-say var(--len) ease-out var(--at) both;
+}
+.orc-say--big {
+  font: 900 clamp(1.15rem, 6.2vw, 1.6rem)/1.15 'Cinzel Decorative', 'Cinzel', serif;
+  font-style: normal;
+  letter-spacing: 0.04em;
+  color: #4ade80;
+  text-shadow: 0 2px 6px #000, 0 0 16px #22c55e, 0 0 32px #15803d;
+}
+.fx-sbe--orichalcos .cegg-toast {
+  z-index: 3;
+  border-color: #4ade80;
+  background: linear-gradient(135deg, #052e16, #14532d);
+  box-shadow: 0 8px 20px rgb(0 0 0 / 0.45), 0 0 16px rgb(34 197 94 / 0.45);
+  animation: orc-toast 10000ms ease-out both;
+}
+.fx-sbe--orichalcos .cegg-toast small { color: #bbf7d0; }
+@keyframes orc-card {
+  0%, 2% { opacity: 0; transform: translateY(40px) scale(0.85); box-shadow: none; }
+  8% { opacity: 1; transform: translateY(0) scale(1); box-shadow: 0 0 12px rgb(34 197 94 / 0.4); }
+  13% { box-shadow: 0 0 26px rgb(34 197 94 / 0.8); }
+  17.5% { opacity: 1; transform: scale(1); box-shadow: 0 0 20px rgb(34 197 94 / 0.6); }
+  18.5% { opacity: 1; transform: scale(1.12); box-shadow: 0 0 40px #4ade80, 0 0 80px #22c55e; }
+  21%, 100% { opacity: 0; transform: scale(1.5); box-shadow: 0 0 40px #4ade80; }
+}
+@keyframes orc-flash {
+  0% { opacity: 0; }
+  20% { opacity: 0.9; }
+  100% { opacity: 0; }
+}
+@keyframes orc-seal {
+  0%, 42% { opacity: 1; transform: rotateX(0deg) scale(1); }
+  49%, 82% { opacity: 1; transform: rotateX(64deg) scale(1.15); }
+  86% { opacity: 1; transform: rotateX(64deg) scale(0.9); filter: drop-shadow(0 0 10px #4ade80) drop-shadow(0 0 30px #22c55e); }
+  90%, 100% { opacity: 0; transform: rotateX(64deg) scale(0.9); }
+}
+@keyframes orc-draw {
+  to { stroke-dashoffset: 0; }
+}
+@keyframes orc-dome {
+  0%, 46% { opacity: 0; transform: scaleY(0); }
+  48% { opacity: 1; }
+  56%, 82% { opacity: 1; transform: scaleY(1); }
+  86% { opacity: 1; transform: scaleY(0.85); }
+  90%, 100% { opacity: 0; transform: scaleY(0); }
+}
+@keyframes orc-spark {
+  0% { opacity: 0; transform: translateY(0); }
+  15% { opacity: 1; }
+  100% { opacity: 0; transform: translateY(calc(var(--h) * -1)); }
+}
+@keyframes orc-mark {
+  0%, 50% { opacity: 0; transform: scale(2.2) rotate(-40deg); }
+  53% { opacity: 1; transform: scale(0.9) rotate(0deg); }
+  55%, 84% { opacity: 1; transform: scale(1) rotate(0deg); }
+  88%, 100% { opacity: 0; transform: scale(1) rotate(0deg); }
+}
+@keyframes orc-eye {
+  0%, 54% { opacity: 0; }
+  56% { opacity: 1; filter: brightness(1.6); }
+  60%, 84% { opacity: 1; filter: brightness(1); }
+  88%, 100% { opacity: 0; }
+}
+@keyframes orc-atk {
+  0% { opacity: 0; transform: translateY(10px) scale(0.6); }
+  15% { opacity: 1; transform: translateY(0) scale(1.15); }
+  30%, 75% { opacity: 1; transform: translateY(-6px) scale(1); }
+  100% { opacity: 0; transform: translateY(-24px) scale(1); }
+}
+@keyframes orc-soul {
+  0% { opacity: 0; transform: translateY(0) scale(1) rotate(0deg); }
+  15% { opacity: 0.85; transform: translateY(-2vh) scale(1.05) rotate(-6deg); }
+  35% { opacity: 0.85; transform: translateY(-6vh) scale(1) rotate(6deg); }
+  100% { opacity: 0; transform: translateY(-32vh) scale(0.15) rotate(540deg); }
+}
+@keyframes orc-toast {
+  0%, 87% { transform: translate(-50%, 12px); opacity: 0; }
+  89%, 97% { transform: translate(-50%, 0); opacity: 1; }
+  100% { transform: translate(-50%, -8px); opacity: 0; }
+}
+
 /* --- "Draw the Tournament" hold: the Penalty Game dice duel ---
    Intro timeline (from spawn) uses ms delays; after the player's roll the
    JS adds is-landed / is-pathetic / is-crack / is-split / is-wha /

@@ -305,7 +305,7 @@ function renderTournamentMenu() {
         primary: !unfinished,
         danger: armed
       })}
-      ${renderTournamentMenuButton({ icon: '📜', label: 'History', sub: historySub, onclick: 'openTournamentHistory()' })}
+      ${renderTournamentMenuButton({ icon: '📜', label: 'History', sub: historySub, onclick: 'openTournamentHistory()', egg: 'stone-tablet' })}
     </div>
   `;
 }
@@ -370,7 +370,7 @@ function renderTournamentHistoryEntry(entry) {
 function renderTournamentHistory() {
   const empty = !tournamentHistory.length;
   return `
-    ${renderTournamentHeader('<span class="ce-emoji">📜</span> History')}
+    ${renderTournamentHeader(`<span class="tn-trophy cegg-press" onpointerdown="startStartEggPress(this, 'orichalcos')" onpointerup="cancelStartEggPress(this)" onpointerleave="cancelStartEggPress(this)" onpointercancel="cancelStartEggPress(this)" oncontextmenu="return false"><span class="ce-emoji">📜</span></span> History`)}
     <div class="flex-1 min-h-0 overflow-y-auto p-4 no-scrollbar">
       ${empty
         ? '<p class="text-sm text-slate-400 text-center mt-10 leading-relaxed">No finished tournaments yet.<br>Crown a champion and they will be remembered here.</p>'

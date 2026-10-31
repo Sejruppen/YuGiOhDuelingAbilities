@@ -35,6 +35,8 @@ const EGG_HINTS = {
   'penalty-dice': { where: 'Tournament', text: 'Eager to get the tournament started? The best duelists know that how you begin can matter more than how fast.' },
   'next-time': { where: 'Tournament', text: 'Every great saga ends on a cliffhanger. Can you hold on long enough to see what happens next?' },
   'mind-slave': { where: 'Tournament', text: 'Starting fresh is a choice… or is it? Linger too long and someone else might start making your choices for you.' },
+  'stone-tablet': { where: 'Tournament', text: 'Some history runs deeper than any bracket. Hold on to the past long enough and an ancient relic might look… strangely familiar.' },
+  'orichalcos': { where: 'Tournament', text: 'The records are written on an old scroll. Clutch it too tightly and an ancient green power from Atlantis may take an interest in its soul.' },
   // Co-op setup
   'duel-school': { where: HINT_VIEW.coop, text: 'Every rookie has to learn somewhere. Does the easy road have something to teach you?' },
   'time-to-duel': { where: HINT_VIEW.coop, text: 'It\'s time to d-d-d-duel! But are you a true duelist? Prove you can commit.' },

@@ -13,6 +13,10 @@
 //    preview titled after the next real match.
 //  - Tournament menu "New tournament": Mind Slave. Cloaked Marik hypnotises
 //    the player with the Millennium Rod, then hypnotises himself.
+//  - Tournament menu "History": the Stone Tablet. Seto and Atem's brazier
+//    turns out to be a phone running this app, 5,000 years early.
+//  - Tournament History "📜": Dartz's Seal of Orichalcos draws itself, domes
+//    over the duel, brands the player and takes the History's soul.
 const START_EGG_PRESS_MS = 2000;
 const INVITE_EGG_MS = 6000;
 const FRIENDSHIP_EGG_MS = 5500;
@@ -37,6 +41,8 @@ function startStartEggPress(el, kind) {
     else if (kind === 'relinquished') playRelinquishedEgg(el);
     else if (kind === 'next-time') playNextTimeEgg();
     else if (kind === 'mind-slave') playMindSlaveEgg();
+    else if (kind === 'stone-tablet') playStoneTabletEgg();
+    else if (kind === 'orichalcos') playOrichalcosEgg();
     else playInvitationEgg();
   }, START_EGG_PRESS_MS);
 }
@@ -741,4 +747,260 @@ function playMindSlaveEgg() {
     ${line('…yes… Master… Marik…', 9000, 1400, 8, 'dazed')}
     <div class="cegg-toast">Marik hypnotised himself.<small>Free will restored. Your tournament awaits!</small></div>`);
   if (overlay) playSound({ name: 'egg-mind-slave' });
+}
+
+// --- Tournament menu "History": the Stone Tablet ----------------------------------
+// Ishizu's Millennium Tablet lights up in the museum: winged sun, the Puzzle,
+// the three God cards, Blue-Eyes vs. Dark Magician, and Priest Seto and the
+// Pharaoh with their arms out over a brazier. The brazier crumbles: they were
+// holding a phone. The camera zooms in and it's THIS app, 5,000 years early:
+// Seto's half rotated like player 2, LP 4000, Skill / Comeback / Quest. Atem
+// activates his Skill, Seto drops to 0 and his Comeback has no uses left.
+// Timeline: the STONE TABLET section of effects.css.
+const STONE_TABLET_EGG_MS = 11500;
+
+const STB_SLAB_D = 'M14 316 V118 A106 106 0 0 1 226 118 V316 Z';
+
+// Hieroglyphs (~10 units, centred on 0,0), drawn as carved strokes.
+const STB_GLYPHS = [
+  '<ellipse cy="-3" rx="2.4" ry="3"/><path d="M0 0 V6 M-4 1 H4"/>',
+  '<path d="M-5 0 Q0 -4 5 0 Q0 4 -5 0 Z"/><circle r="1.2" fill="currentColor"/>',
+  '<path d="M-5 1 L-3 -1 L-1 1 L1 -1 L3 1 L5 -1"/>',
+  '<path d="M0 6 V-4 Q2 -6 3 -3"/>',
+  '<circle r="3.2"/><circle r="0.8" fill="currentColor"/>',
+  '<path d="M-5 3 Q-3 -1 0 2 Q3 5 4 0 L5 -2"/>',
+  '<path d="M-4 5 L-1 1 Q-2 -4 1 -5 L4 -4 L2 -3 Q3 1 0 4 Z"/>',
+  '<path d="M-5 1 H3 L5 -1"/>'
+];
+// Hidden in every column: a tiny phone hieroglyph.
+const STB_PHONE_GLYPH = '<rect x="-3" y="-5" width="6" height="10" rx="1.2"/><path d="M-1.5 3 H1.5"/>';
+
+function stbColumn(x) {
+  const phoneAt = Math.floor(ceRand(2, 10));
+  return ceRange(12, i => `<g transform="translate(${x} ${112 + i * 16})">${i === phoneAt ? STB_PHONE_GLYPH : cePick(STB_GLYPHS)}</g>`);
+}
+
+function stbTabletSvg() {
+  const rays = ceRange(16, i => {
+    const a = (i / 16) * Math.PI * 2;
+    const p = r => `${(120 + Math.cos(a) * r).toFixed(1)} ${(96 + Math.sin(a) * r).toFixed(1)}`;
+    return `<path d="M${p(21)} L${p(30)}"/>`;
+  });
+  const dots = (y, cls = '') => [['#38bdf8', 114], ['#fb7185', 120], ['#fbbf24', 126]]
+    .map(([c, x]) => `<circle cx="${x}" cy="${y}" r="1.5" fill="${c}"${cls}/>`).join('');
+  return `
+  <svg viewBox="0 0 240 320" aria-hidden="true">
+    <defs>
+      <linearGradient id="stb-slab" gradientUnits="userSpaceOnUse" x1="0" y1="0" x2="240" y2="320">
+        <stop offset="0" stop-color="#c9954a"/><stop offset="0.5" stop-color="#a5722f"/><stop offset="1" stop-color="#6e4a1d"/>
+      </linearGradient>
+      <linearGradient id="stb-shine" x1="0" y1="0" x2="1" y2="0">
+        <stop offset="0" stop-color="#fff7d6" stop-opacity="0"/><stop offset="0.5" stop-color="#fff7d6" stop-opacity="0.55"/><stop offset="1" stop-color="#fff7d6" stop-opacity="0"/>
+      </linearGradient>
+      <linearGradient id="stb-flame" x1="0" y1="1" x2="0" y2="0">
+        <stop offset="0" stop-color="#b45309"/><stop offset="0.6" stop-color="#f59e0b"/><stop offset="1" stop-color="#fde68a"/>
+      </linearGradient>
+      <clipPath id="stb-clip"><path d="${STB_SLAB_D}"/></clipPath>
+      <filter id="stb-carve" x="-0.1" y="-0.1" width="1.2" height="1.2">
+        <feOffset in="SourceAlpha" dx="0.9" dy="0.9" result="o"/>
+        <feFlood flood-color="#f8d58f" flood-opacity="0.55"/>
+        <feComposite in2="o" operator="in" result="hi"/>
+        <feMerge><feMergeNode in="hi"/><feMergeNode in="SourceGraphic"/></feMerge>
+      </filter>
+    </defs>
+    <path d="${STB_SLAB_D}" fill="url(#stb-slab)" stroke="#4a3112" stroke-width="2"/>
+    <path d="M26 304 V120 A94 94 0 0 1 214 120 V304 Z" fill="none" stroke="#5c3d16" stroke-width="1.5"/>
+    <g filter="url(#stb-carve)">
+      <path d="M48 104 V304 M192 104 V304 M48 206 H192" fill="none" stroke="#5c3d16" stroke-width="1.2"/>
+      <g fill="none" stroke="#3b2710" stroke-width="1.1" stroke-linecap="round" stroke-linejoin="round" color="#3b2710">
+        ${stbColumn(37)}${stbColumn(203)}
+      </g>
+      <g fill="#5c3d16">
+        <circle cx="120" cy="42" r="7"/>
+        <path d="M112 42 Q96 33 74 37 Q92 45 112 47 Z M128 42 Q144 33 166 37 Q148 45 128 47 Z"/>
+      </g>
+      <g stroke="#5c3d16" stroke-width="1.2" stroke-linecap="round">${rays}</g>
+      <g fill="#7a5320" stroke="#3b2710" stroke-width="0.8">
+        <rect x="100" y="52" width="10" height="14" rx="1"/><rect x="115" y="52" width="10" height="14" rx="1"/><rect x="130" y="52" width="10" height="14" rx="1"/>
+        <path d="M104 84 H136 L120 110 Z"/>
+      </g>
+      <path d="M113 91 Q120 86 127 91 Q120 96 113 91 Z" fill="none" stroke="#3b2710" stroke-width="1"/>
+      <circle cx="120" cy="91" r="1.4" fill="#3b2710"/>
+      <g fill="#6b4a1c" stroke="#3b2710" stroke-width="0.8" stroke-linejoin="round">
+        <path d="M76 162 L56 130 L70 146 L64 124 L86 152 Z"/>
+        <ellipse cx="80" cy="172" rx="16" ry="11"/>
+        <path d="M88 166 Q96 150 102 146 L106 150 Q98 156 94 170 Z"/>
+        <path d="M100 142 L116 147 L104 152 Z"/>
+        <path d="M122 140 L124 146 L130 148 L124 150 L122 156 L120 150 L114 148 L120 146 Z" fill="#7a5320"/>
+        <path d="M154 151 Q156 134 178 124 Q168 138 170 151 Z"/>
+        <circle cx="162" cy="154" r="5"/>
+        <path d="M156 160 L148 198 L178 198 L170 160 Z"/>
+        <circle cx="139" cy="136" r="3"/>
+        <path d="M62 224 L65 204 L75 204 L78 224 Z"/>
+        <circle cx="70" cy="228" r="7"/>
+        <path d="M60 238 L52 300 L88 300 L80 238 Z"/>
+        <path d="M58 240 Q70 234 82 240 L80 246 Q70 242 60 246 Z"/>
+        <circle cx="53.5" cy="206" r="3"/>
+        <path d="M160 226 L155 212 L162 216 L163 203 L169 213 L175 201 L176 214 L183 207 L181 226 Z"/>
+        <circle cx="170" cy="229" r="7"/>
+        <path d="M160 238 L152 300 L188 300 L180 238 Z"/>
+        <path d="M158 240 Q170 234 182 240 L180 246 Q170 242 160 246 Z"/>
+        <path d="M165 250 H175 L170 258 Z" fill="#7a5320"/>
+        <path d="M114 276 H126 L124 290 H130 L132 300 H108 L110 290 H116 Z"/>
+      </g>
+      <g fill="none" stroke-linecap="round">
+        <path d="M66 176 Q52 188 60 198 M74 180 V196 M86 180 V196 M158 166 L143 160 M79 244 L101 250 M60 244 L50 226 M161 244 L139 250" stroke="#6b4a1c" stroke-width="3.5"/>
+        <path d="M139 138 L144 198 M47 236 L53 208 M138 140 L132 144 L134 146 L128 148" stroke="#3b2710" stroke-width="1.6"/>
+      </g>
+    </g>
+    <g class="stb-mini">
+      <rect x="106" y="228" width="28" height="46" rx="5" fill="#5c3d16" stroke="#f8d58f" stroke-width="0.8"/>
+      <rect x="109" y="233" width="22" height="36" rx="1.5" fill="#1a1206"/>
+      <g class="stb-mini-ui">
+        <rect x="109" y="233" width="22" height="36" rx="1.5" fill="#1e1b4b"/>
+        <path d="M110 251 H130" stroke="#fbbf24" stroke-width="0.6"/>
+        <rect x="113" y="241" width="14" height="4" rx="1" fill="#fde68a"/>
+        <rect x="113" y="257" width="14" height="4" rx="1" fill="#fde68a"/>
+        ${dots(237)}${dots(265)}
+      </g>
+      <circle cx="120" cy="230.5" r="0.9" fill="#fde68a"/>
+    </g>
+    <g class="stb-cover">
+      <rect x="103" y="224" width="34" height="53" fill="url(#stb-slab)"/>
+      <path class="stb-fire" d="M108 257 Q103 243 111 233 Q112 243 117 246 Q115 232 121 221 Q126 235 127 240 Q131 234 133 229 Q139 244 132 257 Z" fill="url(#stb-flame)" opacity="0.9"/>
+      <path d="M98 256 H142 Q138 274 120 277 Q102 274 98 256 Z" fill="#6b4a1c" stroke="#3b2710" stroke-width="0.8"/>
+    </g>
+    <g clip-path="url(#stb-clip)"><rect class="stb-sheen" x="-70" y="0" width="70" height="320" fill="url(#stb-shine)"/></g>
+  </svg>`;
+}
+
+// The zoomed-in phone: a bronze slab with a Millennium Eye camera and an
+// ankh home button, running a 3000 BC build of this very app.
+function stbPhoneHtml() {
+  const abilities = mods => ['skill', 'comeback', 'quest'].map(type =>
+    `<span class="stb-ab stb-ab--${type}${mods[type] ? ` ${mods[type]}` : ''}">${ABILITY_TYPES[type].label}</span>`).join('');
+  const lp = [['4000', 0, 6900], ['3000', 6900, 100], ['2000', 7000, 100], ['1000', 7100, 100], ['0', 7200, 2100]]
+    .map(([n, at, len]) => `<span class="stb-n" style="--at: ${at}ms; --len: ${len}ms;">${n}</span>`).join('');
+  return `
+    <div class="ce-at stb-phone">
+      <svg viewBox="0 0 140 230" aria-hidden="true">
+        <defs>
+          <linearGradient id="stb-ph" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#c9954a"/><stop offset="1" stop-color="#6e4a1d"/></linearGradient>
+        </defs>
+        <rect x="2" y="2" width="136" height="226" rx="20" fill="url(#stb-ph)" stroke="#3b2710" stroke-width="2"/>
+        <rect x="6" y="6" width="128" height="218" rx="17" fill="none" stroke="#f8d58f" stroke-opacity="0.5"/>
+        <g transform="translate(70 13) scale(0.4)">${MK_EYE_GLYPH}</g>
+        <g transform="translate(70 218)" fill="none" stroke="#3b2710" stroke-width="1.4"><ellipse cy="-3" rx="2.4" ry="3"/><path d="M0 0 V5 M-4 1 H4"/></g>
+        <rect x="10" y="22" width="120" height="186" rx="4" fill="#0b0a12"/>
+      </svg>
+      <div class="stb-screen">
+        <div class="stb-splash"><b>Yu-Gi-Oh!</b><span>Dueling Abilities</span><small>v1.0 · est. 3000 BC</small></div>
+        <div class="stb-duel">
+          <div class="stb-half stb-half--top">
+            <span class="stb-hit"></span>
+            <span class="stb-name">Priest Seto</span>
+            <span class="stb-lp">${lp}</span>
+            <span class="stb-abs">${abilities({ comeback: 'stb-ab--used' })}</span>
+            <span class="stb-dmg">−4000</span>
+            <span class="stb-note">No uses left!</span>
+          </div>
+          <div class="stb-half stb-half--bottom">
+            <span class="stb-name">Pharaoh Atem</span>
+            <span class="stb-lp"><span>4000</span></span>
+            <span class="stb-abs">${abilities({ skill: 'stb-ab--press' })}</span>
+            <span class="stb-shout">Skill: Shadow Game!</span>
+          </div>
+        </div>
+      </div>
+    </div>`;
+}
+
+function playStoneTabletEgg() {
+  markEggFound('stone-tablet');
+  const line = (text, at, len, y, mod = '') =>
+    `<div class="stb-line" style="top: ${y}%;"><span class="stb-say${mod ? ` stb-say--${mod}` : ''}" style="--at: ${at}ms; --len: ${len}ms;">${text}</span></div>`;
+  const motes = ceRange(fxCount(14), () =>
+    `<span class="stb-mote" style="left: ${ceRand(5, 95).toFixed(0)}%; top: ${ceRand(10, 95).toFixed(0)}%; --d: ${ceRand(0, 3000).toFixed(0)}ms;"></span>`);
+  const chips = ceRange(fxCount(12), () =>
+    `<span class="stb-chip" style="--dx: ${ceRand(-40, 40).toFixed(0)}px; --dy: ${ceRand(20, 70).toFixed(0)}px; --r: ${ceRand(-200, 200).toFixed(0)}deg;"></span>`);
+  const overlay = spawnStartEgg('tablet', STONE_TABLET_EGG_MS, `
+    <div class="stb-bg">${motes}</div>
+    <div class="ce-at stb-tablet">${stbTabletSvg()}${chips}</div>
+    ${stbPhoneHtml()}
+    ${line('The Millennium Tablet', 800, 2600, 4, 'title')}
+    ${line('Domino Museum · 5,000 years old', 800, 2600, 9)}
+    ${line('Wait… is that… our app?!', 3700, 1500, 5, 'title')}
+    <div class="cegg-toast">Dueling Abilities: est. 3000 BC<small>Seto and Atem were using this app 5,000 years ago.</small></div>`);
+  if (overlay) playSound({ name: 'egg-stone-tablet' });
+}
+
+// --- Tournament History "📜": The Seal of Orichalcos --------------------------------
+// Dartz's Field Spell, as in the anime: the card is activated, the green
+// seal draws itself (double circle, rune ring, hexagram), sinks onto the
+// field and closes into a dome around the duel. The mark brands the
+// player's forehead, eyes glowing, "+500 ATK". Then the loser's soul is
+// taken: the History scroll's own ghost is pulled into the seal.
+// Timeline: the SEAL OF ORICHALCOS section of effects.css.
+const ORICHALCOS_EGG_MS = 10000;
+
+const orcCircle = r => `M0 ${-r} A${r} ${r} 0 1 1 0 ${r} A${r} ${r} 0 1 1 0 ${-r}`;
+const orcTriangle = deg => [0, 120, 240].map((d, i) => {
+  const a = ((deg + d) * Math.PI) / 180;
+  return `${i ? 'L' : 'M'}${(Math.cos(a) * 84).toFixed(1)} ${(Math.sin(a) * 84).toFixed(1)}`;
+}).join(' ') + ' Z';
+
+// The seal, centred on 0,0 in a -100..100 viewBox. `draw` adds the classes
+// that make each part draw itself in order.
+function orcSealMarkup(draw) {
+  const part = (d, cls, w) => `<path d="${d}" pathLength="1" stroke-width="${w}"${draw ? ` class="orc-draw ${cls}"` : ''}/>`;
+  const runes = ceRange(32, i => {
+    const a = (i / 32) * 360;
+    const glyph = ['M-2 -2 L0 2 L2 -2', 'M-2 0 H2 M0 -2 V2', 'M-2 2 L0 -2 L2 2 M-1 0 H1', 'M-2 -2 V2 H2', 'M0 -2 A2 2 0 1 0 0 2'][i % 5];
+    return `<path d="${glyph}" transform="rotate(${a}) translate(0 -88)"/>`;
+  });
+  return `
+    <g fill="none" stroke="#4ade80" stroke-linecap="round" stroke-linejoin="round">
+      ${part(orcCircle(94), 'orc-d1', 2.4)}
+      ${part(orcCircle(82), 'orc-d2', 1.6)}
+      ${part(orcTriangle(-90), 'orc-d3', 2.2)}
+      ${part(orcTriangle(90), 'orc-d4', 2.2)}
+      ${part(orcCircle(42), 'orc-d5', 1.6)}
+      <g class="${draw ? 'orc-runes' : ''}" stroke-width="1.1">${runes}</g>
+    </g>`;
+}
+
+function playOrichalcosEgg() {
+  markEggFound('orichalcos');
+  const n = tournamentHistory.length;
+  const line = (text, at, len, y, mod = '') =>
+    `<div class="orc-line" style="top: ${y}%;"><span class="orc-say${mod ? ` orc-say--${mod}` : ''}" style="--at: ${at}ms; --len: ${len}ms;">${text}</span></div>`;
+  const sparks = ceRange(fxCount(18), () =>
+    `<span class="orc-spark" style="left: ${ceRand(20, 80).toFixed(0)}%; --d: ${ceRand(4400, 7600).toFixed(0)}ms; --h: ${ceRand(25, 55).toFixed(0)}vh;"></span>`);
+  const overlay = spawnStartEgg('orichalcos', ORICHALCOS_EGG_MS, `
+    <div class="orc-bg"></div>
+    <div class="ce-at orc-card">
+      <span class="orc-card-name">The Seal of Orichalcos</span>
+      <span class="orc-card-art"><svg viewBox="-100 -100 200 200" aria-hidden="true">${orcSealMarkup(false)}</svg></span>
+      <span class="orc-card-type">[Field Spell]</span>
+    </div>
+    <div class="orc-flash"></div>
+    <div class="ce-at orc-stage">
+      <div class="orc-seal"><svg viewBox="-100 -100 200 200" aria-hidden="true">${orcSealMarkup(true)}</svg></div>
+    </div>
+    <div class="orc-dome"></div>
+    ${sparks}
+    <div class="ce-at orc-face">
+      <span class="orc-mark"><svg viewBox="-100 -100 200 200" aria-hidden="true">${orcSealMarkup(false)}</svg></span>
+      <span class="orc-eye"></span><span class="orc-eye orc-eye--r"></span>
+    </div>
+    <div class="ce-at orc-atk">+500 ATK</div>
+    <div class="ce-at orc-soul"><span class="ce-emoji">📜</span></div>
+    ${line('I activate…', 300, 1500, 10)}
+    ${line('THE SEAL OF ORICHALCOS!', 1800, 2200, 10, 'big')}
+    ${line('Once the seal is cast, it cannot be broken.', 4300, 1900, 8)}
+    ${line('And the loser\'s soul… belongs to the Orichalcos!', 6500, 2000, 8)}
+    <div class="cegg-toast">The Orichalcos took your History's soul.<small>${n
+      ? `Don't worry: the Pharaoh won it back. All ${n} tournament${n === 1 ? ' is' : 's are'} safe.`
+      : 'It was empty anyway. Crown a champion first!'}</small></div>`);
+  if (overlay) playSound({ name: 'egg-orichalcos' });
 }
