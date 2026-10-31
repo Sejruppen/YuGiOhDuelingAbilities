@@ -11,7 +11,7 @@ It is a family hobby project: vanilla JavaScript, no build step, installable and
   - **Neutral:** freestyle abilities for any deck.
   - **Family decks:** Theotaur (Dark Paladin's Legion) and Trizze (Legends Assembled).
   - **Anime decks:** Yugi, Kaiba and Joey (Duelist Kingdom and Battle City), Mai, Mako, Bakura, Pegasus, Odion, Ishizu, Marik (two decks), Weevil and Bandit Keith.
-  - **Custom:** mix and match every ability from every character, grouped by source. Built automatically, so new characters show up here.
+  - **Custom:** mix and match every ability from every character, grouped by source, with a search bar that matches name, effect text or duelist. Built automatically, so new characters show up here.
 - **Tournament:** single-elimination bracket. Choose the size, hand-pick duelists (the rest are drawn at random with a draw animation), then tap the winner of each duel. Byes are seeded classically, only one deck per duelist can enter, and a result can be changed until the winner plays again.
 - **Co-op Boss:** the phone lies between both fields while two players team up against Pegasus across three stages (Toon World, Millennium Eye, Final Read). Player 2's half of the screen is rotated 180°. Includes shared Bond actions (Foresight, Shield, Revive, Protect), silence rules and cutscenes.
 - **Settings:** theme (Dark, Light, Power of Chaos, plus a secret Treasure theme), UI size (four steps), sound on or off, co-op progress reset, and the secrets tracker with hints. Everything is saved on the device.
