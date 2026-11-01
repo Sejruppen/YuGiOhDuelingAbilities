@@ -280,7 +280,7 @@ function renderSoloIntro() {
         <li><span class="ce-emoji">❤️</span> You start with ${SOLO_START_LP} LP, and it carries over between duels. Rest at the campfire before the castle.</li>
         <li><span class="ce-emoji">👁️</span> The enemy shows what kind of move it will make next turn. Plan around it!</li>
         <li><span class="ce-emoji">⚔️</span> Attack on the phone: pick a target and enter your monster's ATK. Normal battle rules apply.</li>
-        <li><span class="ce-emoji">🛡️</span> Enemy monsters attack you directly. Block with one of your monsters (each one blocks once per turn) or take the hit. Or spring a Trap Card from your hand to negate the attack or destroy the attacker.</li>
+        <li><span class="ce-emoji">🛡️</span> Enemy monsters attack you directly. Block with one of your monsters (each one blocks once per turn) or take the hit. Or spring a Trap Card from your hand to negate the attack or destroy the attacker. When the enemy summons a monster, you can also spring a Trap Card to destroy it.</li>
         <li><span class="ce-emoji">🌲</span> Each region has a field: matching monsters gain ${SOLO_FIELD_BONUS * 100}% ATK. That goes for yours too!</li>
         <li><span class="ce-emoji">⭐</span> Start with ${SOLO_START_CHIPS} Star Chips. A duelist gives +1, an elite +2. With fewer than ${SOLO_GATE_CHIPS}, you must go through the Labyrinth.</li>
         <li><span class="ce-emoji">🎁</span> Find relics in treasure chests and win rare ones from elites. Tap a relic to read what it does.</li>
@@ -805,7 +805,8 @@ function renderSoloStepCard() {
       text('<span class="ce-emoji">🦖</span> Rex Raptor: <b>is your field empty of monsters?</b> Then his Dinosaur attacks again!', 'text-amber-200') +
       row([coopBtn('No, I have monsters', 'soloRexAgainClick(false)'), coopBtn(`🦖 Yes, take ${step.atk}`, 'soloRexAgainClick(true)', 'danger')]);
   } else if (step.kind === 'info') {
-    body = title + text(step.text) + text(step.note, 'text-xs text-rose-300') + row([cont]);
+    const trapBtn = step.type === 'summon' && step.summonUid ? coopBtn('<span class="ce-emoji">🪤</span> Trap: destroy monster', 'soloTrapSummonClick()') : '';
+    body = title + text(step.text) + text(step.note, 'text-xs text-rose-300') + row([trapBtn, cont]);
   } else if (step.kind === 'attack' && step.sub === 'block') {
     const pos = soloUi.blockPos;
     const toggle = ['atk', 'def'].map(p => `<button onclick="setSoloBlockPos('${p}')" class="flex-1 py-1.5 rounded-lg text-xs font-bold ${pos === p ? 'bg-amber-500 text-slate-950' : 'bg-slate-800 text-slate-300'}">${p === 'atk' ? 'Attack position' : 'Defense position'}</button>`).join('');

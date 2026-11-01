@@ -893,6 +893,7 @@ function prepareSoloStepType(step, f) {
         useSoloRelic('spellbinding');
         notes.push("🔯 Spellbinding Circle! It can't attack.");
       }
+      step.summonUid = m.uid;
       return info('🃏', `Summons ${m.name}!`, `${m.icon} ${st.atk} ATK / ${st.def} DEF in <b>${pos === 'atk' ? 'Attack' : 'Defense'} Position</b>.`, notes.join('<br>'));
     }
     case 'equip': {
@@ -1039,6 +1040,16 @@ function soloTrapDefend(kind) {
   }
   playSound({ name: 'co-negate' });
   finishSoloStep({ tone: 'good', text: '🪤 Trap Card! The attack is negated. You take 0.' });
+}
+
+// A Trap Card from your own hand springs when the enemy summons: the new monster is destroyed.
+function soloTrapSummon() {
+  const step = soloStep();
+  if (!step || step.type !== 'summon' || step.kind !== 'info' || step.sub || !step.summonUid) return;
+  const m = soloMonster(step.summonUid);
+  if (m) removeSoloMonster(m.uid);
+  else playSound({ name: 'co-destroy' });
+  finishSoloStep({ tone: 'good', text: `🪤 Trap Card! ${m ? m.name : 'The monster'} is destroyed. Send it to the Graveyard.` });
 }
 
 // Rex Raptor: a Dinosaur hits twice when your field is empty (honour system).

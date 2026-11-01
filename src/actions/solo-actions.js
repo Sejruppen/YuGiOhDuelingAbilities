@@ -293,6 +293,12 @@ function soloTrapDefendClick(kind) {
   commitSolo();
 }
 
+function soloTrapSummonClick() {
+  soloSnapshot();
+  soloTrapSummon();
+  commitSolo();
+}
+
 // --- Fight: undo, keypad and panels -------------------------------------------------
 
 function soloSnapshot() {
