@@ -15133,15 +15133,27 @@ html[data-theme="halloween"]::view-transition-new(root) { animation: vt-circle 0
 }
 /* Region scenery is drawn in solo-view.js (SOLO_MAP_ART); small details drop on the mini map and in lite mode. */
 html.fx-lite .solo-art-fine { display: none; }
-.solo-edge {
-  stroke: rgba(253, 230, 138, 0.35);
-  stroke-width: 2.5;
-  stroke-dasharray: 4 7;
-  stroke-linecap: round;
-}
-.solo-edge--open { stroke: rgba(253, 230, 138, 0.85); animation: solo-march 0.8s linear infinite; }
-.solo-edge--walked { stroke: #f59e0b; stroke-width: 4; stroke-dasharray: none; }
-@keyframes solo-march { to { stroke-dashoffset: -11; } }
+/* Paths: a dirt trail on the Beach, Forest and Meadow, stepping stones on the Mountain and Wasteland,
+   dark ink into the Labyrinth and Castle. Your route so far glows gold; dots flow to your next choices. */
+.solo-edge path { fill: none; stroke-linecap: round; }
+.solo-edge--dirt .solo-edge-a { stroke: #4a3418; stroke-width: 7; }
+.solo-edge--dirt .solo-edge-b { stroke: #a8865a; stroke-width: 4; }
+.solo-edge--dirt .solo-edge-c { stroke: #6e5232; stroke-width: 1.6; stroke-dasharray: 2 6; }
+/* Stones sit in the dirt trail's dark-brown bed. Round caps add the stroke width to each dash:
+   dark 12-long outline, 10-long slab, small fleck, every 14. */
+.solo-edge--stone .solo-edge-bed { stroke: #4a3418; stroke-width: 9; }
+.solo-edge--stone .solo-edge-a { stroke: #2b2520; stroke-width: 7; stroke-dasharray: 5 9; }
+.solo-edge--stone .solo-edge-b { stroke: #9c9286; stroke-width: 5; stroke-dasharray: 5 9; }
+.solo-edge--stone .solo-edge-c { stroke: #c4bbaf; stroke-width: 1.6; stroke-dasharray: 2 12; }
+.solo-edge--ink .solo-edge-a { stroke: rgba(167, 139, 250, 0.35); stroke-width: 6; }
+.solo-edge--ink .solo-edge-b { stroke: #140b1c; stroke-width: 3.5; stroke-dasharray: 10 3 2 3; }
+.solo-edge--cut { opacity: 0.25; }
+.solo-edge-glow { stroke: rgba(251, 191, 36, 0.3); stroke-width: 9; }
+.solo-edge-gold { stroke: #fbbf24; stroke-width: 2.5; }
+.solo-edge-dots { stroke: #fde68a; stroke-width: 4; stroke-dasharray: 0 10; animation: solo-march 0.8s linear infinite; }
+@keyframes solo-march { to { stroke-dashoffset: -10; } }
+html.fx-lite .solo-edge-glow { display: none; }
+.solo-map--mini .solo-edge-c { display: none; }
 .solo-region-label {
   position: absolute;
   transform: translateY(-50%);

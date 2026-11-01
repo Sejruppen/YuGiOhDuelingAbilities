@@ -491,19 +491,37 @@ function soloEdgeWalked(a, b, path = solo.path) {
 function renderSoloMap(mini = false, run = solo) {
   const { nodes, edges } = run.map;
   const reachable = mini ? [] : soloReachable();
+  const ahead = mini ? new Set() : soloAhead(reachable);
   const bands = renderSoloMapBands();
 
-  const lines = edges.map(([a, b]) => {
+  // With Tristan's Shortcut your choices are two floors up, so light both hops of the way there.
+  const hops = !mini && solo.shortcut
+    ? new Set(edges.filter(([a, b]) => a === run.at && edges.some(([c, d]) => c === b && reachable.includes(d))).map(([, b]) => b))
+    : new Set();
+  // Soft S-curves: every path leaves and enters its nodes vertically. Trail first, highlights on top.
+  const trails = [];
+  const highlights = [];
+  edges.forEach(([a, b]) => {
     const p = soloNodePos(nodes[a]);
     const q = soloNodePos(nodes[b]);
+    const m = (p.y + q.y) / 2;
+    const d = `d="M${p.x} ${p.y}C${p.x} ${m} ${q.x} ${m} ${q.x} ${q.y}"`;
     const walked = soloEdgeWalked(a, b, run.path);
-    const open = a === run.at && reachable.includes(b);
-    return `<line class="solo-edge ${walked ? 'solo-edge--walked' : open ? 'solo-edge--open' : ''}" x1="${p.x}" y1="${p.y}" x2="${q.x}" y2="${q.y}" />`;
-  }).join('');
+    const open = (a === run.at && (reachable.includes(b) || hops.has(b))) || (hops.has(a) && reachable.includes(b));
+    const cut = !walked && !open && !(ahead.has(a) && ahead.has(b));
+    // Dirt trail in the lowlands, stepping stones in the highlands, ink on the way into Pegasus' domain.
+    const kind = ['labyrinth', 'castle'].includes(nodes[b].region) ? 'ink'
+      : ['beach', 'forest', 'meadow'].includes(nodes[a].region) ? 'dirt' : 'stone';
+    trails.push(kind === 'ink'
+      ? `<g class="solo-edge solo-edge--ink ${cut ? 'solo-edge--cut' : ''}"><path class="solo-edge-a" ${d}/><path class="solo-edge-b" ${d}/></g>`
+      : `<g class="solo-edge solo-edge--${kind} ${cut ? 'solo-edge--cut' : ''}">${kind === 'stone' ? `<path class="solo-edge-bed" ${d}/>` : ''}<path class="solo-edge-a" ${d}/><path class="solo-edge-b" ${d}/><path class="solo-edge-c" ${d}/></g>`);
+    if (walked) highlights.push(`<path class="solo-edge-glow" ${d}/><path class="solo-edge-gold" ${d}/>`);
+    else if (open) highlights.push(`<path class="solo-edge-dots" ${d}/>`);
+  });
+  const lines = `${trails.join('')}<g class="solo-edge">${highlights.join('')}</g>`;
 
   // The map scrolls to where you stand; before floor 1 that is the beach.
   const focusId = run.at || reachable[0];
-  const ahead = mini ? new Set() : soloAhead(reachable);
   const buttons = Object.values(nodes).map(n => {
     const { x, y } = soloNodePos(n);
     const look = mini ? n.type : soloNodeLook(n, run);
