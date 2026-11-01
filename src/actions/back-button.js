@@ -28,11 +28,7 @@ function initBackButton() {
 
 // One step back. Returns false on the start screen (nothing left to close).
 function handleAppBack() {
-  if (finale.overlay) {
-    if (finale.skipped) closePharaohFinale();
-    else skipPharaohFinale();
-    return true;
-  }
+  if (handleOverlayBack()) return true;
 
   switch (state.screen) {
     case SCREENS.CHARACTER:
@@ -75,6 +71,35 @@ function handleAppBack() {
     default:
       return false;
   }
+}
+
+// Cutscenes that block the page and cannot be skipped: back does nothing,
+// so it can't reach the screen underneath.
+const BACK_BLOCKING_FX = '.fx-exodia, .fx-shadow-realm, .fx-heart, .fx-puzzle, .fx-dd';
+
+// Full-screen overlays and egg games sit above every screen, so back deals
+// with them first. Returns true when an overlay took the press.
+function handleOverlayBack() {
+  if (finale.overlay) {
+    if (finale.skipped) closePharaohFinale();
+    else skipPharaohFinale();
+    return true;
+  }
+  if (hats.el) { closeMagicalHats(); return true; }
+  if (bz.overlay) { bzClose(); return true; }
+  if (kd.overlay) { kdClose(); return true; }
+  if (lb.overlay) { lbClose(); return true; }
+  if (atnEgg.overlay) {
+    if (!atnEgg.locked || atnEgg.overlay.classList.contains('is-closable')) closeTrueNameEgg();
+    return true;
+  }
+  if (napEgg.overlay) { wakePharaoh(); return true; }
+
+  const layer = document.getElementById('fx-layer');
+  // Tap-to-skip scenes (end credits, Pegasus cutscenes).
+  const skippable = layer?.querySelector('.fx-credits, .fx-pg');
+  if (skippable) { skippable.click(); return true; }
+  return !!layer?.querySelector(BACK_BLOCKING_FX);
 }
 
 const anyPeekOpen = () => Object.values(ui.peek).some(Boolean);

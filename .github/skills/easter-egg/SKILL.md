@@ -34,6 +34,7 @@ When the owner says "jam", "ideas" or "what could we do for X", reply with a num
    if (!overlay) return; // reduced motion: the sound has already played
    ```
    - Use `ceRange(n, i => html)`, `ceRand`, `cePick` for particles, `restartClass` to replay an animation, and `<span class="ce-emoji">` for emoji.
+   - **Back button:** if the overlay blocks the page (`pointer-events: auto`), register it in `handleOverlayBack` / `BACK_BLOCKING_FX` in `src/actions/back-button.js`. Games and other interactive overlays need their close function called there.
    - Show text for both players when it matters: the bottom copy upright, the top copy rotated 180°.
    - Put the effect in a new file in `src/effects/` or extend a related one. A **new file must be registered in `index.html` and `sw.js`**.
 5. **Sound:** add `'<id>': t => { ... }` to `COOP_SOUNDS` in `src/effects/sounds.js` (it is spread into every theme kit).

@@ -44,6 +44,11 @@ A mobile-first PWA that two players use side by side during physical Yu-Gi-Oh! d
 - Wrap emoji in `<span class="ce-emoji">` so they render with the colour-emoji font.
 - Two-tap confirm for destructive buttons: the first tap arms the button ("Tap again to …") with a 3s timer, and the second tap acts. See `resetEggs` and `resetCoopProgress`.
 - Comment only what needs explaining. Each effect file starts with a short header describing what the effect does.
+- **Android/phone back button (`src/actions/back-button.js`) must cover everything that can be open.** Whenever you add a screen, sub-view, popup/modal, confirm state, side panel, cutscene or egg overlay, make `handleAppBack()` handle it, so back closes/steps out of it instead of acting on the screen underneath.
+  - New screen: add a `case` in `handleAppBack`, closing popups first, then leaving like its "← Back" button.
+  - Popup or sub-state on a screen: check it before the screen's default action.
+  - Full-screen overlay: interactive ones (games, keyboards) get their close function called from `handleOverlayBack`. Tap-to-skip scenes are added to the `.click()` selector. Unskippable cutscenes with `pointer-events: auto` are added to `BACK_BLOCKING_FX`.
+  - Update the README's Android back button line if the behaviour changes.
 
 ## CSS and JS gotchas learned the hard way
 
