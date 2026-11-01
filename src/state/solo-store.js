@@ -212,8 +212,8 @@ function generateSoloMap() {
 }
 
 // Campfires replace mixed duelists and Shadow Games: a few at random, then one on
-// every path that has none. A path never gets more than SOLO_CAMPFIRE_MAX, and
-// two campfires are never next to each other.
+// every path that has none. A path normally gets at most SOLO_CAMPFIRE_MAX, and
+// two campfires are never next to each other unless a path has no other spot.
 function placeSoloCampfires(nodes, edges) {
   const [from, to] = SOLO_CAMPFIRE_FLOORS;
   const paths = [];
@@ -226,22 +226,30 @@ function placeSoloCampfires(nodes, edges) {
   Object.values(nodes).filter(n => n.floor === 1).forEach(n => walk([n.id]));
   const fires = path => path.filter(id => nodes[id].type === 'campfire').length;
   const nearFire = id => edges.some(([a, b]) => (a === id && nodes[b].type === 'campfire') || (b === id && nodes[a].type === 'campfire'));
+  const underMax = id => paths.every(p => !p.includes(id) || fires(p) < SOLO_CAMPFIRE_MAX);
   const fits = id => {
     const n = nodes[id];
-    return n.floor >= from && n.floor <= to && !SOLO_FLOOR_KINDS[n.floor] && ['duelist', 'event'].includes(n.type) && !nearFire(id)
-      && paths.every(p => !p.includes(id) || fires(p) < SOLO_CAMPFIRE_MAX);
+    return n.floor >= from && n.floor <= to && !SOLO_FLOOR_KINDS[n.floor] && ['duelist', 'event'].includes(n.type) && !nearFire(id) && underMax(id);
   };
+  // When a path has no regular spot left, the rules loosen step by step,
+  // so every path still gets its campfire.
+  const fallbacks = [
+    id => nodes[id].floor >= from && nodes[id].floor <= to && nodes[id].type !== 'campfire' && !nearFire(id) && underMax(id),
+    id => nodes[id].floor >= SOLO_BEACH_FLOORS && !nearFire(id),
+    id => nodes[id].floor > 1
+  ];
   const light = id => {
     nodes[id].type = 'campfire';
     nodes[id].hidden = false;
+    delete nodes[id].kind;
   };
   shuffled(Object.keys(nodes)).forEach(id => {
     if (Math.random() < SOLO_CAMPFIRE_CHANCE && fits(id)) light(id);
   });
   shuffled(paths).forEach(p => {
     if (fires(p)) return;
-    const spot = soloPick(p.filter(fits));
-    if (spot) light(spot);
+    const spot = [fits, ...fallbacks].map(ok => p.filter(ok)).find(list => list.length);
+    if (spot) light(soloPick(spot));
   });
 }
 
