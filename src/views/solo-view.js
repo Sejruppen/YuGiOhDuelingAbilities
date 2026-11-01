@@ -719,11 +719,12 @@ function renderSoloPanel() {
 
   if (panel.type === 'attack') {
     if (!panel.target) {
+      const bookUp = soloToonWorldUp(f);
       const options = f.monsters.length
         ? f.monsters.map(m => soloMonsterOption(m, `setSoloPanel({ target: '${m.uid}' })`)).join('')
-        : coopOption({ icon: f.icon, label: 'Direct attack', sub: `${f.name} has no monsters` }, "setSoloPanel({ target: 'direct' })");
-      const book = soloToonWorldUp(f)
-        ? coopOption({ icon: '📖', label: 'Toon World', sub: `${f.pegasus.pages} page${f.pegasus.pages === 1 ? '' : 's'} left · ${SOLO_PEGASUS.pageMinAtk}+ ATK tears one out` }, "setSoloPanel({ target: 'book' })")
+        : bookUp ? '' : coopOption({ icon: f.icon, label: 'Direct attack', sub: `${f.name} has no monsters` }, "setSoloPanel({ target: 'direct' })");
+      const book = bookUp
+        ? coopOption({ icon: '📖', label: 'Toon World', sub: `${f.pegasus.pages} page${f.pegasus.pages === 1 ? '' : 's'} left · ${SOLO_PEGASUS.pageMinAtk}+ ATK tears one out · shields Pegasus` }, "setSoloPanel({ target: 'book' })")
         : '';
       return renderSoloPanelShell('⚔️ Attack: choose a target', options + book);
     }
@@ -732,6 +733,7 @@ function renderSoloPanel() {
     const title = book ? '⚔️ 📖 Toon World' : m ? `⚔️ ${m.icon} ${m.name}` : '⚔️ Direct attack';
     const bonuses = [];
     if (book) bonuses.push(`<span class="ce-emoji">📄</span> ${SOLO_PEGASUS.pageMinAtk}+ ATK tears out a page. No damage to Pegasus.`);
+    else if (soloToonWorldUp(f)) bonuses.push(`<span class="ce-emoji">📖</span> Toon World shields Pegasus: no battle damage to him.`);
     if (soloHas('legendary-sword') && f.swordRound !== f.round) bonuses.push(`<span class="ce-emoji">🗡️</span> Legendary Sword adds +${SOLO_RELICS['legendary-sword'].value} to this attack.`);
     if (f.pep) bonuses.push(`<span class="ce-emoji">💪</span> Pep talk adds +${f.pep} to this attack.`);
     if (f.lunch) bonuses.push(`<span class="ce-emoji">🍙</span> Full stomach: −${SOLO_EVENT_MODS.lunch.value} on this attack.`);
@@ -747,7 +749,7 @@ function renderSoloPanel() {
       const options = [
         coopOption({ icon: '💥', label: 'Destroy a monster', sub: 'Raigeki, Fissure, Dark Hole…', disabled: !f.monsters.length, reason: 'The enemy has no monsters' }, "setSoloPanel({ kind: 'destroy' })"),
         coopOption({ icon: '🌪️', label: 'Destroy a Spell/Trap', sub: 'Mystical Space Typhoon, Harpie\'s Feather Duster…', disabled: !f.trap && !f.monsters.some(m => m.equip), reason: 'The enemy has no face-down or equip card' }, "setSoloPanel({ kind: 'spelltrap' })"),
-        coopOption({ icon: '🔥', label: 'Burn damage', sub: 'Damage straight to the enemy\'s LP' }, "setSoloPanel({ kind: 'burn' })")
+        coopOption({ icon: '🔥', label: 'Burn damage', sub: 'Damage straight to the enemy\'s LP', disabled: soloToonWorldUp(f), reason: 'Toon World shields Pegasus: tear out all its pages first' }, "setSoloPanel({ kind: 'burn' })")
       ];
       if (soloHas('raigeki')) {
         options.unshift(coopOption({ icon: '<span class="ce-emoji">⚡</span>', label: 'Raigeki (relic)', sub: "Destroy all the enemy's monsters. Used up.", disabled: !f.monsters.length, reason: 'The enemy has no monsters' }, 'confirmSoloRaigeki()'));

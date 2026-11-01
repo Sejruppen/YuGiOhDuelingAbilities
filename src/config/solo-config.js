@@ -339,8 +339,8 @@ const SOLO_PEGASUS = {
     intro: {
       quote: "Welcome to my castle, little duelist! Let's see if you can survive my Toon World.",
       rules: [
-        '📖 Toon World: his Toons attack you directly and <b>can\'t be blocked</b>. While the book stands, they can\'t be destroyed by battle and Pegasus takes no battle damage from them.',
-        '📄 Attack Toon World with 1500+ ATK to tear out one of its 4 pages. The last page takes every Toon with it.',
+        '📖 Toon World: his Toons attack you directly and <b>can\'t be blocked</b>. While the book stands, they can\'t be destroyed by battle and Pegasus takes <b>no damage at all</b>.',
+        '📄 Attack Toon World with 1500+ ATK to tear out one of its 4 pages. Only when the last page is gone (it takes every Toon with it) can you hurt Pegasus.',
         '🐰 While Funny Bunny hops around, Pegasus takes no damage.',
         '👁️ At 5000 LP his Millennium Eye opens. At 2000 LP comes the Final Read.'
       ]

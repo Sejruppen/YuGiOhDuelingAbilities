@@ -672,6 +672,11 @@ function damageSoloEnemy(amount) {
     playSound({ name: 'co-bounce' });
     return 0;
   }
+  // Toon World shields Pegasus until every page is torn out.
+  if (soloToonWorldUp(f)) {
+    playSound({ name: 'co-bounce' });
+    return 0;
+  }
   const dealt = Math.min(f.lp, Math.round(amount));
   f.lp -= dealt;
   solo.stats.damage += dealt;
@@ -754,6 +759,10 @@ function soloResolveAttack(uid, atk) {
   const f = solo.fight;
   if (uid === 'book') return soloTearPage(atk);
   if (uid === null) {
+    if (soloToonWorldUp(f)) {
+      playSound({ name: 'co-bounce' });
+      return { tone: 'meh', text: `📖 Toon World shields ${f.name}. Tear out all its pages first.`, negated: true };
+    }
     const dealt = damageSoloEnemy(atk);
     return { tone: 'good', text: `⚔️ Direct attack! ${f.name} takes ${dealt}.` };
   }
@@ -771,7 +780,7 @@ function soloResolveAttack(uid, atk) {
     if (atk > st.atk) {
       removeSoloMonster(uid);
       const dealt = damageSoloEnemy(atk - st.atk);
-      return { tone: 'good', text: `💥 ${m.name} is destroyed! ${f.name} takes ${dealt}.` };
+      return { tone: 'good', text: `💥 ${m.name} is destroyed! ${dealt ? `${f.name} takes ${dealt}.` : `Toon World shields ${f.name}: no damage.`}` };
     }
     if (atk === st.atk && toon) {
       playSound({ name: 'co-squash' });
