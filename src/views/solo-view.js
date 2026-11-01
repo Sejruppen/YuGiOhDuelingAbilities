@@ -528,9 +528,11 @@ function renderSoloFight() {
   const p = SOLO_PERSONALITIES[f.personality];
   return `
     ${renderSoloHeader(`<span class="ce-emoji">${f.icon}</span> ${kind}`, renderSoloTurnBadge(f))}
-    <div class="flex-1 min-h-0 overflow-y-auto no-scrollbar p-3 flex flex-col gap-2">
+    <div class="flex-1 min-h-0 overflow-y-auto no-scrollbar px-3 pt-3 flex flex-col gap-2">
       ${renderSoloEnemyBoard(f, p)}
       ${renderSoloRelicBar()}
+    </div>
+    <div class="shrink-0 max-h-[60%] overflow-y-auto no-scrollbar p-3 flex flex-col gap-2">
       ${f.turn === 'enemy' ? renderSoloStepCard() : soloUi.panel ? renderSoloPanel() : renderSoloPlayer(f)}
     </div>
     ${f.intro ? renderSoloFightIntro(f, kind, p) : f.cutscene ? renderSoloCutscene(f) : ''}
