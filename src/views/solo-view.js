@@ -205,6 +205,15 @@ function renderSoloRelicSheet() {
   `;
 }
 
+// Counts both sides' turns: the player's round N is turn 2N-1 (2N if the enemy opened).
+function renderSoloTurnBadge(f) {
+  const enemyFirst = f.first === 'enemy' ? 1 : 0;
+  const enemy = f.turn === 'enemy';
+  const n = enemy ? 2 * f.round + enemyFirst : 2 * f.round - 1 + enemyFirst;
+  return `<div class="text-[0.65rem] font-bold text-slate-400 leading-tight">Turn ${Math.max(1, n)}</div>
+    <div class="text-[0.6rem] font-bold uppercase tracking-wide ${enemy ? 'text-rose-400' : 'text-amber-400'}"><span class="ce-emoji">${enemy ? '👁️' : '⚔️'}</span> ${enemy ? 'Enemy' : 'You'}</div>`;
+}
+
 function renderSoloHeader(title, right = '') {
   return `
     <header class="shrink-0 px-4 py-3 border-b border-slate-800 flex items-center justify-between gap-2 bg-slate-900/80 backdrop-blur">
@@ -518,7 +527,7 @@ function renderSoloFight() {
   const kind = { duelist: 'Duelist', elite: 'Elite', gate: 'Labyrinth guard', ambush: 'Ambush', boss: f.title || 'Castle guard' }[f.kind];
   const p = SOLO_PERSONALITIES[f.personality];
   return `
-    ${renderSoloHeader(`<span class="ce-emoji">${f.icon}</span> ${kind}`, `<span class="text-[0.65rem] font-bold text-slate-400">Turn ${Math.max(1, f.round)}</span>`)}
+    ${renderSoloHeader(`<span class="ce-emoji">${f.icon}</span> ${kind}`, renderSoloTurnBadge(f))}
     <div class="flex-1 min-h-0 overflow-y-auto no-scrollbar p-3 flex flex-col gap-2">
       ${renderSoloEnemyBoard(f, p)}
       ${renderSoloRelicBar()}
