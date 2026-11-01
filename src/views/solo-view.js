@@ -518,7 +518,7 @@ function renderSoloFight() {
   const kind = { duelist: 'Duelist', elite: 'Elite', gate: 'Labyrinth guard', ambush: 'Ambush', boss: f.title || 'Castle guard' }[f.kind];
   const p = SOLO_PERSONALITIES[f.personality];
   return `
-    ${renderSoloHeader(`<span class="ce-emoji">${f.icon}</span> ${kind}`, `<span class="text-[0.65rem] font-bold text-slate-400">Turn ${f.round}</span>`)}
+    ${renderSoloHeader(`<span class="ce-emoji">${f.icon}</span> ${kind}`, `<span class="text-[0.65rem] font-bold text-slate-400">Turn ${Math.max(1, f.round)}</span>`)}
     <div class="flex-1 min-h-0 overflow-y-auto no-scrollbar p-3 flex flex-col gap-2">
       ${renderSoloEnemyBoard(f, p)}
       ${renderSoloRelicBar()}
@@ -660,7 +660,7 @@ function renderSoloPlayer(f) {
       <div class="flex items-center justify-between gap-2">
         <div class="min-w-0">
           <p class="text-xs font-bold uppercase tracking-widest text-amber-400">You</p>
-          <p class="text-sm font-semibold text-slate-200 truncate">${f.battleOver ? '🪤 Your Battle Phase is over' : '⚔️ Your turn'}</p>
+          <p class="text-sm font-semibold text-slate-200 truncate">${f.battleOver ? (f.first === 'player' && f.round === 1 ? '🚫 You go first: no attack this turn' : '🪤 Your Battle Phase is over') : '⚔️ Your turn'}</p>
         </div>
         <button data-solo-me onclick="openSoloPanel('lp')" class="text-3xl font-black tabular-nums px-2 text-white">${solo.lp}</button>
       </div>
@@ -822,7 +822,7 @@ function renderSoloFightIntro(f, kind, p) {
   const r = soloRegion(f.region);
   const lines = [
     `<span class="ce-emoji">🃏</span> Shuffle your deck, clear your field and draw ${soloHas('pot-of-greed') ? '<b>6</b> cards (<span class="ce-emoji">🏺</span> Pot of Greed)' : '5 cards'}.`,
-    `<span class="ce-emoji">⚔️</span> You go first.`,
+    `<span class="ce-emoji">✊</span> Rock-paper-scissors decides who goes first. Whoever opens can't attack on their first turn.`,
     `<span class="ce-emoji">❤️</span> Your LP: <b>${solo.lp}</b>.`,
     `<span class="ce-emoji">${r.icon}</span> ${r.types.length ? `${r.name} field: ${soloFieldText(f.region)}. Yours too!` : 'No field bonus here.'}`,
     `<span class="ce-emoji">${p.icon}</span> They look <b>${p.label.toLowerCase()}</b>.`
@@ -846,11 +846,37 @@ function renderSoloFightIntro(f, kind, p) {
         <p class="text-2xl font-black text-white">${f.name}</p>
         <p class="text-sm text-slate-300">${f.maxLp} LP</p>
         ${quote ? `<p class="text-sm italic text-amber-100 max-w-sm">“${quote}”</p>` : ''}
-        <ul class="text-left text-sm text-slate-200 space-y-1.5 max-w-sm leading-snug mt-2">${lines.map(l => `<li>${l}</li>`).join('')}</ul>
-        <button onclick="startSoloDuel()" class="mt-3 px-8 py-3 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold text-lg">It's time to duel!</button>
+        ${f.rps ? renderSoloRps(f) : `
+          <ul class="text-left text-sm text-slate-200 space-y-1.5 max-w-sm leading-snug mt-2">${lines.map(l => `<li>${l}</li>`).join('')}</ul>
+          <button onclick="startSoloRpsClick()" class="mt-3 px-8 py-3 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold text-lg"><span class="ce-emoji">✊✋✌️</span> Rock, paper, scissors!</button>
+        `}
       </div>
     </div>
   `;
+}
+
+// Rock-paper-scissors for who goes first. A win lets you choose; a loss lets the enemy choose.
+function renderSoloRps(f) {
+  const r = f.rps;
+  const btn = (label, onclick, cls = 'bg-amber-500 hover:bg-amber-400 text-slate-950') => `<button onclick="${onclick}" class="px-6 py-3 rounded-xl font-bold text-lg ${cls}">${label}</button>`;
+  const throws = r.you ? `<p class="text-6xl leading-none mt-2 ce-emoji">${SOLO_RPS[r.you].icon} <span class="text-2xl text-slate-400">vs</span> ${SOLO_RPS[r.foe].icon}</p>` : '';
+  const wrap = body => `<div class="flex flex-col items-center gap-3 mt-3 max-w-sm">${throws}${body}</div>`;
+  const text = (t, cls = 'text-slate-200') => `<p class="text-sm leading-snug ${cls}">${t}</p>`;
+
+  if (!r.result) {
+    const options = Object.entries(SOLO_RPS).map(([k, v]) => `<button onclick="soloRpsClick('${k}')" aria-label="${v.label}" class="w-20 h-20 rounded-2xl bg-slate-800 border border-slate-600 hover:bg-slate-700 text-5xl leading-none ce-emoji">${v.icon}</button>`).join('');
+    return wrap(text('Rock, paper, scissors… <b>throw!</b>', 'text-lg font-bold text-white') + `<div class="flex gap-3">${options}</div>`);
+  }
+  if (r.result === 'tie') return wrap(text('A tie! Again.', 'text-lg font-bold text-white') + btn('Throw again', 'soloRpsAgainClick()'));
+  if (r.result === 'win') {
+    return wrap(text('You win! Who goes first?', 'text-lg font-bold text-emerald-300') +
+      text('Whoever goes first can\'t attack on their first turn.', 'text-xs text-slate-400') +
+      `<div class="flex flex-wrap gap-2 justify-center">${btn('I go first', "startSoloDuel('player')")}${btn(`${f.name} ${f.plural ? 'go' : 'goes'} first`, "startSoloDuel('enemy')", 'bg-slate-700 hover:bg-slate-600 text-white')}</div>`);
+  }
+  const enemy = r.first === 'enemy';
+  return wrap(text(`${f.name} ${f.plural ? 'win' : 'wins'}…`, 'text-lg font-bold text-rose-300') +
+    text(enemy ? `${f.name} ${f.plural ? 'choose' : 'chooses'} to <b>go first</b>. They can't attack on their first turn, and you play second.` : `${f.name} ${f.plural ? 'let' : 'lets'} you <b>go first</b>. You can't attack on your first turn.`) +
+    btn("It's time to duel!", `startSoloDuel('${r.first}')`));
 }
 
 // --- Reward and the end of a run ----------------------------------------------------

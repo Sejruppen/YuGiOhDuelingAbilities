@@ -295,10 +295,19 @@ const SOLO_ACTIONS = {
 };
 
 const SOLO_PERSONALITIES = {
-  aggressive: { icon: '🗡️', label: 'Aggressive', atkChance: 0.9, weights: { summon: 5, equip: 4, trap: 1, removal: 2, heal: 1 } },
-  wall: { icon: '🛡️', label: 'Wall', atkChance: 0.4, weights: { summon: 5, equip: 1, trap: 2, removal: 1, heal: 3 } },
-  trickster: { icon: '🎭', label: 'Trickster', atkChance: 0.65, weights: { summon: 4, equip: 2, trap: 4, removal: 2, heal: 1 } }
+  aggressive: { icon: '🗡️', label: 'Aggressive', atkChance: 0.9, rps: 'rock', firstChance: 0.85, weights: { summon: 5, equip: 4, trap: 1, removal: 2, heal: 1 } },
+  wall: { icon: '🛡️', label: 'Wall', atkChance: 0.4, rps: 'paper', firstChance: 0.4, weights: { summon: 5, equip: 1, trap: 2, removal: 1, heal: 3 } },
+  trickster: { icon: '🎭', label: 'Trickster', atkChance: 0.65, rps: 'scissors', firstChance: 0.6, weights: { summon: 4, equip: 2, trap: 4, removal: 2, heal: 1 } }
 };
+
+// Rock-paper-scissors before each duel. The winner picks who goes first (the enemy mostly picks
+// by personality, see firstChance). Whoever goes first can't attack on their first turn.
+const SOLO_RPS = {
+  rock: { icon: '✊', label: 'Rock', beats: 'scissors' },
+  paper: { icon: '✋', label: 'Paper', beats: 'rock' },
+  scissors: { icon: '✌️', label: 'Scissors', beats: 'paper' }
+};
+const SOLO_RPS_FAVOURITE = 0.4;
 
 const SOLO_EQUIPS = [
   { name: 'Legendary Sword', atk: 300 },

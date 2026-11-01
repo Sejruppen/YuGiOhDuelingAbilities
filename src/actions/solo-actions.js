@@ -300,9 +300,28 @@ function undoSolo() {
   commitSolo();
 }
 
-function startSoloDuel() {
+function startSoloRpsClick() {
   if (!solo.fight) return;
-  beginSoloDuel();
+  startSoloRps();
+  commitSolo();
+}
+
+function soloRpsClick(choice) {
+  if (!solo.fight) return;
+  soloRpsThrow(choice);
+  commitSolo();
+}
+
+// After a tie, throw again.
+function soloRpsAgainClick() {
+  if (!solo.fight?.intro) return;
+  solo.fight.rps = { result: null };
+  commitSolo();
+}
+
+function startSoloDuel(first) {
+  if (!solo.fight) return;
+  beginSoloDuel(first);
   commitSolo();
 }
 

@@ -492,15 +492,44 @@ function planSoloTurn(f) {
 
 const soloSummonPos = (f, card) => card.pos || (card.atk <= 500 || Math.random() >= SOLO_PERSONALITIES[f.personality].atkChance ? 'def' : 'atk');
 
-// Dismissing the duel intro. The Millennium Eye takes its toll (never your last LP).
-function beginSoloDuel() {
+// Dismissing the duel intro starts the rock-paper-scissors. The winner picks who goes first.
+function startSoloRps() {
+  const f = solo.fight;
+  if (f?.intro && !f.rps) f.rps = { result: null };
+}
+
+// The enemy leans towards its personality's favourite throw.
+function soloRpsThrow(you) {
+  const f = solo.fight;
+  if (!f?.intro || !SOLO_RPS[you]) return;
+  const personality = SOLO_PERSONALITIES[f.personality];
+  const foe = Math.random() < SOLO_RPS_FAVOURITE ? personality.rps : soloPick(Object.keys(SOLO_RPS));
+  const result = you === foe ? 'tie' : SOLO_RPS[you].beats === foe ? 'win' : 'lose';
+  f.rps = { you, foe, result };
+  // A loss means the enemy decides: Pegasus always opens.
+  if (result === 'lose') f.rps.first = f.pegasus || Math.random() < personality.firstChance ? 'enemy' : 'player';
+  playSound({ name: result === 'win' ? 'co-turn' : result === 'lose' ? 'co-boss-turn' : 'co-bounce' });
+}
+
+// Whoever goes first can't attack on their first turn. The enemy's turn is round 0, so the
+// player's first turn is still turn 1 and "round 1" rules (Swords of Revealing Light) hit its second.
+// The Millennium Eye takes its toll (never your last LP).
+function beginSoloDuel(first) {
   const f = solo.fight;
   if (!f?.intro) return;
   f.intro = false;
+  f.rps = null;
+  f.first = first;
   if (soloHas('eye')) {
     const cost = Math.min(SOLO_RELICS.eye.value, solo.lp - 1);
     hurtSoloPlayer(cost);
     flashSoloRelic('eye');
+  }
+  if (first === 'enemy') {
+    f.round = 0;
+    startSoloEnemyTurn();
+  } else {
+    f.battleOver = true;
   }
 }
 
@@ -755,6 +784,11 @@ function prepareSoloStep() {
     }
     if (step.ready) return;
     if (step.type === 'attacks') {
+      // The enemy can't attack on its first turn when it opens the duel.
+      if (f.round === 0) {
+        f.steps.splice(f.stepIndex, 1);
+        continue;
+      }
       // Monsters summoned this turn attack too: this is Yu-Gi-Oh!
       const attackers = f.monsters.filter(m => m.pos === 'atk' && !m.bound);
       if (attackers.length && f.round === 1 && soloHas('swords')) {
