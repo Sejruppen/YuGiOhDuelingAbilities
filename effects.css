@@ -15218,6 +15218,47 @@ html[data-theme="halloween"]::view-transition-new(root) { animation: vt-circle 0
   30% { transform: scale(1.35); box-shadow: 0 0 18px 6px rgba(251, 191, 36, 0.8); }
   100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(251, 191, 36, 0); }
 }
+/* Turn banner: sweeps across the screen at the start of every turn (fxSoloTurn) */
+.fx-solo-turn {
+  position: fixed;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  pointer-events: none;
+}
+.solo-turn-band {
+  width: 100%;
+  padding: 1rem 1.5rem;
+  text-align: center;
+  border-block: 2px solid rgba(251, 191, 36, 0.85);
+  background: linear-gradient(90deg, rgba(2, 6, 23, 0) 0%, rgba(30, 20, 4, 0.94) 18%, rgba(30, 20, 4, 0.94) 82%, rgba(2, 6, 23, 0) 100%);
+  box-shadow: 0 0 28px rgba(251, 191, 36, 0.45);
+  animation: solo-turn-sweep var(--solo-turn-ms, 1900ms) cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
+}
+.solo-turn-band--enemy {
+  border-color: rgba(217, 70, 239, 0.85);
+  background: linear-gradient(90deg, rgba(2, 6, 23, 0) 0%, rgba(46, 10, 56, 0.94) 18%, rgba(46, 10, 56, 0.94) 82%, rgba(2, 6, 23, 0) 100%);
+  box-shadow: 0 0 28px rgba(217, 70, 239, 0.45);
+}
+.solo-turn-title {
+  font-family: 'Cinzel Decorative', 'Cinzel', serif;
+  font-size: 1.7rem;
+  font-weight: 900;
+  line-height: 1.1;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #fde68a;
+  text-shadow: 0 0 14px rgba(251, 191, 36, 0.8);
+}
+.solo-turn-band--enemy .solo-turn-title { color: #f5d0fe; text-shadow: 0 0 14px rgba(217, 70, 239, 0.8); }
+.solo-turn-line { margin-top: 0.4rem; font-size: 1rem; font-weight: 700; color: #f8fafc; }
+.solo-turn-note { margin-top: 0.2rem; font-size: 0.8rem; color: #fcd34d; }
+@keyframes solo-turn-sweep {
+  0% { transform: translateX(-110%); opacity: 0; }
+  12% { transform: translateX(0); opacity: 1; }
+  82% { transform: translateX(0); opacity: 1; }
+  100% { transform: translateX(110%); opacity: 0; }
+}
 /* Pegasus: Toon World on his field, stage cutscenes, the end-screen map */
 .solo-book { animation: coop-pop-in 0.3s ease-out; }
 .solo-cutscene { background: radial-gradient(ellipse at 50% 35%, rgba(112, 26, 117, 0.85), rgba(2, 6, 23, 0.97) 70%); }

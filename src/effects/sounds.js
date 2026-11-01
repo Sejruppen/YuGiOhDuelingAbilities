@@ -2267,6 +2267,11 @@ const COOP_SOUNDS = {
   'co-turn': t => {
     tone({ t, freq: 880, to: 1320, dur: 0.12, type: 'triangle', gain: 0.04, attack: 0.004 });
   },
+  // Draw Phase of your turn: one card flip per card, a sparkle on top for bonus draws.
+  'solo-draw': (t, { draws = 1 }) => {
+    for (let i = 0; i < draws; i++) cardFlip(t + 0.25 + i * 0.17, 0.12, 2400 + i * 300);
+    if (draws > 1) arpeggio(t + 0.3, [81, 86, 90], 0.07, (tt, n) => bell({ t: tt, freq: midi(n), dur: 0.5, gain: 0.025 }));
+  },
   'co-boss-turn': t => {
     const room = darkBus({ reverb: 0.5 });
     eyeHum(t, 0.9, 0.05, room);

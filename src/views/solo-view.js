@@ -845,6 +845,7 @@ function renderSoloFightIntro(f, kind, p) {
   const quote = e ? e.quote : f.pegasus ? SOLO_PEGASUS.cutscenes.intro.quote : '';
   if (soloHas('swords')) lines.push("<span class=\"ce-emoji\">🌟</span> Swords of Revealing Light: they can't attack on their first turn.");
   if (soloHas('spellbinding')) lines.push("<span class=\"ce-emoji\">🔯</span> Spellbinding Circle: their first monster can't attack.");
+  if (soloHas('sanctity')) lines.push('<span class="ce-emoji">🃏</span> Card of Sanctity: you draw 2 cards in every Draw Phase.');
   (f.mods || []).forEach(k => lines.push(`<span class="ce-emoji">${SOLO_EVENT_MODS[k].icon}</span> <span class="text-violet-200">${SOLO_EVENT_MODS[k].text}</span>`));
   if (soloHas('eye')) lines.push(`<span class="ce-emoji">👁️</span> The Millennium Eye costs ${Math.min(SOLO_RELICS.eye.value, solo.lp - 1)} LP when the duel starts.`);
   return `

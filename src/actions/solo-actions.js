@@ -1,5 +1,7 @@
 // Solo mode actions ("Duelist's Road"), called from the solo view.
 const SOLO_TOAST_MS = 6000;
+const SOLO_TURN_BANNER_MS = 1900;
+const SOLO_TURN_BANNER_NOTE_MS = 450;
 const SOLO_CONFIRM_MS = 3000;
 const SOLO_MAX_INPUT = 6;
 const SOLO_UNDO_MAX = 20;
@@ -586,4 +588,33 @@ function fxSoloRelic(id) {
   if (!el) return;
   restartClass(el, 'solo-relic--flash', 900);
   spawnParticles(el, { type: 'skill', mode: 'spark', count: 8 });
+}
+
+// A banner sweeps across at the start of every turn. Whoever opens the duel skips the Draw Phase and can't attack.
+function fxSoloTurn(who) {
+  const f = solo.fight;
+  if (!f || solo.phase !== 'fight' || f.intro || f.turn !== who) return;
+  const you = who === 'player';
+  const opening = you ? f.first === 'player' && f.round === 1 : f.round === 0;
+  const draws = opening ? 0 : you ? soloDrawCount() : 1;
+  const emoji = e => `<span class="ce-emoji">${e}</span>`;
+  const notes = [];
+  if (you && draws > 1) notes.push(`${emoji(SOLO_RELICS.sanctity.icon)} Card of Sanctity: +${draws - 1} extra draw`);
+  if (you && !opening && soloHas('legendary-sword')) notes.push(`${emoji(SOLO_RELICS['legendary-sword'].icon)} Legendary Sword: first attack +${SOLO_RELICS['legendary-sword'].value}`);
+  if (you && !opening && f.pep) notes.push(`${emoji('💪')} Pep talk: attacks +${f.pep}`);
+  const name = f.plural ? `${f.name}'` : `${f.name}'s`;
+  const line = opening
+    ? `${emoji('🚫')} No draw · No attack`
+    : `${emoji('🃏')} Draw Phase: ${you ? 'draw' : 'they draw'} <b>${draws}</b> card${draws === 1 ? '' : 's'}`;
+  if (you && draws > 1) flashSoloRelic('sanctity');
+  if (you && draws) playSound({ name: 'solo-draw', draws });
+  const ms = SOLO_TURN_BANNER_MS + notes.length * SOLO_TURN_BANNER_NOTE_MS;
+  spawnFx('fx-solo-turn', ms, {
+    vars: { '--solo-turn-ms': `${ms}ms` },
+    html: `<div class="solo-turn-band solo-turn-band--${who}">
+      <p class="solo-turn-title">${emoji(you ? '⚔️' : f.icon)} ${you ? 'Your turn' : `${name} turn`}</p>
+      <p class="solo-turn-line">${line}</p>
+      ${notes.map(n => `<p class="solo-turn-note">${n}</p>`).join('')}
+    </div>`
+  });
 }

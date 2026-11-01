@@ -286,6 +286,8 @@ function soloBackToMap() {
 const soloHas = id => (solo.relics || []).includes(id);
 const soloRelicReady = id => soloHas(id) && !solo.fight?.relicUsed?.[id];
 const flashSoloRelic = id => queueSoloFx(() => fxSoloRelic(id));
+const soloDrawCount = () => 1 + (soloHas('sanctity') ? SOLO_RELICS.sanctity.value : 0);
+const announceSoloTurn = who => queueSoloFx(() => fxSoloTurn(who));
 
 function rollSoloRelics(rarity, count) {
   if (rarity === 'millennium' && solo.millennium) return [];
@@ -530,6 +532,8 @@ function beginSoloDuel(first) {
     startSoloEnemyTurn();
   } else {
     f.battleOver = true;
+    playSound({ name: 'co-turn' });
+    announceSoloTurn('player');
   }
 }
 
@@ -758,6 +762,7 @@ function startSoloEnemyTurn() {
   f.steps = [...pre, ...f.intents.map((type, i) => ({ type, peek: f.peek?.[i] })), ...(sleeve ? [{ type: 'sleeve' }] : []), { type: 'attacks' }];
   f.stepIndex = 0;
   playSound({ name: 'co-boss-turn' });
+  announceSoloTurn('enemy');
   prepareSoloStep();
 }
 
@@ -770,6 +775,7 @@ function endSoloEnemyTurn() {
   f.stepIndex = 0;
   planSoloTurn(f);
   playSound({ name: 'co-turn' });
+  announceSoloTurn('player');
 }
 
 // Fills in the current step. Steps that no longer apply are skipped; when all
