@@ -633,10 +633,11 @@ function soloRpsThrow(you) {
   const personality = SOLO_PERSONALITIES[f.personality];
   const foe = Math.random() < SOLO_RPS_FAVOURITE ? personality.rps : soloPick(Object.keys(SOLO_RPS));
   const result = you === foe ? 'tie' : SOLO_RPS[you].beats === foe ? 'win' : 'lose';
-  f.rps = { you, foe, result };
+  // `at` lets the view resume the throw animation mid-way instead of restarting it on re-render.
+  f.rps = { you, foe, result, at: Date.now() };
   // A loss means the enemy decides: Pegasus always opens.
   if (result === 'lose') f.rps.first = f.pegasus || Math.random() < personality.firstChance ? 'enemy' : 'player';
-  playSound({ name: result === 'win' ? 'co-turn' : result === 'lose' ? 'co-boss-turn' : 'co-bounce' });
+  playSound({ name: 'solo-rps', result, quick: prefersReducedMotion() });
 }
 
 // Whoever goes first can't attack on their first turn. The enemy's turn is round 0, so the

@@ -15496,6 +15496,8 @@ html.fx-lite .solo-node-frame::before { animation: none; }
 .solo-monster--def { border-color: rgba(56, 189, 248, 0.35); background: rgba(12, 74, 110, 0.2); }
 .solo-trap { animation: coop-pop-in 0.3s ease-out; }
 .solo-intro { animation: coop-fade-in 0.4s ease-out; }
+.solo-intro--still,
+.solo-intro--still .coop-cut-icon { animation: none; }
 .solo-node-icon--campfire { filter: drop-shadow(0 0 18px rgba(251, 146, 60, 0.9)); }
 .solo-node-icon--event { filter: drop-shadow(0 0 18px rgba(167, 139, 250, 0.9)); }
 .solo-relic {
@@ -15636,6 +15638,73 @@ html.fx-lite .solo-node-frame::before { animation: none; }
   0% { opacity: 0; transform: scale(1.6) rotate(-12deg); filter: brightness(3); }
   60% { opacity: 1; transform: scale(0.95) rotate(2deg); filter: brightness(1.4); }
   100% { opacity: 1; transform: none; filter: none; }
+}
+
+/* --- Solo rock-paper-scissors (solo-view.js renderSoloRpsThrows) ---
+   0-0.9s both fists pump three times, 0.9s the throws pop in, 1s the winner wobbles and zaps
+   sparks at the loser (hit at ~1.2s), 1.4s the result fades in. A tie clashes at 1s instead.
+   Every delay adds --rps-t (minus the time since the throw) so a re-render doesn't replay it. */
+.solo-rps-throws { position: relative; display: flex; align-items: center; gap: 1rem; margin-top: 0.5rem; font-size: 3.75rem; line-height: 1; }
+.solo-rps-hand { position: relative; display: inline-block; }
+.solo-rps-fist { position: absolute; inset: 0; text-align: center; animation: solo-rps-pump 0.9s ease-in-out var(--rps-t, 0s) both; }
+.solo-rps-pick { animation: solo-rps-reveal 0.25s ease-out calc(var(--rps-t, 0s) + 0.9s) both; }
+.solo-rps-hand--win { animation: solo-rps-win 0.6s ease-out calc(var(--rps-t, 0s) + 1s) forwards; }
+.solo-rps-hand--lose { animation: solo-rps-lose 0.45s ease-out calc(var(--rps-t, 0s) + 1.2s) forwards; }
+.solo-rps-hand--tie { animation: solo-rps-clash 0.35s ease-in-out calc(var(--rps-t, 0s) + 0.95s) both; }
+.solo-rps-spark {
+  position: absolute; left: 50%; top: 50%;
+  width: 7px; height: 7px; margin: -3.5px 0 0 -3.5px;
+  border-radius: 9999px;
+  background: #fef3c7;
+  box-shadow: 0 0 6px 2px rgba(251, 191, 36, 0.9);
+  opacity: 0;
+  pointer-events: none;
+  animation: solo-rps-zap 0.22s ease-in calc(var(--rps-t, 0s) + 1s + var(--d, 0ms)) forwards;
+}
+.solo-rps-throws--tie .solo-rps-spark { background: #f8fafc; box-shadow: 0 0 6px 2px rgba(226, 232, 240, 0.9); animation: solo-rps-burst 0.4s ease-out calc(var(--rps-t, 0s) + 1.05s) forwards; }
+.solo-rps-after { animation: solo-rps-after 0.3s ease-out calc(var(--rps-t, 0s) + 1.4s) both; }
+@keyframes solo-rps-pump {
+  0%, 33%, 66% { opacity: 1; transform: translateY(-14px) rotate(-14deg); }
+  17%, 50%, 83%, 99% { opacity: 1; transform: translateY(6px) rotate(4deg); }
+  100% { opacity: 0; transform: translateY(6px); }
+}
+@keyframes solo-rps-reveal {
+  0% { opacity: 0; transform: scale(0.4); }
+  60% { opacity: 1; transform: scale(1.25); }
+  100% { opacity: 1; transform: none; }
+}
+@keyframes solo-rps-win {
+  0% { transform: none; filter: drop-shadow(0 0 0 rgba(251, 191, 36, 0)); }
+  20% { transform: scale(1.2) rotate(-14deg); }
+  45% { transform: scale(1.2) rotate(12deg); }
+  70% { transform: scale(1.15) rotate(-6deg); }
+  100% { transform: scale(1.1); filter: drop-shadow(0 0 12px rgba(251, 191, 36, 0.85)); }
+}
+@keyframes solo-rps-lose {
+  0% { translate: 0; filter: grayscale(0) brightness(2); }
+  20% { translate: 7px 0; }
+  40% { translate: -7px 0; }
+  60% { translate: 5px 0; }
+  80% { translate: -3px 0; }
+  100% { translate: 0; opacity: 0.45; filter: grayscale(1) brightness(1); transform: scale(0.88); }
+}
+@keyframes solo-rps-clash {
+  0%, 100% { transform: none; }
+  45% { transform: translateX(calc(var(--dir) * 16px)) rotate(calc(var(--dir) * 10deg)); }
+}
+@keyframes solo-rps-zap {
+  0% { opacity: 1; transform: translate(calc(var(--dir) * -60px), var(--dy)); }
+  80% { opacity: 1; }
+  100% { opacity: 0; transform: translate(calc(var(--dir) * 60px), calc(var(--dy) * -0.5)) scale(0.6); }
+}
+@keyframes solo-rps-burst {
+  0% { opacity: 1; transform: none; }
+  100% { opacity: 0; transform: translate(var(--dx), var(--dy)) scale(0.4); }
+}
+@keyframes solo-rps-after {
+  0% { opacity: 0; visibility: hidden; transform: translateY(8px); }
+  1% { visibility: visible; }
+  100% { opacity: 1; visibility: visible; transform: none; }
 }
 
 /* =========================================================================

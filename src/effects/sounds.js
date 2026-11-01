@@ -2272,6 +2272,28 @@ const COOP_SOUNDS = {
     for (let i = 0; i < draws; i++) cardFlip(t + 0.25 + i * 0.17, 0.12, 2400 + i * 300);
     if (draws > 1) arpeggio(t + 0.3, [81, 86, 90], 0.07, (tt, n) => bell({ t: tt, freq: midi(n), dur: 0.5, gain: 0.025 }));
   },
+  // Solo rock-paper-scissors: three knocks as the fists pump, a flick on the reveal,
+  // then a zap and the winner's chime (or a clink on a tie). `quick` skips to the result.
+  'solo-rps': (t, { result, quick }) => {
+    let at = t;
+    if (!quick) {
+      [0.15, 0.45, 0.75].forEach((o, i) => {
+        tone({ t: t + o, freq: 420 + i * 60, to: 220, dur: 0.07, type: 'triangle', gain: 0.07, attack: 0.002 });
+        noise({ t: t + o, dur: 0.05, gain: 0.05, type: 'lowpass', freq: 1400, to: 300, attack: 0.002 });
+      });
+      cardFlip(t + 0.9, 0.12);
+      at = t + 1;
+    }
+    if (result === 'tie') {
+      bell({ t: at + 0.05, freq: 1760, dur: 0.5, gain: 0.04 });
+      bell({ t: at + 0.05, freq: 2350, dur: 0.4, gain: 0.03 });
+      COOP_SOUNDS['co-bounce'](at + 0.15);
+      return;
+    }
+    tone({ t: at, freq: 500, to: 2600, dur: 0.22, type: 'sawtooth', gain: 0.03, filter: 3500, attack: 0.003 });
+    noise({ t: at + 0.2, dur: 0.12, gain: 0.07, type: 'highpass', freq: 3000, attack: 0.002 });
+    COOP_SOUNDS[result === 'win' ? 'co-turn' : 'co-boss-turn'](at + 0.3);
+  },
   'co-boss-turn': t => {
     const room = darkBus({ reverb: 0.5 });
     eyeHum(t, 0.9, 0.05, room);

@@ -875,12 +875,15 @@ function renderSoloFight() {
   `;
 }
 
+// Re-renders rebuild the overlay, so only fade it in when it first appears.
+const soloIntroClass = () => document.querySelector('.solo-intro') ? 'solo-intro solo-intro--still' : 'solo-intro';
+
 // Pegasus moves to his next stage mid-duel.
 function renderSoloCutscene(f) {
   const c = SOLO_PEGASUS.cutscenes[f.cutscene];
   if (!c) return '';
   return `
-    <div class="solo-intro solo-cutscene fixed inset-0 z-50 flex flex-col backdrop-blur overflow-y-auto no-scrollbar p-6">
+    <div class="${soloIntroClass()} solo-cutscene fixed inset-0 z-50 flex flex-col backdrop-blur overflow-y-auto no-scrollbar p-6">
       <div class="my-auto flex flex-col items-center text-center gap-2">
         <div class="coop-cut-icon text-7xl leading-none ce-emoji">${c.icon}</div>
         <p class="text-[0.7rem] font-bold uppercase tracking-widest text-fuchsia-300">${f.name} · ${f.lp} LP</p>
@@ -1203,7 +1206,7 @@ function renderSoloFightIntro(f, kind, p) {
   (f.mods || []).forEach(k => lines.push(`<span class="ce-emoji">${SOLO_EVENT_MODS[k].icon}</span> <span class="text-violet-200">${SOLO_EVENT_MODS[k].text}</span>`));
   if (soloHas('eye')) lines.push(`<span class="ce-emoji">👁️</span> The Millennium Eye costs ${Math.min(SOLO_RELICS.eye.value, solo.lp - 1)} LP when the duel starts.`);
   return `
-    <div class="solo-intro fixed inset-0 z-50 flex flex-col bg-slate-950/95 backdrop-blur overflow-y-auto no-scrollbar p-6">
+    <div class="${soloIntroClass()} fixed inset-0 z-50 flex flex-col bg-slate-950/95 backdrop-blur overflow-y-auto no-scrollbar p-6">
       <div class="my-auto flex flex-col items-center text-center gap-2">
         <div class="coop-cut-icon text-7xl leading-none ce-emoji">${f.icon}</div>
         <p class="text-[0.7rem] font-bold uppercase tracking-widest text-rose-300">${kind}</p>
@@ -1223,8 +1226,10 @@ function renderSoloFightIntro(f, kind, p) {
 function renderSoloRps(f) {
   const r = f.rps;
   const btn = (label, onclick, cls = 'bg-amber-500 hover:bg-amber-400 text-slate-950') => `<button onclick="${onclick}" class="px-6 py-3 rounded-xl font-bold text-lg ${cls}">${label}</button>`;
-  const throws = r.you ? `<p class="text-6xl leading-none mt-2 ce-emoji">${SOLO_RPS[r.you].icon} <span class="text-2xl text-slate-400">vs</span> ${SOLO_RPS[r.foe].icon}</p>` : '';
-  const wrap = body => `<div class="flex flex-col items-center gap-3 mt-3 max-w-sm">${throws}${body}</div>`;
+  const throws = r.you ? renderSoloRpsThrows(r) : '';
+  // --rps-t is a negative delay (time since the throw), so a re-render resumes the animation instead of replaying it.
+  const elapsed = r.you ? Math.min(Date.now() - (r.at || 0), 9999) : 0;
+  const wrap = body => `<div class="flex flex-col items-center gap-3 mt-3 max-w-sm" style="--rps-t: -${elapsed}ms">${throws}${r.you ? `<div class="solo-rps-after flex flex-col items-center gap-3">${body}</div>` : body}</div>`;
   const text = (t, cls = 'text-slate-200') => `<p class="text-sm leading-snug ${cls}">${t}</p>`;
 
   if (!r.result) {
@@ -1241,6 +1246,22 @@ function renderSoloRps(f) {
   return wrap(text(`${f.name} ${f.plural ? 'win' : 'wins'}…`, 'text-lg font-bold text-rose-300') +
     text(enemy ? `${f.name} ${f.plural ? 'choose' : 'chooses'} to <b>go first</b>. They can't attack on their first turn, and you play second.` : `${f.name} ${f.plural ? 'let' : 'lets'} you <b>go first</b>. You can't attack on your first turn.`) +
     btn("It's time to duel!", `startSoloDuel('${r.first}')`));
+}
+
+// Both hands pump ✊ three times, snap to the real throws, then the winner zaps the loser
+// (a tie clashes instead). Timings live in effects.css (Solo rock-paper-scissors).
+function renderSoloRpsThrows(r) {
+  const tie = r.result === 'tie';
+  const hand = (side, key) => {
+    const state = tie ? 'tie' : (r.result === 'win') === (side === 'you') ? 'win' : 'lose';
+    return `<span class="solo-rps-hand solo-rps-hand--${state}" style="--dir: ${side === 'you' ? 1 : -1}"><span class="solo-rps-fist ce-emoji">✊</span><span class="solo-rps-pick ce-emoji">${SOLO_RPS[key].icon}</span></span>`;
+  };
+  const sparks = Array.from({ length: 6 }, (_, i) => {
+    const a = i * Math.PI / 3;
+    const vars = tie ? `--dx: ${Math.round(Math.cos(a) * 30)}px; --dy: ${Math.round(Math.sin(a) * 30)}px` : `--dy: ${[-14, 8, -4, 12, -10, 4][i]}px; --d: ${i * 35}ms`;
+    return `<i class="solo-rps-spark" style="${vars}"></i>`;
+  }).join('');
+  return `<div class="solo-rps-throws ${tie ? 'solo-rps-throws--tie' : ''}" style="--dir: ${r.result === 'lose' ? -1 : 1}">${hand('you', r.you)}<span class="text-2xl text-slate-400">vs</span>${hand('foe', r.foe)}${sparks}</div>`;
 }
 
 // --- Reward and the end of a run ----------------------------------------------------
