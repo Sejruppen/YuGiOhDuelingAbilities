@@ -454,17 +454,27 @@ const SOLO_MAP_ART = {
   }
 };
 
+const smBrickDef = id => `<pattern id="${id}-brick" patternUnits="userSpaceOnUse" width="32" height="16"><path d="M0 0.5H32M0 8.5H32M8 0V8M24 8V16" stroke="#26212f" stroke-width="1.2" fill="none"/></pattern>`;
+
+// Where a region's band sits on the map (map units).
+function soloBandBox(region) {
+  const [, from, to, side] = SOLO_MAP_BANDS.find(b => b[0] === region);
+  return {
+    top: from === SOLO_FLOOR.CASTLE ? 0 : soloMapY(to) - 50,
+    bottom: from === 1 ? SOLO_MAP_H : soloMapY(from) + 50,
+    x: side === 'right' ? SOLO_MAP_W / 2 : 0,
+    w: side === 'all' ? SOLO_MAP_W : SOLO_MAP_W / 2
+  };
+}
+
 function renderSoloMapBands() {
   const id = `smap${++soloMapUid}`;
   const half = SOLO_MAP_W / 2;
-  const defs = [`<pattern id="${id}-brick" patternUnits="userSpaceOnUse" width="32" height="16"><path d="M0 0.5H32M0 8.5H32M8 0V8M24 8V16" stroke="#26212f" stroke-width="1.2" fill="none"/></pattern>`];
+  const defs = [smBrickDef(id)];
   const rects = [];
   const labels = [];
-  SOLO_MAP_BANDS.forEach(([region, from, to, side]) => {
-    const top = from === SOLO_FLOOR.CASTLE ? 0 : soloMapY(to) - 50;
-    const bottom = from === 1 ? SOLO_MAP_H : soloMapY(from) + 50;
-    const x = side === 'right' ? half : 0;
-    const w = side === 'all' ? SOLO_MAP_W : half;
+  SOLO_MAP_BANDS.forEach(([region, from, , side]) => {
+    const { top, bottom, x, w } = soloBandBox(region);
     const { colors, art } = SOLO_MAP_ART[region];
     const g = `${id}-${region}`;
     // Every band but the beach runs on past its bottom and fades out over the band below;
@@ -523,16 +533,21 @@ const smRand = n => {
   return s - Math.floor(s);
 };
 
-function renderSoloAtmosphere() {
+// `sx`/`sy` turn the boxes' units into % of the layer.
+function soloParticles(list, sx, sy) {
   let seed = 0;
   const r = () => smRand(++seed);
-  const parts = SOLO_MAP_PARTICLES.flatMap(([kind, x, y, w, h, count, secs]) => Array.from({ length: fxCount(count) }, () => {
-    const left = ((x + r() * w) / SOLO_MAP_W) * 100;
-    const top = ((y + r() * h) / SOLO_MAP_H) * 100;
+  return list.flatMap(([kind, x, y, w, h, count, secs]) => Array.from({ length: fxCount(count) }, () => {
+    const left = (x + r() * w) * sx;
+    const top = (y + r() * h) * sy;
     const d = secs * (0.8 + r() * 0.4);
     const style = `left:${left.toFixed(1)}%;top:${top.toFixed(2)}%;--d:${d.toFixed(2)}s;--o:${(r() * d).toFixed(2)}s;--dx:${Math.round((r() - 0.5) * 40)}px`;
     return `<i class="solo-p solo-p--${kind}" style="${style}">${kind === 'gull' ? SM_GULL : ''}</i>`;
   })).join('');
+}
+
+function renderSoloAtmosphere() {
+  const parts = soloParticles(SOLO_MAP_PARTICLES, 100 / SOLO_MAP_W, 100 / SOLO_MAP_H);
   const mist = SOLO_MAP_MIST.map(([x, y, w], i) => `<i style="left:${x}%;top:${y}%;width:${w}%;--o:${i * 7}s"></i>`).join('');
   return `<div class="solo-atmo" aria-hidden="true">${parts}<div class="solo-mist" style="--sm-par:${soloMistOffset()}px">${mist}</div></div>`;
 }
@@ -858,17 +873,66 @@ function renderSoloRoll(ev) {
 
 // --- Fight --------------------------------------------------------------------------
 
+// The fight's region from the map, drawn behind the duel in a 360×720 scene.
+// [kind, x, y, w, h, count, seconds] in % of the screen, like SOLO_MAP_PARTICLES.
+const SOLO_FIGHT_PARTICLES = {
+  beach: [['spray', 4, 38, 92, 22, 8, 3], ['gull', 0, 12, 0, 18, 1, 22]],
+  forest: [['firefly', 6, 18, 88, 60, 10, 6]],
+  meadow: [['petal', 15, 10, 85, 55, 10, 7]],
+  mountain: [['snow', 0, 2, 100, 55, 14, 7]],
+  wasteland: [['dust', 15, 20, 85, 50, 8, 6], ['ember', 10, 40, 80, 30, 3, 3.5]],
+  labyrinth: [['ember', 10, 30, 80, 40, 4, 3.5]],
+  castle: [['wisp', 4, 8, 88, 45, 6, 9]]
+};
+const SOLO_FIGHT_SCENE_H = 720;
+
+// Half-width regions are doubled to fill the scene. The short bands get more of the same:
+// sand above the beach and sea below it, wall tiles in the Labyrinth, starry sky above the castle.
+function soloFightSceneArt(region, id) {
+  const { colors, art } = SOLO_MAP_ART[region];
+  const { w, top, bottom } = soloBandBox(region);
+  const h = bottom - top;
+  const a = art.replace(/\{id\}/g, id);
+  const band = `<rect width="${w}" height="${h}" fill="url(#${id}-fill)"/>${a}`;
+  const H = SOLO_FIGHT_SCENE_H;
+  if (w < SOLO_MAP_W) return `<g transform="scale(2)">${band}</g>`;
+  if (region === 'beach') {
+    return `<rect width="360" height="${H}" fill="${colors[0]}"/><rect y="540" width="360" height="${H - 540}" fill="#145266"/><g transform="translate(0 250)">${band}</g>`;
+  }
+  if (region === 'labyrinth') {
+    return Array.from({ length: Math.ceil(H / h) }, (_, i) => `<g transform="translate(0 ${i * h})">${band}</g>`).join('');
+  }
+  const stars = Array.from({ length: 24 }, (_, i) => `<circle cx="${(smRand(i + 50) * 360).toFixed(0)}" cy="${(smRand(i + 90) * 390).toFixed(0)}" r="1.2"/>`).join('');
+  return `<rect width="360" height="${H}" fill="${colors[0]}"/><g class="solo-art-fine" fill="#f5e6ff" opacity="0.7">${stars}</g>`
+    + `<rect y="510" width="360" height="${H - 510}" fill="#12071f"/><g transform="translate(0 400)">${band}</g>`;
+}
+
+function renderSoloFightScene(f) {
+  const region = SOLO_MAP_ART[f.region] ? f.region : 'castle';
+  const { colors } = SOLO_MAP_ART[region];
+  const id = `sfight${++soloMapUid}`;
+  const defs = `${smBrickDef(id)}<linearGradient id="${id}-fill" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="${colors[0]}"/><stop offset="1" stop-color="${colors[1]}"/></linearGradient>`;
+  return `
+    <div class="solo-scene" aria-hidden="true" style="--sm-t: -${(performance.now() / 1000).toFixed(2)}s;">
+      <svg class="solo-scene-art" viewBox="0 0 ${SOLO_MAP_W} ${SOLO_FIGHT_SCENE_H}" preserveAspectRatio="xMidYMid slice"><defs>${defs}</defs>${soloFightSceneArt(region, id)}</svg>
+      <div class="solo-scene-dim"></div>
+      <div class="solo-atmo">${soloParticles(SOLO_FIGHT_PARTICLES[region] || [], 1, 1)}</div>
+    </div>
+  `;
+}
+
 function renderSoloFight() {
   const f = solo.fight;
   const kind = { duelist: 'Duelist', elite: 'Elite', gate: 'Labyrinth guard', ambush: 'Ambush', boss: f.title || 'Castle guard' }[f.kind];
   const p = SOLO_PERSONALITIES[f.personality];
   return `
+    ${renderSoloFightScene(f)}
     ${renderSoloHeader(`<span class="ce-emoji">${f.icon}</span> ${kind}`, renderSoloTurnBadge(f))}
-    <div class="flex-1 min-h-0 overflow-y-auto no-scrollbar px-3 pt-3 flex flex-col gap-2">
+    <div class="relative flex-1 min-h-0 overflow-y-auto no-scrollbar px-3 pt-3 flex flex-col gap-2">
       ${renderSoloEnemyBoard(f, p)}
       ${renderSoloRelicBar()}
     </div>
-    <div class="shrink-0 max-h-[60%] overflow-y-auto no-scrollbar p-3 flex flex-col gap-2">
+    <div class="solo-fight-foot relative shrink-0 max-h-[60%] overflow-y-auto no-scrollbar p-3 flex flex-col gap-2">
       ${f.turn === 'enemy' ? renderSoloStepCard() : soloUi.panel ? renderSoloPanel() : renderSoloPlayer(f)}
     </div>
     ${f.intro ? renderSoloFightIntro(f, kind, p) : f.cutscene ? renderSoloCutscene(f) : ''}
@@ -943,7 +1007,14 @@ function renderSoloEnemyBoard(f, p) {
         ${monsters || trap || book ? book + monsters + trap : '<p class="text-xs text-slate-400 italic text-center py-1">No monsters. Attack directly!</p>'}
       </div>
       ${f.monsters.some(m => m.bunny) ? '<p class="text-[0.65rem] text-pink-300 mt-2 text-center"><span class="ce-emoji">🐰</span> Funny Bunny is out: Pegasus takes no damage.</p>' : ''}
-      ${r.types.length ? `<p class="text-[0.65rem] text-emerald-300/90 mt-2 text-center">Field: ${soloFieldText(f.region)}. Yours too!</p>` : ''}
+      ${r.types.length ? `
+        <div class="solo-field mt-2 rounded-lg px-2 py-1.5 flex items-center gap-2">
+          <span class="solo-field-card ce-emoji">${r.icon}</span>
+          <span class="flex-1 min-w-0 leading-tight">
+            <span class="block text-xs font-black text-white">${r.card} <span class="solo-field-tag">Field Spell</span></span>
+            <span class="block text-[0.65rem] text-emerald-100/90">${r.types.join(', ')} +${SOLO_FIELD_BONUS * 100}% ATK. Yours too!</span>
+          </span>
+        </div>` : ''}
     </section>
   `;
 }
@@ -1007,7 +1078,7 @@ function renderSoloPlayer(f) {
   if (f.grave?.length) intents.unshift({ icon: '🧟', label: `Raise ${f.grave.map(m => m.name).join(', ')} from the Graveyard` });
   if (f.monsters.some(m => m.hatch === 1)) intents.unshift({ icon: '🦋', label: 'Hatch the cocoon into Great Moth' });
   return `
-    <div class="rounded-xl border border-rose-500/30 bg-rose-950/20 px-3 py-2">
+    <div class="rounded-xl border border-rose-500/30 bg-slate-950/85 px-3 py-2">
       <p class="text-[0.65rem] font-bold uppercase tracking-widest text-rose-300 mb-1"><span class="ce-emoji">👁️</span> Next turn the enemy will</p>
       ${intents.map(a => `<p class="text-xs text-slate-200 leading-snug"><span class="mr-1 ce-emoji">${a.icon}</span>${a.label}</p>`).join('')}
       <p class="text-xs text-slate-200 leading-snug"><span class="mr-1 ce-emoji">⚔️</span>Attack with every monster in Attack Position</p>

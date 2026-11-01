@@ -47,13 +47,13 @@ const SOLO_NODE_TYPES = {
   castle: { icon: '🏰', label: 'Castle', desc: "Pegasus' castle. Win to finish the run." }
 };
 
-// Field bonuses follow the anime's Duelist Kingdom terrain rules.
+// Field bonuses follow the anime's Duelist Kingdom terrain rules; `card` is the matching Field Spell.
 const SOLO_REGIONS = {
-  beach: { name: 'Beach', icon: '🏖️', types: ['Aqua', 'Fish', 'Sea Serpent'], titles: ['Fisherman', 'Sailor', 'Beachcomber'] },
-  forest: { name: 'Forest', icon: '🌲', types: ['Insect', 'Beast', 'Plant', 'Beast-Warrior'], titles: ['Bug Catcher', 'Forest Ranger', 'Beast Tamer'] },
-  meadow: { name: 'Meadow', icon: '🌾', types: ['Warrior', 'Beast-Warrior'], titles: ['Knight', 'Squire', 'Swordsman'] },
-  mountain: { name: 'Mountain', icon: '⛰️', types: ['Dragon', 'Winged Beast', 'Thunder'], titles: ['Dragon Tamer', 'Mountain Hermit', 'Bird Keeper'] },
-  wasteland: { name: 'Wasteland', icon: '💀', types: ['Zombie', 'Dinosaur', 'Rock'], titles: ['Gravedigger', 'Bone Collector', 'Fossil Hunter'] },
+  beach: { name: 'Beach', icon: '🏖️', card: 'Umi', types: ['Aqua', 'Fish', 'Sea Serpent'], titles: ['Fisherman', 'Sailor', 'Beachcomber'] },
+  forest: { name: 'Forest', icon: '🌲', card: 'Forest', types: ['Insect', 'Beast', 'Plant', 'Beast-Warrior'], titles: ['Bug Catcher', 'Forest Ranger', 'Beast Tamer'] },
+  meadow: { name: 'Meadow', icon: '🌾', card: 'Sogen', types: ['Warrior', 'Beast-Warrior'], titles: ['Knight', 'Squire', 'Swordsman'] },
+  mountain: { name: 'Mountain', icon: '⛰️', card: 'Mountain', types: ['Dragon', 'Winged Beast', 'Thunder'], titles: ['Dragon Tamer', 'Mountain Hermit', 'Bird Keeper'] },
+  wasteland: { name: 'Wasteland', icon: '💀', card: 'Wasteland', types: ['Zombie', 'Dinosaur', 'Rock'], titles: ['Gravedigger', 'Bone Collector', 'Fossil Hunter'] },
   labyrinth: { name: 'Labyrinth', icon: '🧱', types: [], titles: ['Labyrinth Guard', 'Gatekeeper'] },
   castle: { name: 'Castle', icon: '🏰', types: [], titles: [] }
 };

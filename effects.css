@@ -15495,6 +15495,41 @@ html.fx-lite .solo-node-frame::before { animation: none; }
 .solo-monster { border-color: rgba(244, 63, 94, 0.35); background: rgba(15, 23, 42, 0.9); animation: coop-pop-in 0.3s ease-out; }
 .solo-monster--def { border-color: rgba(56, 189, 248, 0.35); background: rgba(12, 74, 110, 0.2); }
 .solo-trap { animation: coop-pop-in 0.3s ease-out; }
+/* --- Fight scene (solo-view.js renderSoloFightScene): the region's map art and particles behind the duel. --- */
+.solo-scene { position: absolute; inset: 0; overflow: hidden; pointer-events: none; }
+.solo-scene-art { position: absolute; inset: 0; width: 100%; height: 100%; }
+.solo-scene-dim {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(to bottom, rgba(2, 6, 23, 0.6), rgba(2, 6, 23, 0.3) 45%, rgba(2, 6, 23, 0.55) 70%, rgba(2, 6, 23, 0.85));
+}
+.solo-fight-foot .coop-panel { background-color: rgba(2, 6, 23, 0.88); }
+/* Field Spell chip: a little teal Spell card next to the bonus. */
+.solo-field {
+  border: 1px solid rgba(45, 212, 191, 0.45);
+  background: linear-gradient(90deg, rgba(13, 148, 136, 0.28), rgba(6, 78, 59, 0.15));
+}
+.solo-field-card {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  width: 1.75rem;
+  height: 2.4rem;
+  border-radius: 0.25rem;
+  border: 2px solid #5eead4;
+  background: linear-gradient(160deg, #0f766e, #134e4a);
+  box-shadow: 0 0 8px rgba(45, 212, 191, 0.45);
+  font-size: 1rem;
+}
+.solo-field-tag {
+  margin-left: 0.25rem;
+  font-size: 0.55rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #5eead4;
+}
 .solo-intro { animation: coop-fade-in 0.4s ease-out; }
 .solo-intro--still,
 .solo-intro--still .coop-cut-icon { animation: none; }
