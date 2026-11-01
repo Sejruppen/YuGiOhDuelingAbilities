@@ -73,9 +73,9 @@ function renderSoloMenu() {
 
 // The island from beach to castle; [regions, floorFrom, floorTo]. Lights up where the current run is.
 const SOLO_ROUTE = [
-  [['beach'], 1, 2],
-  [['forest', 'meadow'], 3, 5],
-  [['mountain', 'wasteland'], 6, 8],
+  [['beach'], 1, SOLO_BEACH_FLOORS],
+  [['forest', 'meadow'], SOLO_BEACH_FLOORS + 1, SOLO_MIDDLE_FLOORS],
+  [['mountain', 'wasteland'], SOLO_MIDDLE_FLOORS + 1, SOLO_BRANCH_FLOORS],
   [['campfire'], SOLO_FLOOR.CAMPFIRE, SOLO_FLOOR.CAMPFIRE],
   [['labyrinth'], SOLO_FLOOR.LABYRINTH, SOLO_FLOOR.LABYRINTH],
   [['castle'], SOLO_FLOOR.CASTLE, SOLO_FLOOR.CASTLE]
@@ -127,7 +127,7 @@ function renderSoloHistoryEntry(e) {
             ${soloStat(e.result === 'victory' ? 'LP left' : '⭐ Chips', e.result === 'victory' ? e.lp : e.chips)}
           </div>
           ${relics.length ? `<p class="text-xl tracking-widest text-center">${relics.map(id => `<span class="ce-emoji" title="${SOLO_RELICS[id].name}">${SOLO_RELICS[id].icon}</span>`).join(' ')}</p>` : ''}
-          ${e.map ? renderSoloMap(true, e) : ''}
+          ${e.map && e.map.layout === SOLO_MAP_LAYOUT ? renderSoloMap(true, e) : ''}
         </div>
       ` : ''}
     </div>
@@ -304,11 +304,11 @@ function soloNodePos(n) {
 
 // Background bands per region: [region, floorFrom, floorTo, side].
 const SOLO_MAP_BANDS = [
-  ['beach', 1, 2, 'all'],
-  ['forest', 3, 5, 'left'],
-  ['meadow', 3, 5, 'right'],
-  ['mountain', 6, 8, 'left'],
-  ['wasteland', 6, 8, 'right'],
+  ['beach', 1, SOLO_BEACH_FLOORS, 'all'],
+  ['forest', SOLO_BEACH_FLOORS + 1, SOLO_MIDDLE_FLOORS, 'left'],
+  ['meadow', SOLO_BEACH_FLOORS + 1, SOLO_MIDDLE_FLOORS, 'right'],
+  ['mountain', SOLO_MIDDLE_FLOORS + 1, SOLO_BRANCH_FLOORS, 'left'],
+  ['wasteland', SOLO_MIDDLE_FLOORS + 1, SOLO_BRANCH_FLOORS, 'right'],
   ['campfire', SOLO_FLOOR.CAMPFIRE, SOLO_FLOOR.CAMPFIRE, 'all'],
   ['labyrinth', SOLO_FLOOR.LABYRINTH, SOLO_FLOOR.LABYRINTH, 'all'],
   ['castle', SOLO_FLOOR.CASTLE, SOLO_FLOOR.CASTLE, 'all']
@@ -504,10 +504,13 @@ function renderSoloEvent(n, t) {
   if (ev.result) {
     body = `<div class="coop-toast coop-toast--${ev.result.tone} rounded-lg px-3 py-2 text-sm leading-snug w-full max-w-sm">${ev.result.text}</div>
       <div class="flex gap-2 w-full max-w-xs mt-2">${ev.ambush ? coopBtn("⚔️ It's time to duel!", 'soloAmbushClick()', 'danger') : coopBtn('Continue ➜', 'leaveSoloNode()', 'primary')}</div>`;
+  } else if (ev.rolling) {
+    body = renderSoloRoll(ev);
   } else {
     const options = ev.choices.map((c, i) => {
-      const sub = c.secret && key ? `${c.sub}<br><span class="text-amber-300"><span class="ce-emoji">🗝️</span> ${c.reveal}</span>` : c.sub;
-      return coopOption({ icon: `<span class="ce-emoji">${c.icon}</span>`, label: c.label, sub, disabled: c.disabled, reason: c.reason }, `pickSoloEventChoice(${i})`);
+      const sub = c.secret && key ? `${c.sub}<br><span class="text-amber-300"><span class="ce-emoji">🗝️</span> ${c.roll ? `Could be: ${c.reveal}` : c.reveal}</span>` : c.sub;
+      const roll = c.roll ? ` <span class="ce-emoji">${c.roll.dice === 'coin' ? '🪙' : '🎲'}</span>` : '';
+      return coopOption({ icon: `<span class="ce-emoji">${c.icon}</span>`, label: c.label + roll, sub, disabled: c.disabled, reason: c.reason }, `pickSoloEventChoice(${i})`);
     }).join('');
     body = `<p class="text-sm text-slate-200 italic max-w-sm leading-snug">${ev.text}</p><div class="w-full max-w-sm space-y-2 text-left mt-1">${options}</div>`;
   }
@@ -521,6 +524,46 @@ function renderSoloEvent(n, t) {
       ${body}
     </div>
   `;
+}
+
+// The physical roll: you flip or roll for real and tap what it showed.
+function renderSoloRoll(ev) {
+  const st = ev.rolling;
+  const c = ev.choices[st.i];
+  const r = c.roll;
+  const quote = v => (typeof v === 'string' ? `'${v}'` : v);
+  const faceBtn = (v, label, handler, picked = false) => `<button onclick="${handler}(${quote(v)})" class="${r.dice === 'coin' ? 'flex-1 py-4' : 'py-3'} rounded-xl font-black text-xl transition border ${picked ? 'bg-amber-500 border-amber-400 text-slate-950' : 'bg-slate-800 hover:bg-slate-700 border-slate-700 text-white'}">${label}</button>`;
+  const dieBtns = (handler, showPicks = false) => `<div class="grid grid-cols-3 gap-2 w-full">${[1, 2, 3, 4, 5, 6].map(n => faceBtn(n, n, handler, showPicks && st.picks.includes(n))).join('')}</div>`;
+  let prompt;
+  let buttons;
+  if (r.pick && !st.locked) {
+    const ready = st.picks.length === r.pick;
+    prompt = ready
+      ? `You chose ${st.picks.join(' and ')}. Lock ${r.pick === 1 ? 'it' : 'them'} in, then roll.`
+      : `Choose ${r.pick === 1 ? 'your number' : `${r.pick} numbers`} first, then roll the die.`;
+    buttons = `${dieBtns('soloEventNumberClick', true)}
+      ${ready ? `<button onclick="lockSoloRollClick()" class="w-full py-3 rounded-xl bg-amber-500 hover:bg-amber-400 active:scale-98 text-slate-950 font-bold transition"><span class="ce-emoji">🔒</span> Lock in</button>` : ''}`;
+  } else if (r.dice === 'coin') {
+    prompt = 'Flip a real coin, then tap the side it landed on.';
+    buttons = `<div class="flex gap-2 w-full">${faceBtn('heads', '<span class="ce-emoji">🪙</span> Heads', 'soloEventRollClick')}${faceBtn('tails', '<span class="ce-emoji">🪙</span> Tails', 'soloEventRollClick')}</div>`;
+  } else if (r.versus) {
+    const loaded = r.bonus ? ` (your loaded die adds +${r.bonus})` : '';
+    prompt = st.you === null
+      ? `${st.tie ? 'A tie! Roll again. ' : ''}Roll YOUR die and tap the result${loaded}.`
+      : `You rolled ${st.you}. Now roll ${r.versus}'s die and tap the result.`;
+    buttons = dieBtns('soloEventRollClick');
+  } else {
+    prompt = r.pick ? `You chose ${st.picks.join(' and ')}. Roll the die and tap the result.` : 'Roll a real die, then tap the number it landed on.';
+    buttons = dieBtns('soloEventRollClick');
+  }
+  return `
+    <div class="w-full max-w-sm space-y-3">
+      <p class="text-lg font-black text-white"><span class="ce-emoji">${c.icon}</span> ${c.label}</p>
+      <p class="text-sm text-slate-300 italic leading-snug">${c.sub}</p>
+      <p class="text-sm font-bold text-amber-300"><span class="ce-emoji">${r.dice === 'coin' ? '🪙' : '🎲'}</span> ${prompt}</p>
+      ${buttons}
+      <div class="flex gap-2 pt-1">${coopBtn('← Back', 'cancelSoloRollClick()')}</div>
+    </div>`;
 }
 
 // --- Fight --------------------------------------------------------------------------

@@ -5,19 +5,27 @@ const SOLO_HISTORY_KEY = 'ygo_solo_history';
 const SOLO_HISTORY_MAX = 30;
 const SOLO_START_LP = 8000;
 const SOLO_MAX_LP = 8000;
-const SOLO_START_CHIPS = 2;
+const SOLO_START_CHIPS = 1;
 const SOLO_GATE_CHIPS = 10;
 const SOLO_CAMPFIRE_HEAL = 0.3;
 const SOLO_FIELD_BONUS = 0.3;
 const SOLO_MAX_MONSTERS = 5;
 
-// Map: floors 1-8 branch over 4 columns (Beach 1-2, Forest/Meadow 3-5,
-// Mountain/Wasteland 6-8), then one node per floor.
+// Map: floors 1-11 branch over 4 columns (Beach 1-3, Forest/Meadow 4-7,
+// Mountain/Wasteland 8-11), then one node per floor.
+// Bump SOLO_MAP_LAYOUT whenever the floors change: older saved runs and history maps no longer fit.
+const SOLO_MAP_LAYOUT = 2;
 const SOLO_COLS = 4;
 const SOLO_WALKS = 4;
-const SOLO_BRANCH_FLOORS = 8;
-const SOLO_FLOOR = { CAMPFIRE: 9, LABYRINTH: 10, CASTLE: 11 };
-const SOLO_TREASURE_FLOOR = 5;
+const SOLO_BRANCH_FLOORS = 11;
+const SOLO_BEACH_FLOORS = 3;
+const SOLO_MIDDLE_FLOORS = 7;
+const SOLO_FLOOR = { CAMPFIRE: 12, LABYRINTH: 13, CASTLE: 14 };
+// Floors that aren't a random mix. 'events' = only Shadow Games (regional ones are likelier),
+// 'fork' = a duelist or a Shadow Game, 'gamble' = only roll-heavy Shadow Games.
+const SOLO_FLOOR_KINDS = { 1: 'duelist', 3: 'events', 6: 'treasure', 7: 'fork', 11: 'gamble' };
+const SOLO_REGIONAL_EVENT_BOOST = 3;
+const SOLO_GAMBLE_EVENTS = ['dice', 'duke', 'number', 'well', 'hustler', 'stranger', 'nest', 'grave'];
 const SOLO_MIXED_ODDS = { duelist: 50, event: 30, elite: 20 };
 // Share of mixed nodes (never elites) shown as ❓ until you step on them.
 const SOLO_HIDDEN_CHANCE = 0.33;
@@ -144,8 +152,8 @@ const SOLO_MONSTERS = {
 
 // Floor tiers for generic duelists. Elites and the castle have their own.
 const SOLO_TIERS = [
-  { maxFloor: 3, lp: 1500, maxAtk: 1400 },
-  { maxFloor: 6, lp: 2000, maxAtk: 1800 },
+  { maxFloor: 4, lp: 1500, maxAtk: 1400 },
+  { maxFloor: 8, lp: 2000, maxAtk: 1800 },
   { maxFloor: 99, lp: 2500, maxAtk: 2000 }
 ];
 const SOLO_ELITE = { lp: 4000, maxAtk: 2000, actions: 2, chips: 2 };
@@ -479,7 +487,7 @@ const SOLO_OWNER_CARDS = {
     heal: null
   }
 };
-const SOLO_REMOVAL_FROM_FLOOR = 4;
+const SOLO_REMOVAL_FROM_FLOOR = 5;
 
 // Relics: Treasure offers 3 commons, an elite win 2 rares. `value` is the
 // relic's number (LP, ATK). Consumables vanish when used.

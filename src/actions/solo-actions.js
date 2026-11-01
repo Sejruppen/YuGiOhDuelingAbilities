@@ -229,6 +229,22 @@ function pickSoloEventChoice(i) {
   if (chooseSoloEvent(i)) commitSolo();
 }
 
+function soloEventRollClick(face) {
+  if (soloEventRoll(face)) commitSolo();
+}
+
+function soloEventNumberClick(n) {
+  if (pickSoloRollNumber(n)) commitSolo();
+}
+
+function lockSoloRollClick() {
+  if (lockSoloRollNumbers()) commitSolo();
+}
+
+function cancelSoloRollClick() {
+  if (cancelSoloRoll()) commitSolo();
+}
+
 function soloAmbushClick() {
   closeSoloPanels();
   soloUi.undo = [];
@@ -581,6 +597,7 @@ function backInSolo() {
     closeSoloPanels();
     return render();
   }
+  if (solo.phase === 'node' && solo.event?.rolling && !solo.event.result) return cancelSoloRollClick();
   if (solo.phase === 'fight' && solo.fight) {
     if (solo.fight.cutscene) return dismissSoloCutscene();
     if (soloUi.panel) {

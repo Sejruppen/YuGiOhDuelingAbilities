@@ -19,6 +19,7 @@ function loadSolo() {
   try {
     const saved = JSON.parse(localStorage.getItem(SOLO_STORAGE_KEY));
     if (!saved || !saved.phase) return newSolo();
+    if (saved.map && saved.map.layout !== SOLO_MAP_LAYOUT) return newSolo();
     if (!saved.relics) saved.relics = [];
     if (!saved.seenEvents) saved.seenEvents = [];
     if (!saved.mods) saved.mods = {};
@@ -129,8 +130,8 @@ function soloWeighted(weights) {
 }
 
 function soloRegionAt(floor, col) {
-  if (floor <= 2) return 'beach';
-  if (floor <= 5) return col < 2 ? 'forest' : 'meadow';
+  if (floor <= SOLO_BEACH_FLOORS) return 'beach';
+  if (floor <= SOLO_MIDDLE_FLOORS) return col < 2 ? 'forest' : 'meadow';
   if (floor <= SOLO_BRANCH_FLOORS) return col < 2 ? 'mountain' : 'wasteland';
   if (floor === SOLO_FLOOR.CAMPFIRE) return 'campfire';
   return floor === SOLO_FLOOR.LABYRINTH ? 'labyrinth' : 'castle';
@@ -175,11 +176,18 @@ function generateSoloMap() {
 
   // Node types, floor by floor so an elite never follows an elite.
   // The beach has no elite of its own, so it stays a warm-up.
+  // Special floors (SOLO_FLOOR_KINDS) are never hidden: the player plans around them.
   const eliteRegions = new Set();
   for (let floor = 1; floor <= SOLO_BRANCH_FLOORS; floor++) {
-    Object.values(nodes).filter(n => n.floor === floor).forEach(n => {
-      if (floor === 1) n.type = 'duelist';
-      else if (floor === SOLO_TREASURE_FLOOR) n.type = 'treasure';
+    const row = shuffled(Object.values(nodes).filter(n => n.floor === floor));
+    const kind = SOLO_FLOOR_KINDS[floor];
+    row.forEach((n, i) => {
+      if (kind === 'duelist') n.type = 'duelist';
+      else if (kind === 'treasure') n.type = 'treasure';
+      else if (kind === 'events' || kind === 'gamble') {
+        n.type = 'event';
+        n.kind = kind;
+      } else if (kind === 'fork') n.type = i === 0 ? 'duelist' : 'event';
       else {
         const afterElite = edges.some(([a, b]) => b === n.id && nodes[a].type === 'elite');
         let type = soloWeighted(SOLO_MIXED_ODDS);
@@ -197,7 +205,7 @@ function generateSoloMap() {
     if (keith) keithUsed = true;
     n.elite = keith ? 'keith' : soloEliteFor(n.region);
   });
-  return { nodes, edges };
+  return { nodes, edges, layout: SOLO_MAP_LAYOUT };
 }
 
 const soloEliteFor = region => Object.keys(SOLO_ELITES).find(id => SOLO_ELITES[id].region === region) || 'keith';
