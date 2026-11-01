@@ -439,7 +439,7 @@ function confirmSoloDestroyTrap() {
   soloAct(() => {
     solo.fight.trap = false;
     playSound({ name: 'co-destroy' });
-    return { tone: 'good', text: `🌪️ The face-down card is destroyed. It was ${SOLO_TRAP.name}!` };
+    return { tone: 'good', text: `🌪️ The face-down card is destroyed. It was ${soloCards(solo.fight).trap.name}!` };
   });
 }
 

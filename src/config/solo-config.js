@@ -47,18 +47,26 @@ const SOLO_REGIONS = {
 
 const SOLO_FIRST_NAMES = ['Hiro', 'Aiko', 'Ren', 'Kenji', 'Yuki', 'Sora', 'Daichi', 'Mika', 'Taro', 'Hana', 'Kaito', 'Rin', 'Shun', 'Emi', 'Riku', 'Nao'];
 
-// Duel Monsters-era cards with their real stats.
+// Duel Monsters-era cards with their real stats. Each region has 16: 12 of level 4 or lower, then 4 of level 5+.
+// Elites have 12 (8 low, 4 high) plus their special cards.
 const SOLO_MONSTERS = {
   beach: [
     { name: 'Root Water', type: 'Fish', atk: 900, def: 800, icon: '🐟' },
-    { name: 'Fiend Kraken', type: 'Aqua', atk: 1200, def: 1400, icon: '🦑' },
+    { name: 'Fire Kraken', type: 'Aqua', atk: 1600, def: 1500, icon: '🦑' },
     { name: 'Enchanting Mermaid', type: 'Fish', atk: 1200, def: 900, icon: '🧜‍♀️' },
     { name: 'Aqua Madoor', type: 'Spellcaster', atk: 1200, def: 2000, icon: '💧' },
     { name: 'Water Omotics', type: 'Aqua', atk: 1400, def: 1200, icon: '🌊' },
     { name: 'Great White', type: 'Fish', atk: 1600, def: 800, icon: '🦈' },
     { name: 'Bottom Dweller', type: 'Fish', atk: 1650, def: 1700, icon: '🐡' },
     { name: '7 Colored Fish', type: 'Fish', atk: 1800, def: 800, icon: '🐠' },
-    { name: 'Kairyu-Shin', type: 'Sea Serpent', atk: 1800, def: 1500, icon: '🐉' }
+    { name: 'Kairyu-Shin', type: 'Sea Serpent', atk: 1800, def: 1500, icon: '🐉' },
+    { name: 'Giant Red Seasnake', type: 'Aqua', atk: 1800, def: 800, icon: '🐍' },
+    { name: 'High Tide Gyojin', type: 'Aqua', atk: 1650, def: 1300, icon: '🔱' },
+    { name: 'Jellyfish', type: 'Aqua', atk: 1200, def: 1500, icon: '🪼' },
+    { name: 'Tongyo', type: 'Fish', atk: 1350, def: 800, icon: '🎣' },
+    { name: 'Sea Serpent Warrior of Darkness', type: 'Sea Serpent', atk: 1800, def: 1500, icon: '🌑' },
+    { name: 'Spike Seadra', type: 'Sea Serpent', atk: 1600, def: 1300, icon: '🦎' },
+    { name: 'Deepsea Shark', type: 'Fish', atk: 1900, def: 1600, icon: '🦈' }
   ],
   forest: [
     { name: 'Basic Insect', type: 'Insect', atk: 500, def: 700, icon: '🐞' },
@@ -68,7 +76,15 @@ const SOLO_MONSTERS = {
     { name: 'Mystic Horseman', type: 'Beast', atk: 1300, def: 1550, icon: '🐴' },
     { name: 'Hercules Beetle', type: 'Insect', atk: 1500, def: 2000, icon: '🪲' },
     { name: 'Trent', type: 'Plant', atk: 1500, def: 1800, icon: '🌳' },
-    { name: 'Leogun', type: 'Beast', atk: 1750, def: 1550, icon: '🦁' }
+    { name: 'Leogun', type: 'Beast', atk: 1750, def: 1550, icon: '🦁' },
+    { name: 'Flying Kamakiri #2', type: 'Insect', atk: 1500, def: 800, icon: '🦗' },
+    { name: 'Girochin Kuwagata', type: 'Insect', atk: 1700, def: 1000, icon: '🦂' },
+    { name: 'Kuwagata α', type: 'Insect', atk: 1250, def: 1000, icon: '🪳' },
+    { name: 'Bean Soldier', type: 'Plant', atk: 1400, def: 1300, icon: '🫘' },
+    { name: 'Mystic Tomato', type: 'Plant', atk: 1400, def: 1100, icon: '🍅' },
+    { name: 'Gazelle the King of Mythical Beasts', type: 'Beast', atk: 1500, def: 1200, icon: '🦌' },
+    { name: 'Great Angus', type: 'Beast', atk: 1800, def: 600, icon: '🐃' },
+    { name: 'Queen of Autumn Leaves', type: 'Plant', atk: 1800, def: 1500, icon: '🍂' }
   ],
   meadow: [
     { name: 'Swordsman of Landstar', type: 'Warrior', atk: 500, def: 1200, icon: '🗡️' },
@@ -78,7 +94,15 @@ const SOLO_MONSTERS = {
     { name: 'Kojikocy', type: 'Warrior', atk: 1500, def: 1200, icon: '🛡️' },
     { name: 'Axe Raider', type: 'Warrior', atk: 1700, def: 1150, icon: '🪓' },
     { name: 'Battle Ox', type: 'Beast-Warrior', atk: 1700, def: 1000, icon: '🐂' },
-    { name: 'Panther Warrior', type: 'Beast-Warrior', atk: 2000, def: 1600, icon: '🐆' }
+    { name: 'Panther Warrior', type: 'Beast-Warrior', atk: 2000, def: 1600, icon: '🐆' },
+    { name: 'Beaver Warrior', type: 'Beast-Warrior', atk: 1200, def: 1500, icon: '🦫' },
+    { name: 'Warrior Dai Grepher', type: 'Warrior', atk: 1700, def: 1600, icon: '🤺' },
+    { name: 'Beautiful Headhuntress', type: 'Warrior', atk: 1600, def: 800, icon: '🏹' },
+    { name: 'Alpha the Magnet Warrior', type: 'Rock', atk: 1400, def: 1700, icon: '🧲' },
+    { name: 'Battle Steer', type: 'Beast-Warrior', atk: 1800, def: 1300, icon: '🐃' },
+    { name: 'Ansatsu', type: 'Warrior', atk: 1700, def: 1200, icon: '🥷' },
+    { name: 'Rude Kaiser', type: 'Beast-Warrior', atk: 1800, def: 1600, icon: '🦍' },
+    { name: 'Stone Ogre Grotto', type: 'Rock', atk: 1600, def: 1500, icon: '🪨' }
   ],
   mountain: [
     { name: 'Baby Dragon', type: 'Dragon', atk: 1200, def: 700, icon: '🐲' },
@@ -88,7 +112,15 @@ const SOLO_MONSTERS = {
     { name: 'Koumori Dragon', type: 'Dragon', atk: 1500, def: 1200, icon: '🦇' },
     { name: 'Thunder Dragon', type: 'Thunder', atk: 1600, def: 1500, icon: '⚡' },
     { name: 'Crawling Dragon', type: 'Dragon', atk: 1600, def: 1400, icon: '🐊' },
-    { name: 'Kaminari Attack', type: 'Thunder', atk: 1900, def: 1400, icon: '🌩️' }
+    { name: 'Kaminari Attack', type: 'Thunder', atk: 1900, def: 1400, icon: '🌩️' },
+    { name: 'Blackland Fire Dragon', type: 'Dragon', atk: 1500, def: 800, icon: '🔥' },
+    { name: 'Luster Dragon', type: 'Dragon', atk: 1900, def: 1600, icon: '💎' },
+    { name: 'Lesser Dragon', type: 'Dragon', atk: 1200, def: 1000, icon: '🦎' },
+    { name: 'Skull Red Bird', type: 'Winged Beast', atk: 1550, def: 1200, icon: '🐦' },
+    { name: 'Blue-Winged Crown', type: 'Winged Beast', atk: 1600, def: 1200, icon: '🦜' },
+    { name: 'Sonic Duck', type: 'Winged Beast', atk: 1700, def: 700, icon: '🦆' },
+    { name: 'Tripwire Beast', type: 'Thunder', atk: 1200, def: 1300, icon: '🪤' },
+    { name: 'Curse of Dragon', type: 'Dragon', atk: 2000, def: 1500, icon: '🐲' }
   ],
   wasteland: [
     { name: 'Skull Servant', type: 'Zombie', atk: 300, def: 200, icon: '💀' },
@@ -97,7 +129,16 @@ const SOLO_MONSTERS = {
     { name: 'Uraby', type: 'Dinosaur', atk: 1500, def: 800, icon: '🦖' },
     { name: 'Dragon Zombie', type: 'Zombie', atk: 1600, def: 0, icon: '🦴' },
     { name: 'Sword Arm of Dragon', type: 'Dinosaur', atk: 1750, def: 2030, icon: '🦕' },
-    { name: 'Megazowler', type: 'Dinosaur', atk: 1800, def: 2000, icon: '🦏' }
+    { name: 'Megazowler', type: 'Dinosaur', atk: 1800, def: 2000, icon: '🦏' },
+    { name: 'Crawling Dragon #2', type: 'Dinosaur', atk: 1600, def: 1200, icon: '🐊' },
+    { name: 'Kabazauls', type: 'Dinosaur', atk: 1700, def: 1500, icon: '🦛' },
+    { name: 'Mammoth Graveyard', type: 'Dinosaur', atk: 1200, def: 800, icon: '🦣' },
+    { name: 'Gilasaurus', type: 'Dinosaur', atk: 1400, def: 400, icon: '🦎' },
+    { name: 'Master Kyonshee', type: 'Zombie', atk: 1750, def: 1000, icon: '🧧' },
+    { name: 'Wandering Mummy', type: 'Zombie', atk: 1500, def: 1500, icon: '🏺' },
+    { name: 'Regenerating Mummy', type: 'Zombie', atk: 1800, def: 1500, icon: '🩹' },
+    { name: 'Giant Axe Mummy', type: 'Zombie', atk: 1700, def: 2000, icon: '🪓' },
+    { name: 'Vampire Lord', type: 'Zombie', atk: 2000, def: 1500, icon: '🧛' }
   ]
 };
 
@@ -122,11 +163,17 @@ const SOLO_ELITES = {
     gimmick: '🥚 Cocoon of Evolution: a cocoon hatches into Great Moth (2600 ATK) after 2 of his turns, unless you destroy it first.',
     monsters: [
       { name: 'Basic Insect', type: 'Insect', atk: 500, def: 700, icon: '🐞' },
+      { name: 'Petit Moth', type: 'Insect', atk: 300, def: 200, icon: '🐛' },
       { name: 'Kumootoko', type: 'Insect', atk: 700, def: 1400, icon: '🕷️' },
       { name: 'Killer Needle', type: 'Insect', atk: 1200, def: 1000, icon: '🐝' },
       { name: 'Flying Kamakiri #1', type: 'Insect', atk: 1400, def: 900, icon: '🦗' },
+      { name: 'Flying Kamakiri #2', type: 'Insect', atk: 1500, def: 800, icon: '🦗' },
+      { name: 'Giant Flea', type: 'Insect', atk: 1500, def: 1200, icon: '🦟' },
+      { name: 'Neo Bug', type: 'Insect', atk: 1800, def: 1700, icon: '🐜', minRound: 2 },
       { name: 'Hercules Beetle', type: 'Insect', atk: 1500, def: 2000, icon: '🪲' },
-      { name: 'Neo Bug', type: 'Insect', atk: 1800, def: 1700, icon: '🐜', minRound: 2 }
+      { name: 'Hunter Spider', type: 'Insect', atk: 1600, def: 1400, icon: '🕸️', minRound: 2 },
+      { name: 'Kwagar Hercules', type: 'Insect', atk: 1900, def: 1700, icon: '🪲', minRound: 2, unique: true },
+      { name: 'Insect Queen', type: 'Insect', atk: 2200, def: 2400, icon: '👑', minRound: 3, unique: true }
     ]
   },
   mai: {
@@ -136,7 +183,17 @@ const SOLO_ELITES = {
     monsters: [
       { name: 'Harpie Lady', type: 'Winged Beast', atk: 1300, def: 1400, icon: '🪶' },
       { name: 'Harpie Lady', type: 'Winged Beast', atk: 1300, def: 1400, icon: '🪶' },
+      { name: 'Harpie Lady', type: 'Winged Beast', atk: 1300, def: 1400, icon: '🪶' },
+      { name: 'Faith Bird', type: 'Winged Beast', atk: 1500, def: 1100, icon: '🕊️' },
+      { name: 'Skull Red Bird', type: 'Winged Beast', atk: 1550, def: 1200, icon: '🐦' },
+      { name: 'Blue-Winged Crown', type: 'Winged Beast', atk: 1600, def: 1200, icon: '🦜' },
+      { name: 'Sacred Crane', type: 'Winged Beast', atk: 1600, def: 400, icon: '🦢' },
+      { name: 'Birdface', type: 'Winged Beast', atk: 1600, def: 1600, icon: '🐓' },
+      { name: 'Winged Sage Falcos', type: 'Winged Beast', atk: 1700, def: 1200, icon: '🦉' },
       { name: 'Cyber Harpie', type: 'Winged Beast', atk: 1800, def: 1300, icon: '🦅' },
+      { name: 'Peacock', type: 'Winged Beast', atk: 1700, def: 1500, icon: '🦚', minRound: 2 },
+      { name: 'Queen Bird', type: 'Winged Beast', atk: 1200, def: 2000, icon: '🐤', minRound: 2 },
+      { name: 'Punished Eagle', type: 'Winged Beast', atk: 2100, def: 1800, icon: '🦅', minRound: 3, unique: true },
       { name: "Harpie's Pet Dragon", type: 'Dragon', atk: 2000, def: 2500, icon: '🐉', minRound: 3, unique: true }
     ]
   },
@@ -146,9 +203,16 @@ const SOLO_ELITES = {
     gimmick: '🦖 When your field is empty, his Dinosaurs attack twice.',
     monsters: [
       { name: 'Uraby', type: 'Dinosaur', atk: 1500, def: 800, icon: '🦖' },
+      { name: 'Mammoth Graveyard', type: 'Dinosaur', atk: 1200, def: 800, icon: '🦣' },
+      { name: 'Gilasaurus', type: 'Dinosaur', atk: 1400, def: 400, icon: '🦎' },
+      { name: 'Mad Sword Beast', type: 'Dinosaur', atk: 1400, def: 1200, icon: '🗡️' },
+      { name: 'Hyper Hammerhead', type: 'Dinosaur', atk: 1500, def: 1200, icon: '🔨' },
       { name: 'Two-Headed King Rex', type: 'Dinosaur', atk: 1600, def: 1200, icon: '🦕' },
+      { name: 'Crawling Dragon #2', type: 'Dinosaur', atk: 1600, def: 1200, icon: '🐊' },
+      { name: 'Kabazauls', type: 'Dinosaur', atk: 1700, def: 1500, icon: '🦛' },
       { name: 'Sword Arm of Dragon', type: 'Dinosaur', atk: 1750, def: 2030, icon: '🦕' },
-      { name: 'Megazowler', type: 'Dinosaur', atk: 1800, def: 2000, icon: '🦏' },
+      { name: 'Megazowler', type: 'Dinosaur', atk: 1800, def: 2000, icon: '🦏', minRound: 2 },
+      { name: 'Black Tyranno', type: 'Dinosaur', atk: 2600, def: 1800, icon: '🦖', minRound: 3, unique: true },
       { name: 'Red-Eyes Black Dragon', type: 'Dragon', atk: 2400, def: 2000, icon: '🐲', minRound: 3, unique: true }
     ]
   },
@@ -160,7 +224,14 @@ const SOLO_ELITES = {
       { name: 'Skull Servant', type: 'Zombie', atk: 300, def: 200, icon: '💀' },
       { name: 'Clown Zombie', type: 'Zombie', atk: 1350, def: 0, icon: '🤡' },
       { name: 'Armored Zombie', type: 'Zombie', atk: 1500, def: 0, icon: '🧟' },
+      { name: 'Wandering Mummy', type: 'Zombie', atk: 1500, def: 1500, icon: '🏺' },
+      { name: 'Vampire Lady', type: 'Zombie', atk: 1550, def: 1550, icon: '🧛‍♀️' },
       { name: 'Dragon Zombie', type: 'Zombie', atk: 1600, def: 0, icon: '🦴' },
+      { name: 'Master Kyonshee', type: 'Zombie', atk: 1750, def: 1000, icon: '🧧' },
+      { name: 'Regenerating Mummy', type: 'Zombie', atk: 1800, def: 1500, icon: '🩹' },
+      { name: 'Shadow Ghoul', type: 'Zombie', atk: 1600, def: 1300, icon: '👻', minRound: 2 },
+      { name: 'Pumpking the King of Ghosts', type: 'Zombie', atk: 1800, def: 2000, icon: '🎃', minRound: 2 },
+      { name: 'Patrician of Darkness', type: 'Zombie', atk: 2000, def: 1400, icon: '🕯️', minRound: 3, unique: true },
       { name: 'Ryu Kokki', type: 'Zombie', atk: 2400, def: 2000, icon: '👹', minRound: 3, unique: true }
     ]
   },
@@ -169,10 +240,18 @@ const SOLO_ELITES = {
     quote: "Listen up, punk. Here's a lesson in American dueling!",
     gimmick: '🃏 Once per duel he plays a card up his sleeve, without warning.',
     monsters: [
+      { name: 'Gradius', type: 'Machine', atk: 1200, def: 800, icon: '🚀' },
+      { name: 'Giga-Tech Wolf', type: 'Machine', atk: 1200, def: 1400, icon: '🐺' },
+      { name: 'Cyber Soldier of Darkworld', type: 'Machine', atk: 1400, def: 1200, icon: '🦾' },
+      { name: 'Ground Attacker Bugroth', type: 'Machine', atk: 1500, def: 1000, icon: '🚜' },
       { name: 'Robotic Knight', type: 'Machine', atk: 1600, def: 1800, icon: '🤖' },
+      { name: 'Guardian of the Throne Room', type: 'Machine', atk: 1650, def: 1600, icon: '🏛️' },
+      { name: 'X-Head Cannon', type: 'Machine', atk: 1800, def: 1500, icon: '🔫' },
       { name: 'Mechanicalchaser', type: 'Machine', atk: 1850, def: 800, icon: '⚙️' },
       { name: 'Slot Machine', type: 'Machine', atk: 2000, def: 2300, icon: '🎰' },
+      { name: 'Spikebot', type: 'Machine', atk: 1800, def: 1700, icon: '📌', minRound: 2 },
       { name: 'Launcher Spider', type: 'Machine', atk: 2200, def: 2500, icon: '🕷️', minRound: 2, unique: true },
+      { name: 'Metal Dragon', type: 'Machine', atk: 1850, def: 1700, icon: '🐲', minRound: 3, unique: true },
       { name: 'Barrel Dragon', type: 'Machine', atk: 2600, def: 2200, icon: '🔫', special: true }
     ]
   },
@@ -182,6 +261,18 @@ const SOLO_ELITES = {
     gimmick: '🚪 With Sanga, Kazejin and Suijin on the field, they fuse into Gate Guardian (3750 ATK). Labyrinth Wall (0/3000) guards them.',
     monsters: [
       { name: 'Labyrinth Wall', type: 'Rock', atk: 0, def: 3000, icon: '🧱', unique: true, pos: 'def' },
+      { name: 'Guardian of the Labyrinth', type: 'Warrior', atk: 1000, def: 1200, icon: '💂' },
+      { name: 'The Statue of Easter Island', type: 'Rock', atk: 1100, def: 1400, icon: '🗿' },
+      { name: 'Giant Soldier of Stone', type: 'Rock', atk: 1300, def: 2000, icon: '🪨' },
+      { name: 'Legendary Jujitsu Master', type: 'Rock', atk: 1300, def: 1800, icon: '🥋' },
+      { name: 'Alpha the Magnet Warrior', type: 'Rock', atk: 1400, def: 1700, icon: '🧲' },
+      { name: 'Destroyer Golem', type: 'Rock', atk: 1500, def: 1000, icon: '🛠️' },
+      { name: 'Gamma the Magnet Warrior', type: 'Rock', atk: 1500, def: 1800, icon: '🧲' },
+      { name: 'Beta the Magnet Warrior', type: 'Rock', atk: 1700, def: 1600, icon: '🧲' },
+      { name: 'Sanga of the Thunder', type: 'Thunder', atk: 2600, def: 2200, icon: '⚡', unique: true },
+      { name: 'Kazejin', type: 'Spellcaster', atk: 2400, def: 2200, icon: '🌪️', unique: true },
+      { name: 'Suijin', type: 'Aqua', atk: 2500, def: 2400, icon: '🌊', unique: true },
+      // The trio twice, so the gimmick still has a fair chance among the walls
       { name: 'Sanga of the Thunder', type: 'Thunder', atk: 2600, def: 2200, icon: '⚡', unique: true },
       { name: 'Kazejin', type: 'Spellcaster', atk: 2400, def: 2200, icon: '🌪️', unique: true },
       { name: 'Suijin', type: 'Aqua', atk: 2500, def: 2400, icon: '🌊', unique: true },
@@ -309,16 +400,86 @@ const SOLO_RPS = {
 };
 const SOLO_RPS_FAVOURITE = 0.4;
 
-const SOLO_EQUIPS = [
-  { name: 'Legendary Sword', atk: 300 },
-  { name: 'Black Pendant', atk: 500 },
-  { name: 'Sword of Deep-Seated', atk: 500 },
-  { name: 'Malevolent Nuzzler', atk: 700 }
-];
-const SOLO_TRAP = { name: 'Negate Attack', text: 'Your attack is negated and your Battle Phase ends.' };
-const SOLO_REMOVAL = { name: 'Fissure', text: 'Destroy your face-up monster with the lowest ATK.' };
+// Spells and Traps. Generic duelists share one set; each elite and Pegasus has
+// their own (from the anime), found by soloCards(). Equips with `only` need a
+// monster of those types on the field. Trap kinds: negate (attack negated, Battle
+// Phase ends), halve (the attacker's ATK is halved), destroy (an attacker with
+// 1000+ ATK is destroyed), burn (you take 300). A null removal/heal means the
+// duelist never uses that action.
+const SOLO_GENERIC_CARDS = {
+  equips: [
+    { name: 'Legendary Sword', atk: 300 },
+    { name: 'Black Pendant', atk: 500 },
+    { name: 'Sword of Deep-Seated', atk: 500 },
+    { name: 'Malevolent Nuzzler', atk: 700 }
+  ],
+  trap: { name: 'Negate Attack', kind: 'negate', text: 'Your attack is negated and your Battle Phase ends.' },
+  removal: { name: 'Fissure', text: 'Destroy your face-up monster with the lowest ATK.' },
+  heal: { name: "Goblin's Secret Remedy", lp: 600 }
+};
+const SOLO_OWNER_CARDS = {
+  weevil: {
+    equips: [
+      { name: 'Armor with Laser Cannon', atk: 500, only: ['Insect'] },
+      { name: 'Lev. 2 Power Boost', atk: 300 }
+    ],
+    trap: { name: 'Parasite Worm', kind: 'negate', text: 'Your attack is negated and your Battle Phase ends.' },
+    removal: { name: 'Eradicating Aerosol', text: 'Destroy your face-up monster with the lowest ATK.' },
+    heal: null
+  },
+  mai: {
+    equips: [
+      { name: 'Rose Whip', atk: 300 },
+      { name: 'Cyber Shield', atk: 500, only: ['Winged Beast', 'Warrior'] }
+    ],
+    trap: { name: 'Mirror Wall', kind: 'halve', text: 'Your attacking monster has its ATK halved for this attack.' },
+    removal: { name: "Harpie's Feather Duster", text: 'Destroy your face-up monster with the lowest ATK.' },
+    heal: null
+  },
+  rex: {
+    equips: [
+      { name: 'Dragon Nails', atk: 500, only: ['Dinosaur', 'Dragon'] },
+      { name: 'Wasteland', atk: 300 }
+    ],
+    trap: { name: 'Bottomless Trap Hole', kind: 'destroy', text: 'Your attacking monster is destroyed if it has 1000 or more ATK.' },
+    removal: null,
+    heal: { name: 'Jurassic Heart', lp: 600 }
+  },
+  bonz: {
+    equips: [
+      { name: 'Call of the Haunted', atk: 500, only: ['Zombie'] },
+      { name: 'Premature Burial', atk: 300 }
+    ],
+    trap: { name: 'Skull Invitation', kind: 'burn', text: 'You take 300 damage, then your attack continues.' },
+    removal: null,
+    heal: null
+  },
+  keith: {
+    equips: [
+      { name: 'Machine Conversion Factory', atk: 300, only: ['Machine'] },
+      { name: 'Metalmorph', atk: 500 }
+    ],
+    trap: { name: 'Magic Metal Force', kind: 'halve', text: 'Your attacking monster has its ATK halved for this attack.' },
+    removal: { name: 'Pillager', text: 'Destroy your face-up monster with the lowest ATK.' },
+    heal: null
+  },
+  paradox: {
+    equips: [{ name: 'Labyrinth Wall', atk: 500 }],
+    trap: { name: 'Riryoku', kind: 'halve', text: 'Your attacking monster has its ATK halved for this attack.' },
+    removal: null,
+    heal: null
+  },
+  pegasus: {
+    equips: [
+      { name: 'Toon Kingdom', atk: 500 },
+      { name: 'Legendary Sword', atk: 300 }
+    ],
+    trap: { name: 'Magic Cylinder', kind: 'negate', text: 'Your attack is negated and your Battle Phase ends.' },
+    removal: null,
+    heal: null
+  }
+};
 const SOLO_REMOVAL_FROM_FLOOR = 4;
-const SOLO_HEAL = { name: "Goblin's Secret Remedy", lp: 600 };
 
 // Relics: Treasure offers 3 commons, an elite win 2 rares. `value` is the
 // relic's number (LP, ATK). Consumables vanish when used.

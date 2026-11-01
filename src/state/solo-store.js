@@ -472,6 +472,19 @@ function applySoloMods(f) {
   if (mods.includes('swarm')) f.swarm = true;
 }
 
+// The Spell/Trap set of this fight's owner: an elite, Pegasus, or the generic set.
+const soloCards = f => SOLO_OWNER_CARDS[f.elite || f.boss] || SOLO_GENERIC_CARDS;
+
+const soloEquipFits = (e, f) => !e.only || f.monsters.some(m => e.only.includes(m.type));
+
+// An equip the field can use now. Cards with `only` need a monster of that type.
+function soloEquipRoll(f, prev) {
+  if (prev && soloEquipFits(prev, f)) return prev;
+  const { equips } = soloCards(f);
+  const fits = equips.filter(e => soloEquipFits(e, f));
+  return soloPick(fits.length ? fits : equips.filter(e => !e.only));
+}
+
 // Picks the enemy's next intents and rolls their exact cards up front, so the
 // Millennium Eye can show them.
 function planSoloTurn(f) {
@@ -480,7 +493,7 @@ function planSoloTurn(f) {
   let toonWorld = soloToonWorldUp(f);
   f.peek = f.intents.map(action => {
     if (action === 'toonworld') toonWorld = true;
-    if (action === 'equip') return { equip: soloPick(SOLO_EQUIPS) };
+    if (action === 'equip') return { equip: soloEquipRoll(f) };
     if (action === 'crush') return { cardType: soloPick(SOLO_PEGASUS.cardTypes) };
     if (action === 'bluff') return soloPegasusBluff();
     if (action !== 'summon') return {};
@@ -583,8 +596,8 @@ function buildSoloIntents(f) {
   const p = SOLO_PERSONALITIES[f.personality];
   let monsters = f.monsters.length;
   let trap = f.trap;
-  let removal = f.used.removal || f.floor < SOLO_REMOVAL_FROM_FLOOR;
-  let heal = f.used.heal || f.lp >= f.maxLp;
+  let removal = f.used.removal || f.floor < SOLO_REMOVAL_FROM_FLOOR || !soloCards(f).removal;
+  let heal = f.used.heal || f.lp >= f.maxLp || !soloCards(f).heal;
   let special = !soloSpecialReady(f);
   const intents = [];
   for (let k = 0; k < f.actions; k++) {
@@ -696,12 +709,36 @@ function soloDefeat() {
 // 'book' = Pegasus' Toon World.
 function soloPlayerAttack(uid, atk) {
   const f = solo.fight;
+  let prefix = '';
   if (f.trap) {
+    const trap = soloCards(f).trap;
     f.trap = false;
-    f.battleOver = true;
     playSound({ name: 'co-negate' });
-    return { tone: 'bad', text: `🪤 ${SOLO_TRAP.name}! ${SOLO_TRAP.text}`, negated: true };
+    const head = `🪤 ${trap.name}!`;
+    if (trap.kind === 'halve') {
+      atk = Math.floor(atk / 2);
+      prefix = `${head} Your attacker's ATK is halved to ${atk}. `;
+    } else if (trap.kind === 'destroy') {
+      if (atk >= 1000) {
+        f.battleOver = true;
+        return { tone: 'bad', text: `${head} ${trap.text.replace(/ if it has.*$/, '')}. Send it to the Graveyard.`, negated: true };
+      }
+      prefix = `${head} Your attacker has under 1000 ATK, so nothing happens. `;
+    } else if (trap.kind === 'burn') {
+      hurtSoloPlayer(300);
+      prefix = `${head} You take 300. `;
+    } else {
+      f.battleOver = true;
+      return { tone: 'bad', text: `${head} ${trap.text}`, negated: true };
+    }
   }
+  const result = soloResolveAttack(uid, atk);
+  if (prefix && result) result.text = prefix + result.text;
+  return result;
+}
+
+function soloResolveAttack(uid, atk) {
+  const f = solo.fight;
   if (uid === 'book') return soloTearPage(atk);
   if (uid === null) {
     const dealt = damageSoloEnemy(atk);
@@ -846,36 +883,43 @@ function prepareSoloStepType(step, f) {
       return info('🃏', `Summons ${m.name}!`, `${m.icon} ${st.atk} ATK / ${st.def} DEF in <b>${pos === 'atk' ? 'Attack' : 'Defense'} Position</b>.`, notes.join('<br>'));
     }
     case 'equip': {
-      const targets = f.monsters.filter(m => m.pos === 'atk');
-      const target = (targets.length ? targets : f.monsters).reduce((a, b) => (soloStats(b, f).atk > soloStats(a, f).atk ? b : a));
-      const eq = step.peek?.equip || soloPick(SOLO_EQUIPS);
+      const eq = soloEquipRoll(f, step.peek?.equip);
+      const fitting = f.monsters.filter(m => !eq.only || eq.only.includes(m.type));
+      const attackers = fitting.filter(m => m.pos === 'atk');
+      const targets = attackers.length ? attackers : fitting;
+      const target = targets.reduce((a, b) => (soloStats(b, f).atk > soloStats(a, f).atk ? b : a));
       target.equip = (target.equip || 0) + eq.atk;
       playSound({ name: 'co-shield' });
       return info('⚔️', `${eq.name}!`, `${target.icon} ${target.name} gains ${eq.atk} ATK (now ${soloStats(target, f).atk}).`);
     }
-    case 'trap':
+    case 'trap': {
       if (f.trap) return false;
+      const trap = soloCards(f).trap;
       if (soloRelicReady('ring')) {
         useSoloRelic('ring');
         playSound({ name: 'co-destroy' });
-        return info('💍', 'Sets a card face-down…', `The Millennium Ring points at it: ${SOLO_TRAP.name}! It is destroyed before it can spring.`);
+        return info('💍', 'Sets a card face-down…', `The Millennium Ring points at it: ${trap.name}! It is destroyed before it can spring.`);
       }
       f.trap = true;
       playSound({ name: 'co-negate' });
       return info('🪤', 'Sets a card face-down…', 'It will spring on your first attack next turn.');
-    case 'removal':
-      if (f.used.removal) return false;
+    }
+    case 'removal': {
+      const removal = soloCards(f).removal;
+      if (f.used.removal || !removal) return false;
       f.used.removal = true;
       playSound({ name: 'co-destroy' });
-      return info('💥', `${SOLO_REMOVAL.name}!`, SOLO_REMOVAL.text, 'Send it to the Graveyard on the table. No monsters? Nothing happens.');
+      return info('💥', `${removal.name}!`, removal.text, 'Send it to the Graveyard on the table. No monsters? Nothing happens.');
+    }
     case 'heal': {
-      if (f.used.heal || f.lp >= f.maxLp) return false;
+      const heal = soloCards(f).heal;
+      if (!heal || f.used.heal || f.lp >= f.maxLp) return false;
       f.used.heal = true;
-      const healed = Math.min(SOLO_HEAL.lp, f.maxLp - f.lp);
+      const healed = Math.min(heal.lp, f.maxLp - f.lp);
       f.lp += healed;
       playSound({ name: 'co-heal' });
       queueSoloFx(() => fxSoloHit('[data-solo-enemy]', healed));
-      return info('💚', `${SOLO_HEAL.name}!`, `${f.name} gains ${healed} LP.`);
+      return info('💚', `${heal.name}!`, `${f.name} gains ${healed} LP.`);
     }
     case 'attack': {
       const m = soloMonster(step.uid);

@@ -616,9 +616,15 @@ function soloIntentDetail(f, action, peek = {}) {
     return `Summon <span class="ce-emoji">${c.icon}</span> <b>${c.name}</b> (${peek.pos === 'atk' ? `${st.atk} ATK, Attack Position` : `${st.def} DEF, Defense Position`})`;
   }
   if (action === 'equip' && peek.equip) return `Equip <b>${peek.equip.name}</b> (+${peek.equip.atk} ATK)`;
-  if (action === 'trap') return `Set <b>${SOLO_TRAP.name}</b>`;
-  if (action === 'removal') return `<b>${SOLO_REMOVAL.name}</b>: ${SOLO_REMOVAL.text.toLowerCase().replace(/\.$/, '')}`;
-  if (action === 'heal') return `<b>${SOLO_HEAL.name}</b> (+${SOLO_HEAL.lp} LP)`;
+  if (action === 'trap') return 'Set a <b>face-down card</b>';
+  if (action === 'removal') {
+    const r = soloCards(f).removal;
+    return `<b>${r.name}</b>: ${r.text.toLowerCase().replace(/\.$/, '')}`;
+  }
+  if (action === 'heal') {
+    const h = soloCards(f).heal;
+    return `<b>${h.name}</b> (+${h.lp} LP)`;
+  }
   const special = f.elite && SOLO_ELITES[f.elite]?.specialCard;
   if (action === 'special' && special) return `Play <b>${special}</b>`;
   if (action === 'crush' && peek.cardType) return `<b>Mind Crush</b>: you must discard a <b>${peek.cardType}</b> card`;
