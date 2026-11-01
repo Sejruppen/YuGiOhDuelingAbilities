@@ -15154,6 +15154,104 @@ html.fx-lite .solo-art-fine { display: none; }
 @keyframes solo-march { to { stroke-dashoffset: -10; } }
 html.fx-lite .solo-edge-glow { display: none; }
 .solo-map--mini .solo-edge-c { display: none; }
+/* Atmosphere (live map only, solo-view.js renderSoloAtmosphere). --sm-t is the time since the page loaded,
+   so after a re-render every loop carries on where it was. Particles and lightning rest at opacity 0,
+   so under reduced motion they just disappear. */
+.solo-atmo { position: absolute; inset: 0; pointer-events: none; }
+.solo-p {
+  position: absolute;
+  display: block;
+  width: 3px;
+  height: 3px;
+  margin: -1.5px 0 0 -1.5px;
+  border-radius: 50%;
+  opacity: 0;
+  animation-duration: var(--d);
+  animation-timing-function: linear;
+  animation-delay: calc(var(--sm-t, 0s) - var(--o));
+  animation-iteration-count: infinite;
+}
+.solo-p--spray { background: #f8fafc; box-shadow: 0 0 4px 1px rgba(255, 255, 255, 0.7); animation-name: solo-p-twinkle; }
+.solo-p--gull { width: 16px; height: 6px; margin: 0; border-radius: 0; animation-name: solo-p-gull; }
+.solo-p--gull svg { display: block; width: 100%; height: 100%; transform-origin: 50% 80%; animation: solo-p-flap 0.5s ease-in-out infinite alternate; }
+.solo-p--firefly { width: 4px; height: 4px; background: #ecfccb; box-shadow: 0 0 6px 2px rgba(190, 242, 100, 0.75); animation-name: solo-p-firefly; animation-timing-function: ease-in-out; }
+.solo-p--petal { width: 6px; height: 4px; border-radius: 70% 0; background: #f9a8d4; animation-name: solo-p-petal; }
+.solo-p--petal:nth-child(3n) { width: 3px; height: 3px; border-radius: 50%; background: #fef08a; }
+.solo-p--snow { background: #f8fafc; animation-name: solo-p-snow; }
+.solo-p--dust { background: #d6b98c; animation-name: solo-p-dust; }
+.solo-p--ember { background: #fdba74; box-shadow: 0 0 4px 1px rgba(251, 146, 60, 0.8); animation-name: solo-p-ember; animation-timing-function: ease-out; }
+.solo-p--wisp { width: 30px; height: 10px; margin: -5px 0 0 -15px; border-radius: 0; background: radial-gradient(closest-side, rgba(192, 132, 252, 0.55), transparent); animation-name: solo-p-wisp; animation-timing-function: ease-in-out; }
+html.fx-lite .solo-p--gull { display: none; }
+@keyframes solo-p-twinkle {
+  0%, 100% { opacity: 0; transform: scale(0.3); }
+  50% { opacity: 0.9; transform: scale(1); }
+}
+@keyframes solo-p-gull {
+  0% { opacity: 1; left: -8%; transform: translateY(0); }
+  15% { transform: translateY(-10px); }
+  30% { transform: translateY(2px); }
+  45% { opacity: 1; left: 104%; transform: translateY(-6px); }
+  45.1%, 100% { opacity: 0; left: 104%; }
+}
+@keyframes solo-p-flap { to { transform: scaleY(-0.6); } }
+@keyframes solo-p-firefly {
+  0% { opacity: 0; transform: translate(0, 0); }
+  25%, 75% { opacity: 0.9; }
+  50% { opacity: 0.25; transform: translate(14px, -10px); }
+  100% { opacity: 0; transform: translate(var(--dx), -22px); }
+}
+@keyframes solo-p-petal {
+  0% { opacity: 0; transform: translate(0, 0) rotate(0deg); }
+  15%, 85% { opacity: 0.9; }
+  100% { opacity: 0; transform: translate(-60px, 36px) rotate(320deg); }
+}
+@keyframes solo-p-snow {
+  0% { opacity: 0; transform: translate(0, 0); }
+  10%, 85% { opacity: 0.85; }
+  100% { opacity: 0; transform: translate(var(--dx), 110px); }
+}
+@keyframes solo-p-dust {
+  0% { opacity: 0; transform: translate(0, 0); }
+  20%, 80% { opacity: 0.6; }
+  100% { opacity: 0; transform: translate(-50px, calc(var(--dx) * 0.4)); }
+}
+@keyframes solo-p-ember {
+  0% { opacity: 0; transform: translate(0, 0) scale(1); }
+  15% { opacity: 1; }
+  100% { opacity: 0; transform: translate(calc(var(--dx) * 0.4), -40px) scale(0.4); }
+}
+@keyframes solo-p-wisp {
+  0%, 100% { opacity: 0; transform: translate(0, 0); }
+  50% { opacity: 0.9; transform: translate(var(--dx), -4px); }
+}
+/* Lightning over the castle: two bolts on one 23s cycle (14s, then 9s apart), each with a sky flash. */
+.solo-bolt, .solo-flash { opacity: 0; animation: solo-strike 23s linear infinite; animation-delay: var(--sm-t, 0s); }
+.solo-bolt--b { animation-delay: calc(var(--sm-t, 0s) - 9s); }
+.solo-flash { animation-name: solo-flash; }
+.solo-map--mini .solo-bolt, .solo-map--mini .solo-flash { display: none; }
+@keyframes solo-strike {
+  0%, 2.6%, 100% { opacity: 0; }
+  0.4%, 1.2% { opacity: 1; }
+  0.8% { opacity: 0.15; }
+}
+@keyframes solo-flash {
+  0%, 3%, 60.9%, 63.9%, 100% { opacity: 0; }
+  0.4%, 61.3% { opacity: 0.35; }
+  0.8%, 61.7% { opacity: 0.05; }
+  1.2%, 62.1% { opacity: 0.3; }
+}
+/* Parallax mist: the layer is pushed down by 40% of the scroll (solo-actions.js soloMapParallax),
+   so it drifts past at 0.6x the speed of the ground. */
+.solo-mist { position: absolute; left: 0; right: 0; top: -30%; height: 130%; transform: translateY(var(--sm-par, 0px)); }
+.solo-mist i {
+  position: absolute;
+  display: block;
+  aspect-ratio: 4;
+  background: radial-gradient(closest-side, rgba(226, 232, 240, 0.16), transparent);
+  animation: solo-mist-sway 26s ease-in-out infinite alternate;
+  animation-delay: calc(var(--sm-t, 0s) - var(--o));
+}
+@keyframes solo-mist-sway { to { transform: translateX(18px); } }
 .solo-region-label {
   position: absolute;
   transform: translateY(-50%);

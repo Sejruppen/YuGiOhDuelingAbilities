@@ -364,6 +364,8 @@ const smMounds = (list, color) => `<path fill="${color}" d="${list.map(([a, b, y
 const smWheat = (x, y) => [0, 4, 8].map(dx => `<path d="M${x + dx} ${y}v-12" stroke="#b39245" stroke-width="1.2"/><ellipse cx="${x + dx}" cy="${y - 15}" rx="1.6" ry="3.6" fill="#d9b85a"/>`).join('');
 const smCastleSide = '<path fill="#12071f" d="M0 120V92H10V64L20 46L30 64V92H40V80L48 66L56 80V102H64V96H68V102H72V96H76V102H80V120Z"/>'
   + '<g class="solo-art-fine" fill="#fbbf24" fill-opacity="0.75"><rect x="17" y="70" width="6" height="8" rx="3"/><rect x="45" y="84" width="6" height="7" rx="3"/></g>';
+const smStorm = (x, y, s) => `<g transform="translate(${x} ${y}) scale(${s})"><g fill="#2b1440"><ellipse cy="4" rx="28" ry="9"/><circle cx="-10" cy="-2" r="10"/><circle cx="9" cy="-4" r="12"/></g>`
+  + '<g fill="#3d1f58"><circle cx="-11" cy="-6" r="6"/><circle cx="8" cy="-9" r="7"/></g></g>';
 
 // colors = the band's top and bottom fill; art = scenery ('{id}' becomes the map's unique id prefix).
 const SOLO_MAP_ART = {
@@ -437,6 +439,11 @@ const SOLO_MAP_ART = {
       `<g class="solo-art-fine" fill="#f5e6ff" opacity="0.8">${[[24, 18], [72, 40], [112, 12], [150, 30], [214, 14], [250, 38], [330, 16], [350, 52], [96, 70], [262, 80], [8, 40], [188, 22]]
         .map(([x, y]) => `<circle cx="${x}" cy="${y}" r="1.2"/>`).join('')}</g>`,
       '<path fill="#fde68a" transform="translate(300 30)" d="M0 -12A12 12 0 0 0 0 12A17 17 0 0 1 0 -12Z"/>',
+      // Storm clouds, and lightning that flashes behind the castle towers (timed in effects.css).
+      '<rect class="solo-flash" width="360" height="120" fill="#c4b5fd"/>',
+      '<g class="solo-bolt" fill="none" stroke-linejoin="round" stroke-linecap="round"><path stroke="rgba(196,181,253,0.5)" stroke-width="5" d="M112 14L102 34H111L98 62"/><path stroke="#f5f3ff" stroke-width="1.6" d="M112 14L102 34H111L98 62"/></g>',
+      '<g class="solo-bolt solo-bolt--b" fill="none" stroke-linejoin="round" stroke-linecap="round"><path stroke="rgba(196,181,253,0.5)" stroke-width="5" d="M250 20L260 38H251L264 64"/><path stroke="#f5f3ff" stroke-width="1.6" d="M250 20L260 38H251L264 64"/></g>',
+      smStorm(40, 10, 1), smStorm(112, 14, 1.2), smStorm(186, 4, 1), smStorm(252, 18, 1.1), smStorm(330, 46, 0.9),
       '<circle cx="180" cy="70" r="52" fill="#a855f7" opacity="0.18"/>',
       smCastleSide,
       `<g transform="translate(360 0) scale(-1 1)">${smCastleSide}</g>`
@@ -479,7 +486,52 @@ function renderSoloMapBands() {
       labels.push(`<span class="solo-region-label" style="${side === 'right' ? 'right' : 'left'}: 1.5%; top: ${((bottom - 18) / SOLO_MAP_H) * 100}%;"><span class="ce-emoji">${r.icon}</span> ${r.name}</span>`);
     }
   });
-  return { defs: defs.join(''), rects: rects.join(''), labels: labels.join('') };
+  // The sky darkens and reddens from the highlands up to the Labyrinth; the castle's own sky stays clear for the lightning.
+  const skyTop = 60;
+  const skyBottom = soloMapY(SOLO_MIDDLE_FLOORS) - 50;
+  const at = y => ((y - skyTop) / (skyBottom - skyTop)).toFixed(3);
+  defs.push(`<linearGradient id="${id}-sky" gradientUnits="userSpaceOnUse" x1="0" y1="${skyTop}" x2="0" y2="${skyBottom}">`
+    + `<stop offset="0" stop-color="#3a0820" stop-opacity="0"/><stop offset="${at(140)}" stop-color="#3a0820" stop-opacity="0.45"/>`
+    + `<stop offset="${at(380)}" stop-color="#3a0820" stop-opacity="0.2"/><stop offset="1" stop-color="#3a0820" stop-opacity="0"/></linearGradient>`);
+  const sky = `<rect y="${skyTop}" width="${SOLO_MAP_W}" height="${skyBottom - skyTop}" fill="url(#${id}-sky)"/>`;
+  return { defs: defs.join(''), rects: rects.join(''), sky, labels: labels.join('') };
+}
+
+// --- Map atmosphere (live map only): looping particles per region and a mist layer for parallax. ---
+// [kind, x, y, w, h, count, seconds]: particles start somewhere in the box (map units); each loops in about `seconds`.
+const SOLO_MAP_PARTICLES = [
+  ['spray', 10, 1050, 340, 250, 8, 3],
+  ['gull', 0, 1060, 0, 160, 1, 22],
+  ['firefly', 14, 650, 150, 350, 8, 6],
+  ['petal', 200, 640, 150, 340, 8, 7],
+  ['snow', 6, 230, 168, 300, 10, 7],
+  ['dust', 200, 250, 150, 340, 6, 6],
+  ['ember', 200, 300, 150, 280, 2, 3.5],
+  ['ember', 147, 132, 6, 4, 2, 3],
+  ['ember', 207, 132, 6, 4, 2, 3],
+  ['wisp', 20, 20, 300, 80, 5, 9]
+];
+// [left %, top %, width %] in the mist layer, which is 130% of the map's height.
+const SOLO_MAP_MIST = [[-10, 2, 70], [50, 12, 60], [5, 24, 55], [45, 35, 65], [-5, 47, 60], [50, 58, 55], [0, 70, 65], [45, 81, 60], [5, 92, 55]];
+const SM_GULL = '<svg viewBox="0 0 16 6"><path d="M1 5Q4 1 8 4Q12 1 15 5" fill="none" stroke="#f8fafc" stroke-width="1.5" stroke-linecap="round"/></svg>';
+// The same seed gives the same particles on every render, so nothing jumps when you tap the map.
+const smRand = n => {
+  const s = Math.sin(n * 127.1 + 311.7) * 43758.5453;
+  return s - Math.floor(s);
+};
+
+function renderSoloAtmosphere() {
+  let seed = 0;
+  const r = () => smRand(++seed);
+  const parts = SOLO_MAP_PARTICLES.flatMap(([kind, x, y, w, h, count, secs]) => Array.from({ length: fxCount(count) }, () => {
+    const left = ((x + r() * w) / SOLO_MAP_W) * 100;
+    const top = ((y + r() * h) / SOLO_MAP_H) * 100;
+    const d = secs * (0.8 + r() * 0.4);
+    const style = `left:${left.toFixed(1)}%;top:${top.toFixed(2)}%;--d:${d.toFixed(2)}s;--o:${(r() * d).toFixed(2)}s;--dx:${Math.round((r() - 0.5) * 40)}px`;
+    return `<i class="solo-p solo-p--${kind}" style="${style}">${kind === 'gull' ? SM_GULL : ''}</i>`;
+  })).join('');
+  const mist = SOLO_MAP_MIST.map(([x, y, w], i) => `<i style="left:${x}%;top:${y}%;width:${w}%;--o:${i * 7}s"></i>`).join('');
+  return `<div class="solo-atmo" aria-hidden="true">${parts}<div class="solo-mist" style="--sm-par:${soloMistOffset()}px">${mist}</div></div>`;
 }
 
 function soloEdgeWalked(a, b, path = solo.path) {
@@ -550,12 +602,14 @@ function renderSoloMap(mini = false, run = solo) {
   }
 
   return `
-    <div class="solo-map ${mini ? 'solo-map--mini' : ''} relative mx-auto w-full" style="max-width: ${mini ? 200 : SOLO_MAP_W + 40}px; aspect-ratio: ${SOLO_MAP_W} / ${SOLO_MAP_H};" ${mini ? 'aria-hidden="true"' : ''}>
+    <div class="solo-map ${mini ? 'solo-map--mini' : ''} relative mx-auto w-full" style="max-width: ${mini ? 200 : SOLO_MAP_W + 40}px; aspect-ratio: ${SOLO_MAP_W} / ${SOLO_MAP_H};${mini ? '' : ` --sm-t: -${(performance.now() / 1000).toFixed(2)}s;`}" ${mini ? 'aria-hidden="true"' : ''}>
       <svg class="absolute inset-0 w-full h-full" viewBox="0 0 ${SOLO_MAP_W} ${SOLO_MAP_H}" preserveAspectRatio="none" aria-hidden="true">
         <defs>${bands.defs}</defs>
         ${bands.rects}
+        ${bands.sky}
         ${lines}
       </svg>
+      ${mini ? '' : renderSoloAtmosphere()}
       ${bands.labels}
       ${buttons}
     </div>
@@ -616,7 +670,7 @@ function renderSoloMapScreen() {
   return `
     ${renderSoloHeader(`${SOLO_MAP_ICON} Duelist's Road`, `<button onclick="toggleSoloLegend()" aria-label="Map legend" class="text-slate-300 text-lg px-2">ⓘ</button>`)}
     ${renderSoloStatus()}
-    <div class="solo-map-scroll flex-1 min-h-0 overflow-y-auto no-scrollbar px-2 py-3">
+    <div class="solo-map-scroll flex-1 min-h-0 overflow-y-auto no-scrollbar px-2 py-3" onscroll="soloMapParallax(this)">
       ${renderSoloMap()}
       <div class="flex justify-center mt-4 mb-2">
         <button onclick="abandonSoloClick()" class="text-xs font-semibold px-3 py-1.5 rounded-lg ${soloUi.confirmAbandon ? 'bg-rose-600 text-white' : 'text-slate-400 bg-slate-800/70'}">${soloUi.confirmAbandon ? 'Tap again to abandon the run' : 'Abandon run'}</button>

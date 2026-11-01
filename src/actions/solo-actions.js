@@ -26,6 +26,8 @@ const soloUi = {
   // Snapshots of `solo` taken before each fight action, for Undo.
   undo: [],
   mapFocus: null,
+  // The map's last scroll position, so the parallax mist doesn't jump on a re-render.
+  mapScroll: 0,
   shownStep: null,
   relicInfo: null,
   // The campfire's "Polish a relic" list is open.
@@ -189,6 +191,16 @@ function tapSoloNode(id) {
   soloUi.preview = soloUi.preview === id ? null : id;
   soloUi.legend = false;
   render();
+}
+
+// Parallax: the mist over the map moves at 0.6x the scroll speed.
+const SOLO_MIST_LAG = 0.4;
+const soloMistOffset = () => (FX_LITE || prefersReducedMotion() ? 0 : soloUi.mapScroll * SOLO_MIST_LAG);
+
+function soloMapParallax(el) {
+  soloUi.mapScroll = el.scrollTop;
+  const mist = el.querySelector('.solo-mist');
+  if (mist) mist.style.setProperty('--sm-par', `${soloMistOffset()}px`);
 }
 
 function goSoloNode() {
