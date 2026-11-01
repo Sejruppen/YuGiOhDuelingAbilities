@@ -1025,6 +1025,20 @@ function soloTakeHit() {
   finishSoloStep(result);
 }
 
+// A Trap Card from your own hand: 'negate' stops the attack, 'destroy' also destroys the attacker.
+function soloTrapDefend(kind) {
+  const step = soloStep();
+  if (!step || step.kind !== 'attack' || step.sub) return;
+  if (kind === 'destroy') {
+    const m = soloMonster(step.uid);
+    if (m) removeSoloMonster(m.uid);
+    else playSound({ name: 'co-destroy' });
+    return finishSoloStep({ tone: 'good', text: `🪤 Trap Card! ${m ? m.name : 'The attacker'} is destroyed. You take 0.` });
+  }
+  playSound({ name: 'co-negate' });
+  finishSoloStep({ tone: 'good', text: '🪤 Trap Card! The attack is negated. You take 0.' });
+}
+
 // Rex Raptor: a Dinosaur hits twice when your field is empty (honour system).
 function soloRexAgain(empty) {
   const step = soloStep();

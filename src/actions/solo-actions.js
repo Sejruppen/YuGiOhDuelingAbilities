@@ -284,6 +284,12 @@ function soloRelicDefendClick(id) {
   commitSolo();
 }
 
+function soloTrapDefendClick(kind) {
+  soloSnapshot();
+  soloTrapDefend(kind);
+  commitSolo();
+}
+
 // --- Fight: undo, keypad and panels -------------------------------------------------
 
 function soloSnapshot() {
