@@ -302,19 +302,152 @@ function soloNodePos(n) {
   return { x: 54 + n.col * 84 + n.jx, y: soloMapY(n.floor) + n.jy };
 }
 
-// Background bands per region: [region, floorFrom, floorTo, side].
+// Background bands per region: [region, floorFrom, floorTo, side]. Bottom-up and right before left,
+// because each band fades out over the ones drawn before it.
 const SOLO_MAP_BANDS = [
   ['beach', 1, SOLO_BEACH_FLOORS, 'all'],
-  ['forest', SOLO_BEACH_FLOORS + 1, SOLO_MIDDLE_FLOORS, 'left'],
   ['meadow', SOLO_BEACH_FLOORS + 1, SOLO_MIDDLE_FLOORS, 'right'],
-  ['mountain', SOLO_MIDDLE_FLOORS + 1, SOLO_BRANCH_FLOORS, 'left'],
+  ['forest', SOLO_BEACH_FLOORS + 1, SOLO_MIDDLE_FLOORS, 'left'],
   ['wasteland', SOLO_MIDDLE_FLOORS + 1, SOLO_BRANCH_FLOORS, 'right'],
+  ['mountain', SOLO_MIDDLE_FLOORS + 1, SOLO_BRANCH_FLOORS, 'left'],
   ['labyrinth', SOLO_FLOOR.LABYRINTH, SOLO_FLOOR.LABYRINTH, 'all'],
   ['castle', SOLO_FLOOR.CASTLE, SOLO_FLOOR.CASTLE, 'all']
 ];
+const SOLO_MAP_FADE = 36; // how far a band fades down over the band below
+const SOLO_MAP_SEAM = 24; // half-width of the blend between left and right regions
+let soloMapUid = 0;
+
+// --- Map scenery: flat cartoon art per region, in each band's local coordinates. ---
+// `solo-art-fine` marks small details that the mini map and lite mode drop.
+const smPeak = (cx, b, w, h) => {
+  const t = b - h;
+  return `<polygon fill="#5d6a82" points="${cx - w / 2},${b} ${cx},${t} ${cx},${b}"/>`
+    + `<polygon fill="#48546b" points="${cx},${t} ${cx + w / 2},${b} ${cx},${b}"/>`
+    + `<polygon fill="#e2e8f0" points="${cx},${t} ${cx - 0.15 * w},${t + 0.3 * h} ${cx - 0.06 * w},${t + 0.24 * h} ${cx},${t + 0.32 * h} ${cx + 0.07 * w},${t + 0.25 * h} ${cx + 0.15 * w},${t + 0.3 * h}"/>`;
+};
+const smCloud = (x, y) => `<g class="solo-art-fine" fill="#e2e8f0" opacity="0.14"><ellipse cx="${x}" cy="${y}" rx="22" ry="7"/><circle cx="${x - 6}" cy="${y - 5}" r="8"/><circle cx="${x + 7}" cy="${y - 4}" r="6"/></g>`;
+const smPine = (x, y, s, back) => {
+  const [top, low] = back ? ['#1f5730', '#184a28'] : ['#33854a', '#286e3c'];
+  return `<rect fill="#4a2f1a" x="${x - 1.5 * s}" y="${y - 6 * s}" width="${3 * s}" height="${6 * s}"/>`
+    + `<polygon fill="${low}" points="${x},${y - 24 * s} ${x - 15 * s},${y - 5 * s} ${x + 15 * s},${y - 5 * s}"/>`
+    + `<polygon fill="${top}" points="${x},${y - 36 * s} ${x - 11 * s},${y - 17 * s} ${x + 11 * s},${y - 17 * s}"/>`;
+};
+const smOak = (x, y, s) => `<rect fill="#4a2f1a" x="${x - 2 * s}" y="${y - 10 * s}" width="${4 * s}" height="${10 * s}"/>`
+  + `<circle fill="#2a6e38" cx="${x}" cy="${y - 19 * s}" r="${12 * s}"/><circle fill="#3a8f4a" cx="${x - 4 * s}" cy="${y - 23 * s}" r="${6 * s}"/>`;
+const smWave = (y, amp = 6, step = 30) => {
+  let d = `M0 ${y}Q${step / 2} ${y - amp} ${step} ${y}`;
+  for (let x = step * 2; x <= SOLO_MAP_W + step; x += step) d += `T${x} ${y}`;
+  return d;
+};
+const smStar = (x, y, r) => {
+  const pts = [];
+  for (let i = 0; i < 10; i++) {
+    const a = -Math.PI / 2 + (i * Math.PI) / 5;
+    const d = i % 2 ? r * 0.45 : r;
+    pts.push(`${(x + Math.cos(a) * d).toFixed(1)},${(y + Math.sin(a) * d).toFixed(1)}`);
+  }
+  return `<polygon fill="#e07a5f" points="${pts.join(' ')}"/>`;
+};
+const smShell = (x, y) => `<path fill="#f3d6c8" d="M${x - 5} ${y}q5 -10 10 0z"/><path stroke="#c9a08f" stroke-width="0.8" d="M${x} ${y}v-4M${x - 2.5} ${y}l-1 -3M${x + 2.5} ${y}l1 -3"/>`;
+const smRock = (x, y, s, [dark, light]) => `<path fill="${dark}" d="M${x} ${y}l${4 * s} ${-8 * s}l${9 * s} ${-3 * s}l${7 * s} ${6 * s}l${2 * s} ${5 * s}z"/>`
+  + `<path fill="${light}" d="M${x + 4 * s} ${y - 8 * s}l${9 * s} ${-3 * s}l${7 * s} ${6 * s}l${-8 * s} ${s}z"/>`;
+const smPalm = (x, y, flip) => `<g transform="translate(${x} ${y}) scale(${flip ? -1 : 1} 1)">`
+  + '<path d="M0 0Q-4 -24 8 -46" stroke="#6b4423" stroke-width="4" stroke-linecap="round" fill="none"/>'
+  + '<path fill="#2f7a3c" d="M8 -46q-16 -8 -28 4q14 -4 28 -4zM8 -46q16 -10 28 2q-14 -4 -28 -2zM8 -46q-6 -16 -22 -14q12 2 22 14zM8 -46q10 -14 22 -8q-12 0 -22 8z"/>'
+  + '<circle cx="6" cy="-43" r="2.5" fill="#5b3a1e"/></g>';
+const smDeadTree = (x, y) => `<path d="M${x} ${y}V${y - 30}M${x} ${y - 16}l-10 -9M${x} ${y - 24}l9 -10M${x} ${y - 30}l-3 -8" stroke="#2a160c" stroke-width="3" stroke-linecap="round" fill="none"/>`;
+const smBone = (x, y, deg) => `<g fill="#e7dcc6" transform="translate(${x} ${y}) rotate(${deg})"><rect x="-6" y="-1" width="12" height="2"/><circle cx="-6" cy="-1.5" r="1.8"/><circle cx="-6" cy="1.5" r="1.8"/><circle cx="6" cy="-1.5" r="1.8"/><circle cx="6" cy="1.5" r="1.8"/></g>`;
+const smSkull = (x, y) => `<g transform="translate(${x} ${y})"><circle r="7" fill="#e7dcc6"/><rect x="-4" y="3" width="8" height="6" rx="1.5" fill="#e7dcc6"/>`
+  + '<circle cx="-2.6" cy="0" r="2" fill="#2f1a10"/><circle cx="2.6" cy="0" r="2" fill="#2f1a10"/><path d="M-0.8 4.5h1.6l-0.8 -1.6z" fill="#2f1a10"/></g>';
+const smTufts = (pts, color) => `<path class="solo-art-fine" d="${pts.map(([x, y]) => `M${x} ${y}l2 -6l2 6l2 -5l1 5`).join('')}" stroke="${color}" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" fill="none"/>`;
+const smMounds = (list, color) => `<path fill="${color}" d="${list.map(([a, b, y, h]) => `M${a} ${y}Q${(a + b) / 2} ${y - 2 * h} ${b} ${y}Z`).join('')}"/>`;
+const smWheat = (x, y) => [0, 4, 8].map(dx => `<path d="M${x + dx} ${y}v-12" stroke="#b39245" stroke-width="1.2"/><ellipse cx="${x + dx}" cy="${y - 15}" rx="1.6" ry="3.6" fill="#d9b85a"/>`).join('');
+const smCastleSide = '<path fill="#12071f" d="M0 120V92H10V64L20 46L30 64V92H40V80L48 66L56 80V102H64V96H68V102H72V96H76V102H80V120Z"/>'
+  + '<g class="solo-art-fine" fill="#fbbf24" fill-opacity="0.75"><rect x="17" y="70" width="6" height="8" rx="3"/><rect x="45" y="84" width="6" height="7" rx="3"/></g>';
+
+// colors = the band's top and bottom fill; art = scenery ('{id}' becomes the map's unique id prefix).
+const SOLO_MAP_ART = {
+  beach: {
+    colors: ['#8a7446', '#7a6438'],
+    art: [
+      `<g class="solo-art-fine" fill="none" stroke="#a08757" stroke-width="1.5" stroke-linecap="round"><path d="M28 40q10 -5 20 0M96 96q12 -5 24 0M250 30q10 -5 20 0M170 130q12 -5 24 0M290 172q10 -5 20 0M40 120q8 -4 16 0"/></g>`,
+      `<path fill="#6e5832" d="${smWave(206)}V300H0Z"/>`,
+      `<path fill="#1f7f8f" d="${smWave(214)}V300H0Z"/>`,
+      `<path fill="#19667a" d="${smWave(246, 4, 40)}V300H0Z"/>`,
+      `<path fill="#145266" d="${smWave(278, 4, 45)}V300H0Z"/>`,
+      `<path fill="none" stroke="#e0f2fe" stroke-opacity="0.6" stroke-width="2.5" stroke-linecap="round" d="${smWave(214)}"/>`,
+      '<path class="solo-art-fine" fill="none" stroke="#bae6fd" stroke-opacity="0.45" stroke-width="1.5" stroke-linecap="round" d="M30 262q6 -4 12 0M110 290q6 -4 12 0M190 266q6 -4 12 0M280 292q6 -4 12 0M340 260q6 -4 12 0"/>',
+      `<g class="solo-art-fine">${smStar(100, 112, 5)}${smStar(262, 186, 4)}${smShell(190, 92)}${smShell(64, 178)}${smShell(300, 66)}</g>`,
+      smRock(318, 206, 1, ['#4b4540', '#6b635a']),
+      smPalm(14, 200, false),
+      smPalm(348, 118, true)
+    ].join('')
+  },
+  forest: {
+    colors: ['#1d4a2b', '#1a4226'],
+    art: [
+      ...[[12, 40], [96, 30], [170, 62], [22, 140], [95, 118], [166, 172], [10, 252], [92, 222], [172, 284], [22, 352], [98, 322], [160, 398], [56, 402]]
+        .map(([x, y]) => smPine(x, y, 0.8, true)),
+      '<g class="solo-art-fine" fill="#235d33"><circle cx="110" cy="78" r="6"/><circle cx="118" cy="80" r="5"/><circle cx="14" cy="200" r="6"/><circle cx="22" cy="202" r="4"/><circle cx="150" cy="330" r="6"/><circle cx="158" cy="332" r="5"/></g>',
+      ...[[32, 96, 1], [150, 112, 0.9], [72, 192, 1.1], [134, 244, 0.9], [36, 302, 1], [122, 296, 0.8], [78, 384, 1]]
+        .map(([x, y, s], i) => (i % 2 ? smPine(x, y, s) : smOak(x, y, s)))
+    ].join('')
+  },
+  meadow: {
+    colors: ['#5e6c24', '#53601f'],
+    art: [
+      smMounds([[0, 110, 196, 23], [90, 190, 120, 20], [24, 150, 300, 22], [100, 200, 392, 24], [-20, 70, 392, 19]], '#687829'),
+      smTufts([[30, 60], [70, 80], [150, 40], [36, 230], [160, 180], [80, 260], [140, 350], [32, 330], [100, 140], [60, 372]], '#8ea33a'),
+      `<g class="solo-art-fine">${[[30, 92, '#fde047'], [86, 46, '#f9a8d4'], [160, 140, '#ffffff'], [40, 202, '#fde047'], [100, 236, '#f9a8d4'], [170, 290, '#fde047'], [60, 330, '#ffffff'], [130, 384, '#f9a8d4'], [30, 276, '#f9a8d4'], [150, 74, '#fde047']]
+        .map(([x, y, c]) => `<circle cx="${x}" cy="${y}" r="2.2" fill="${c}"/>`).join('')}${smWheat(148, 104)}${smWheat(64, 302)}</g>`
+    ].join('')
+  },
+  mountain: {
+    colors: ['#3a4558', '#434f64'],
+    art: [
+      smCloud(120, 22),
+      smPeak(40, 80, 90, 70), smPeak(130, 110, 100, 85),
+      smPeak(70, 210, 100, 75), smPeak(155, 250, 70, 55),
+      smPeak(30, 320, 70, 55), smPeak(115, 385, 120, 85),
+      smCloud(60, 262), smCloud(150, 170)
+    ].join('')
+  },
+  wasteland: {
+    colors: ['#583322', '#4c2b1c'],
+    art: [
+      '<path fill="none" stroke="#6e432d" stroke-width="3" stroke-linecap="round" d="M26 150q36 -14 72 0M96 340q40 -14 80 0M70 30q30 -10 60 0M30 250q24 -8 48 0"/>',
+      '<path class="solo-art-fine" fill="none" stroke="#2f1a10" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" d="M150 26l-8 10l4 9l-7 8M30 96l10 6l-2 10l9 5M96 196l8 8l-3 9l6 6M34 384l9 -6l8 4l6 -8M166 236l-6 9l5 8"/>',
+      smRock(62, 46, 1, ['#4a2c1e', '#6e4a36']), smRock(30, 326, 1.2, ['#4a2c1e', '#6e4a36']), smRock(146, 306, 0.9, ['#4a2c1e', '#6e4a36']),
+      smDeadTree(88, 112), smDeadTree(168, 208), smDeadTree(84, 398),
+      `<g class="solo-art-fine">${smBone(36, 214, 20)}${smBone(92, 288, -30)}${smBone(150, 140, 60)}</g>`,
+      smSkull(160, 72), smSkull(130, 380)
+    ].join('')
+  },
+  labyrinth: {
+    colors: ['#3a3346', '#2f2a3a'],
+    art: [
+      '<rect width="360" height="100" fill="url(#{id}-brick)"/>',
+      '<path fill="none" stroke="#5a5172" stroke-width="5" stroke-linecap="square" d="M14 20H70V62M40 42V86H110M100 14V44H130M346 20H290V62M320 42V86H250M260 14V44H230"/>',
+      '<g class="solo-art-fine"><circle cx="150" cy="18" r="3.5" fill="#fb923c"/><circle cx="150" cy="17" r="1.6" fill="#fde68a"/><circle cx="210" cy="18" r="3.5" fill="#fb923c"/><circle cx="210" cy="17" r="1.6" fill="#fde68a"/></g>'
+    ].join('')
+  },
+  castle: {
+    colors: ['#1c0e30', '#3b1a4d'],
+    art: [
+      `<g class="solo-art-fine" fill="#f5e6ff" opacity="0.8">${[[24, 18], [72, 40], [112, 12], [150, 30], [214, 14], [250, 38], [330, 16], [350, 52], [96, 70], [262, 80], [8, 40], [188, 22]]
+        .map(([x, y]) => `<circle cx="${x}" cy="${y}" r="1.2"/>`).join('')}</g>`,
+      '<path fill="#fde68a" transform="translate(300 30)" d="M0 -12A12 12 0 0 0 0 12A17 17 0 0 1 0 -12Z"/>',
+      '<circle cx="180" cy="70" r="52" fill="#a855f7" opacity="0.18"/>',
+      smCastleSide,
+      `<g transform="translate(360 0) scale(-1 1)">${smCastleSide}</g>`
+    ].join('')
+  }
+};
 
 function renderSoloMapBands() {
+  const id = `smap${++soloMapUid}`;
   const half = SOLO_MAP_W / 2;
+  const defs = [`<pattern id="${id}-brick" patternUnits="userSpaceOnUse" width="32" height="16"><path d="M0 0.5H32M0 8.5H32M8 0V8M24 8V16" stroke="#26212f" stroke-width="1.2" fill="none"/></pattern>`];
   const rects = [];
   const labels = [];
   SOLO_MAP_BANDS.forEach(([region, from, to, side]) => {
@@ -322,13 +455,31 @@ function renderSoloMapBands() {
     const bottom = from === 1 ? SOLO_MAP_H : soloMapY(from) + 50;
     const x = side === 'right' ? half : 0;
     const w = side === 'all' ? SOLO_MAP_W : half;
-    rects.push(`<rect class="solo-band solo-band--${region}" x="${x}" y="${top}" width="${w}" height="${bottom - top}" />`);
+    const { colors, art } = SOLO_MAP_ART[region];
+    const g = `${id}-${region}`;
+    // Every band but the beach runs on past its bottom and fades out over the band below;
+    // a right-hand band reaches under its left twin, which fades out over it.
+    const fade = from === 1 ? 0 : SOLO_MAP_FADE;
+    const rx = side === 'right' ? x - SOLO_MAP_SEAM : x;
+    const rw = side === 'all' ? w : w + SOLO_MAP_SEAM;
+    const rh = bottom - top + fade;
+    defs.push(`<linearGradient id="${g}-fill" gradientUnits="userSpaceOnUse" x1="0" y1="${top}" x2="0" y2="${bottom}"><stop offset="0" stop-color="${colors[0]}"/><stop offset="1" stop-color="${colors[1]}"/></linearGradient>`);
+    let mask = '';
+    if (fade) {
+      const seam = side === 'left'
+        ? `<linearGradient id="${g}-h" gradientUnits="userSpaceOnUse" x1="${half - SOLO_MAP_SEAM}" y1="0" x2="${half + SOLO_MAP_SEAM}" y2="0"><stop offset="0" stop-color="#000" stop-opacity="0"/><stop offset="1" stop-color="#000"/></linearGradient>`
+        : '';
+      defs.push(`<linearGradient id="${g}-v" gradientUnits="userSpaceOnUse" x1="0" y1="${bottom}" x2="0" y2="${bottom + fade}"><stop offset="0" stop-color="#fff"/><stop offset="1" stop-color="#000"/></linearGradient>${seam}`);
+      defs.push(`<mask id="${g}-m" maskUnits="userSpaceOnUse" x="0" y="${top}" width="${SOLO_MAP_W}" height="${rh}"><rect x="0" y="${top}" width="${SOLO_MAP_W}" height="${rh}" fill="url(#${g}-v)"/>${seam ? `<rect x="0" y="${top}" width="${SOLO_MAP_W}" height="${rh}" fill="url(#${g}-h)"/>` : ''}</mask>`);
+      mask = `mask="url(#${g}-m)"`;
+    }
+    rects.push(`<g ${mask}><rect x="${rx}" y="${top}" width="${rw}" height="${rh}" fill="url(#${g}-fill)"/><g transform="translate(${x} ${top})">${art.replace(/\{id\}/g, id)}</g></g>`);
     if (side !== 'all' || region === 'beach') {
       const r = SOLO_REGIONS[region];
       labels.push(`<span class="solo-region-label" style="${side === 'right' ? 'right' : 'left'}: 1.5%; top: ${((bottom - 18) / SOLO_MAP_H) * 100}%;"><span class="ce-emoji">${r.icon}</span> ${r.name}</span>`);
     }
   });
-  return { rects: rects.join(''), labels: labels.join('') };
+  return { defs: defs.join(''), rects: rects.join(''), labels: labels.join('') };
 }
 
 function soloEdgeWalked(a, b, path = solo.path) {
@@ -378,6 +529,7 @@ function renderSoloMap(mini = false, run = solo) {
   return `
     <div class="solo-map ${mini ? 'solo-map--mini' : ''} relative mx-auto w-full" style="max-width: ${mini ? 200 : SOLO_MAP_W + 40}px; aspect-ratio: ${SOLO_MAP_W} / ${SOLO_MAP_H};" ${mini ? 'aria-hidden="true"' : ''}>
       <svg class="absolute inset-0 w-full h-full" viewBox="0 0 ${SOLO_MAP_W} ${SOLO_MAP_H}" preserveAspectRatio="none" aria-hidden="true">
+        <defs>${bands.defs}</defs>
         ${bands.rects}
         ${lines}
       </svg>

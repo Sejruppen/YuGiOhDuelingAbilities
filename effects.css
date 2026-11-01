@@ -15131,14 +15131,8 @@ html[data-theme="halloween"]::view-transition-new(root) { animation: vt-circle 0
   background: radial-gradient(ellipse at 50% 40%, #3b3020, #1c160d 75%);
   box-shadow: inset 0 0 40px rgba(0, 0, 0, 0.6), 0 0 0 1px rgba(251, 191, 36, 0.25);
 }
-.solo-band { opacity: 0.5; }
-.solo-band--beach { fill: #1e5a74; }
-.solo-band--forest { fill: #1f4d2b; }
-.solo-band--meadow { fill: #4d5c1f; }
-.solo-band--mountain { fill: #4a4a55; }
-.solo-band--wasteland { fill: #4d2f24; }
-.solo-band--labyrinth { fill: #2d2a3a; }
-.solo-band--castle { fill: #3d1d4d; }
+/* Region scenery is drawn in solo-view.js (SOLO_MAP_ART); small details drop on the mini map and in lite mode. */
+html.fx-lite .solo-art-fine { display: none; }
 .solo-edge {
   stroke: rgba(253, 230, 138, 0.35);
   stroke-width: 2.5;
@@ -15151,11 +15145,15 @@ html[data-theme="halloween"]::view-transition-new(root) { animation: vt-circle 0
 .solo-region-label {
   position: absolute;
   transform: translateY(-50%);
+  padding: 0.1rem 0.45rem;
+  border-radius: 9999px;
+  background: rgba(15, 10, 5, 0.6);
+  border: 1px solid rgba(251, 191, 36, 0.3);
   font-size: 0.6rem;
   font-weight: 800;
   letter-spacing: 0.08em;
   text-transform: uppercase;
-  color: rgba(254, 243, 199, 0.7);
+  color: rgba(254, 243, 199, 0.85);
   pointer-events: none;
   text-shadow: 0 1px 2px rgba(0, 0, 0, 0.8);
 }
@@ -15277,6 +15275,7 @@ html[data-theme="halloween"]::view-transition-new(root) { animation: vt-circle 0
 .solo-map--mini .solo-node--special { width: 1.3rem; height: 1.3rem; font-size: 0.75rem; }
 .solo-map--mini .solo-node--current { box-shadow: 0 0 0 2px rgba(251, 191, 36, 0.8), 0 0 8px rgba(251, 191, 36, 0.8); }
 .solo-map--mini .solo-region-label { display: none; }
+.solo-map--mini .solo-art-fine { display: none; }
 /* Defeat: your soul sealed in a card */
 .solo-sealed-card {
   width: 9rem;
