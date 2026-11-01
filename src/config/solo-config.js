@@ -386,9 +386,9 @@ const SOLO_ACTIONS = {
 };
 
 const SOLO_PERSONALITIES = {
-  aggressive: { icon: '🗡️', label: 'Aggressive', atkChance: 0.9, rps: 'rock', firstChance: 0.85, weights: { summon: 5, equip: 4, trap: 1, removal: 2, heal: 1 } },
-  wall: { icon: '🛡️', label: 'Wall', atkChance: 0.4, rps: 'paper', firstChance: 0.4, weights: { summon: 5, equip: 1, trap: 2, removal: 1, heal: 3 } },
-  trickster: { icon: '🎭', label: 'Trickster', atkChance: 0.65, rps: 'scissors', firstChance: 0.6, weights: { summon: 4, equip: 2, trap: 4, removal: 2, heal: 1 } }
+  aggressive: { icon: '🗡️', label: 'Aggressive', atkChance: 0.85, rps: 'rock', firstChance: 0.85, weights: { summon: 5, equip: 4, trap: 1, removal: 2, heal: 1 } },
+  wall: { icon: '🛡️', label: 'Wall', atkChance: 0.25, rps: 'paper', firstChance: 0.4, weights: { summon: 5, equip: 1, trap: 2, removal: 1, heal: 3 } },
+  trickster: { icon: '🎭', label: 'Trickster', atkChance: 0.5, rps: 'scissors', firstChance: 0.6, weights: { summon: 4, equip: 2, trap: 4, removal: 2, heal: 1 } }
 };
 
 // Rock-paper-scissors before each duel. The winner picks who goes first (the enemy mostly picks

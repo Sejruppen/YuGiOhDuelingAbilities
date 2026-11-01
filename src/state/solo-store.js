@@ -505,7 +505,18 @@ function planSoloTurn(f) {
   });
 }
 
-const soloSummonPos = (f, card) => card.pos || (card.atk <= 500 || Math.random() >= SOLO_PERSONALITIES[f.personality].atkChance ? 'def' : 'atk');
+// Cards with a preset position keep it. Otherwise the personality's attack
+// chance is nudged by the card: a big ATK/DEF gap pulls it towards the stronger
+// side. A monster with 500 or less DEF (and more ATK) always attacks, and one
+// with 1000 or less ATK (and at least as much DEF) always defends.
+function soloSummonPos(f, card) {
+  if (card.pos) return card.pos;
+  if (card.def <= 500 && card.atk > card.def) return 'atk';
+  if (card.atk <= 1000 && card.def >= card.atk) return 'def';
+  const gap = Math.max(-1, Math.min(1, (card.atk - card.def) / 1000));
+  const chance = Math.max(0.05, Math.min(0.95, SOLO_PERSONALITIES[f.personality].atkChance + gap * 0.3));
+  return Math.random() < chance ? 'atk' : 'def';
+}
 
 // Dismissing the duel intro starts the rock-paper-scissors. The winner picks who goes first.
 function startSoloRps() {
