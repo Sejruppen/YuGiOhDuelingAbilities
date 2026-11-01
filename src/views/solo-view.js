@@ -510,13 +510,13 @@ function renderSoloMap(mini = false, run = solo) {
     const state = n.id === run.at ? 'current' : run.path.includes(n.id) ? 'visited' : reachable.includes(n.id) ? 'reachable' : 'dim';
     const special = n.col === null ? 'solo-node--special' : '';
     const pos = `style="left: ${(x / SOLO_MAP_W) * 100}%; top: ${(y / SOLO_MAP_H) * 100}%;"`;
-    if (mini) return `<span class="solo-node solo-node--${state} solo-node--${look} ${special}" ${pos}><span class="ce-emoji">${t.icon}</span></span>`;
+    // Layers: glow (type aura) < frame (shape, rim and fill) < icon. The state ring is the node's ::after.
+    const inner = `<span class="solo-node-glow"></span><span class="solo-node-frame"></span><span class="solo-node-icon ce-emoji">${t.icon}</span>`;
+    if (mini) return `<span class="solo-node solo-node--${state} solo-node--${look} ${special}" ${pos}>${inner}</span>`;
     return `
       <button onclick="tapSoloNode('${n.id}')" ${n.id === focusId ? 'data-solo-focus' : ''} aria-label="${t.label}"
         class="solo-node solo-node--${state} solo-node--${look} ${special} ${soloUi.preview === n.id ? 'solo-node--picked' : ''}"
-        ${pos}>
-        <span class="ce-emoji">${t.icon}</span>
-      </button>
+        ${pos}>${inner}</button>
     `;
   }).join('');
 
