@@ -271,6 +271,22 @@ function soloReachable() {
   return ids;
 }
 
+// Every node you can still get to: your next choices and everything after them.
+function soloAhead(from = soloReachable()) {
+  const seen = new Set(from);
+  const queue = [...from];
+  while (queue.length) {
+    const id = queue.shift();
+    solo.map.edges.forEach(([a, b]) => {
+      if (a === id && !seen.has(b)) {
+        seen.add(b);
+        queue.push(b);
+      }
+    });
+  }
+  return seen;
+}
+
 // --- Run ----------------------------------------------------------------------------
 
 function createSoloRun() {

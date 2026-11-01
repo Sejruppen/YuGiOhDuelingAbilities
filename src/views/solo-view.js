@@ -503,15 +503,20 @@ function renderSoloMap(mini = false, run = solo) {
 
   // The map scrolls to where you stand; before floor 1 that is the beach.
   const focusId = run.at || reachable[0];
+  const ahead = mini ? new Set() : soloAhead(reachable);
   const buttons = Object.values(nodes).map(n => {
     const { x, y } = soloNodePos(n);
     const look = mini ? n.type : soloNodeLook(n, run);
     const t = SOLO_NODE_TYPES[look];
-    const state = n.id === run.at ? 'current' : run.path.includes(n.id) ? 'visited' : reachable.includes(n.id) ? 'reachable' : 'dim';
+    const state = n.id === run.at ? 'current'
+      : run.path.includes(n.id) ? 'visited'
+        : reachable.includes(n.id) ? 'reachable'
+          : ahead.has(n.id) ? 'ahead' : 'cut';
     const special = n.col === null ? 'solo-node--special' : '';
     const pos = `style="left: ${(x / SOLO_MAP_W) * 100}%; top: ${(y / SOLO_MAP_H) * 100}%;"`;
     // Layers: glow (type aura) < frame (shape, rim and fill) < icon. The state ring is the node's ::after.
-    const inner = `<span class="solo-node-glow"></span><span class="solo-node-frame"></span><span class="solo-node-icon ce-emoji">${t.icon}</span>`;
+    const stamp = state === 'visited' ? '<span class="solo-node-stamp" aria-hidden="true">✓</span>' : '';
+    const inner = `<span class="solo-node-glow"></span><span class="solo-node-frame"></span><span class="solo-node-icon ce-emoji">${t.icon}</span>${stamp}`;
     if (mini) return `<span class="solo-node solo-node--${state} solo-node--${look} ${special}" ${pos}>${inner}</span>`;
     return `
       <button onclick="tapSoloNode('${n.id}')" ${n.id === focusId ? 'data-solo-focus' : ''} aria-label="${t.label}"

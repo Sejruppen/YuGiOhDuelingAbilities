@@ -15205,7 +15205,14 @@ html.fx-lite .solo-art-fine { display: none; }
   pointer-events: none;
 }
 .solo-node--special { width: 3.4rem; height: 3.4rem; font-size: 1.9rem; }
-.solo-node--dim { opacity: 0.55; filter: saturate(0.4); }
+/* States: reachable = your next choices, ahead = reachable later, cut = out of reach for this run. */
+.solo-node--reachable { transform: scale(1.06); }
+.solo-node--ahead { opacity: 0.85; }
+.solo-node--cut { opacity: 0.35; filter: grayscale(0.85); }
+.solo-node--cut .solo-node-frame { --rim: #64748b; --rim-w: 1px; box-shadow: none; }
+.solo-node--cut .solo-node-glow,
+.solo-node--cut .solo-node-frame::before { display: none; }
+.solo-node--visited { filter: sepia(0.35); }
 .solo-node--visited::after { box-shadow: 0 0 0 2px rgba(245, 158, 11, 0.55); }
 .solo-node--current::after { box-shadow: 0 0 0 3px rgba(251, 191, 36, 0.9), 0 0 18px rgba(251, 191, 36, 0.8); }
 .solo-node--reachable::after { border: 2px solid #fbbf24; animation: solo-node-pulse 1.4s ease-in-out infinite; }
@@ -15213,6 +15220,26 @@ html.fx-lite .solo-art-fine { display: none; }
 @keyframes solo-node-pulse {
   0%, 100% { box-shadow: 0 0 0 0 rgba(251, 191, 36, 0.8); }
   50% { box-shadow: 0 0 0 9px rgba(251, 191, 36, 0); }
+}
+/* Visited: a gold check stamped in the corner. */
+.solo-node-stamp {
+  position: absolute;
+  right: -0.25rem;
+  bottom: -0.25rem;
+  width: 1.05rem;
+  height: 1.05rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 9999px;
+  font-family: system-ui, sans-serif;
+  font-size: 0.7rem;
+  font-weight: 900;
+  line-height: 1;
+  color: #3b2503;
+  background: radial-gradient(circle at 35% 30%, #fef3c7, #f59e0b 60%, #b45309);
+  box-shadow: 0 0 0 1.5px #78350f, 0 1px 3px rgba(0, 0, 0, 0.6);
+  pointer-events: none;
 }
 /* Elite: inside the Millennium Puzzle's upside-down golden triangle, with a red aura. */
 .solo-node--elite {
@@ -15286,17 +15313,25 @@ html.fx-lite .solo-art-fine { display: none; }
   55% { opacity: 0.95; transform: scale(1.04); }
   70% { opacity: 0.8; transform: scale(0.98); }
 }
-/* Unknown: dashed grey rim wrapped in drifting Shadow Realm fog. */
-.solo-node--hidden .solo-node-frame { background: #cbd5e1; border: 2px dashed #64748b; }
-.solo-node--hidden .solo-node-frame::after { display: none; }
-.solo-node--hidden .solo-node-glow {
-  inset: -30% -45%;
-  background:
-    radial-gradient(ellipse 40% 30% at 30% 40%, rgba(203, 213, 225, 0.4), transparent),
-    radial-gradient(ellipse 40% 30% at 70% 62%, rgba(203, 213, 225, 0.35), transparent);
-  animation: solo-node-fog 5s ease-in-out infinite alternate;
+/* Unknown: an ink splotch wrapped in swirling Shadow Realm fog (a flat grey blob once cut off). */
+.solo-node--hidden {
+  --rim: #94a3b8;
+  --fill: radial-gradient(circle at 45% 40%, #475569, #1e293b);
+  --rim-w: 2px;
+  --radius: 0;
+  --shape: polygon(98% 50%, 90.7% 66.8%, 85.4% 85.4%, 67.2% 91.6%, 50% 99%, 33.5% 89.7%, 16.8% 83.2%, 3.8% 69.2%, 6% 50%, 5.6% 31.6%, 17.5% 17.5%, 30.9% 3.8%, 50% 7%, 68.8% 4.7%, 81.8% 18.2%, 93.4% 32%);
 }
-@keyframes solo-node-fog { from { transform: translateX(-4px); } to { transform: translateX(4px); } }
+.solo-node--cut.solo-node--hidden .solo-node-frame { --fill: #475569; }
+.solo-node--hidden .solo-node-glow {
+  inset: -40%;
+  border-radius: 9999px;
+  background:
+    radial-gradient(ellipse 35% 22% at 28% 38%, rgba(203, 213, 225, 0.45), transparent),
+    radial-gradient(ellipse 35% 22% at 72% 64%, rgba(203, 213, 225, 0.4), transparent),
+    radial-gradient(ellipse 22% 30% at 60% 22%, rgba(203, 213, 225, 0.25), transparent);
+  animation: solo-node-fog 9s linear infinite;
+}
+@keyframes solo-node-fog { to { transform: rotate(360deg); } }
 /* Labyrinth: a carved Egyptian stone tablet. */
 .solo-node--labyrinth {
   --rim: linear-gradient(#a8a29e, #57534e);
@@ -15435,7 +15470,7 @@ html.fx-lite .solo-node-frame::before { animation: none; }
 .solo-map--mini .solo-node--elite .solo-node-icon { margin-top: -0.3rem; font-size: 0.45rem; }
 .solo-map--mini .solo-node--castle { width: 2rem; height: 1.35rem; --rim-w: 1px; }
 .solo-map--mini .solo-node--castle .solo-node-icon { width: 1rem; height: 1rem; font-size: 0.55rem; }
-.solo-map--mini .solo-node--hidden .solo-node-frame { border-width: 1px; }
+.solo-map--mini .solo-node-stamp { display: none; }
 .solo-map--mini .solo-node-glow,
 .solo-map--mini .solo-node-frame::before { display: none; }
 .solo-map--mini .solo-node-frame { box-shadow: none; }
