@@ -449,6 +449,17 @@ function confirmSoloDestroyTrap() {
   });
 }
 
+function confirmSoloDestroyEquip(uid) {
+  const m = soloMonster(uid);
+  if (!m?.equip) return;
+  soloAct(() => {
+    const lost = m.equip;
+    m.equip = 0;
+    playSound({ name: 'co-destroy' });
+    return { tone: 'good', text: `🌪️ The equip card on ${m.name} is destroyed (−${lost} ATK).` };
+  });
+}
+
 function confirmSoloBurn() {
   if (!soloUi.input) return;
   const amount = soloInputValue();

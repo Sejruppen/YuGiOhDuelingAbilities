@@ -743,7 +743,7 @@ function renderSoloPanel() {
     if (!panel.kind) {
       const options = [
         coopOption({ icon: '💥', label: 'Destroy a monster', sub: 'Raigeki, Fissure, Dark Hole…', disabled: !f.monsters.length, reason: 'The enemy has no monsters' }, "setSoloPanel({ kind: 'destroy' })"),
-        coopOption({ icon: '🌪️', label: 'Destroy the face-down card', sub: 'Mystical Space Typhoon, Harpie\'s Feather Duster…', disabled: !f.trap, reason: 'The enemy has no face-down card' }, 'confirmSoloDestroyTrap()'),
+        coopOption({ icon: '🌪️', label: 'Destroy a Spell/Trap', sub: 'Mystical Space Typhoon, Harpie\'s Feather Duster…', disabled: !f.trap && !f.monsters.some(m => m.equip), reason: 'The enemy has no face-down or equip card' }, "setSoloPanel({ kind: 'spelltrap' })"),
         coopOption({ icon: '🔥', label: 'Burn damage', sub: 'Damage straight to the enemy\'s LP' }, "setSoloPanel({ kind: 'burn' })")
       ];
       if (soloHas('raigeki')) {
@@ -753,6 +753,12 @@ function renderSoloPanel() {
     }
     if (panel.kind === 'destroy') {
       return renderSoloPanelShell('💥 Destroy which monster?', f.monsters.map(m => soloMonsterOption(m, `confirmSoloDestroy(${m.uid})`)).join('') +
+        `<div class="flex">${coopBtn('← Back', 'setSoloPanel({ kind: null })')}</div>`);
+    }
+    if (panel.kind === 'spelltrap') {
+      const trap = f.trap ? coopOption({ icon: '🂠', label: 'Face-down card', sub: 'Set Spell/Trap Card' }, 'confirmSoloDestroyTrap()') : '';
+      const equips = f.monsters.filter(m => m.equip).map(m => coopOption({ icon: m.icon, label: `${m.name}'s equip`, sub: `+${m.equip} ATK` }, `confirmSoloDestroyEquip(${m.uid})`)).join('');
+      return renderSoloPanelShell('🌪️ Destroy which card?', trap + equips +
         `<div class="flex">${coopBtn('← Back', 'setSoloPanel({ kind: null })')}</div>`);
     }
     if (panel.kind === 'burn') {
