@@ -32,6 +32,11 @@ const soloUi = {
   relicInfo: null,
   // The campfire's "Polish a relic" list is open.
   polishing: false,
+  // A read-only look at the map from a node or reward screen, and the node tapped in it.
+  peek: false,
+  peekNode: null,
+  // Which peek sheet slides up on this render ('map' | 'node'), so re-renders don't replay it.
+  peekSlide: null,
   timers: {}
 };
 
@@ -45,7 +50,7 @@ const soloRerender = () => {
 };
 
 function closeSoloPanels() {
-  Object.assign(soloUi, { preview: null, legend: false, panel: null, input: '', relicInfo: null, polishing: false });
+  Object.assign(soloUi, { preview: null, legend: false, panel: null, input: '', relicInfo: null, polishing: false, peek: false, peekNode: null });
 }
 
 // --- Navigation and the run -------------------------------------------------------
@@ -190,6 +195,37 @@ function soloBackToMenu() {
 function tapSoloNode(id) {
   soloUi.preview = soloUi.preview === id ? null : id;
   soloUi.legend = false;
+  render();
+}
+
+// Peek at the map from a Shadow Game, treasure, campfire or relic reward. Read-only: you can't travel from it.
+const soloCanPeek = () => !!solo.map && ['node', 'reward'].includes(solo.phase);
+
+function openSoloPeek() {
+  if (!soloCanPeek()) return;
+  Object.assign(soloUi, { peek: true, peekNode: null, relicInfo: null, peekSlide: 'map' });
+  render();
+  soloUi.peekSlide = null;
+  const box = document.querySelector('[data-solo-peek-scroll]');
+  const here = box?.querySelector('[data-solo-peek-focus]');
+  if (here) box.scrollTop += here.getBoundingClientRect().top - box.getBoundingClientRect().top - box.clientHeight / 2;
+}
+
+function closeSoloPeek() {
+  soloUi.peek = false;
+  soloUi.peekNode = null;
+  render();
+}
+
+function tapSoloPeekNode(id) {
+  if (!soloUi.peekNode) soloUi.peekSlide = 'node';
+  soloUi.peekNode = soloUi.peekNode === id ? null : id;
+  render();
+  soloUi.peekSlide = null;
+}
+
+function closeSoloPeekNode() {
+  soloUi.peekNode = null;
   render();
 }
 
@@ -633,6 +669,7 @@ function soloAbsorbClick(none) {
 function backInSolo() {
   if (soloUi.view === 'menu') return leaveSolo();
   if (soloUi.view) return showSoloMenu();
+  if (soloUi.peek) return soloUi.peekNode ? closeSoloPeekNode() : closeSoloPeek();
   if (soloUi.relicInfo) return closeSoloRelic();
   if (soloUi.polishing && solo.phase === 'node') return closeSoloPolish();
   if (soloUi.preview || soloUi.legend) {

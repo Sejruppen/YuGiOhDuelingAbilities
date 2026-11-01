@@ -27,7 +27,7 @@ function renderSoloView() {
     victory: renderSoloEnd,
     defeat: renderSoloEnd
   }[solo.phase] || renderSoloIntro;
-  return `<div class="solo-screen relative flex-1 min-h-0 flex flex-col">${body()}${!soloUi.view && soloUi.relicInfo ? renderSoloRelicSheet() : ''}</div>`;
+  return `<div class="solo-screen relative flex-1 min-h-0 flex flex-col">${body()}${!soloUi.view && soloUi.relicInfo ? renderSoloRelicSheet() : ''}${!soloUi.view && soloUi.peek && soloCanPeek() ? renderSoloPeek() : ''}</div>`;
 }
 
 // --- Menu and history ---------------------------------------------------------------
@@ -226,11 +226,14 @@ function renderSoloHeader(title, right = '') {
 
 function renderSoloStatus() {
   const at = solo.at && solo.map.nodes[solo.at];
+  const floor = `Floor ${at ? at.floor : 0}/${SOLO_FLOOR.CASTLE}`;
   return `
     <div class="shrink-0 px-4 py-2 flex items-center justify-between gap-2 text-sm font-bold bg-slate-950/70 border-b border-slate-800">
       <span data-solo-me class="text-white tabular-nums"><span class="ce-emoji">❤️</span> ${solo.lp}</span>
       <span class="${solo.chips >= SOLO_GATE_CHIPS ? 'text-amber-300' : 'text-slate-200'}"><span class="ce-emoji">⭐</span> ${solo.chips}/${SOLO_GATE_CHIPS}</span>
-      <span class="text-slate-400">Floor ${at ? at.floor : 0}/${SOLO_FLOOR.CASTLE}</span>
+      ${soloCanPeek()
+        ? `<button onclick="openSoloPeek()" aria-label="Peek at the map" class="-my-1 -mr-2 px-2 py-1 rounded-lg border border-emerald-500/40 bg-slate-800/70 hover:bg-slate-700 text-emerald-200"><span class="ce-emoji">🗺️</span> ${floor}</button>`
+        : `<span class="text-slate-400">${floor}</span>`}
     </div>
     ${solo.relics?.length ? `<div class="shrink-0 px-4 py-1.5 bg-slate-950/50 border-b border-slate-800">${renderSoloRelicBar()}</div>` : ''}
   `;
@@ -539,8 +542,9 @@ function soloEdgeWalked(a, b, path = solo.path) {
   return i >= 0 && path[i + 1] === b;
 }
 
-// `mini` = a small read-only map (end screen and history); `run` = whose route to draw.
-function renderSoloMap(mini = false, run = solo) {
+// `mini` = a small read-only map (end screen and history); `run` = whose route to draw;
+// `peek` = the full map, read-only, in the peek sheet (tapping a node only shows its info).
+function renderSoloMap(mini = false, run = solo, peek = false) {
   const { nodes, edges } = run.map;
   const reachable = mini ? [] : soloReachable();
   const ahead = mini ? new Set() : soloAhead(reachable);
@@ -588,15 +592,16 @@ function renderSoloMap(mini = false, run = solo) {
     const stamp = state === 'visited' ? '<span class="solo-node-stamp" aria-hidden="true">✓</span>' : '';
     const inner = `<span class="solo-node-glow"></span><span class="solo-node-frame"></span><span class="solo-node-icon ce-emoji">${t.icon}</span>${stamp}`;
     if (mini) return `<span class="solo-node solo-node--${state} solo-node--${look} ${special}" ${pos}>${inner}</span>`;
+    const picked = (peek ? soloUi.peekNode : soloUi.preview) === n.id;
     return `
-      <button onclick="tapSoloNode('${n.id}')" ${n.id === focusId ? 'data-solo-focus' : ''} aria-label="${t.label}"
-        class="solo-node solo-node--${state} solo-node--${look} ${special} ${soloUi.preview === n.id ? 'solo-node--picked' : ''}"
+      <button onclick="${peek ? 'tapSoloPeekNode' : 'tapSoloNode'}('${n.id}')" ${n.id === focusId ? (peek ? 'data-solo-peek-focus' : 'data-solo-focus') : ''} aria-label="${t.label}"
+        class="solo-node solo-node--${state} solo-node--${look} ${special} ${picked ? 'solo-node--picked' : ''}"
         ${pos}>${inner}</button>
     `;
   }).join('');
 
   const focusKey = `${solo.at}`;
-  if (!mini && soloUi.mapFocus !== focusKey) {
+  if (!mini && !peek && soloUi.mapFocus !== focusKey) {
     soloUi.mapFocus = focusKey;
     setTimeout(() => document.querySelector('[data-solo-focus]')?.scrollIntoView({ block: 'center' }));
   }
@@ -609,15 +614,16 @@ function renderSoloMap(mini = false, run = solo) {
         ${bands.sky}
         ${lines}
       </svg>
-      ${mini ? '' : renderSoloAtmosphere()}
+      ${mini || peek ? '' : renderSoloAtmosphere()}
       ${bands.labels}
       ${buttons}
     </div>
   `;
 }
 
-function renderSoloPreview() {
-  const n = solo.map.nodes[soloUi.preview];
+// A node's info sheet. From the peek it has no Go button and sits above the peek sheet.
+function renderSoloPreview(id = soloUi.preview, peek = false) {
+  const n = solo.map.nodes[id];
   if (!n) return '';
   const look = soloNodeLook(n);
   const t = SOLO_NODE_TYPES[look];
@@ -626,13 +632,15 @@ function renderSoloPreview() {
   let note = '';
   if (n.id === 'labyrinth' && solo.chips >= SOLO_GATE_CHIPS) note = `You have ${SOLO_GATE_CHIPS} ⭐: you can skip the Labyrinth.`;
   else if (n.id === 'castle' && solo.chips < SOLO_GATE_CHIPS) note = `The doors are shut. You need ${SOLO_GATE_CHIPS} ⭐.`;
+  else if (n.id === solo.at && peek) note = 'You are here.';
   else if (solo.path.includes(n.id)) note = 'You have been here.';
   else if (!reachable) note = "You can't reach this from where you stand.";
+  else if (peek) note = 'You can go here next.';
   const fight = ['duelist', 'elite', 'labyrinth', 'castle'].includes(look);
   const eliteId = n.type === 'elite' ? n.elite || soloEliteFor(n.region) : n.type === 'labyrinth' ? 'paradox' : null;
   const e = eliteId && SOLO_ELITES[eliteId];
   return `
-    <div class="solo-sheet absolute inset-x-0 bottom-0 z-20 p-4 rounded-t-2xl border-t border-amber-500/50 bg-slate-900/95 backdrop-blur shadow-2xl">
+    <div class="${!peek || soloUi.peekSlide === 'node' ? 'solo-sheet' : ''} absolute inset-x-0 bottom-0 ${peek ? 'z-40' : 'z-20'} p-4 rounded-t-2xl border-t border-amber-500/50 bg-slate-900/95 backdrop-blur shadow-2xl">
       <div class="flex items-start gap-3">
         <span class="text-4xl leading-none ce-emoji">${t.icon}</span>
         <div class="flex-1 min-w-0">
@@ -646,10 +654,31 @@ function renderSoloPreview() {
         </div>
       </div>
       <div class="flex gap-2 mt-3">
-        ${coopBtn('Close', 'closeSoloPreview()')}
-        ${reachable ? coopBtn('Go ➜', 'goSoloNode()', 'primary') : ''}
+        ${coopBtn('Close', peek ? 'closeSoloPeekNode()' : 'closeSoloPreview()')}
+        ${reachable && !peek ? coopBtn('Go ➜', 'goSoloNode()', 'primary') : ''}
       </div>
     </div>
+  `;
+}
+
+// The map peek: a tall sheet over a node or reward screen, opened from the status bar's Floor button.
+function renderSoloPeek() {
+  return `
+    <div class="absolute inset-0 z-30 bg-black/60" onclick="closeSoloPeek()" aria-hidden="true"></div>
+    <div class="${soloUi.peekSlide === 'map' ? 'solo-sheet' : ''} absolute inset-x-0 bottom-0 z-30 h-[88%] flex flex-col rounded-t-2xl border-t border-emerald-500/50 bg-slate-900/95 backdrop-blur shadow-2xl">
+      <div class="shrink-0 px-4 pt-3 pb-2 flex items-center justify-between gap-2 border-b border-slate-800">
+        <div class="min-w-0">
+          <p class="font-black text-white leading-tight"><span class="ce-emoji">🗺️</span> Duelist's Road</p>
+          <p class="text-xs text-slate-400">Just a peek. Finish here first, then pick your path.</p>
+        </div>
+        <button onclick="closeSoloPeek()" aria-label="Close the map" class="shrink-0 text-slate-300 hover:text-white text-xl px-2">✕</button>
+      </div>
+      <div data-solo-peek-scroll class="flex-1 min-h-0 overflow-y-auto no-scrollbar px-2 py-3">
+        ${renderSoloMap(false, solo, true)}
+      </div>
+      <div class="shrink-0 p-3 border-t border-slate-800 flex">${coopBtn('Close', 'closeSoloPeek()')}</div>
+    </div>
+    ${soloUi.peekNode ? renderSoloPreview(soloUi.peekNode, true) : ''}
   `;
 }
 
