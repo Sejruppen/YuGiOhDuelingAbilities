@@ -5,12 +5,14 @@ const SOLO_TURN_BANNER_NOTE_MS = 450;
 const SOLO_CONFIRM_MS = 3000;
 const SOLO_MAX_INPUT = 6;
 const SOLO_UNDO_MAX = 20;
+const SOLO_NAME_MAX = 24;
 
 // Transient UI state (not saved).
 const soloUi = {
   // 'menu' | 'how' (rules + Set sail) | 'history' | null (the run itself).
   view: 'menu',
   confirmNew: false,
+  runName: '',
   openHistoryId: null,
   preview: null,
   legend: false,
@@ -144,6 +146,7 @@ function resetSoloHistory() {
 
 function startSoloRun() {
   createSoloRun();
+  soloUi.runName = '';
   closeSoloPanels();
   Object.assign(soloUi, { view: null, undo: [], toast: null, mapFocus: null, confirmAbandon: false });
   playSound({ name: 'co-start' });

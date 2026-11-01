@@ -55,7 +55,7 @@ function renderSoloMenu() {
         </p>
       </div>
       ${renderSoloRoute(at ? at.floor : 0)}
-      ${renderTournamentMenuButton({ icon: '▶️', label: 'Continue', sub: continueSub, onclick: 'continueSoloRun()', primary: active, disabled: !active })}
+      ${renderTournamentMenuButton({ icon: '▶️', label: active && solo.name ? `Continue · ${soloEscape(solo.name)}` : 'Continue', sub: continueSub, onclick: 'continueSoloRun()', primary: active, disabled: !active })}
       ${renderTournamentMenuButton({
         icon: '🏝️',
         label: armed ? 'Tap again for a new run' : 'New run',
@@ -113,8 +113,8 @@ function renderSoloHistoryEntry(e) {
       <button onclick="toggleSoloHistoryEntry('${e.id}')" aria-expanded="${open}" class="w-full text-left px-4 py-3 flex items-center gap-3">
         <span class="text-2xl leading-none ce-emoji">${r.icon}</span>
         <span class="flex-1 min-w-0">
-          <span class="block text-[0.7rem] text-slate-400">${tnDate(e.finishedAt)}</span>
-          <span class="block font-black text-white leading-tight truncate">${e.hero}</span>
+          <span class="block text-[0.7rem] text-slate-400 truncate">${tnDate(e.finishedAt)}${e.name ? ` · ${soloEscape(e.hero)}` : ''}</span>
+          <span class="block font-black text-white leading-tight truncate">${soloEscape(e.name || e.hero)}</span>
           <span class="block text-xs ${r.cls} truncate">${r.text(e)}</span>
         </span>
         <span class="text-slate-400 text-sm">${open ? '▲' : '▼'}</span>
@@ -260,6 +260,8 @@ function soloKeypad(label, actionsHtml, boost = false) {
   `;
 }
 
+const soloEscape = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]);
+
 const soloFieldText = region => {
   const r = SOLO_REGIONS[region];
   return r?.types.length ? `${r.types.join(', ')} monsters gain ${SOLO_FIELD_BONUS * 100}% ATK` : 'No field bonus here';
@@ -284,7 +286,8 @@ function renderSoloIntro() {
         <li><span class="ce-emoji">🎁</span> Find relics in treasure chests and win rare ones from elites. Tap a relic to read what it does.</li>
       </ul>
     </div>
-    <footer class="shrink-0 p-4 border-t border-slate-800 bg-slate-900/80">
+    <footer class="shrink-0 p-4 border-t border-slate-800 bg-slate-900/80 space-y-3">
+      <input type="text" maxlength="${SOLO_NAME_MAX}" value="${soloEscape(soloUi.runName)}" oninput="soloUi.runName = this.value" placeholder="Name this run (optional)" aria-label="Run name" class="w-full px-4 py-3 rounded-xl bg-slate-800 border border-slate-700 focus:border-amber-500 outline-none text-white text-sm placeholder-slate-500">
       <button onclick="startSoloRun()" class="w-full py-4 rounded-xl bg-amber-500 hover:bg-amber-400 active:scale-98 text-slate-950 font-bold text-lg shadow-lg shadow-amber-500/20 transition"><span class="ce-emoji">🏝️</span> Set sail</button>
     </footer>
   `;

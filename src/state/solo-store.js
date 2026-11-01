@@ -12,7 +12,7 @@
 //   event   the Shadow Game being shown (see solo-events.js); seenEvents
 //   mods    Shadow Game effects waiting for the next duel; shortcut = skip a floor
 //   video   the Toon Pegasus opens with, seen on his tape (a Shadow Game)
-//   runId   ties the run to its entry in soloHistory
+//   runId   ties the run to its entry in soloHistory; name = optional label typed before sailing
 const newSolo = () => ({ phase: 'intro' });
 
 function loadSolo() {
@@ -70,6 +70,7 @@ function soloArchiveRun(result) {
     id: solo.runId,
     finishedAt: Date.now(),
     result,
+    name: solo.name || '',
     hero: soloHeroName(),
     floor: at ? at.floor : 0,
     lp: solo.lp,
@@ -221,6 +222,7 @@ function soloReachable() {
 function createSoloRun() {
   solo = {
     runId: `${Date.now()}`,
+    name: (soloUi.runName || '').trim().slice(0, SOLO_NAME_MAX),
     phase: 'map',
     lp: SOLO_START_LP,
     maxLp: SOLO_MAX_LP,
