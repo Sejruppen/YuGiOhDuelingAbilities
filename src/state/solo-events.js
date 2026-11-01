@@ -766,7 +766,7 @@ function applySoloOutcome(ev, outcome) {
   const e = outcome.effects;
   const parts = [];
   if (e.loseRelic) {
-    solo.relics = solo.relics.filter(r => r !== e.loseRelic);
+    dropSoloRelic(e.loseRelic);
     parts.push(`${soloRelicName(e.loseRelic)} is gone.`);
   }
   if (e.chips) {

@@ -15137,7 +15137,6 @@ html[data-theme="halloween"]::view-transition-new(root) { animation: vt-circle 0
 .solo-band--meadow { fill: #4d5c1f; }
 .solo-band--mountain { fill: #4a4a55; }
 .solo-band--wasteland { fill: #4d2f24; }
-.solo-band--campfire { fill: #5c3410; }
 .solo-band--labyrinth { fill: #2d2a3a; }
 .solo-band--castle { fill: #3d1d4d; }
 .solo-edge {
@@ -15212,6 +15211,17 @@ html[data-theme="halloween"]::view-transition-new(root) { animation: vt-circle 0
 .solo-relic--millennium { border-color: rgba(251, 191, 36, 0.9); background: rgba(69, 46, 8, 0.9); box-shadow: 0 0 10px rgba(251, 191, 36, 0.5); }
 .solo-relic--used { opacity: 0.4; filter: grayscale(1); }
 .solo-relic--picked { transform: scale(1.15); border-color: #fbbf24; }
+/* A relic polished at a campfire gets a sparkle in its corner. */
+.solo-relic--polished { position: relative; }
+.solo-relic--polished::after {
+  content: "✨";
+  position: absolute;
+  top: -0.35rem;
+  right: -0.35rem;
+  font-size: 0.65rem;
+  line-height: 1;
+  font-family: "Apple Color Emoji", "Segoe UI Emoji", "Noto Color Emoji", sans-serif;
+}
 .solo-relic--flash { animation: solo-relic-flash 0.9s ease-out; }
 @keyframes solo-relic-flash {
   0% { transform: scale(1); box-shadow: 0 0 0 0 rgba(251, 191, 36, 0.9); }

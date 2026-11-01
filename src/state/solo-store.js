@@ -8,6 +8,7 @@
 //   fight   the current duel (see createSoloFight)
 //   reward  { name, chips } after a won duel
 //   relics  relic ids you own; offer = { source, ids } when you may pick one
+//   polished  relic ids upgraded at a campfire
 //   millennium  the Millennium Item taken this run (max one); puzzleUsed
 //   event   the Shadow Game being shown (see solo-events.js); seenEvents
 //   mods    Shadow Game effects waiting for the next duel; shortcut = skip a floor
@@ -21,6 +22,7 @@ function loadSolo() {
     if (!saved || !saved.phase) return newSolo();
     if (saved.map && saved.map.layout !== SOLO_MAP_LAYOUT) return newSolo();
     if (!saved.relics) saved.relics = [];
+    if (!saved.polished) saved.polished = [];
     if (!saved.seenEvents) saved.seenEvents = [];
     if (!saved.mods) saved.mods = {};
     if (saved.map && !saved.runId) saved.runId = `${Date.now()}`;
@@ -133,7 +135,6 @@ function soloRegionAt(floor, col) {
   if (floor <= SOLO_BEACH_FLOORS) return 'beach';
   if (floor <= SOLO_MIDDLE_FLOORS) return col < 2 ? 'forest' : 'meadow';
   if (floor <= SOLO_BRANCH_FLOORS) return col < 2 ? 'mountain' : 'wasteland';
-  if (floor === SOLO_FLOOR.CAMPFIRE) return 'campfire';
   return floor === SOLO_FLOOR.LABYRINTH ? 'labyrinth' : 'castle';
 }
 
@@ -166,12 +167,13 @@ function generateSoloMap() {
     }
   });
 
-  ['campfire', 'labyrinth', 'castle'].forEach((id, k) => {
-    nodes[id] = { id, floor: SOLO_FLOOR.CAMPFIRE + k, col: null, region: id, type: id, jx: 0, jy: 0 };
+  ['labyrinth', 'castle'].forEach(id => {
+    nodes[id] = { id, floor: SOLO_FLOOR[id.toUpperCase()], col: null, region: id, type: id, jx: 0, jy: 0 };
   });
-  Object.values(nodes).filter(n => n.floor === SOLO_BRANCH_FLOORS).forEach(n => addEdge(n.id, 'campfire'));
-  addEdge('campfire', 'labyrinth');
-  addEdge('campfire', 'castle');
+  Object.values(nodes).filter(n => n.floor === SOLO_BRANCH_FLOORS).forEach(n => {
+    addEdge(n.id, 'labyrinth');
+    addEdge(n.id, 'castle');
+  });
   addEdge('labyrinth', 'castle');
 
   // Node types, floor by floor so an elite never follows an elite.
@@ -198,6 +200,7 @@ function generateSoloMap() {
       }
     });
   }
+  placeSoloCampfires(nodes, edges);
   // Who waits at each elite node. Bandit Keith turns up at most once.
   let keithUsed = false;
   Object.values(nodes).filter(n => n.type === 'elite').forEach(n => {
@@ -208,21 +211,56 @@ function generateSoloMap() {
   return { nodes, edges, layout: SOLO_MAP_LAYOUT };
 }
 
+// Campfires replace mixed duelists and Shadow Games: a few at random, then one on
+// every path that has none. A path never gets more than SOLO_CAMPFIRE_MAX, and
+// two campfires are never next to each other.
+function placeSoloCampfires(nodes, edges) {
+  const [from, to] = SOLO_CAMPFIRE_FLOORS;
+  const paths = [];
+  const walk = path => {
+    const last = path[path.length - 1];
+    const next = edges.filter(([a, b]) => a === last && nodes[b].floor <= SOLO_BRANCH_FLOORS).map(([, b]) => b);
+    if (!next.length) paths.push(path);
+    next.forEach(id => walk([...path, id]));
+  };
+  Object.values(nodes).filter(n => n.floor === 1).forEach(n => walk([n.id]));
+  const fires = path => path.filter(id => nodes[id].type === 'campfire').length;
+  const nearFire = id => edges.some(([a, b]) => (a === id && nodes[b].type === 'campfire') || (b === id && nodes[a].type === 'campfire'));
+  const fits = id => {
+    const n = nodes[id];
+    return n.floor >= from && n.floor <= to && !SOLO_FLOOR_KINDS[n.floor] && ['duelist', 'event'].includes(n.type) && !nearFire(id)
+      && paths.every(p => !p.includes(id) || fires(p) < SOLO_CAMPFIRE_MAX);
+  };
+  const light = id => {
+    nodes[id].type = 'campfire';
+    nodes[id].hidden = false;
+  };
+  shuffled(Object.keys(nodes)).forEach(id => {
+    if (Math.random() < SOLO_CAMPFIRE_CHANCE && fits(id)) light(id);
+  });
+  shuffled(paths).forEach(p => {
+    if (fires(p)) return;
+    const spot = soloPick(p.filter(fits));
+    if (spot) light(spot);
+  });
+}
+
 const soloEliteFor = region => Object.keys(SOLO_ELITES).find(id => SOLO_ELITES[id].region === region) || 'keith';
 
 // What a node shows on the map: 'hidden' until you've been there (or the
 // Fortune Teller foresaw its Shadow Game).
 const soloNodeLook = (n, run = solo) => (n.hidden && !n.event && !run.path.includes(n.id) ? 'hidden' : n.type);
 
-// Where you can go next. After the campfire the Star Chips pick the way.
+// Where you can go next. After the last branch floor the Star Chips pick the way.
 // Tristan's Shortcut jumps one floor further along the paths.
 function soloReachable() {
   if (!solo.map) return [];
   if (!solo.at) return Object.values(solo.map.nodes).filter(n => n.floor === 1).map(n => n.id);
-  if (solo.at === 'campfire') return [solo.chips >= SOLO_GATE_CHIPS ? 'castle' : 'labyrinth'];
   const next = from => solo.map.edges.filter(([a]) => from.includes(a)).map(([, b]) => b);
-  const ids = next([solo.at]);
-  return solo.shortcut ? [...new Set(next(ids))] : ids;
+  let ids = next([solo.at]);
+  if (solo.shortcut) ids = [...new Set(next(ids))];
+  if (ids.includes('labyrinth') && ids.includes('castle')) ids = [solo.chips >= SOLO_GATE_CHIPS ? 'castle' : 'labyrinth'];
+  return ids;
 }
 
 // --- Run ----------------------------------------------------------------------------
@@ -242,6 +280,7 @@ function createSoloRun() {
     fight: null,
     reward: null,
     relics: [],
+    polished: [],
     offer: null,
     millennium: null,
     puzzleUsed: false,
@@ -272,13 +311,28 @@ function enterSoloNode(id) {
   return true;
 }
 
+// --- Campfire: rest, train with Joey or polish a relic ------------------------------
+
 // The Millennium Ring halves the campfire.
 const soloCampfireHeal = () => SOLO_CAMPFIRE_HEAL * (soloHas('ring') ? 0.5 : 1);
+const soloRestAmount = () => Math.round((solo.maxLp * soloCampfireHeal()) / 100) * 100;
 
 function soloRest() {
-  const heal = Math.round((solo.maxLp * soloCampfireHeal()) / 100) * 100;
-  healSoloPlayer(heal);
-  return heal;
+  return healSoloPlayer(soloRestAmount());
+}
+
+// Like every max LP gain, the new LP is healed too.
+function soloTrain() {
+  solo.maxLp += SOLO_CAMPFIRE_TRAIN;
+  return healSoloPlayer(SOLO_CAMPFIRE_TRAIN);
+}
+
+function polishSoloRelic(id) {
+  if (!soloPolishable().includes(id)) return false;
+  solo.polished = [...(solo.polished || []), id];
+  playSound({ name: 'co-bond' });
+  flashSoloRelic(id);
+  return true;
 }
 
 function soloBackToMap() {
@@ -294,7 +348,15 @@ function soloBackToMap() {
 // --- Relics -------------------------------------------------------------------------
 
 const soloHas = id => (solo.relics || []).includes(id);
-const soloRelicReady = id => soloHas(id) && !solo.fight?.relicUsed?.[id];
+// Polished relics (campfire) use SOLO_RELICS[id].polish: a bigger value or more uses per duel.
+const soloIsPolished = id => (solo.polished || []).includes(id);
+const soloPolishable = () => (solo.relics || []).filter(id => SOLO_RELICS[id].polish && !soloIsPolished(id));
+const soloRelicValue = id => (soloIsPolished(id) && SOLO_RELICS[id].polish.value) || SOLO_RELICS[id].value;
+const soloRelicUses = id => (soloIsPolished(id) && SOLO_RELICS[id].polish.uses) || 1;
+const soloRelicText = id => (soloIsPolished(id) ? SOLO_RELICS[id].polish.text : SOLO_RELICS[id].text);
+// Uses this duel; Toon Dark Magician Girl's seal sets it to the max.
+const soloRelicUsedCount = id => Number(solo.fight?.relicUsed?.[id] || 0);
+const soloRelicReady = id => soloHas(id) && soloRelicUsedCount(id) < soloRelicUses(id);
 const flashSoloRelic = id => queueSoloFx(() => fxSoloRelic(id));
 const soloDrawCount = () => 1 + (soloHas('sanctity') ? SOLO_RELICS.sanctity.value : 0);
 const announceSoloTurn = who => queueSoloFx(() => fxSoloTurn(who));
@@ -308,9 +370,15 @@ function rollSoloRelics(rarity, count) {
 // Marks a relic as used for this duel; consumables leave your collection.
 function useSoloRelic(id) {
   const f = solo.fight;
-  if (f) f.relicUsed = { ...f.relicUsed, [id]: true };
-  if (SOLO_RELICS[id].consumable) solo.relics = solo.relics.filter(r => r !== id);
+  if (f) f.relicUsed = { ...f.relicUsed, [id]: soloRelicUsedCount(id) + 1 };
+  if (SOLO_RELICS[id].consumable) dropSoloRelic(id);
   flashSoloRelic(id);
+}
+
+// A relic leaves your collection, and its polish with it.
+function dropSoloRelic(id) {
+  solo.relics = solo.relics.filter(r => r !== id);
+  solo.polished = (solo.polished || []).filter(r => r !== id);
 }
 
 function gainSoloRelic(id) {
@@ -349,7 +417,7 @@ function soloRaigeki() {
 function soloRedMedicine() {
   if (!soloHas('red-medicine') || solo.lp >= solo.maxLp) return null;
   useSoloRelic('red-medicine');
-  const healed = healSoloPlayer(SOLO_RELICS['red-medicine'].value);
+  const healed = healSoloPlayer(soloRelicValue('red-medicine'));
   return { tone: 'good', text: `🧪 Red Medicine! You gain ${healed} LP.` };
 }
 
@@ -718,7 +786,7 @@ function soloWin() {
   }
   playSound({ name: 'co-victory' });
   if (soloHas('dian-keto')) {
-    solo.reward.healed = healSoloPlayer(SOLO_RELICS['dian-keto'].value);
+    solo.reward.healed = healSoloPlayer(soloRelicValue('dian-keto'));
     flashSoloRelic('dian-keto');
   }
 }

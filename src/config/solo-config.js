@@ -8,19 +8,25 @@ const SOLO_MAX_LP = 8000;
 const SOLO_START_CHIPS = 1;
 const SOLO_GATE_CHIPS = 10;
 const SOLO_CAMPFIRE_HEAL = 0.3;
+const SOLO_CAMPFIRE_TRAIN = 500;
 const SOLO_FIELD_BONUS = 0.3;
 const SOLO_MAX_MONSTERS = 5;
 
 // Map: floors 1-11 branch over 4 columns (Beach 1-3, Forest/Meadow 4-7,
 // Mountain/Wasteland 8-11), then one node per floor.
 // Bump SOLO_MAP_LAYOUT whenever the floors change: older saved runs and history maps no longer fit.
-const SOLO_MAP_LAYOUT = 2;
+const SOLO_MAP_LAYOUT = 3;
 const SOLO_COLS = 4;
 const SOLO_WALKS = 4;
 const SOLO_BRANCH_FLOORS = 11;
 const SOLO_BEACH_FLOORS = 3;
 const SOLO_MIDDLE_FLOORS = 7;
-const SOLO_FLOOR = { CAMPFIRE: 12, LABYRINTH: 13, CASTLE: 14 };
+const SOLO_FLOOR = { LABYRINTH: 12, CASTLE: 13 };
+// Campfires land on mixed floors in this range (never on a special floor), so that
+// every path passes 1 to 2 of them and never two in a row.
+const SOLO_CAMPFIRE_FLOORS = [4, 10];
+const SOLO_CAMPFIRE_CHANCE = 0.12;
+const SOLO_CAMPFIRE_MAX = 2;
 // Floors that aren't a random mix. 'events' = only Shadow Games (regional ones are likelier),
 // 'fork' = a duelist or a Shadow Game, 'gamble' = only roll-heavy Shadow Games.
 const SOLO_FLOOR_KINDS = { 1: 'duelist', 3: 'events', 6: 'treasure', 7: 'fork', 11: 'gamble' };
@@ -36,7 +42,7 @@ const SOLO_NODE_TYPES = {
     treasure: { icon: '🎁', label: 'Treasure', desc: "A lost Duelist's Case. Pick 1 of 3 relics." },
   event: { icon: '🌀', label: 'Shadow Game', desc: 'A strange encounter. Choose wisely: some choices are a gamble.' },
   hidden: { icon: '❓', label: 'Unknown', desc: 'Hidden in the mist: a duelist or a Shadow Game. You find out when you get there.' },
-  campfire: { icon: '🔥', label: 'Campfire', desc: `Rest before the castle. Heal ${SOLO_CAMPFIRE_HEAL * 100}% of your max LP.` },
+  campfire: { icon: '🔥', label: 'Campfire', desc: `Choose one: rest (heal ${SOLO_CAMPFIRE_HEAL * 100}% of your max LP), train with Joey (+${SOLO_CAMPFIRE_TRAIN} max LP) or polish a relic.` },
   labyrinth: { icon: '🧱', label: 'Labyrinth', desc: `Only if you have fewer than ${SOLO_GATE_CHIPS} ⭐. The Paradox Brothers guard it. Win to get the missing chips.` },
   castle: { icon: '🏰', label: 'Castle', desc: "Pegasus' castle. Win to finish the run." }
 };
@@ -48,7 +54,6 @@ const SOLO_REGIONS = {
   meadow: { name: 'Meadow', icon: '🌾', types: ['Warrior', 'Beast-Warrior'], titles: ['Knight', 'Squire', 'Swordsman'] },
   mountain: { name: 'Mountain', icon: '⛰️', types: ['Dragon', 'Winged Beast', 'Thunder'], titles: ['Dragon Tamer', 'Mountain Hermit', 'Bird Keeper'] },
   wasteland: { name: 'Wasteland', icon: '💀', types: ['Zombie', 'Dinosaur', 'Rock'], titles: ['Gravedigger', 'Bone Collector', 'Fossil Hunter'] },
-  campfire: { name: 'Campfire', icon: '🔥', types: [], titles: [] },
   labyrinth: { name: 'Labyrinth', icon: '🧱', types: [], titles: ['Labyrinth Guard', 'Gatekeeper'] },
   castle: { name: 'Castle', icon: '🏰', types: [], titles: [] }
 };
@@ -493,21 +498,22 @@ const SOLO_REMOVAL_FROM_FLOOR = 5;
 // relic's number (LP, ATK). Consumables vanish when used.
 const SOLO_TREASURE_CHOICES = 3;
 const SOLO_ELITE_CHOICES = 2;
+// `polish` = the campfire upgrade: a new `value`, or `uses` per duel (instead of once), plus its text.
 const SOLO_RELICS = {
-  'dian-keto': { name: 'Dian Keto Charm', icon: '🌿', rarity: 'common', value: 500, text: 'After every duel you win, heal 500 LP.' },
-  'red-medicine': { name: 'Red Medicine', icon: '🧪', rarity: 'common', value: 1500, consumable: true, text: 'Use once, any time: heal 1500 LP.' },
-  'legendary-sword': { name: 'Legendary Sword', icon: '🗡️', rarity: 'common', value: 300, text: 'Your first attack each turn gets +300 ATK. Added automatically.' },
-  kuriboh: { name: 'Kuriboh Charm', icon: '🧸', rarity: 'common', text: 'Once per duel, Kuriboh takes an enemy attack for you: 0 damage.' },
-  'pot-of-greed': { name: 'Pot of Greed', icon: '🏺', rarity: 'common', text: 'Draw 6 cards instead of 5 when a duel starts.' },
+  'dian-keto': { name: 'Dian Keto Charm', icon: '🌿', rarity: 'common', value: 500, text: 'After every duel you win, heal 500 LP.', polish: { value: 1000, text: 'After every duel you win, heal 1000 LP.' } },
+  'red-medicine': { name: 'Red Medicine', icon: '🧪', rarity: 'common', value: 1500, consumable: true, text: 'Use once, any time: heal 1500 LP.', polish: { value: 3000, text: 'Use once, any time: heal 3000 LP.' } },
+  'legendary-sword': { name: 'Legendary Sword', icon: '🗡️', rarity: 'common', value: 300, text: 'Your first attack each turn gets +300 ATK. Added automatically.', polish: { value: 600, text: 'Your first attack each turn gets +600 ATK. Added automatically.' } },
+  kuriboh: { name: 'Kuriboh Charm', icon: '🧸', rarity: 'common', text: 'Once per duel, Kuriboh takes an enemy attack for you: 0 damage.', polish: { uses: 2, text: 'Twice per duel, Kuriboh takes an enemy attack for you: 0 damage.' } },
+  'pot-of-greed': { name: 'Pot of Greed', icon: '🏺', rarity: 'common', value: 1, text: 'Draw 6 cards instead of 5 when a duel starts.', polish: { value: 2, text: 'Draw 7 cards instead of 5 when a duel starts.' } },
   'duelist-glove': { name: 'Duelist Glove', icon: '🧤', rarity: 'common', text: 'Gives you +1 ⭐ when you take it.' },
   spellbinding: { name: 'Spellbinding Circle', icon: '🔯', rarity: 'common', text: "The enemy's first monster each duel can't attack." },
   elf: { name: "Mystical Elf's Blessing", icon: '🧝', rarity: 'common', value: 1000, text: '+1000 max LP, and heal 1000 LP when you take it.' },
-  axe: { name: 'Axe of Despair', icon: '🪓', rarity: 'rare', value: 1000, text: 'Once per duel: one attack gets +1000 ATK. Switch it on when you attack.' },
-  waboku: { name: 'Waboku', icon: '🛐', rarity: 'rare', text: 'Once per duel, when attacked: you take no battle damage for the rest of the turn.' },
-  cylinder: { name: 'Magic Cylinder', icon: '🌀', rarity: 'rare', text: "Once per duel, when attacked: the attack hits the enemy's LP instead." },
+  axe: { name: 'Axe of Despair', icon: '🪓', rarity: 'rare', value: 1000, text: 'Once per duel: one attack gets +1000 ATK. Switch it on when you attack.', polish: { uses: 2, text: 'Twice per duel: one attack gets +1000 ATK. Switch it on when you attack.' } },
+  waboku: { name: 'Waboku', icon: '🛐', rarity: 'rare', text: 'Once per duel, when attacked: you take no battle damage for the rest of the turn.', polish: { uses: 2, text: 'Twice per duel, when attacked: you take no battle damage for the rest of the turn.' } },
+  cylinder: { name: 'Magic Cylinder', icon: '🌀', rarity: 'rare', text: "Once per duel, when attacked: the attack hits the enemy's LP instead.", polish: { uses: 2, text: "Twice per duel, when attacked: the attack hits the enemy's LP instead." } },
   sanctity: { name: 'Card of Sanctity', icon: '🃏', rarity: 'rare', value: 1, text: 'Draw 2 cards instead of 1 in every one of your Draw Phases.' },
   swords: { name: 'Swords of Revealing Light', icon: '🌟', rarity: 'rare', text: "The enemy can't attack on its first turn of each duel." },
-  'mirror-force': { name: 'Mirror Force', icon: '🪞', rarity: 'rare', text: "Once per duel, when attacked: destroy all the enemy's Attack Position monsters." },
+  'mirror-force': { name: 'Mirror Force', icon: '🪞', rarity: 'rare', text: "Once per duel, when attacked: destroy all the enemy's Attack Position monsters.", polish: { uses: 2, text: "Twice per duel, when attacked: destroy all the enemy's Attack Position monsters." } },
   raigeki: { name: 'Raigeki', icon: '⚡', rarity: 'rare', consumable: true, text: "Use once, on your turn (✨ Effect): destroy all the enemy's monsters." },
   // Millennium Items: max one per run, and all but the Puzzle have a price.
   puzzle: { name: 'Millennium Puzzle', icon: '🔺', rarity: 'millennium', value: 1000, text: 'Once per run, when your LP would hit 0, you survive with 1000 LP.' },

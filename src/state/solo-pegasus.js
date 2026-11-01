@@ -96,7 +96,7 @@ function soloToonSeal(f) {
   const ids = [...SOLO_DEFENSE_RELICS, 'axe'].filter(soloRelicReady);
   if (!ids.length) return '';
   const id = soloPick(ids);
-  f.relicUsed = { ...f.relicUsed, [id]: true };
+  f.relicUsed = { ...f.relicUsed, [id]: soloRelicUses(id) };
   flashSoloRelic(id);
   return `🪄 Her magic seals your ${SOLO_RELICS[id].icon} ${SOLO_RELICS[id].name} for this duel!`;
 }

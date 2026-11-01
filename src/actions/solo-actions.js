@@ -28,6 +28,8 @@ const soloUi = {
   mapFocus: null,
   shownStep: null,
   relicInfo: null,
+  // The campfire's "Polish a relic" list is open.
+  polishing: false,
   timers: {}
 };
 
@@ -41,7 +43,7 @@ const soloRerender = () => {
 };
 
 function closeSoloPanels() {
-  Object.assign(soloUi, { preview: null, legend: false, panel: null, input: '', relicInfo: null });
+  Object.assign(soloUi, { preview: null, legend: false, panel: null, input: '', relicInfo: null, polishing: false });
 }
 
 // --- Navigation and the run -------------------------------------------------------
@@ -215,8 +217,34 @@ function soloRestClick() {
   if (solo.nodeResult) return;
   const healed = soloRest();
   solo.nodeResult = healed
-    ? `🔥 You rest by the fire and recover ${healed} LP.`
-    : '🔥 You rest by the fire. Your LP is already full.';
+    ? `<span class="ce-emoji">🔥</span> You rest by the fire and recover ${healed} LP.`
+    : '<span class="ce-emoji">🔥</span> You rest by the fire. Your LP is already full.';
+  commitSolo();
+}
+
+function soloTrainClick() {
+  if (solo.nodeResult) return;
+  soloTrain();
+  solo.nodeResult = `<span class="ce-emoji">💪</span> Joey drills you with push-ups until sunrise. “Now dat's what I call a duelist!” +${SOLO_CAMPFIRE_TRAIN} max LP.`;
+  commitSolo();
+}
+
+function openSoloPolish() {
+  if (solo.nodeResult || !soloPolishable().length) return;
+  soloUi.polishing = true;
+  render();
+}
+
+function closeSoloPolish() {
+  soloUi.polishing = false;
+  render();
+}
+
+function soloPolishClick(id) {
+  if (solo.nodeResult || !polishSoloRelic(id)) return;
+  soloUi.polishing = false;
+  const r = SOLO_RELICS[id];
+  solo.nodeResult = `<span class="ce-emoji">✨</span> You polish the ${r.name} by the fire until it gleams. ${r.polish.text}`;
   commitSolo();
 }
 
@@ -438,7 +466,8 @@ function confirmSoloAttack() {
   const sword = soloHas('legendary-sword') && f.swordRound !== f.round;
   const pep = f.pep || 0;
   const lunch = f.lunch ? SOLO_EVENT_MODS.lunch.value : 0;
-  const bonus = (axe ? SOLO_RELICS.axe.value : 0) + (sword ? SOLO_RELICS['legendary-sword'].value : 0) + pep - lunch;
+  const swordAtk = soloRelicValue('legendary-sword');
+  const bonus = (axe ? SOLO_RELICS.axe.value : 0) + (sword ? swordAtk : 0) + pep - lunch;
   const total = Math.max(0, atk + bonus);
   soloAct(() => {
     const result = soloPlayerAttack(target === 'direct' ? null : target === 'book' ? 'book' : Number(target), total);
@@ -450,7 +479,7 @@ function confirmSoloAttack() {
       flashSoloRelic('legendary-sword');
     }
     if (lunch) f.lunch = false;
-    const tags = [axe && `🪓 +${SOLO_RELICS.axe.value}`, sword && `🗡️ +${SOLO_RELICS['legendary-sword'].value}`, pep && `💪 +${pep}`, lunch && `🍙 −${lunch}`].filter(Boolean);
+    const tags = [axe && `🪓 +${SOLO_RELICS.axe.value}`, sword && `🗡️ +${swordAtk}`, pep && `💪 +${pep}`, lunch && `🍙 −${lunch}`].filter(Boolean);
     if (tags.length) result.text = `${tags.join(' ')} → ${total} ATK. ${result.text}`;
     return result;
   });
@@ -593,6 +622,7 @@ function backInSolo() {
   if (soloUi.view === 'menu') return leaveSolo();
   if (soloUi.view) return showSoloMenu();
   if (soloUi.relicInfo) return closeSoloRelic();
+  if (soloUi.polishing && solo.phase === 'node') return closeSoloPolish();
   if (soloUi.preview || soloUi.legend) {
     closeSoloPanels();
     return render();
@@ -643,7 +673,7 @@ function fxSoloTurn(who) {
   const emoji = e => `<span class="ce-emoji">${e}</span>`;
   const notes = [];
   if (you && draws > 1) notes.push(`${emoji(SOLO_RELICS.sanctity.icon)} Card of Sanctity: +${draws - 1} extra draw`);
-  if (you && !opening && soloHas('legendary-sword')) notes.push(`${emoji(SOLO_RELICS['legendary-sword'].icon)} Legendary Sword: first attack +${SOLO_RELICS['legendary-sword'].value}`);
+  if (you && !opening && soloHas('legendary-sword')) notes.push(`${emoji(SOLO_RELICS['legendary-sword'].icon)} Legendary Sword: first attack +${soloRelicValue('legendary-sword')}`);
   if (you && !opening && f.pep) notes.push(`${emoji('💪')} Pep talk: attacks +${f.pep}`);
   const name = f.plural ? `${f.name}'` : `${f.name}'s`;
   const line = opening

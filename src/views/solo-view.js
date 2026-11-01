@@ -76,7 +76,6 @@ const SOLO_ROUTE = [
   [['beach'], 1, SOLO_BEACH_FLOORS],
   [['forest', 'meadow'], SOLO_BEACH_FLOORS + 1, SOLO_MIDDLE_FLOORS],
   [['mountain', 'wasteland'], SOLO_MIDDLE_FLOORS + 1, SOLO_BRANCH_FLOORS],
-  [['campfire'], SOLO_FLOOR.CAMPFIRE, SOLO_FLOOR.CAMPFIRE],
   [['labyrinth'], SOLO_FLOOR.LABYRINTH, SOLO_FLOOR.LABYRINTH],
   [['castle'], SOLO_FLOOR.CASTLE, SOLO_FLOOR.CASTLE]
 ];
@@ -92,7 +91,7 @@ function renderSoloRoute(floor) {
       </span>`;
   });
   return `
-    <div class="flex items-center justify-center gap-1 mb-2 text-slate-500 text-xs" aria-label="The route: beach, forest or meadow, mountain or wasteland, campfire, labyrinth, castle">
+    <div class="flex items-center justify-center gap-1 mb-2 text-slate-500 text-xs" aria-label="The route: beach, forest or meadow, mountain or wasteland, labyrinth, castle">
       ${stops.join('<span aria-hidden="true">›</span>')}
     </div>
   `;
@@ -165,7 +164,7 @@ function soloRelicSpent(id) {
   if (id === 'puzzle') return !!solo.puzzleUsed;
   const f = solo.phase === 'fight' && solo.fight;
   if (!f) return false;
-  return !!f.relicUsed?.[id] || (id === 'legendary-sword' && f.swordRound === f.round);
+  return soloRelicUsedCount(id) >= soloRelicUses(id) || (id === 'legendary-sword' && f.swordRound === f.round);
 }
 
 const soloRarityClass = r => ({ rare: 'text-sky-300', millennium: 'text-amber-300' }[r.rarity] || 'text-slate-400');
@@ -174,7 +173,7 @@ function renderSoloRelicBar() {
   if (!solo.relics?.length) return '';
   const relics = solo.relics.map(id => {
     const r = SOLO_RELICS[id];
-    return `<button data-solo-relic="${id}" onclick="showSoloRelic('${id}')" aria-label="${r.name}" class="solo-relic solo-relic--${r.rarity} ${soloRelicSpent(id) ? 'solo-relic--used' : ''} ${soloUi.relicInfo === id ? 'solo-relic--picked' : ''}"><span class="ce-emoji">${r.icon}</span></button>`;
+    return `<button data-solo-relic="${id}" onclick="showSoloRelic('${id}')" aria-label="${r.name}${soloIsPolished(id) ? ' (polished)' : ''}" class="solo-relic solo-relic--${r.rarity} ${soloIsPolished(id) ? 'solo-relic--polished' : ''} ${soloRelicSpent(id) ? 'solo-relic--used' : ''} ${soloUi.relicInfo === id ? 'solo-relic--picked' : ''}"><span class="ce-emoji">${r.icon}</span></button>`;
   }).join('');
   return `<div class="shrink-0 flex flex-wrap gap-1.5 justify-center">${relics}</div>`;
 }
@@ -188,16 +187,17 @@ function renderSoloRelicSheet() {
   const id = soloUi.relicInfo;
   const r = SOLO_RELICS[id];
   if (!r || !soloHas(id)) return '';
-  const use = id === 'red-medicine' ? coopBtn(`<span class="ce-emoji">🧪</span> Drink (+${r.value} LP)`, 'useSoloRedMedicine()', 'heal', solo.lp >= solo.maxLp) : '';
+  const use = id === 'red-medicine' ? coopBtn(`<span class="ce-emoji">🧪</span> Drink (+${soloRelicValue(id)} LP)`, 'useSoloRedMedicine()', 'heal', solo.lp >= solo.maxLp) : '';
+  const usesLeft = solo.phase === 'fight' && soloRelicUses(id) > 1 ? soloRelicUses(id) - soloRelicUsedCount(id) : 0;
   return `
     <div class="solo-sheet absolute inset-x-0 bottom-0 z-20 p-4 rounded-t-2xl border-t border-amber-500/50 bg-slate-900/95 backdrop-blur shadow-2xl">
       <div class="flex items-start gap-3">
         <span class="text-4xl leading-none ce-emoji">${r.icon}</span>
         <div class="flex-1 min-w-0">
           <p class="font-black text-white text-lg leading-tight">${r.name}</p>
-          <p class="text-[0.65rem] uppercase tracking-widest ${soloRarityClass(r)}">${r.rarity === 'millennium' ? 'Millennium Item' : `${r.rarity} relic`}${r.consumable ? ' · used up when used' : ''}</p>
-          <p class="text-sm text-slate-200 mt-1 leading-snug">${r.text}</p>
-          ${soloRelicSpent(id) ? `<p class="text-xs text-amber-200 mt-1">${id === 'puzzle' ? 'Its power is spent for this run.' : 'Already used. It is ready again next duel.'}</p>` : ''}
+          <p class="text-[0.65rem] uppercase tracking-widest ${soloRarityClass(r)}">${r.rarity === 'millennium' ? 'Millennium Item' : `${r.rarity} relic`}          ${r.consumable ? ' · used up when used' : ''}${soloIsPolished(id) ? ' · <span class="ce-emoji">✨</span> polished' : ''}</p>
+                    <p class="text-sm text-slate-200 mt-1 leading-snug">${soloRelicText(id)}</p>
+                    ${soloRelicSpent(id) ? `<p class="text-xs text-amber-200 mt-1">${id === 'puzzle' ? 'Its power is spent for this run.' : 'Already used. It is ready again next duel.'}</p>` : usesLeft === 1 ? '<p class="text-xs text-amber-200 mt-1">Used once. One more use this duel.</p>' : ''}
         </div>
       </div>
       <div class="flex gap-2 mt-3">${coopBtn('Close', 'closeSoloRelic()')}${use}</div>
@@ -277,7 +277,7 @@ function renderSoloIntro() {
       <ul class="text-xs text-slate-300 space-y-1.5 leading-relaxed">
         <li><span class="ce-emoji">🗺️</span> Pick a path up the map. Every node is a duel, a treasure or something stranger. A <span class="ce-emoji">❓</span> hides a duelist or a Shadow Game until you get there.</li>
         <li><span class="ce-emoji">🃏</span> Before each duel: shuffle your deck and draw 5. You always go first.</li>
-        <li><span class="ce-emoji">❤️</span> You start with ${SOLO_START_LP} LP, and it carries over between duels. Rest at the campfire before the castle.</li>
+        <li><span class="ce-emoji">❤️</span> You start with ${SOLO_START_LP} LP, and it carries over between duels. Campfires <span class="ce-emoji">🔥</span> along the way let you rest, train or polish a relic.</li>
         <li><span class="ce-emoji">👁️</span> The enemy shows what kind of move it will make next turn. Plan around it!</li>
         <li><span class="ce-emoji">⚔️</span> Attack on the phone: pick a target and enter your monster's ATK. Normal battle rules apply.</li>
         <li><span class="ce-emoji">🛡️</span> Enemy monsters attack you directly. Block with one of your monsters (each one blocks once per turn) or take the hit. Or spring a Trap Card from your hand to negate the attack or destroy the attacker. When the enemy summons a monster, you can also spring a Trap Card to destroy it.</li>
@@ -309,7 +309,6 @@ const SOLO_MAP_BANDS = [
   ['meadow', SOLO_BEACH_FLOORS + 1, SOLO_MIDDLE_FLOORS, 'right'],
   ['mountain', SOLO_MIDDLE_FLOORS + 1, SOLO_BRANCH_FLOORS, 'left'],
   ['wasteland', SOLO_MIDDLE_FLOORS + 1, SOLO_BRANCH_FLOORS, 'right'],
-  ['campfire', SOLO_FLOOR.CAMPFIRE, SOLO_FLOOR.CAMPFIRE, 'all'],
   ['labyrinth', SOLO_FLOOR.LABYRINTH, SOLO_FLOOR.LABYRINTH, 'all'],
   ['castle', SOLO_FLOOR.CASTLE, SOLO_FLOOR.CASTLE, 'all']
 ];
@@ -460,10 +459,7 @@ function renderSoloNode() {
   let body;
   let buttons;
   if (n.type === 'campfire') {
-    body = solo.nodeResult
-      ? `<div class="coop-toast coop-toast--good rounded-lg px-3 py-2 text-sm leading-snug">${solo.nodeResult}</div>`
-      : `<p class="text-sm text-slate-300">The castle looms above you. Rest by the fire to recover ${soloCampfireHeal() * 100}% of your max LP.</p>${soloHas('ring') ? '<p class="text-xs text-amber-200"><span class="ce-emoji">💍</span> The Millennium Ring keeps you from resting well.</p>' : ''}`;
-    buttons = solo.nodeResult ? coopBtn('Continue ➜', 'leaveSoloNode()', 'primary') : coopBtn('<span class="ce-emoji">🔥</span> Rest', 'soloRestClick()', 'heal');
+    return renderSoloCampfire(n, t);
   } else if (n.type === 'treasure') {
     const ids = solo.offer?.ids || [];
     if (solo.nodeResult) {
@@ -490,6 +486,42 @@ function renderSoloNode() {
       <p class="text-2xl font-black text-white">${t.label}</p>
       ${body}
       <div class="flex gap-2 w-full max-w-xs mt-2">${buttons}</div>
+    </div>
+  `;
+}
+
+// The campfire: pick one of rest, train with Joey or polish a relic.
+function renderSoloCampfire(n, t) {
+  let body;
+  if (solo.nodeResult) {
+    body = `<div class="coop-toast coop-toast--good rounded-lg px-3 py-2 text-sm leading-snug w-full max-w-sm">${solo.nodeResult}</div>
+      <div class="flex gap-2 w-full max-w-xs mt-2">${coopBtn('Continue ➜', 'leaveSoloNode()', 'primary')}</div>`;
+  } else if (soloUi.polishing) {
+    const options = soloPolishable().map(id => {
+      const r = SOLO_RELICS[id];
+      return coopOption({ icon: `<span class="ce-emoji">${r.icon}</span>`, label: r.name, sub: `<span class="text-amber-300"><span class="ce-emoji">✨</span> ${r.polish.text}</span>` }, `soloPolishClick('${id}')`);
+    }).join('');
+    body = `<p class="text-sm text-slate-300 max-w-sm">Which relic do you polish? It stays upgraded for the rest of the run.</p>
+      <div class="w-full max-w-sm space-y-2 text-left">${options}</div>
+      <div class="flex gap-2 w-full max-w-xs mt-2">${coopBtn('← Back', 'closeSoloPolish()')}</div>`;
+  } else {
+    const ring = soloHas('ring') ? ' <span class="ce-emoji">💍</span> The Millennium Ring keeps you from resting well.' : '';
+    const options = [
+      coopOption({ icon: '<span class="ce-emoji">🔥</span>', label: 'Rest', sub: `Heal ${soloRestAmount()} LP (${soloCampfireHeal() * 100}% of your max LP).${ring}`, disabled: solo.lp >= solo.maxLp, reason: 'Your LP is already full.' }, 'soloRestClick()'),
+      coopOption({ icon: '<span class="ce-emoji">💪</span>', label: 'Train with Joey', sub: `+${SOLO_CAMPFIRE_TRAIN} max LP for the rest of the run (and heal ${SOLO_CAMPFIRE_TRAIN}).` }, 'soloTrainClick()'),
+      coopOption({ icon: '<span class="ce-emoji">✨</span>', label: 'Polish a relic', sub: 'Upgrade one of your relics for the rest of the run.', disabled: !soloPolishable().length, reason: solo.relics.length ? "None of your relics can be polished." : 'You have no relics to polish yet.' }, 'openSoloPolish()')
+    ].join('');
+    body = `<p class="text-sm text-slate-200 italic max-w-sm leading-snug">Yugi and his friends wave you over to their fire. There's time for one thing before the night is over.</p>
+      <div class="w-full max-w-sm space-y-2 text-left mt-1">${options}</div>`;
+  }
+  return `
+    ${renderSoloHeader(`<span class="ce-emoji">${t.icon}</span> ${t.label}`)}
+    ${renderSoloStatus()}
+    <div class="flex-1 min-h-0 overflow-y-auto no-scrollbar p-6 flex flex-col items-center justify-center text-center gap-3">
+      <div class="coop-step-in coop-step-icon text-7xl leading-none ce-emoji solo-node-icon--campfire">${t.icon}</div>
+      <p class="text-[0.7rem] font-bold uppercase tracking-widest text-orange-300"><span class="ce-emoji">${SOLO_REGIONS[n.region].icon}</span> ${SOLO_REGIONS[n.region].name}</p>
+      <p class="text-2xl font-black text-white -mt-2">${t.label}</p>
+      ${body}
     </div>
   `;
 }
@@ -777,7 +809,7 @@ function renderSoloPanel() {
     const bonuses = [];
     if (book) bonuses.push(`<span class="ce-emoji">📄</span> ${SOLO_PEGASUS.pageMinAtk}+ ATK tears out a page. No damage to Pegasus.`);
     else if (soloToonWorldUp(f)) bonuses.push(`<span class="ce-emoji">📖</span> Toon World shields Pegasus: no battle damage to him.`);
-    if (soloHas('legendary-sword') && f.swordRound !== f.round) bonuses.push(`<span class="ce-emoji">🗡️</span> Legendary Sword adds +${SOLO_RELICS['legendary-sword'].value} to this attack.`);
+    if (soloHas('legendary-sword') && f.swordRound !== f.round) bonuses.push(`<span class="ce-emoji">🗡️</span> Legendary Sword adds +${soloRelicValue('legendary-sword')} to this attack.`);
     if (f.pep) bonuses.push(`<span class="ce-emoji">💪</span> Pep talk adds +${f.pep} to this attack.`);
     if (f.lunch) bonuses.push(`<span class="ce-emoji">🍙</span> Full stomach: −${SOLO_EVENT_MODS.lunch.value} on this attack.`);
     const axe = soloRelicReady('axe')
@@ -894,7 +926,7 @@ function renderSoloStepCard() {
 function renderSoloFightIntro(f, kind, p) {
   const r = soloRegion(f.region);
   const lines = [
-    `<span class="ce-emoji">🃏</span> Shuffle your deck, clear your field and draw ${soloHas('pot-of-greed') ? '<b>6</b> cards (<span class="ce-emoji">🏺</span> Pot of Greed)' : '5 cards'}.`,
+    `<span class="ce-emoji">🃏</span> Shuffle your deck, clear your field and draw ${soloHas('pot-of-greed') ? `<b>${5 + soloRelicValue('pot-of-greed')}</b> cards (<span class="ce-emoji">🏺</span> Pot of Greed)` : '5 cards'}.`,
     `<span class="ce-emoji">✊</span> Rock-paper-scissors decides who goes first. Whoever opens can't attack on their first turn.`,
     `<span class="ce-emoji">❤️</span> Your LP: <b>${solo.lp}</b>.`,
     `<span class="ce-emoji">${r.icon}</span> ${r.types.length ? `${r.name} field: ${soloFieldText(f.region)}. Yours too!` : 'No field bonus here.'}`,
