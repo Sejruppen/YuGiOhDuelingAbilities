@@ -15128,6 +15128,7 @@ html[data-theme="halloween"]::view-transition-new(root) { animation: vt-circle 0
 .solo-map {
   border-radius: 1.25rem;
   overflow: hidden;
+  overflow: clip;
   background: radial-gradient(ellipse at 50% 40%, #3b3020, #1c160d 75%);
   box-shadow: inset 0 0 40px rgba(0, 0, 0, 0.6), 0 0 0 1px rgba(251, 191, 36, 0.25);
 }
@@ -15157,7 +15158,9 @@ html.fx-lite .solo-edge-glow { display: none; }
 /* Atmosphere (live map only, solo-view.js renderSoloAtmosphere). --sm-t is the time since the page loaded,
    so after a re-render every loop carries on where it was. Particles and lightning rest at opacity 0,
    so under reduced motion they just disappear. */
-.solo-atmo { position: absolute; inset: 0; pointer-events: none; }
+/* Clipped here so the shifted mist and the gull never make the map itself scrollable:
+   scrollIntoView would scroll an overflow:hidden .solo-map and slide the art up. */
+.solo-atmo { position: absolute; inset: 0; overflow: hidden; pointer-events: none; }
 .solo-p {
   position: absolute;
   display: block;
