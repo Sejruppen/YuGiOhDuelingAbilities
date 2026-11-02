@@ -549,6 +549,7 @@ function soloAct(fn) {
   soloSnapshot();
   const result = fn();
   soloUi.panel = null;
+  soloUi.cardInfo = null;
   soloUi.input = '';
   showSoloToast(result);
   commitSolo();
@@ -737,7 +738,7 @@ function backInSolo() {
     if (solo.fight.cutscene) return dismissSoloCutscene();
     if (soloUi.panel) {
       const p = soloUi.panel;
-      soloUi.panel = p.target ? { ...p, target: null } : p.kind ? { ...p, kind: null } : null;
+      soloUi.panel = p.type !== 'attack' && p.kind ? { ...p, kind: null } : null;
       soloUi.input = '';
       return render();
     }

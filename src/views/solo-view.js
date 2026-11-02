@@ -1275,11 +1275,11 @@ function soloCardDetail() {
     return { icon: m.icon, name: m.name, tag: `${m.type} · ${m.pos === 'atk' ? 'Attack' : 'Defense'} Position`, lines };
   }
   if (id === 'trap' && f.trap) {
-    return { icon: '🂠', name: 'Face-down card', tag: 'Set Spell/Trap', lines: ['It springs when you least expect it. Destroy it with a Spell/Trap removal card (<span class="ce-emoji">✨</span> Effect).'] };
+    return { icon: '🂠', name: 'Face-down card', tag: 'Set Spell/Trap', lines: ['It springs when you least expect it. Played a Spell/Trap removal card? Destroy it below.'], destroy: 'confirmSoloDestroyTrap()' };
   }
   const eq = soloFindEquip(f, id);
   if (eq) {
-    return { icon: '⚔️', name: eq.e.name, tag: 'Equip Spell', lines: [`Equipped to <span class="ce-emoji">${eq.m.icon}</span> ${soloEscape(eq.m.name)}: +${eq.e.atk} ATK.`, 'Destroy it with a Spell/Trap removal card (<span class="ce-emoji">✨</span> Effect) and the monster loses the ATK. If the monster goes, so does this card.'] };
+    return { icon: '⚔️', name: eq.e.name, tag: 'Equip Spell', lines: [`Equipped to <span class="ce-emoji">${eq.m.icon}</span> ${soloEscape(eq.m.name)}: +${eq.e.atk} ATK.`, 'Played a Spell/Trap removal card? Destroy it below and the monster loses the ATK. If the monster goes, so does this card.'], destroy: `confirmSoloDestroyEquip(${eq.e.uid})` };
   }
   if (id === 'book' && soloToonWorldUp(f)) {
     const pages = f.pegasus.pages;
@@ -1291,6 +1291,10 @@ function soloCardDetail() {
 function renderSoloCardSheet() {
   const d = soloCardDetail();
   if (!d) return '';
+  const f = solo.fight;
+  const destroy = d.destroy && f.turn === 'player'
+    ? coopBtn('<span class="ce-emoji">🌪️</span> Destroy', d.destroy, 'danger')
+    : '';
   return `
     <div class="solo-sheet absolute inset-x-0 bottom-0 z-20 p-4 rounded-t-2xl border-t border-rose-500/50 bg-slate-900/95 backdrop-blur shadow-2xl">
       <div class="flex items-start gap-3">
@@ -1301,7 +1305,7 @@ function renderSoloCardSheet() {
           ${d.lines.map(l => `<p class="text-sm text-slate-200 mt-1 leading-snug">${l}</p>`).join('')}
         </div>
       </div>
-      <div class="flex gap-2 mt-3">${coopBtn('Close', 'closeSoloCard()')}</div>
+      <div class="flex gap-2 mt-3">${destroy}${coopBtn('Close', 'closeSoloCard()')}</div>
     </div>
   `;
 }
@@ -1403,8 +1407,7 @@ function renderSoloPlayer(f) {
         <button data-solo-me onclick="openSoloPanel('lp')" class="text-3xl font-black tabular-nums px-2 text-white">${solo.lp}</button>
       </div>
       ${toast ? `<div class="coop-toast coop-toast--${toast.tone} rounded-lg px-3 py-2 text-sm leading-snug">${toast.text}</div>` : ''}
-      <div class="grid grid-cols-3 gap-1.5">
-        ${action('⚔️', 'Attack', "openSoloPanel('attack')", f.battleOver)}
+      <div class="grid grid-cols-2 gap-1.5">
         ${action('✨', 'Effect', "openSoloPanel('effect')")}
         <button onclick="endSoloTurnClick()" class="coop-end-turn rounded-xl bg-amber-500 hover:bg-amber-400 py-2 text-slate-950 transition"><span class="block text-lg leading-none">➜</span><span class="block text-[0.7rem] font-black mt-0.5">End turn</span></button>
       </div>
@@ -1436,16 +1439,6 @@ function renderSoloPanel() {
   const panel = soloUi.panel;
 
   if (panel.type === 'attack') {
-    if (!panel.target) {
-      const bookUp = soloToonWorldUp(f);
-      const options = f.monsters.length
-        ? f.monsters.map(m => soloMonsterOption(m, `setSoloPanel({ target: '${m.uid}' })`)).join('')
-        : bookUp ? '' : coopOption({ icon: f.icon, label: 'Direct attack', sub: `${f.name} has no monsters` }, "setSoloPanel({ target: 'direct' })");
-      const book = bookUp
-        ? coopOption({ icon: '📖', label: 'Toon World', sub: `${f.pegasus.pages} page${f.pegasus.pages === 1 ? '' : 's'} left · ${SOLO_PEGASUS.pageMinAtk}+ ATK tears one out · shields Pegasus` }, "setSoloPanel({ target: 'book' })")
-        : '';
-      return renderSoloPanelShell('⚔️ Attack: choose a target', options + book);
-    }
     const book = panel.target === 'book';
     const m = panel.target !== 'direct' && !book && soloMonster(Number(panel.target));
     const title = book ? '⚔️ 📖 Toon World' : m ? `⚔️ ${m.icon} ${m.name}` : '⚔️ Direct attack';
@@ -1462,7 +1455,7 @@ function renderSoloPanel() {
       ? `<button onclick="toggleSoloNegate()" aria-pressed="${!!panel.negate}" class="w-full py-1.5 rounded-lg text-xs font-bold ${panel.negate ? 'bg-amber-500 text-slate-950' : 'bg-slate-800 text-slate-300 border border-slate-700'}"><span class="ce-emoji">🚫</span> Negate the face-down Trap ${panel.negate ? '(on)' : '(off)'}</button>`
       : '';
     return renderSoloPanelShell(title, axe + negate + bonuses.map(b => `<p class="text-xs text-amber-200">${b}</p>`).join('') + soloKeypad("Your attacking monster's ATK",
-      coopBtn('← Back', 'setSoloPanel({ target: null })') + coopBtn('⚔️ Attack!', 'confirmSoloAttack()', 'primary', !soloUi.input), true));
+      coopBtn('← Back', 'closeSoloPanel()') + coopBtn('⚔️ Attack!', 'confirmSoloAttack()', 'primary', !soloUi.input), true));
   }
 
   if (panel.type === 'effect') {
