@@ -15520,9 +15520,17 @@ html.fx-lite .solo-node-frame::before { animation: none; }
   color: #e2e8f0;
 }
 .solo-mat-row { position: relative; display: grid; gap: 0.25rem; }
-/* Same column width as the monster row, so both rows' zones are the same size. */
-.solo-mat-row--back { grid-template-columns: repeat(var(--zones, 5), 1fr); }
+/* Both rows share the column width, so their zones are the same size and fill the width. */
+.solo-mat-row--back,
 .solo-mat-row--monsters { grid-template-columns: repeat(var(--zones, 5), 1fr); }
+/* The compact 3-zone field has bigger cards, so the text on them grows too. */
+.solo-mat--compact .solo-mat-row { gap: 0.4rem; }
+.solo-mat--compact .solo-card { padding: 3px; border-width: 2px; }
+.solo-mat--compact .solo-card-name { font-size: 0.7rem; }
+.solo-mat--compact .solo-card-art { font-size: 2.6rem; }
+.solo-mat--compact .solo-card-stats { font-size: 0.7rem; }
+.solo-mat--compact .solo-plate { font-size: 0.8rem; }
+.solo-mat--compact .solo-mat-row--monsters { padding-bottom: 1.3rem; }
 /* Square zones like a real mat: a card fits the same size upright (Attack) or sideways (Defense). */
 .solo-zone {
   position: relative;

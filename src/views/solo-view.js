@@ -1092,16 +1092,24 @@ function renderSoloTerrain(f) {
 
 // New monsters fill the zones from the middle out.
 const SOLO_ZONE_ORDER = [2, 1, 3, 0, 4];
+// Up to this many cards in a row, the field only shows the middle zones (1–3).
+const SOLO_COMPACT_ZONES = 3;
+const soloInnerZone = z => z >= 1 && z <= SOLO_COMPACT_ZONES;
 
 // Keeps every monster in its zone across renders (soloUi.field, not saved) and works out
 // what changed since the last render: new cards were summoned or set, missing ones were
 // destroyed (drawn once more as a fading ghost) and turned ones changed position.
 // The first render of a fight and the render after Undo are quiet.
+// With 3 or fewer monsters the field is compact (3 zones per row), and monsters in the
+// outer zones move inwards once no ghost there still needs the wide field.
 function soloFieldLayout(f) {
   const key = `${solo.at}|${f.floor}|${f.name}`;
   const prev = soloUi.field?.key === key ? soloUi.field : null;
   const quiet = !prev || soloUi.fieldQuiet;
   soloUi.fieldQuiet = false;
+  const alive = new Set(f.monsters.map(m => String(m.uid)));
+  const ghosts = quiet ? [] : Object.entries(prev.cards).filter(([uid]) => !alive.has(uid)).map(([, c]) => c);
+  const compact = f.monsters.length <= SOLO_COMPACT_ZONES && ghosts.every(c => soloInnerZone(c.zone));
   const cards = {};
   const taken = new Set();
   const place = (m, zone) => {
@@ -1110,7 +1118,7 @@ function soloFieldLayout(f) {
   };
   f.monsters.forEach(m => {
     const z = prev?.cards[m.uid]?.zone;
-    if (z != null && !taken.has(z)) place(m, z);
+    if (z != null && !taken.has(z) && (!compact || soloInnerZone(z))) place(m, z);
   });
   const order = [...SOLO_ZONE_ORDER, ...f.monsters.map((_, i) => SOLO_MAX_MONSTERS + i)];
   f.monsters.forEach(m => cards[m.uid] || place(m, order.find(z => !taken.has(z))));
@@ -1120,7 +1128,7 @@ function soloFieldLayout(f) {
     const was = prev?.cards[c.m.uid];
     Object.assign(slots[c.zone], { m: c.m, fx: quiet ? '' : !was ? 'solo-card--summon' : was.pos !== c.pos ? 'solo-card--turn' : '' });
   });
-  if (!quiet) Object.entries(prev.cards).forEach(([uid, c]) => !cards[uid] && slots[c.zone]?.ghosts.push(c.m));
+  ghosts.forEach(c => slots[c.zone]?.ghosts.push(c.m));
 
   const now = { trap: !!f.trap, book: soloToonWorldUp(f) };
   const back = {};
@@ -1129,7 +1137,7 @@ function soloFieldLayout(f) {
     back[`${k}Ghost`] = !quiet && !now[k] && prev.back[k];
   });
   soloUi.field = { key, cards, back: now };
-  return { slots, back };
+  return { slots: compact ? slots.slice(1, 1 + SOLO_COMPACT_ZONES) : slots, back, compact };
 }
 
 // You can attack right now: your turn, Battle Phase still open.
@@ -1153,18 +1161,19 @@ function soloStatPlate(m, f) {
   return `<span aria-hidden="true" class="solo-plate solo-plate--${m.pos}"><b class="solo-stat-atk">${st.atk}</b><i>/</i><b class="solo-stat-def">${st.def}</b></span>`;
 }
 
-function renderSoloBackRow(f, back, aim) {
+function renderSoloBackRow(f, back, aim, compact) {
   const bookCard = soloToonWorldUp(f)
     ? `<button type="button" data-solo-card="book" onclick="tapSoloCard('book')" aria-label="Toon World, ${f.pegasus.pages} pages left" class="solo-card solo-card--spell solo-card--toonworld ${back.bookFx} ${aim === 'book' ? 'solo-card--target' : ''}"><span class="solo-card-name">Toon World</span><span class="solo-card-art"><span class="ce-emoji">📖</span></span><span class="solo-card-stats"><span class="ce-emoji">📄</span>×${f.pegasus.pages}</span></button>`
     : '';
   const bookGhost = back.bookGhost ? '<span aria-hidden="true" class="solo-card solo-card--spell solo-card--ghost"><span class="solo-card-name">Toon World</span><span class="solo-card-art"><span class="ce-emoji">📖</span></span><span class="solo-card-stats">×0</span></span>' : '';
   const trap = f.trap ? `<button type="button" data-solo-card="trap" onclick="tapSoloCard('trap')" aria-label="Face-down card" class="solo-card solo-card--back ${back.trapFx}"></button>` : '';
   const trapGhost = back.trapGhost ? '<span aria-hidden="true" class="solo-card solo-card--back solo-card--ghost"></span>' : '';
-  return soloZone('') + soloZone(bookCard + bookGhost) + soloZone(trap + trapGhost) + soloZone('') + soloZone('');
+  const zones = ['', bookCard + bookGhost, trap + trapGhost, '', ''].map(soloZone);
+  return (compact ? zones.slice(1, 1 + SOLO_COMPACT_ZONES) : zones).join('');
 }
 
 function renderSoloMat(f) {
-  const { slots, back } = soloFieldLayout(f);
+  const { slots, back, compact } = soloFieldLayout(f);
   const step = f.turn === 'enemy' ? soloStep() : null;
   const attacker = step?.kind === 'attack' && step.sub !== 'done' ? step.uid : null;
   const canAttack = soloCanAttackNow(f);
@@ -1179,8 +1188,8 @@ function renderSoloMat(f) {
       : '<p class="solo-mat-empty">No monsters</p>'
     : '';
   return `
-    <div class="solo-mat solo-tint--${f.region} ${canAttack ? 'solo-mat--aim' : ''}" style="--zones: ${slots.length}">
-      <div class="solo-mat-row solo-mat-row--back">${renderSoloBackRow(f, back, aim)}</div>
+    <div class="solo-mat solo-tint--${f.region} ${canAttack ? 'solo-mat--aim' : ''} ${compact ? 'solo-mat--compact' : ''}" style="--zones: ${slots.length}">
+      <div class="solo-mat-row solo-mat-row--back">${renderSoloBackRow(f, back, aim, compact)}</div>
       <div class="solo-mat-row solo-mat-row--monsters">${monsters}${empty}</div>
     </div>
   `;
