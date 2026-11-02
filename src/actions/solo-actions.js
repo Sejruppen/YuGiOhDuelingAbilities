@@ -30,7 +30,7 @@ const soloUi = {
   mapScroll: 0,
   shownStep: null,
   relicInfo: null,
-  // The enemy card whose detail sheet is open (a monster uid, 'trap' or 'book').
+  // The enemy card whose detail sheet is open (a monster uid, 'trap', 'book' or 'eq:<equip uid>').
   cardInfo: null,
   // Which zone each enemy monster sits in, so cards don't slide over (see soloFieldLayout).
   field: null,
@@ -592,14 +592,15 @@ function confirmSoloDestroyTrap() {
   });
 }
 
+// `uid` is the equip card's own uid; its monster loses that card's ATK.
 function confirmSoloDestroyEquip(uid) {
-  const m = soloMonster(uid);
-  if (!m?.equip) return;
+  const m = solo.fight?.monsters.find(x => x.equips?.some(e => e.uid === uid));
+  if (!m) return;
   soloAct(() => {
-    const lost = m.equip;
-    m.equip = 0;
+    const e = m.equips.find(x => x.uid === uid);
+    m.equips = m.equips.filter(x => x.uid !== uid);
     playSound({ name: 'co-destroy' });
-    return { tone: 'good', text: `🌪️ The equip card on ${m.name} is destroyed (−${lost} ATK).` };
+    return { tone: 'good', text: `🌪️ ${e.name} is destroyed. ${m.name} loses ${e.atk} ATK.` };
   });
 }
 

@@ -11,6 +11,8 @@ const SOLO_CAMPFIRE_HEAL = 0.3;
 const SOLO_CAMPFIRE_TRAIN = 500;
 const SOLO_FIELD_BONUS = 0.3;
 const SOLO_MAX_MONSTERS = 5;
+// Equips, the face-down card and Toon World share these Spell/Trap zones.
+const SOLO_SPELL_ZONES = 5;
 
 // Map: floors 1-11 branch over 4 columns (Beach 1-3, Forest/Meadow 4-7,
 // Mountain/Wasteland 8-11), then one node per floor.

@@ -26,6 +26,7 @@ function loadSolo() {
     if (!saved.seenEvents) saved.seenEvents = [];
     if (!saved.mods) saved.mods = {};
     if (saved.map && !saved.runId) saved.runId = `${Date.now()}`;
+    soloMigrateEquips(saved.fight);
     return saved;
   } catch {
     return newSolo();
@@ -33,6 +34,16 @@ function loadSolo() {
 }
 
 let solo = loadSolo();
+
+// Older saves kept a monster's equips as one ATK number; now each equip is its own card.
+function soloMigrateEquips(f) {
+  if (!f?.monsters) return;
+  [...f.monsters, ...(f.grave || [])].forEach(m => {
+    if (m.equips) return;
+    m.equips = m.equip ? [{ uid: f.nextUid++, name: 'Equip card', atk: m.equip }] : [];
+    delete m.equip;
+  });
+}
 
 function saveSolo() {
   try {
@@ -563,7 +574,7 @@ function applySoloMods(f) {
   f.mods = mods;
   if (mods.includes('insect')) {
     const card = SOLO_MONSTERS.forest.find(m => m.name === 'Killer Needle');
-    f.monsters.push({ ...card, uid: f.nextUid++, pos: 'atk', equip: 0 });
+    f.monsters.push({ ...card, uid: f.nextUid++, pos: 'atk', equips: [] });
   }
   if (mods.includes('storm')) {
     f.lp += SOLO_EVENT_MODS.storm.value;
@@ -668,7 +679,15 @@ const soloBoosted = (fight, m) => soloRegion(fight.region).types.includes(m.type
 
 function soloStats(m, fight = solo.fight) {
   const atk = soloBoosted(fight, m) ? Math.round(m.atk * (1 + SOLO_FIELD_BONUS)) : m.atk;
-  return { atk: atk + (m.equip || 0), def: m.def };
+  return { atk: atk + soloEquipAtk(m), def: m.def };
+}
+
+// Equip cards: m.equips = [{ uid, name, atk }]. Each one sits in a Spell/Trap zone.
+const soloEquipAtk = m => (m.equips || []).reduce((sum, e) => sum + e.atk, 0);
+const soloSpellCount = f => f.monsters.reduce((n, m) => n + (m.equips?.length || 0), 0) + (f.trap ? 1 : 0) + (soloToonWorldUp(f) ? 1 : 0);
+const soloSpellsFull = f => soloSpellCount(f) >= SOLO_SPELL_ZONES;
+function soloEquip(f, m, card) {
+  m.equips = [...(m.equips || []), { uid: f.nextUid++, name: card.name, atk: card.atk }];
 }
 
 const soloMonster = uid => solo.fight?.monsters.find(m => m.uid === uid);
@@ -982,7 +1001,7 @@ function prepareSoloStepType(step, f) {
   const info = (icon, title, text, note = '') => Object.assign(step, { kind: 'info', icon, title, text, note: [note, step.bluffNote].filter(Boolean).join('<br>') });
 
   if (step.type === 'summon' && f.monsters.length >= SOLO_MAX_MONSTERS) step.type = 'equip';
-  if (step.type === 'equip' && !f.monsters.length) step.type = 'summon';
+  if (step.type === 'equip' && (!f.monsters.length || (soloSpellsFull(f) && f.monsters.length < SOLO_MAX_MONSTERS))) step.type = 'summon';
 
   switch (step.type) {
     case 'summon': {
@@ -991,7 +1010,7 @@ function prepareSoloStepType(step, f) {
       const pk = step.peek?.card && pool.some(c => c.name === step.peek.card.name) ? step.peek : null;
       const card = pk ? pk.card : soloPick(pool);
       const pos = pk ? pk.pos : soloSummonPos(f, card);
-      const m = { ...card, uid: f.nextUid++, pos, equip: 0 };
+      const m = { ...card, uid: f.nextUid++, pos, equips: [] };
       f.monsters.push(m);
       playSound({ name: m.toon ? 'co-toon' : 'co-summon' });
       const st = soloStats(m, f);
@@ -1007,17 +1026,18 @@ function prepareSoloStepType(step, f) {
       return info('🃏', `Summons ${m.name}!`, `${m.icon} ${st.atk} ATK / ${st.def} DEF in <b>${pos === 'atk' ? 'Attack' : 'Defense'} Position</b>.`, notes.join('<br>'));
     }
     case 'equip': {
+      if (soloSpellsFull(f)) return false;
       const eq = soloEquipRoll(f, step.peek?.equip);
       const fitting = f.monsters.filter(m => !eq.only || eq.only.includes(m.type));
       const attackers = fitting.filter(m => m.pos === 'atk');
       const targets = attackers.length ? attackers : fitting;
       const target = targets.reduce((a, b) => (soloStats(b, f).atk > soloStats(a, f).atk ? b : a));
-      target.equip = (target.equip || 0) + eq.atk;
+      soloEquip(f, target, eq);
       playSound({ name: 'co-shield' });
-      return info('⚔️', `${eq.name}!`, `${target.icon} ${target.name} gains ${eq.atk} ATK (now ${soloStats(target, f).atk}).`);
+      return info('⚔️', `${eq.name}!`, `${target.icon} ${target.name} gains ${eq.atk} ATK (now ${soloStats(target, f).atk}).`, 'Put the equip card in a Spell/Trap zone.');
     }
     case 'trap': {
-      if (f.trap) return false;
+      if (f.trap || soloSpellsFull(f)) return false;
       const trap = soloCards(f).trap;
       if (soloRelicReady('ring')) {
         useSoloRelic('ring');
@@ -1048,7 +1068,7 @@ function prepareSoloStepType(step, f) {
     case 'attack': {
       const m = soloMonster(step.uid);
       if (!m || m.pos !== 'atk' || m.bound) return false;
-      const atk = step.hit ? m.hitAtk + (m.equip || 0) : soloStats(m, f).atk;
+      const atk = step.hit ? m.hitAtk + soloEquipAtk(m) : soloStats(m, f).atk;
       const title = `${m.name} attacks directly!${step.hit ? ` (${step.hit}/${m.hits})` : ''}`;
       Object.assign(step, { kind: 'attack', icon: m.icon, title, atk, sub: null, rex: f.elite === 'rex' && m.type === 'Dinosaur', toon: !!m.toon, note: m.seal ? soloToonSeal(f) : '' });
       return true;
@@ -1068,7 +1088,7 @@ function prepareSoloStepType(step, f) {
     }
     case 'rise': {
       const room = SOLO_MAX_MONSTERS - f.monsters.length;
-      const risen = f.grave.slice(0, Math.max(0, room)).map(m => ({ ...m, uid: f.nextUid++, equip: 0, bound: false, risen: true }));
+      const risen = f.grave.slice(0, Math.max(0, room)).map(m => ({ ...m, uid: f.nextUid++, equips: [], bound: false, risen: true }));
       f.grave = [];
       if (!risen.length) return false;
       f.monsters.push(...risen);
@@ -1080,12 +1100,13 @@ function prepareSoloStepType(step, f) {
       playSound({ name: 'co-negate' });
       const card = SOLO_ELITES.keith.monsters.find(m => m.special);
       if (f.monsters.length < SOLO_MAX_MONSTERS) {
-        const m = { ...card, uid: f.nextUid++, pos: 'atk', equip: 0 };
+        const m = { ...card, uid: f.nextUid++, pos: 'atk', equips: [] };
         f.monsters.push(m);
         return info('🃏', 'A card up his sleeve!', `${m.icon} ${m.name} appears out of nowhere: ${soloStats(m, f).atk} ATK in <b>Attack Position</b>.`, '"Cheating? Prove it, punk."');
       }
+      if (soloSpellsFull(f)) return false;
       const target = f.monsters.reduce((a, b) => (soloStats(b, f).atk > soloStats(a, f).atk ? b : a));
-      target.equip = (target.equip || 0) + SOLO_GIMMICK_CARDS.nuzzler.atk;
+      soloEquip(f, target, SOLO_GIMMICK_CARDS.nuzzler);
       return info('🃏', 'A card up his sleeve!', `${SOLO_GIMMICK_CARDS.nuzzler.name}: ${target.icon} ${target.name} gains ${SOLO_GIMMICK_CARDS.nuzzler.atk} ATK (now ${soloStats(target, f).atk}).`, '"Cheating? Prove it, punk."');
     }
     default:
@@ -1102,7 +1123,7 @@ function soloSpecialStep(f, info) {
   playSound({ name: 'co-summon' });
   if (f.elite === 'weevil') {
     f.gimmick = { ...f.gimmick, cocoon: true };
-    const m = { ...SOLO_GIMMICK_CARDS.cocoon, uid: f.nextUid++, pos: 'def', equip: 0, hatch: SOLO_COCOON_TURNS };
+    const m = { ...SOLO_GIMMICK_CARDS.cocoon, uid: f.nextUid++, pos: 'def', equips: [], hatch: SOLO_COCOON_TURNS };
     f.monsters.push(m);
     return info('🥚', 'Cocoon of Evolution!', `${m.icon} ${m.name} (0 ATK / ${m.def} DEF) in <b>Defense Position</b>.`, `It hatches into Great Moth (2600 ATK) at the start of his turn in ${SOLO_COCOON_TURNS} turns. Destroy it first!`);
   }
@@ -1114,7 +1135,7 @@ function soloSpecialStep(f, info) {
   }
   f.gimmick = { ...f.gimmick, fuse: true };
   f.monsters = f.monsters.filter(m => !SOLO_PARADOX_TRIO.includes(m.name));
-  const m = { ...SOLO_ELITES.paradox.monsters.find(x => x.special), uid: f.nextUid++, pos: 'atk', equip: 0 };
+  const m = { ...SOLO_ELITES.paradox.monsters.find(x => x.special), uid: f.nextUid++, pos: 'atk', equips: [] };
   f.monsters.push(m);
   return info('🗿', 'Polymerization: Gate Guardian!', `Sanga, Kazejin and Suijin fuse into ${m.icon} ${m.name}: ${soloStats(m, f).atk} ATK in <b>Attack Position</b>.`, 'Replace the three cards on the table with Gate Guardian.');
 }

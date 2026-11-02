@@ -1096,48 +1096,89 @@ const SOLO_ZONE_ORDER = [2, 1, 3, 0, 4];
 const SOLO_COMPACT_ZONES = 3;
 const soloInnerZone = z => z >= 1 && z <= SOLO_COMPACT_ZONES;
 
-// Keeps every monster in its zone across renders (soloUi.field, not saved) and works out
+// Keeps every card in its zone across renders (soloUi.field, not saved) and works out
 // what changed since the last render: new cards were summoned or set, missing ones were
 // destroyed (drawn once more as a fading ghost) and turned ones changed position.
 // The first render of a fight and the render after Undo are quiet.
-// With 3 or fewer monsters the field is compact (3 zones per row), and monsters in the
-// outer zones move inwards once no ghost there still needs the wide field.
+// With 3 or fewer cards in each row the field is compact (3 zones per row), and cards in
+// the outer zones move inwards once no ghost there still needs the wide field.
 function soloFieldLayout(f) {
   const key = `${solo.at}|${f.floor}|${f.name}`;
   const prev = soloUi.field?.key === key ? soloUi.field : null;
   const quiet = !prev || soloUi.fieldQuiet;
   soloUi.fieldQuiet = false;
+  const items = soloBackItems(f);
   const alive = new Set(f.monsters.map(m => String(m.uid)));
+  const set = new Set(items.map(i => i.key));
   const ghosts = quiet ? [] : Object.entries(prev.cards).filter(([uid]) => !alive.has(uid)).map(([, c]) => c);
-  const compact = f.monsters.length <= SOLO_COMPACT_ZONES && ghosts.every(c => soloInnerZone(c.zone));
+  const backGhosts = quiet ? [] : Object.entries(prev.back).filter(([k]) => !set.has(k)).map(([, c]) => c);
+  const compact = f.monsters.length <= SOLO_COMPACT_ZONES && items.length <= SOLO_COMPACT_ZONES
+    && [...ghosts, ...backGhosts].every(c => soloInnerZone(c.zone));
+
+  const zoneOf = (list, k) => list?.[k]?.zone;
+  const mZones = soloAssignZones(f.monsters.map(m => String(m.uid)), k => zoneOf(prev?.cards, k), compact);
+  const bZones = soloAssignZones(items.map(i => i.key), k => zoneOf(prev?.back, k), compact);
+  const used = [...Object.values(mZones), ...Object.values(bZones), ...ghosts.map(c => c.zone), ...backGhosts.map(c => c.zone)];
+  const length = Math.max(SOLO_MAX_MONSTERS, ...used.map(z => z + 1));
+  const row = () => Array.from({ length }, () => ({ fx: '', ghosts: [] }));
+
+  const slots = row();
   const cards = {};
-  const taken = new Set();
-  const place = (m, zone) => {
-    taken.add(zone);
-    cards[m.uid] = { zone, pos: m.pos, m };
-  };
   f.monsters.forEach(m => {
-    const z = prev?.cards[m.uid]?.zone;
-    if (z != null && !taken.has(z) && (!compact || soloInnerZone(z))) place(m, z);
+    const zone = mZones[m.uid];
+    const was = prev?.cards[m.uid];
+    cards[m.uid] = { zone, pos: m.pos, m };
+    Object.assign(slots[zone], { m, fx: quiet ? '' : !was ? 'solo-card--summon' : was.pos !== m.pos ? 'solo-card--turn' : '' });
   });
-  const order = [...SOLO_ZONE_ORDER, ...f.monsters.map((_, i) => SOLO_MAX_MONSTERS + i)];
-  f.monsters.forEach(m => cards[m.uid] || place(m, order.find(z => !taken.has(z))));
+  ghosts.forEach(c => slots[c.zone].ghosts.push(c.m));
 
-  const slots = Array.from({ length: Math.max(SOLO_MAX_MONSTERS, ...[...taken].map(z => z + 1)) }, () => ({ m: null, fx: '', ghosts: [] }));
-  Object.values(cards).forEach(c => {
-    const was = prev?.cards[c.m.uid];
-    Object.assign(slots[c.zone], { m: c.m, fx: quiet ? '' : !was ? 'solo-card--summon' : was.pos !== c.pos ? 'solo-card--turn' : '' });
-  });
-  ghosts.forEach(c => slots[c.zone]?.ghosts.push(c.m));
-
-  const now = { trap: !!f.trap, book: soloToonWorldUp(f) };
+  const backSlots = row();
   const back = {};
-  ['trap', 'book'].forEach(k => {
-    back[`${k}Fx`] = !quiet && now[k] && !prev.back[k] ? 'solo-card--set' : '';
-    back[`${k}Ghost`] = !quiet && !now[k] && prev.back[k];
+  items.forEach(item => {
+    const zone = bZones[item.key];
+    back[item.key] = { zone, item };
+    Object.assign(backSlots[zone], { item, fx: !quiet && !prev.back[item.key] ? 'solo-card--set' : '' });
   });
-  soloUi.field = { key, cards, back: now };
-  return { slots: compact ? slots.slice(1, 1 + SOLO_COMPACT_ZONES) : slots, back, compact };
+  backGhosts.forEach(c => backSlots[c.zone].ghosts.push(c.item));
+
+  soloUi.field = { key, cards, back };
+  const cut = list => (compact ? list.slice(1, 1 + SOLO_COMPACT_ZONES) : list);
+  return { slots: cut(slots), backSlots: cut(backSlots), compact };
+}
+
+// Gives each key a zone: its previous one if it is still free (and inner when compact),
+// otherwise the next free one from the middle out.
+function soloAssignZones(keys, prevZone, compact) {
+  const zones = {};
+  const taken = new Set();
+  const put = (k, z) => { zones[k] = z; taken.add(z); };
+  keys.forEach(k => {
+    const z = prevZone(k);
+    if (z != null && !taken.has(z) && (!compact || soloInnerZone(z))) put(k, z);
+  });
+  const order = [...SOLO_ZONE_ORDER, ...keys.map((_, i) => SOLO_ZONE_ORDER.length + i)];
+  keys.forEach(k => zones[k] == null && put(k, order.find(z => !taken.has(z))));
+  return zones;
+}
+
+// The enemy's Spell/Trap cards: Toon World, the face-down card and every equip.
+function soloBackItems(f) {
+  const items = [];
+  if (soloToonWorldUp(f)) items.push({ key: 'book', kind: 'book' });
+  if (f.trap) items.push({ key: 'trap', kind: 'trap' });
+  f.monsters.forEach(m => (m.equips || []).forEach(e => items.push({ key: `eq:${e.uid}`, kind: 'equip', e, m })));
+  return items;
+}
+
+// Finds an equip card by its cardInfo id ('eq:<uid>').
+function soloFindEquip(f, id) {
+  if (typeof id !== 'string' || !id.startsWith('eq:')) return null;
+  const uid = Number(id.slice(3));
+  for (const m of f.monsters) {
+    const e = (m.equips || []).find(x => x.uid === uid);
+    if (e) return { e, m };
+  }
+  return null;
 }
 
 // You can attack right now: your turn, Battle Phase still open.
@@ -1161,19 +1202,29 @@ function soloStatPlate(m, f) {
   return `<span aria-hidden="true" class="solo-plate solo-plate--${m.pos}"><b class="solo-stat-atk">${st.atk}</b><i>/</i><b class="solo-stat-def">${st.def}</b></span>`;
 }
 
-function renderSoloBackRow(f, back, aim, compact) {
-  const bookCard = soloToonWorldUp(f)
-    ? `<button type="button" data-solo-card="book" onclick="tapSoloCard('book')" aria-label="Toon World, ${f.pegasus.pages} pages left" class="solo-card solo-card--spell solo-card--toonworld ${back.bookFx} ${aim === 'book' ? 'solo-card--target' : ''}"><span class="solo-card-name">Toon World</span><span class="solo-card-art"><span class="ce-emoji">📖</span></span><span class="solo-card-stats"><span class="ce-emoji">📄</span>×${f.pegasus.pages}</span></button>`
-    : '';
-  const bookGhost = back.bookGhost ? '<span aria-hidden="true" class="solo-card solo-card--spell solo-card--ghost"><span class="solo-card-name">Toon World</span><span class="solo-card-art"><span class="ce-emoji">📖</span></span><span class="solo-card-stats">×0</span></span>' : '';
-  const trap = f.trap ? `<button type="button" data-solo-card="trap" onclick="tapSoloCard('trap')" aria-label="Face-down card" class="solo-card solo-card--back ${back.trapFx}"></button>` : '';
-  const trapGhost = back.trapGhost ? '<span aria-hidden="true" class="solo-card solo-card--back solo-card--ghost"></span>' : '';
-  const zones = ['', bookCard + bookGhost, trap + trapGhost, '', ''].map(soloZone);
-  return (compact ? zones.slice(1, 1 + SOLO_COMPACT_ZONES) : zones).join('');
+// A Spell/Trap row card (see soloBackItems). `ghost` draws it breaking (not tappable).
+function renderSoloBackCard(item, f, cls = '', ghost = false) {
+  let inner = '';
+  let classes = 'solo-card solo-card--spell';
+  let label = '';
+  if (item.kind === 'trap') {
+    classes = 'solo-card solo-card--back';
+    label = 'Face-down card';
+  } else if (item.kind === 'book') {
+    const pages = ghost ? 0 : f.pegasus.pages;
+    classes += ' solo-card--toonworld';
+    inner = `<span class="solo-card-name">Toon World</span><span class="solo-card-art"><span class="ce-emoji">📖</span></span><span class="solo-card-stats"><span class="ce-emoji">📄</span>×${pages}</span>`;
+    label = `Toon World, ${pages} pages left`;
+  } else {
+    inner = `<span class="solo-card-name">${soloEscape(item.e.name)}</span><span class="solo-card-art"><span class="ce-emoji">⚔️</span></span><span class="solo-card-stats">+${item.e.atk}</span>`;
+    label = `${item.e.name}, equip spell: +${item.e.atk} ATK on ${item.m.name}`;
+  }
+  if (ghost) return `<span aria-hidden="true" class="${classes} solo-card--ghost">${inner}</span>`;
+  return `<button type="button" onclick="tapSoloCard('${item.key}')" aria-label="${soloEscape(label)}" class="${classes} ${cls}">${inner}</button>`;
 }
 
 function renderSoloMat(f) {
-  const { slots, back, compact } = soloFieldLayout(f);
+  const { slots, backSlots, compact } = soloFieldLayout(f);
   const step = f.turn === 'enemy' ? soloStep() : null;
   const attacker = step?.kind === 'attack' && step.sub !== 'done' ? step.uid : null;
   const canAttack = soloCanAttackNow(f);
@@ -1182,6 +1233,10 @@ function renderSoloMat(f) {
     (s.m ? renderSoloMonsterCard(s.m, f, [s.fx, s.m.uid === attacker && 'solo-card--attacking', aim === String(s.m.uid) && 'solo-card--target'].filter(Boolean).join(' ')) + soloStatPlate(s.m, f) : '') +
     s.ghosts.map(m => renderSoloMonsterCard(m, f, '', true)).join('')
   )).join('');
+  const spells = backSlots.map(s => soloZone(
+    (s.item ? renderSoloBackCard(s.item, f, [s.fx, s.item.key === 'book' && aim === 'book' && 'solo-card--target'].filter(Boolean).join(' ')) : '') +
+    s.ghosts.map(item => renderSoloBackCard(item, f, '', true)).join('')
+  )).join('');
   const empty = !f.monsters.length
     ? canAttack && !soloToonWorldUp(f)
       ? `<button type="button" onclick="tapSoloDirect()" class="solo-direct ${aim === 'direct' ? 'solo-direct--on' : ''}"><span class="ce-emoji">⚔️</span> Attack directly!</button>`
@@ -1189,13 +1244,13 @@ function renderSoloMat(f) {
     : '';
   return `
     <div class="solo-mat solo-tint--${f.region} ${canAttack ? 'solo-mat--aim' : ''} ${compact ? 'solo-mat--compact' : ''}" style="--zones: ${slots.length}">
-      <div class="solo-mat-row solo-mat-row--back">${renderSoloBackRow(f, back, aim, compact)}</div>
+      <div class="solo-mat-row solo-mat-row--back">${spells}</div>
       <div class="solo-mat-row solo-mat-row--monsters">${monsters}${empty}</div>
     </div>
   `;
 }
 
-// The detail sheet for a tapped enemy card (soloUi.cardInfo: a monster uid, 'trap' or 'book').
+// The detail sheet for a tapped enemy card (soloUi.cardInfo: a monster uid, 'trap', 'book' or 'eq:<equip uid>').
 function soloCardDetail() {
   const f = solo.phase === 'fight' && solo.fight;
   const id = soloUi.cardInfo;
@@ -1207,9 +1262,9 @@ function soloCardDetail() {
     const st = soloStats(m, f);
     const boosted = soloBoosted(f, m);
     const lines = [
-      `<b class="${m.pos === 'atk' ? 'text-rose-300' : 'text-slate-300'}">ATK ${st.atk}</b> · <b class="${m.pos === 'def' ? 'text-sky-300' : 'text-slate-300'}">DEF ${st.def}</b>${boosted || m.equip ? ` <span class="text-slate-400">(printed ${m.atk} ATK)</span>` : ''}`,
+      `<b class="${m.pos === 'atk' ? 'text-rose-300' : 'text-slate-300'}">ATK ${st.atk}</b> · <b class="${m.pos === 'def' ? 'text-sky-300' : 'text-slate-300'}">DEF ${st.def}</b>${boosted || m.equips?.length ? ` <span class="text-slate-400">(printed ${m.atk} ATK)</span>` : ''}`,
       boosted && `<span class="ce-emoji">${r.icon}</span> ${r.card}: +${SOLO_FIELD_BONUS * 100}% ATK.`,
-      m.equip && `<span class="ce-emoji">⚔️</span> Equip card: +${m.equip} ATK.`,
+      ...(m.equips || []).map(e => `<span class="ce-emoji">⚔️</span> ${soloEscape(e.name)}: +${e.atk} ATK.`),
       m.bound && `<span class="ce-emoji">🔯</span> Spellbinding Circle: it can't attack.`,
       m.hatch && `<span class="ce-emoji">🦋</span> Hatches into Great Moth in ${m.hatch} turn${m.hatch === 1 ? '' : 's'}.`,
       m.risen && `<span class="ce-emoji">🧟</span> Risen from the Graveyard: it stays dead next time.`,
@@ -1221,6 +1276,10 @@ function soloCardDetail() {
   }
   if (id === 'trap' && f.trap) {
     return { icon: '🂠', name: 'Face-down card', tag: 'Set Spell/Trap', lines: ['It springs when you least expect it. Destroy it with a Spell/Trap removal card (<span class="ce-emoji">✨</span> Effect).'] };
+  }
+  const eq = soloFindEquip(f, id);
+  if (eq) {
+    return { icon: '⚔️', name: eq.e.name, tag: 'Equip Spell', lines: [`Equipped to <span class="ce-emoji">${eq.m.icon}</span> ${soloEscape(eq.m.name)}: +${eq.e.atk} ATK.`, 'Destroy it with a Spell/Trap removal card (<span class="ce-emoji">✨</span> Effect) and the monster loses the ATK. If the monster goes, so does this card.'] };
   }
   if (id === 'book' && soloToonWorldUp(f)) {
     const pages = f.pegasus.pages;
@@ -1407,7 +1466,7 @@ function renderSoloPanel() {
     if (!panel.kind) {
       const options = [
         coopOption({ icon: '💥', label: 'Destroy a monster', sub: 'Raigeki, Fissure, Dark Hole…', disabled: !f.monsters.length, reason: 'The enemy has no monsters' }, "setSoloPanel({ kind: 'destroy' })"),
-        coopOption({ icon: '🌪️', label: 'Destroy a Spell/Trap', sub: 'Mystical Space Typhoon, Harpie\'s Feather Duster…', disabled: !f.trap && !f.monsters.some(m => m.equip), reason: 'The enemy has no face-down or equip card' }, "setSoloPanel({ kind: 'spelltrap' })"),
+        coopOption({ icon: '🌪️', label: 'Destroy a Spell/Trap', sub: 'Mystical Space Typhoon, Harpie\'s Feather Duster…', disabled: !f.trap && !f.monsters.some(m => m.equips?.length), reason: 'The enemy has no face-down or equip card' }, "setSoloPanel({ kind: 'spelltrap' })"),
         coopOption({ icon: '🔥', label: 'Burn damage', sub: 'Damage straight to the enemy\'s LP', disabled: soloToonWorldUp(f), reason: 'Toon World shields Pegasus: tear out all its pages first' }, "setSoloPanel({ kind: 'burn' })")
       ];
       if (soloHas('raigeki')) {
@@ -1421,7 +1480,7 @@ function renderSoloPanel() {
     }
     if (panel.kind === 'spelltrap') {
       const trap = f.trap ? coopOption({ icon: '🂠', label: 'Face-down card', sub: 'Set Spell/Trap Card' }, 'confirmSoloDestroyTrap()') : '';
-      const equips = f.monsters.filter(m => m.equip).map(m => coopOption({ icon: m.icon, label: `${m.name}'s equip`, sub: `+${m.equip} ATK` }, `confirmSoloDestroyEquip(${m.uid})`)).join('');
+      const equips = f.monsters.flatMap(m => (m.equips || []).map(e => coopOption({ icon: '⚔️', label: soloEscape(e.name), sub: `+${e.atk} ATK on ${soloEscape(m.name)}` }, `confirmSoloDestroyEquip(${e.uid})`))).join('');
       return renderSoloPanelShell('🌪️ Destroy which card?', trap + equips +
         `<div class="flex">${coopBtn('← Back', 'setSoloPanel({ kind: null })')}</div>`);
     }

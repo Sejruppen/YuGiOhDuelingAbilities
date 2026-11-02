@@ -114,7 +114,7 @@ function soloPegasusStep(step, f, info) {
       if (g.bunny || f.monsters.length >= SOLO_MAX_MONSTERS) return false;
       g.bunny = true;
       const b = SOLO_PEGASUS.bunny;
-      f.monsters.push({ ...b, uid: f.nextUid++, equip: 0 });
+      f.monsters.push({ ...b, uid: f.nextUid++, equips: [] });
       playSound({ name: 'co-toon' });
       return info(b.icon, `${b.name}!`, `${b.icon} ${b.name} (${b.atk} ATK / ${b.def} DEF) hops onto his field in <b>Defense Position</b>.`, 'While it hops around, Pegasus takes no damage. Destroy it first!');
     }
@@ -181,7 +181,7 @@ function soloAbsorb(value) {
     f.monsters = f.monsters.filter(m => m.uid !== weak.uid);
     note = ` ${weak.name} leaves his field to make room.`;
   }
-  f.monsters.push({ ...SOLO_PEGASUS.restrict, atk: value, def: 0, uid: f.nextUid++, pos: value ? 'atk' : 'def', equip: 0 });
+  f.monsters.push({ ...SOLO_PEGASUS.restrict, atk: value, def: 0, uid: f.nextUid++, pos: value ? 'atk' : 'def', equips: [] });
   playSound({ name: 'co-summon' });
   finishSoloStep(value
     ? { tone: 'bad', text: `🧿 Your strongest monster is absorbed! Remove it from your field. Restrict now has ${value} ATK.${note}` }
