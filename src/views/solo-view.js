@@ -1618,7 +1618,7 @@ function renderSoloFightIntro(f, kind, p) {
   return `
     <div class="${soloIntroClass()} fixed inset-0 z-50 flex flex-col bg-slate-950/95 backdrop-blur overflow-y-auto no-scrollbar p-6">
       <div class="my-auto flex flex-col items-center text-center gap-2">
-        <div class="coop-cut-icon text-7xl leading-none ce-emoji">${f.icon}</div>
+        ${soloIntroIcon(f)}
         <p class="text-[0.7rem] font-bold uppercase tracking-widest text-rose-300">${kind}</p>
         <p class="text-2xl font-black text-white">${f.name}</p>
         <p class="text-sm text-slate-300">${f.maxLp} LP</p>
@@ -1632,19 +1632,37 @@ function renderSoloFightIntro(f, kind, p) {
   `;
 }
 
+// --rps-t is a negative delay (time since the throw), so a re-render resumes the animation instead of replaying it.
+const soloRpsElapsed = r => (r?.you ? Math.min(Date.now() - (r.at || 0), 9999) : 0);
+
+// During Pegasus' rock-paper-scissors his 👁️ icon becomes the glowing Millennium Eye,
+// which flares as it reads your hand.
+function soloIntroIcon(f) {
+  const r = f.rps;
+  if (!f.pegasus || !r) return `<div class="coop-cut-icon text-7xl leading-none ce-emoji">${f.icon}</div>`;
+  return `<div class="coop-cut-icon" style="filter: none"><div class="solo-rps-eye ${r.you ? 'solo-rps-eye--read' : ''}" style="--rps-t: -${soloRpsElapsed(r)}ms">${MILLENNIUM_EYE_SVG}</div></div>`;
+}
+
 // Rock-paper-scissors for who goes first. A win lets you choose; a loss lets the enemy choose.
 function renderSoloRps(f) {
   const r = f.rps;
   const btn = (label, onclick, cls = 'bg-amber-500 hover:bg-amber-400 text-slate-950') => `<button onclick="${onclick}" class="px-6 py-3 rounded-xl font-bold text-lg ${cls}">${label}</button>`;
-  const throws = r.you ? renderSoloRpsThrows(r) : '';
-  // --rps-t is a negative delay (time since the throw), so a re-render resumes the animation instead of replaying it.
-  const elapsed = r.you ? Math.min(Date.now() - (r.at || 0), 9999) : 0;
+  const pegasus = !!f.pegasus;
+  const throws = r.you ? renderSoloRpsThrows(r, pegasus) : '';
+  const elapsed = soloRpsElapsed(r);
   const wrap = body => `<div class="flex flex-col items-center gap-3 mt-3 max-w-sm" style="--rps-t: -${elapsed}ms">${throws}${r.you ? `<div class="solo-rps-after flex flex-col items-center gap-3">${body}</div>` : body}</div>`;
   const text = (t, cls = 'text-slate-200') => `<p class="text-sm leading-snug ${cls}">${t}</p>`;
 
   if (!r.result) {
     const options = Object.entries(SOLO_RPS).map(([k, v]) => `<button onclick="soloRpsClick('${k}')" aria-label="${v.label}" class="w-20 h-20 rounded-2xl bg-slate-800 border border-slate-600 hover:bg-slate-700 text-5xl leading-none ce-emoji">${v.icon}</button>`).join('');
-    return wrap(text('Rock, paper, scissors… <b>throw!</b>', 'text-lg font-bold text-white') + `<div class="flex gap-3">${options}</div>`);
+    const taunt = pegasus ? text('“Go ahead, pick any hand you like~ My Millennium Eye already knows.”', 'italic text-amber-100') : '';
+    return wrap(taunt + text('Rock, paper, scissors… <b>throw!</b>', 'text-lg font-bold text-white') + `<div class="flex gap-3">${options}</div>`);
+  }
+  if (pegasus && r.result === 'lose') {
+    return wrap(text(`${f.name} wins… of course.`, 'text-lg font-bold text-rose-300') +
+      text(`“${SOLO_RPS[r.you].label}? I saw it in your mind before you did!”`, 'italic text-amber-100') +
+      text(`He chooses to <b>go first</b>. He can't attack on his first turn, and you play second.`) +
+      btn("It's time to duel!", "startSoloDuel('enemy')"));
   }
   if (r.result === 'tie') return wrap(text('A tie! Again.', 'text-lg font-bold text-white') + btn('Throw again', 'soloRpsAgainClick()'));
   if (r.result === 'win') {
@@ -1658,13 +1676,43 @@ function renderSoloRps(f) {
     btn("It's time to duel!", `startSoloDuel('${r.first}')`));
 }
 
+// Pegasus' white Toon gloves (four fingers, stitches, rolled cuff). Each throw's shapes are drawn
+// twice, a thick ink stroke underneath and white on top, so they merge into one outlined glove.
+const SOLO_GLOVE_INK = '#0f172a';
+const SOLO_GLOVE_SHAPES = {
+  rock: {
+    body: '<rect x="20" y="30" width="60" height="62" rx="20"/><rect x="36" y="84" width="28" height="14"/>',
+    over: '<path d="M35 32v20M50 30v22M65 32v20" stroke-width="3"/><rect x="24" y="54" width="40" height="15" rx="7.5" fill="#fff" stroke-width="4"/>'
+  },
+  paper: {
+    body: '<rect x="24" y="44" width="52" height="50" rx="16"/><rect x="25" y="14" width="14" height="46" rx="7"/><rect x="43" y="6" width="14" height="52" rx="7"/><rect x="61" y="14" width="14" height="46" rx="7"/><rect x="4" y="54" width="32" height="14" rx="7" transform="rotate(35 30 61)"/><rect x="36" y="84" width="28" height="14"/>',
+    over: ''
+  },
+  scissors: {
+    body: '<rect x="24" y="48" width="52" height="46" rx="16"/><rect x="31" y="4" width="15" height="58" rx="7.5" transform="rotate(-12 38 58)"/><rect x="54" y="4" width="15" height="58" rx="7.5" transform="rotate(12 61 58)"/><rect x="36" y="84" width="28" height="14"/>',
+    over: '<rect x="28" y="56" width="42" height="15" rx="7.5" fill="#fff" stroke-width="4"/>'
+  }
+};
+function soloGloveSvg(key) {
+  const s = SOLO_GLOVE_SHAPES[key];
+  return `<svg class="solo-rps-glove" viewBox="-4 0 108 120" aria-hidden="true">
+    <g fill="${SOLO_GLOVE_INK}" stroke="${SOLO_GLOVE_INK}" stroke-width="8" stroke-linejoin="round">${s.body}</g>
+    <g fill="#fff">${s.body}</g>
+    <g fill="none" stroke="${SOLO_GLOVE_INK}" stroke-linecap="round">${s.over}<path d="M40 74v10M50 72v12M60 74v10" stroke-width="3"/></g>
+    <rect x="22" y="94" width="56" height="20" rx="9" fill="#fff" stroke="${SOLO_GLOVE_INK}" stroke-width="4"/>
+  </svg>`;
+}
+
 // Both hands pump ✊ three times, snap to the real throws, then the winner zaps the loser
 // (a tie clashes instead). Timings live in effects.css (Solo rock-paper-scissors).
-function renderSoloRpsThrows(r) {
+// `glove` gives the enemy Pegasus' white cartoon glove.
+function renderSoloRpsThrows(r, glove = false) {
   const tie = r.result === 'tie';
   const hand = (side, key) => {
     const state = tie ? 'tie' : (r.result === 'win') === (side === 'you') ? 'win' : 'lose';
-    return `<span class="solo-rps-hand solo-rps-hand--${state}" style="--dir: ${side === 'you' ? 1 : -1}"><span class="solo-rps-fist ce-emoji">✊</span><span class="solo-rps-pick ce-emoji">${SOLO_RPS[key].icon}</span></span>`;
+    const gloved = glove && side === 'foe';
+    const face = k => (gloved ? soloGloveSvg(k) : SOLO_RPS[k].icon);
+    return `<span class="solo-rps-hand solo-rps-hand--${state} ${gloved ? 'solo-rps-hand--glove' : ''}" style="--dir: ${side === 'you' ? 1 : -1}"><span class="solo-rps-fist ce-emoji">${face('rock')}</span><span class="solo-rps-pick ce-emoji">${face(key)}</span></span>`;
   };
   const sparks = Array.from({ length: 6 }, (_, i) => {
     const a = i * Math.PI / 3;

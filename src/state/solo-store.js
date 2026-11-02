@@ -637,18 +637,19 @@ function startSoloRps() {
   if (f?.intro && !f.rps) f.rps = { result: null };
 }
 
-// The enemy leans towards its personality's favourite throw.
+// The enemy leans towards its personality's favourite throw. Pegasus reads your mind and always wins.
 function soloRpsThrow(you) {
   const f = solo.fight;
   if (!f?.intro || !SOLO_RPS[you]) return;
   const personality = SOLO_PERSONALITIES[f.personality];
-  const foe = Math.random() < SOLO_RPS_FAVOURITE ? personality.rps : soloPick(Object.keys(SOLO_RPS));
+  const foe = f.pegasus ? Object.keys(SOLO_RPS).find(k => SOLO_RPS[k].beats === you)
+    : Math.random() < SOLO_RPS_FAVOURITE ? personality.rps : soloPick(Object.keys(SOLO_RPS));
   const result = you === foe ? 'tie' : SOLO_RPS[you].beats === foe ? 'win' : 'lose';
   // `at` lets the view resume the throw animation mid-way instead of restarting it on re-render.
   f.rps = { you, foe, result, at: Date.now() };
   // A loss means the enemy decides: Pegasus always opens.
   if (result === 'lose') f.rps.first = f.pegasus || Math.random() < personality.firstChance ? 'enemy' : 'player';
-  playSound({ name: 'solo-rps', result, quick: prefersReducedMotion() });
+  playSound({ name: 'solo-rps', result, quick: prefersReducedMotion(), eye: !!f.pegasus });
 }
 
 // Whoever goes first can't attack on their first turn. The enemy's turn is round 0, so the

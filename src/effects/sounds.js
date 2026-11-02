@@ -2274,7 +2274,14 @@ const COOP_SOUNDS = {
   },
   // Solo rock-paper-scissors: three knocks as the fists pump, a flick on the reveal,
   // then a zap and the winner's chime (or a clink on a tie). `quick` skips to the result.
-  'solo-rps': (t, { result, quick }) => {
+  // `eye` (Pegasus) adds the Millennium Eye's hum as it reads your hand, and his giggle.
+  'solo-rps': (t, { result, quick, eye }) => {
+    if (eye) {
+      const room = darkBus({ reverb: 0.5 });
+      eyeHum(t, quick ? 0.8 : 1.3, 0.05, room);
+      if (!quick) bell({ t: t + 0.55, freq: midi(86), dur: 0.8, gain: 0.03, out: room });
+      pegasusLaugh(t + (quick ? 0.5 : 1.5), room);
+    }
     let at = t;
     if (!quick) {
       [0.15, 0.45, 0.75].forEach((o, i) => {
