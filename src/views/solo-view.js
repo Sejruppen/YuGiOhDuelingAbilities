@@ -839,6 +839,36 @@ function renderSoloEvent(n, t) {
   `;
 }
 
+// The owner's real coin: a gold rim around blue enamel with the Duel Monsters eye
+// (heads) and plain red enamel (tails), drawn in a 100×100 viewBox.
+const SOLO_COIN_RIM = `
+  <defs>
+    <radialGradient id="coin-gold" cx="35%" cy="30%" r="80%"><stop offset="0" stop-color="#fff3b0"/><stop offset=".45" stop-color="#e2b23c"/><stop offset="1" stop-color="#8a5a12"/></radialGradient>
+    <linearGradient id="coin-gold-line" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#fff1a8"/><stop offset=".5" stop-color="#e0ad35"/><stop offset="1" stop-color="#a06d18"/></linearGradient>
+  </defs>
+  <circle cx="50" cy="50" r="48" fill="url(#coin-gold)" stroke="#6b430c" stroke-width="1.2"/>`;
+const SOLO_COIN_FACES = {
+  heads: `<svg viewBox="0 0 100 100" class="w-24 h-24 drop-shadow-lg" aria-hidden="true">${SOLO_COIN_RIM}
+    <defs><radialGradient id="coin-blue" cx="40%" cy="35%" r="75%"><stop offset="0" stop-color="#4cc3ff"/><stop offset=".6" stop-color="#1588d6"/><stop offset="1" stop-color="#0a4f8f"/></radialGradient></defs>
+    <circle cx="50" cy="50" r="40" fill="url(#coin-blue)" stroke="#073559" stroke-width="1.5"/>
+    <g fill="none" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M19 45 H32 C37 45 37 34 50 34 C63 34 63 45 68 45 H81 M19 55 H32 C37 55 37 66 50 66 C63 66 63 55 68 55 H81" stroke="#3b2606" stroke-width="8.5"/>
+      <path d="M19 45 H32 C37 45 37 34 50 34 C63 34 63 45 68 45 H81 M19 55 H32 C37 55 37 66 50 66 C63 66 63 55 68 55 H81" stroke="url(#coin-gold-line)" stroke-width="6"/>
+    </g>
+    <circle cx="50" cy="50" r="9" fill="url(#coin-gold-line)" stroke="#3b2606" stroke-width="1.3"/>
+    <circle cx="50" cy="50" r="3.2" fill="#2fb2f5" stroke="#073559" stroke-width=".8"/>
+    <ellipse cx="38" cy="26" rx="14" ry="5" fill="#fff" opacity=".18" transform="rotate(-20 38 26)"/>
+  </svg>`,
+  tails: `<svg viewBox="0 0 100 100" class="w-24 h-24 drop-shadow-lg" aria-hidden="true">${SOLO_COIN_RIM}
+    <defs><radialGradient id="coin-red" cx="40%" cy="35%" r="75%"><stop offset="0" stop-color="#ff4f86"/><stop offset=".6" stop-color="#e01552"/><stop offset="1" stop-color="#9c0b36"/></radialGradient></defs>
+    <circle cx="50" cy="50" r="40" fill="url(#coin-red)" stroke="#5c0620" stroke-width="1.5"/>
+    <g stroke="#fff" stroke-width=".6" stroke-linecap="round" opacity=".3">
+      <path d="M30 40 L52 28"/><path d="M58 62 L74 46"/><path d="M40 70 L50 64"/><path d="M62 30 L70 38"/>
+    </g>
+    <ellipse cx="38" cy="26" rx="14" ry="5" fill="#fff" opacity=".18" transform="rotate(-20 38 26)"/>
+  </svg>`
+};
+
 // The physical roll: you flip or roll for real and tap what it showed.
 function renderSoloRoll(ev) {
   const st = ev.rolling;
@@ -858,7 +888,8 @@ function renderSoloRoll(ev) {
       ${ready ? `<button onclick="lockSoloRollClick()" class="w-full py-3 rounded-xl bg-amber-500 hover:bg-amber-400 active:scale-98 text-slate-950 font-bold transition"><span class="ce-emoji">🔒</span> Lock in</button>` : ''}`;
   } else if (r.dice === 'coin') {
     prompt = 'Flip a real coin, then tap the side it landed on.';
-    buttons = `<div class="flex gap-2 w-full">${faceBtn('heads', '<span class="ce-emoji">🪙</span> Heads', 'soloEventRollClick')}${faceBtn('tails', '<span class="ce-emoji">🪙</span> Tails', 'soloEventRollClick')}</div>`;
+    const coinBtn = side => `<button onclick="soloEventRollClick('${side}')" class="flex-1 flex flex-col items-center gap-1 py-3 rounded-xl bg-slate-800 hover:bg-slate-700 active:scale-95 border border-slate-700 text-white font-black text-xl transition">${SOLO_COIN_FACES[side]}${side === 'heads' ? 'Heads' : 'Tails'}</button>`;
+    buttons = `<div class="flex gap-2 w-full">${coinBtn('heads')}${coinBtn('tails')}</div>`;
   } else if (r.versus) {
     const loaded = r.bonus ? ` (your loaded die adds +${r.bonus})` : '';
     prompt = st.you === null
