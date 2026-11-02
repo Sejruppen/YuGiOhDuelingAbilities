@@ -413,6 +413,18 @@ function toggleSoloAxe() {
   render();
 }
 
+function toggleSoloNegate() {
+  if (!soloUi.panel) return;
+  soloUi.panel.negate = !soloUi.panel.negate;
+  render();
+}
+
+function soloNegateSpellClick() {
+  soloSnapshot();
+  soloNegateSpell();
+  commitSolo();
+}
+
 function soloRelicDefendClick(id) {
   soloSnapshot();
   soloRelicDefend(id);
@@ -559,7 +571,7 @@ function confirmSoloAttack() {
   const bonus = (axe ? SOLO_RELICS.axe.value : 0) + (sword ? swordAtk : 0) + pep - lunch;
   const total = Math.max(0, atk + bonus);
   soloAct(() => {
-    const result = soloPlayerAttack(target === 'direct' ? null : target === 'book' ? 'book' : Number(target), total);
+    const result = soloPlayerAttack(target === 'direct' ? null : target === 'book' ? 'book' : Number(target), total, !!soloUi.panel?.negate && !!f.trap);
     // A negated attack keeps the relics for the next try.
     if (!result || result.negated) return result;
     if (axe) useSoloRelic('axe');

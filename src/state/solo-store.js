@@ -687,7 +687,9 @@ const soloEquipAtk = m => (m.equips || []).reduce((sum, e) => sum + e.atk, 0);
 const soloSpellCount = f => f.monsters.reduce((n, m) => n + (m.equips?.length || 0), 0) + (f.trap ? 1 : 0) + (soloToonWorldUp(f) ? 1 : 0);
 const soloSpellsFull = f => soloSpellCount(f) >= SOLO_SPELL_ZONES;
 function soloEquip(f, m, card) {
-  m.equips = [...(m.equips || []), { uid: f.nextUid++, name: card.name, atk: card.atk }];
+  const uid = f.nextUid++;
+  m.equips = [...(m.equips || []), { uid, name: card.name, atk: card.atk }];
+  return uid;
 }
 
 const soloMonster = uid => solo.fight?.monsters.find(m => m.uid === uid);
@@ -845,10 +847,15 @@ function soloDefeat() {
 
 // Battle on the phone with normal Yu-Gi-Oh! rules. uid null = direct attack,
 // 'book' = Pegasus' Toon World.
-function soloPlayerAttack(uid, atk) {
+function soloPlayerAttack(uid, atk, negateTrap = false) {
   const f = solo.fight;
   let prefix = '';
-  if (f.trap) {
+  if (f.trap && negateTrap) {
+    const trap = soloCards(f).trap;
+    f.trap = false;
+    playSound({ name: 'co-negate' });
+    prefix = `🚫 You negate ${trap.name}! `;
+  } else if (f.trap) {
     const trap = soloCards(f).trap;
     f.trap = false;
     playSound({ name: 'co-negate' });
@@ -1032,7 +1039,7 @@ function prepareSoloStepType(step, f) {
       const attackers = fitting.filter(m => m.pos === 'atk');
       const targets = attackers.length ? attackers : fitting;
       const target = targets.reduce((a, b) => (soloStats(b, f).atk > soloStats(a, f).atk ? b : a));
-      soloEquip(f, target, eq);
+      step.spell = { kind: 'equip', uid: soloEquip(f, target, eq), name: eq.name };
       playSound({ name: 'co-shield' });
       return info('⚔️', `${eq.name}!`, `${target.icon} ${target.name} gains ${eq.atk} ATK (now ${soloStats(target, f).atk}).`, 'Put the equip card in a Spell/Trap zone.');
     }
@@ -1052,6 +1059,7 @@ function prepareSoloStepType(step, f) {
       const removal = soloCards(f).removal;
       if (f.used.removal || !removal) return false;
       f.used.removal = true;
+      step.spell = { kind: 'removal', name: removal.name };
       playSound({ name: 'co-destroy' });
       return info('💥', `${removal.name}!`, removal.text, 'Send it to the Graveyard on the table. No monsters? Nothing happens.');
     }
@@ -1061,6 +1069,7 @@ function prepareSoloStepType(step, f) {
       f.used.heal = true;
       const healed = Math.min(heal.lp, f.maxLp - f.lp);
       f.lp += healed;
+      step.spell = { kind: 'heal', name: heal.name, healed };
       playSound({ name: 'co-heal' });
       queueSoloFx(() => fxSoloHit('[data-solo-enemy]', healed));
       return info('💚', `${heal.name}!`, `${f.name} gains ${healed} LP.`);
@@ -1181,6 +1190,34 @@ function soloTrapSummon() {
   if (m) removeSoloMonster(m.uid);
   else playSound({ name: 'co-destroy' });
   finishSoloStep({ tone: 'good', text: `🪤 Trap Card! ${m ? m.name : 'The monster'} is destroyed. Send it to the Graveyard.` });
+}
+
+// A Counter Trap or Spell negation from your own hand (Magic Jammer, Seven Tools of the
+// Bandit…) as the enemy plays a Spell: it is undone, using what step.spell recorded.
+function soloNegateSpell() {
+  const f = solo.fight;
+  const step = soloStep();
+  if (!step || !step.spell || step.kind !== 'info' || step.sub) return;
+  const { kind, name, uid, healed } = step.spell;
+  let text = `🚫 ${name} is negated and sent to the Graveyard.`;
+  if (kind === 'equip') {
+    const m = f.monsters.find(x => x.equips?.some(e => e.uid === uid));
+    if (m) {
+      const e = m.equips.find(x => x.uid === uid);
+      m.equips = m.equips.filter(x => x.uid !== uid);
+      text += ` ${m.name} loses ${e.atk} ATK.`;
+    }
+  } else if (kind === 'heal') {
+    f.lp = Math.max(1, f.lp - healed);
+    text += ` ${f.name} doesn't gain the ${healed} LP.`;
+  } else if (kind === 'removal') {
+    text += ' Nothing is destroyed.';
+  } else if (kind === 'toonworld') {
+    f.pegasus.toonWorld = false;
+    text += ' No book, no Toon World.';
+  }
+  playSound({ name: 'co-negate' });
+  finishSoloStep({ tone: 'good', text });
 }
 
 // Rex Raptor: a Dinosaur hits twice when your field is empty (honour system).

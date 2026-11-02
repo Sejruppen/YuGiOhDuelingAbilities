@@ -108,6 +108,7 @@ function soloPegasusStep(step, f, info) {
     case 'toonworld':
       g.toonWorld = true;
       g.pages = SOLO_PEGASUS.pages;
+      step.spell = { kind: 'toonworld', name: 'Toon World' };
       playSound({ name: 'co-book' });
       return info('📖', 'Toon World!', "Pegasus opens his book and the pages come to life. Toons attack you directly and can't be blocked.", `Tear out its ${SOLO_PEGASUS.pages} pages: attack the book with ${SOLO_PEGASUS.pageMinAtk}+ ATK.`);
     case 'bunny': {
