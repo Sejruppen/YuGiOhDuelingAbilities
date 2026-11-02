@@ -2,11 +2,14 @@
 // history entry (the "trap") sits on top of the page. Back pops it, and the
 // popstate handler takes one step back inside the app: close the open popup
 // first, otherwise leave the screen like its "← Back" button. Then the trap is
-// put back. On the start screen the first back shows "Press back again to
-// exit" and leaves the trap off, so a second back closes the app.
-// Chrome may skip history entries added without a tap, so the trap is also
-// (re)armed on the next pointerdown.
+// restored with history.forward(). Pushing a new one here would not work:
+// Chrome marks entries added without a tap as skippable, so a second back
+// without a tap in between would jump over it and close the app.
+// On the start screen the first back shows "Press back again to exit" and
+// leaves the trap off, so a second back closes the app.
+// The trap is also (re)armed on pointerdown, as a fallback.
 const BACK_EXIT_MS = 2000;
+const BACK_RESTORE_CHECK_MS = 300;
 
 const isBackTrap = s => !!(s && s.ygoBackTrap);
 
@@ -21,9 +24,14 @@ function initBackButton() {
   document.addEventListener('pointerdown', armBackTrap, true);
   window.addEventListener('popstate', event => {
     if (isBackTrap(event.state)) return;
-    if (handleAppBack()) armBackTrap();
+    if (handleAppBack()) restoreBackTrap();
     else showBackExitToast();
   });
+}
+
+function restoreBackTrap() {
+  history.forward();
+  setTimeout(armBackTrap, BACK_RESTORE_CHECK_MS);
 }
 
 // One step back. Returns false on the start screen (nothing left to close).
