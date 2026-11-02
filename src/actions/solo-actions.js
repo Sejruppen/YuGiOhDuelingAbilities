@@ -30,6 +30,12 @@ const soloUi = {
   mapScroll: 0,
   shownStep: null,
   relicInfo: null,
+  // The enemy card whose detail sheet is open (a monster uid, 'trap' or 'book').
+  cardInfo: null,
+  // Which zone each enemy monster sits in, so cards don't slide over (see soloFieldLayout).
+  field: null,
+  // The next field render skips the summon/destroy animations (after Undo).
+  fieldQuiet: false,
   // The campfire's "Polish a relic" list is open.
   polishing: false,
   // A read-only look at the map from a node or reward screen, and the node tapped in it.
@@ -50,7 +56,7 @@ const soloRerender = () => {
 };
 
 function closeSoloPanels() {
-  Object.assign(soloUi, { preview: null, legend: false, panel: null, input: '', relicInfo: null, polishing: false, peek: false, peekNode: null });
+  Object.assign(soloUi, { preview: null, legend: false, panel: null, input: '', relicInfo: null, cardInfo: null, polishing: false, peek: false, peekNode: null });
 }
 
 // --- Navigation and the run -------------------------------------------------------
@@ -157,7 +163,7 @@ function startSoloRun() {
   createSoloRun();
   soloUi.runName = '';
   closeSoloPanels();
-  Object.assign(soloUi, { view: null, undo: [], toast: null, mapFocus: null, confirmAbandon: false });
+  Object.assign(soloUi, { view: null, undo: [], toast: null, mapFocus: null, confirmAbandon: false, field: null });
   playSound({ name: 'co-start' });
   commitSolo();
 }
@@ -346,6 +352,7 @@ function pickSoloRelic(id) {
 
 function showSoloRelic(id) {
   soloUi.relicInfo = soloUi.relicInfo === id ? null : id;
+  soloUi.cardInfo = null;
   soloUi.preview = null;
   soloUi.legend = false;
   render();
@@ -353,6 +360,39 @@ function showSoloRelic(id) {
 
 function closeSoloRelic() {
   soloUi.relicInfo = null;
+  render();
+}
+
+// Tapping an enemy card. While you can attack, it aims the attack keypad at it
+// (monsters and Toon World); otherwise it opens the card's detail sheet.
+function tapSoloCard(id) {
+  const panel = soloUi.panel;
+  const target = typeof id === 'number' || id === 'book' ? String(id) : null;
+  if (target && soloCanAttackNow() && (!panel || panel.type === 'attack')) {
+    soloUi.cardInfo = null;
+    soloUi.relicInfo = null;
+    if (panel?.target === target) return render();
+    soloUi.panel = { type: 'attack', target, axe: !!panel?.axe };
+    soloUi.input = '';
+    playSound({ name: 'peek' });
+    return render();
+  }
+  soloUi.cardInfo = soloUi.cardInfo === id ? null : id;
+  soloUi.relicInfo = null;
+  render();
+}
+
+function tapSoloDirect() {
+  const f = solo.fight;
+  if (!soloCanAttackNow() || f.monsters.length || soloToonWorldUp(f)) return;
+  soloUi.panel = { type: 'attack', target: 'direct', axe: !!soloUi.panel?.axe };
+  soloUi.input = '';
+  soloUi.cardInfo = null;
+  render();
+}
+
+function closeSoloCard() {
+  soloUi.cardInfo = null;
   render();
 }
 
@@ -405,6 +445,7 @@ function undoSolo() {
   if (isSoloRunActive()) soloUnarchiveRun();
   closeSoloPanels();
   soloUi.toast = null;
+  soloUi.fieldQuiet = true;
   playSound({ name: 'co-bounce' });
   commitSolo();
 }
@@ -671,6 +712,8 @@ function backInSolo() {
   if (soloUi.view) return showSoloMenu();
   if (soloUi.peek) return soloUi.peekNode ? closeSoloPeekNode() : closeSoloPeek();
   if (soloUi.relicInfo) return closeSoloRelic();
+  if (soloCardDetail()) return closeSoloCard();
+  soloUi.cardInfo = null;
   if (soloUi.polishing && solo.phase === 'node') return closeSoloPolish();
   if (soloUi.preview || soloUi.legend) {
     closeSoloPanels();

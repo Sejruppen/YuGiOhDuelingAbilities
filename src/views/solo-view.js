@@ -27,7 +27,7 @@ function renderSoloView() {
     victory: renderSoloEnd,
     defeat: renderSoloEnd
   }[solo.phase] || renderSoloIntro;
-  return `<div class="solo-screen relative flex-1 min-h-0 flex flex-col">${body()}${!soloUi.view && soloUi.relicInfo ? renderSoloRelicSheet() : ''}${!soloUi.view && soloUi.peek && soloCanPeek() ? renderSoloPeek() : ''}</div>`;
+  return `<div class="solo-screen relative flex-1 min-h-0 flex flex-col">${body()}${!soloUi.view && soloUi.relicInfo ? renderSoloRelicSheet() : ''}${!soloUi.view && !soloUi.relicInfo && soloUi.cardInfo != null ? renderSoloCardSheet() : ''}${!soloUi.view && soloUi.peek && soloCanPeek() ? renderSoloPeek() : ''}</div>`;
 }
 
 // --- Menu and history ---------------------------------------------------------------
@@ -1036,6 +1036,7 @@ function renderSoloFight() {
   return `
     ${renderSoloScene(f.region)}
     ${renderSoloHeader(`<span class="ce-emoji">${f.icon}</span> ${kind}`, renderSoloTurnBadge(f))}
+    ${renderSoloTerrain(f)}
     <div class="relative flex-1 min-h-0 overflow-y-auto no-scrollbar px-3 pt-3 flex flex-col gap-2">
       ${renderSoloEnemyBoard(f, p)}
       ${renderSoloRelicBar()}
@@ -1072,42 +1073,178 @@ function renderSoloCutscene(f) {
 const soloEmojiLead = s => s.replace(/^(\S+)\s/, '<span class="ce-emoji">$1</span> ');
 const SOLO_PEGASUS_STAGES = ['Toon World', 'Millennium Eye', 'Final Read'];
 
+// --- The enemy's field ---------------------------------------------------------------
+// A playmat seen from your side of the table: their Spell/Trap row at the back (GY on
+// your left), their monsters in front, closest to you. The region itself is the field:
+// a strip under the header (renderSoloTerrain), not a card.
+
+// The duel's terrain, e.g. Umi on the beach. Its bonus counts for both duelists.
+function renderSoloTerrain(f) {
+  const r = soloRegion(f.region);
+  if (!r.types.length) return '';
+  return `
+    <div class="solo-terrain solo-tint--${f.region} relative shrink-0 px-4 py-1.5 flex items-center justify-center gap-1.5 text-xs leading-tight">
+      <span class="ce-emoji text-base leading-none">${r.icon}</span>
+      <span class="truncate"><b class="text-white">${r.card}</b> · ${r.types.join(', ')} +${SOLO_FIELD_BONUS * 100}% ATK. Yours too!</span>
+    </div>
+  `;
+}
+
+// New monsters fill the zones from the middle out.
+const SOLO_ZONE_ORDER = [2, 1, 3, 0, 4];
+
+// Keeps every monster in its zone across renders (soloUi.field, not saved) and works out
+// what changed since the last render: new cards were summoned or set, missing ones were
+// destroyed (drawn once more as a fading ghost) and turned ones changed position.
+// The first render of a fight and the render after Undo are quiet.
+function soloFieldLayout(f) {
+  const key = `${solo.at}|${f.floor}|${f.name}`;
+  const prev = soloUi.field?.key === key ? soloUi.field : null;
+  const quiet = !prev || soloUi.fieldQuiet;
+  soloUi.fieldQuiet = false;
+  const cards = {};
+  const taken = new Set();
+  const place = (m, zone) => {
+    taken.add(zone);
+    cards[m.uid] = { zone, pos: m.pos, m };
+  };
+  f.monsters.forEach(m => {
+    const z = prev?.cards[m.uid]?.zone;
+    if (z != null && !taken.has(z)) place(m, z);
+  });
+  const order = [...SOLO_ZONE_ORDER, ...f.monsters.map((_, i) => SOLO_MAX_MONSTERS + i)];
+  f.monsters.forEach(m => cards[m.uid] || place(m, order.find(z => !taken.has(z))));
+
+  const slots = Array.from({ length: Math.max(SOLO_MAX_MONSTERS, ...[...taken].map(z => z + 1)) }, () => ({ m: null, fx: '', ghosts: [] }));
+  Object.values(cards).forEach(c => {
+    const was = prev?.cards[c.m.uid];
+    Object.assign(slots[c.zone], { m: c.m, fx: quiet ? '' : !was ? 'solo-card--summon' : was.pos !== c.pos ? 'solo-card--turn' : '' });
+  });
+  if (!quiet) Object.entries(prev.cards).forEach(([uid, c]) => !cards[uid] && slots[c.zone]?.ghosts.push(c.m));
+
+  const now = { trap: !!f.trap, book: soloToonWorldUp(f) };
+  const back = {};
+  ['trap', 'book'].forEach(k => {
+    back[`${k}Fx`] = !quiet && now[k] && !prev.back[k] ? 'solo-card--set' : '';
+    back[`${k}Ghost`] = !quiet && !now[k] && prev.back[k];
+  });
+  soloUi.field = { key, cards, back: now };
+  return { slots, back };
+}
+
+// You can attack right now: your turn, Battle Phase still open.
+const soloCanAttackNow = (f = solo.fight) => !!f && f.turn === 'player' && !f.battleOver && !f.intro && !f.cutscene;
+
+// `ghost` draws a destroyed card fading out of its zone (not tappable). Its effects show in the detail sheet.
+function renderSoloMonsterCard(m, f, cls = '', ghost = false) {
+  const st = soloStats(m, f);
+  const inner = `<span class="solo-card-name">${soloEscape(m.name)}</span><span class="solo-card-art"><span class="ce-emoji">${m.icon}</span></span>`;
+  const classes = `solo-card solo-card--monster solo-card--${m.pos} ${m.toon ? 'solo-card--toon' : ''} ${cls}`;
+  if (ghost) return `<span aria-hidden="true" class="${classes} solo-card--ghost">${inner}</span>`;
+  const label = `${m.name}, ${st.atk} ATK, ${st.def} DEF, ${m.pos === 'def' ? 'Defense' : 'Attack'} Position`;
+  return `<button type="button" data-solo-card="${m.uid}" onclick="tapSoloCard(${m.uid})" aria-label="${soloEscape(label)}" class="${classes}">${inner}</button>`;
+}
+
+const soloZone = inner => `<div class="solo-zone">${inner}</div>`;
+
+// The monster's ATK/DEF under its zone; the one its position uses is lit.
+function soloStatPlate(m, f) {
+  const st = soloStats(m, f);
+  return `<span aria-hidden="true" class="solo-plate solo-plate--${m.pos}"><b class="solo-stat-atk">${st.atk}</b><i>/</i><b class="solo-stat-def">${st.def}</b></span>`;
+}
+
+function renderSoloBackRow(f, back, aim) {
+  const bookCard = soloToonWorldUp(f)
+    ? `<button type="button" data-solo-card="book" onclick="tapSoloCard('book')" aria-label="Toon World, ${f.pegasus.pages} pages left" class="solo-card solo-card--spell solo-card--toonworld ${back.bookFx} ${aim === 'book' ? 'solo-card--target' : ''}"><span class="solo-card-name">Toon World</span><span class="solo-card-art"><span class="ce-emoji">📖</span></span><span class="solo-card-stats"><span class="ce-emoji">📄</span>×${f.pegasus.pages}</span></button>`
+    : '';
+  const bookGhost = back.bookGhost ? '<span aria-hidden="true" class="solo-card solo-card--spell solo-card--ghost"><span class="solo-card-name">Toon World</span><span class="solo-card-art"><span class="ce-emoji">📖</span></span><span class="solo-card-stats">×0</span></span>' : '';
+  const trap = f.trap ? `<button type="button" data-solo-card="trap" onclick="tapSoloCard('trap')" aria-label="Face-down card" class="solo-card solo-card--back ${back.trapFx}"></button>` : '';
+  const trapGhost = back.trapGhost ? '<span aria-hidden="true" class="solo-card solo-card--back solo-card--ghost"></span>' : '';
+  return soloZone('') + soloZone(bookCard + bookGhost) + soloZone(trap + trapGhost) + soloZone('') + soloZone('');
+}
+
+function renderSoloMat(f) {
+  const { slots, back } = soloFieldLayout(f);
+  const step = f.turn === 'enemy' ? soloStep() : null;
+  const attacker = step?.kind === 'attack' && step.sub !== 'done' ? step.uid : null;
+  const canAttack = soloCanAttackNow(f);
+  const aim = soloUi.panel?.type === 'attack' ? soloUi.panel.target : null;
+  const monsters = slots.map(s => soloZone(
+    (s.m ? renderSoloMonsterCard(s.m, f, [s.fx, s.m.uid === attacker && 'solo-card--attacking', aim === String(s.m.uid) && 'solo-card--target'].filter(Boolean).join(' ')) + soloStatPlate(s.m, f) : '') +
+    s.ghosts.map(m => renderSoloMonsterCard(m, f, '', true)).join('')
+  )).join('');
+  const empty = !f.monsters.length
+    ? canAttack && !soloToonWorldUp(f)
+      ? `<button type="button" onclick="tapSoloDirect()" class="solo-direct ${aim === 'direct' ? 'solo-direct--on' : ''}"><span class="ce-emoji">⚔️</span> Attack directly!</button>`
+      : '<p class="solo-mat-empty">No monsters</p>'
+    : '';
+  return `
+    <div class="solo-mat solo-tint--${f.region} ${canAttack ? 'solo-mat--aim' : ''}" style="--zones: ${slots.length}">
+      <div class="solo-mat-row solo-mat-row--back">${renderSoloBackRow(f, back, aim)}</div>
+      <div class="solo-mat-row solo-mat-row--monsters">${monsters}${empty}</div>
+    </div>
+  `;
+}
+
+// The detail sheet for a tapped enemy card (soloUi.cardInfo: a monster uid, 'trap' or 'book').
+function soloCardDetail() {
+  const f = solo.phase === 'fight' && solo.fight;
+  const id = soloUi.cardInfo;
+  if (!f || id == null) return null;
+  const r = soloRegion(f.region);
+  if (typeof id === 'number') {
+    const m = soloMonster(id);
+    if (!m) return null;
+    const st = soloStats(m, f);
+    const boosted = soloBoosted(f, m);
+    const lines = [
+      `<b class="${m.pos === 'atk' ? 'text-rose-300' : 'text-slate-300'}">ATK ${st.atk}</b> · <b class="${m.pos === 'def' ? 'text-sky-300' : 'text-slate-300'}">DEF ${st.def}</b>${boosted || m.equip ? ` <span class="text-slate-400">(printed ${m.atk} ATK)</span>` : ''}`,
+      boosted && `<span class="ce-emoji">${r.icon}</span> ${r.card}: +${SOLO_FIELD_BONUS * 100}% ATK.`,
+      m.equip && `<span class="ce-emoji">⚔️</span> Equip card: +${m.equip} ATK.`,
+      m.bound && `<span class="ce-emoji">🔯</span> Spellbinding Circle: it can't attack.`,
+      m.hatch && `<span class="ce-emoji">🦋</span> Hatches into Great Moth in ${m.hatch} turn${m.hatch === 1 ? '' : 's'}.`,
+      m.risen && `<span class="ce-emoji">🧟</span> Risen from the Graveyard: it stays dead next time.`,
+      m.toon && `<span class="ce-emoji">🤪</span> Toon: attacks you directly and can't be blocked.`,
+      m.hits && `<span class="ce-emoji">⚔️</span> Attacks ${m.hits} times${m.hitAtk ? ` for ${m.hitAtk} each` : ''}.`,
+      m.bunny && `<span class="ce-emoji">🐰</span> While it's on the field, Pegasus takes no damage.`
+    ].filter(Boolean);
+    return { icon: m.icon, name: m.name, tag: `${m.type} · ${m.pos === 'atk' ? 'Attack' : 'Defense'} Position`, lines };
+  }
+  if (id === 'trap' && f.trap) {
+    return { icon: '🂠', name: 'Face-down card', tag: 'Set Spell/Trap', lines: ['It springs when you least expect it. Destroy it with a Spell/Trap removal card (<span class="ce-emoji">✨</span> Effect).'] };
+  }
+  if (id === 'book' && soloToonWorldUp(f)) {
+    const pages = f.pegasus.pages;
+    return { icon: '📖', name: 'Toon World', tag: 'Continuous Spell', lines: [`${pages} page${pages === 1 ? '' : 's'} left. Attack it with ${SOLO_PEGASUS.pageMinAtk}+ ATK to tear one out.`, 'While it is up, Pegasus takes no damage.'] };
+  }
+  return null;
+}
+
+function renderSoloCardSheet() {
+  const d = soloCardDetail();
+  if (!d) return '';
+  return `
+    <div class="solo-sheet absolute inset-x-0 bottom-0 z-20 p-4 rounded-t-2xl border-t border-rose-500/50 bg-slate-900/95 backdrop-blur shadow-2xl">
+      <div class="flex items-start gap-3">
+        <span class="text-4xl leading-none ce-emoji">${d.icon}</span>
+        <div class="flex-1 min-w-0">
+          <p class="font-black text-white text-lg leading-tight">${soloEscape(d.name)}</p>
+          <p class="text-[0.65rem] uppercase tracking-widest text-slate-400">${d.tag}</p>
+          ${d.lines.map(l => `<p class="text-sm text-slate-200 mt-1 leading-snug">${l}</p>`).join('')}
+        </div>
+      </div>
+      <div class="flex gap-2 mt-3">${coopBtn('Close', 'closeSoloCard()')}</div>
+    </div>
+  `;
+}
+
 function renderSoloEnemyBoard(f, p) {
   const pct = Math.max(0, (f.lp / f.maxLp) * 100);
   const r = soloRegion(f.region);
   const g = f.pegasus;
-  const monsters = f.monsters.map(m => {
-    const st = soloStats(m, f);
-    const boosted = soloBoosted(f, m);
-    return `
-      <div class="solo-monster solo-monster--${m.pos} rounded-xl border px-2 py-1.5 flex items-center gap-2">
-        <span class="text-2xl leading-none ce-emoji">${m.icon}</span>
-        <span class="flex-1 min-w-0">
-          <span class="block text-xs font-bold text-white truncate">${m.name}</span>
-          <span class="block text-[0.7rem] tabular-nums">
-            <b class="${m.pos === 'atk' ? 'text-rose-300' : 'text-slate-400'}">${st.atk}</b><span class="text-slate-500"> / </span><b class="${m.pos === 'def' ? 'text-sky-300' : 'text-slate-400'}">${st.def}</b>
-            ${boosted ? `<span class="ce-emoji" title="Field bonus">${r.icon}</span>` : ''}${m.equip ? `<span class="text-amber-300"> +${m.equip}⚔️</span>` : ''}${m.bound ? '<span class="ce-emoji" title="Spellbinding Circle: can\'t attack"> 🔯</span>' : ''}${m.hatch ? `<span class="text-amber-200" title="Hatches into Great Moth"> <span class="ce-emoji">🦋</span> in ${m.hatch}</span>` : ''}            ${m.risen ? '<span class="ce-emoji" title="Risen: stays dead next time"> 🧟</span>' : ''}${m.toon ? '<span class="ce-emoji" title="Toon: attacks directly and can\'t be blocked"> 🤪</span>' : ''}
-          </span>
-        </span>
-        <span class="text-[0.6rem] font-black uppercase ${m.pos === 'atk' ? 'text-rose-300' : 'text-sky-300'}">${m.pos === 'atk' ? '⚔️ ATK' : '🛡️ DEF'}</span>
-      </div>
-    `;
-  }).join('');
-  const trap = f.trap ? '<div class="solo-trap rounded-xl border border-violet-500/60 bg-violet-950/40 px-2 py-1.5 flex items-center gap-2 text-xs font-bold text-violet-200"><span class="text-2xl leading-none ce-emoji">🂠</span>Face-down card</div>' : '';
-  const book = soloToonWorldUp(f)
-    ? `<div class="solo-book rounded-xl border border-fuchsia-500/60 bg-fuchsia-950/40 px-2 py-1.5 flex items-center gap-2 text-xs font-bold text-fuchsia-200"><span class="text-2xl leading-none ce-emoji">📖</span><span class="flex-1">Toon World</span><span class="ce-emoji" title="${g.pages} pages left">${'📄'.repeat(g.pages)}</span></div>`
-    : '';
   const where = g ? `<span class="text-fuchsia-300">Stage ${g.stage}: ${SOLO_PEGASUS_STAGES[g.stage - 1]}</span>` : `<span class="ce-emoji">${r.icon}</span> ${r.name}`;
   return `
     <section class="solo-enemy rounded-2xl border border-rose-500/30 bg-slate-950/80 p-3">
-      ${r.types.length ? `
-        <div class="solo-field mb-2 rounded-lg px-2 py-1.5 flex items-center gap-2">
-          <span class="solo-field-card ce-emoji">${r.icon}</span>
-          <span class="flex-1 min-w-0 leading-tight">
-            <span class="block text-xs font-black text-white">${r.card} <span class="solo-field-tag">Field Spell</span></span>
-            <span class="block text-[0.65rem] text-emerald-100/90">${r.types.join(', ')} +${SOLO_FIELD_BONUS * 100}% ATK. Yours too!</span>
-          </span>
-        </div>` : ''}
       <div class="flex items-center gap-2">
         <span class="text-3xl leading-none ce-emoji">${f.icon}</span>
         <div class="flex-1 min-w-0">
@@ -1119,11 +1256,9 @@ function renderSoloEnemyBoard(f, p) {
         <div class="h-full bg-gradient-to-r from-rose-600 to-amber-500 transition-all duration-500" style="width: ${pct}%"></div>
         <span class="absolute inset-0 flex items-center justify-center text-xs font-black text-white drop-shadow">${f.lp} / ${f.maxLp} LP</span>
       </div>
-      <div class="mt-2 grid grid-cols-1 gap-1.5">
-        ${monsters || trap || book ? book + monsters + trap : '<p class="text-xs text-slate-400 italic text-center py-1">No monsters. Attack directly!</p>'}
-      </div>
       ${f.monsters.some(m => m.bunny) ? '<p class="text-[0.65rem] text-pink-300 mt-2 text-center"><span class="ce-emoji">🐰</span> Funny Bunny is out: Pegasus takes no damage.</p>' : ''}
     </section>
+    ${renderSoloMat(f)}
   `;
 }
 
