@@ -1100,6 +1100,14 @@ function renderSoloEnemyBoard(f, p) {
   const where = g ? `<span class="text-fuchsia-300">Stage ${g.stage}: ${SOLO_PEGASUS_STAGES[g.stage - 1]}</span>` : `<span class="ce-emoji">${r.icon}</span> ${r.name}`;
   return `
     <section class="solo-enemy rounded-2xl border border-rose-500/30 bg-slate-950/80 p-3">
+      ${r.types.length ? `
+        <div class="solo-field mb-2 rounded-lg px-2 py-1.5 flex items-center gap-2">
+          <span class="solo-field-card ce-emoji">${r.icon}</span>
+          <span class="flex-1 min-w-0 leading-tight">
+            <span class="block text-xs font-black text-white">${r.card} <span class="solo-field-tag">Field Spell</span></span>
+            <span class="block text-[0.65rem] text-emerald-100/90">${r.types.join(', ')} +${SOLO_FIELD_BONUS * 100}% ATK. Yours too!</span>
+          </span>
+        </div>` : ''}
       <div class="flex items-center gap-2">
         <span class="text-3xl leading-none ce-emoji">${f.icon}</span>
         <div class="flex-1 min-w-0">
@@ -1115,14 +1123,6 @@ function renderSoloEnemyBoard(f, p) {
         ${monsters || trap || book ? book + monsters + trap : '<p class="text-xs text-slate-400 italic text-center py-1">No monsters. Attack directly!</p>'}
       </div>
       ${f.monsters.some(m => m.bunny) ? '<p class="text-[0.65rem] text-pink-300 mt-2 text-center"><span class="ce-emoji">🐰</span> Funny Bunny is out: Pegasus takes no damage.</p>' : ''}
-      ${r.types.length ? `
-        <div class="solo-field mt-2 rounded-lg px-2 py-1.5 flex items-center gap-2">
-          <span class="solo-field-card ce-emoji">${r.icon}</span>
-          <span class="flex-1 min-w-0 leading-tight">
-            <span class="block text-xs font-black text-white">${r.card} <span class="solo-field-tag">Field Spell</span></span>
-            <span class="block text-[0.65rem] text-emerald-100/90">${r.types.join(', ')} +${SOLO_FIELD_BONUS * 100}% ATK. Yours too!</span>
-          </span>
-        </div>` : ''}
     </section>
   `;
 }
