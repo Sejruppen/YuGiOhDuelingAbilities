@@ -228,14 +228,14 @@ function renderSoloStatus() {
   const at = solo.at && solo.map.nodes[solo.at];
   const floor = `Floor ${at ? at.floor : 0}/${SOLO_FLOOR.CASTLE}`;
   return `
-    <div class="shrink-0 px-4 py-2 flex items-center justify-between gap-2 text-sm font-bold bg-slate-950/70 border-b border-slate-800">
+    <div class="relative shrink-0 px-4 py-2 flex items-center justify-between gap-2 text-sm font-bold bg-slate-950/70 border-b border-slate-800">
       <span data-solo-me class="text-white tabular-nums"><span class="ce-emoji">❤️</span> ${solo.lp}</span>
       <span class="${solo.chips >= SOLO_GATE_CHIPS ? 'text-amber-300' : 'text-slate-200'}"><span class="ce-emoji">⭐</span> ${solo.chips}/${SOLO_GATE_CHIPS}</span>
       ${soloCanPeek()
         ? `<button onclick="openSoloPeek()" aria-label="Peek at the map" class="-my-1 -mr-2 px-2 py-1 rounded-lg border border-emerald-500/40 bg-slate-800/70 hover:bg-slate-700 text-emerald-200"><span class="ce-emoji">🗺️</span> ${floor}</button>`
         : `<span class="text-slate-400">${floor}</span>`}
     </div>
-    ${solo.relics?.length ? `<div class="shrink-0 px-4 py-1.5 bg-slate-950/50 border-b border-slate-800">${renderSoloRelicBar()}</div>` : ''}
+    ${solo.relics?.length ? `<div class="relative shrink-0 px-4 py-1.5 bg-slate-950/50 border-b border-slate-800">${renderSoloRelicBar()}</div>` : ''}
   `;
 }
 
@@ -533,16 +533,21 @@ const smRand = n => {
   return s - Math.floor(s);
 };
 
+// Particles with content (a list takes turns). Emoji get wrapped in .ce-emoji.
+const SOLO_P_HTML = { gull: SM_GULL, die: '🎲', coin: '🪙', skull: '💀', ticket: '🎟️', bug: ['🐛', '🐞', '🪲', '🐜'], num: ['1', '2', '3', '4', '5', '6'] };
+
 // `sx`/`sy` turn the boxes' units into % of the layer.
 function soloParticles(list, sx, sy) {
   let seed = 0;
   const r = () => smRand(++seed);
-  return list.flatMap(([kind, x, y, w, h, count, secs]) => Array.from({ length: fxCount(count) }, () => {
+  return list.flatMap(([kind, x, y, w, h, count, secs]) => Array.from({ length: fxCount(count) }, (_, k) => {
     const left = (x + r() * w) * sx;
     const top = (y + r() * h) * sy;
     const d = secs * (0.8 + r() * 0.4);
     const style = `left:${left.toFixed(1)}%;top:${top.toFixed(2)}%;--d:${d.toFixed(2)}s;--o:${(r() * d).toFixed(2)}s;--dx:${Math.round((r() - 0.5) * 40)}px`;
-    return `<i class="solo-p solo-p--${kind}" style="${style}">${kind === 'gull' ? SM_GULL : ''}</i>`;
+    const html = SOLO_P_HTML[kind];
+    const inner = Array.isArray(html) ? html[k % html.length] : html || '';
+    return `<i class="solo-p solo-p--${kind}" style="${style}">${!inner || kind === 'gull' || kind === 'num' ? inner : `<span class="ce-emoji">${inner}</span>`}</i>`;
   })).join('');
 }
 
@@ -752,9 +757,10 @@ function renderSoloNode() {
     buttons = coopBtn('Continue ➜', 'leaveSoloNode()', 'primary');
   }
   return `
+    ${renderSoloScene(n.region, n.type === 'treasure' ? 'treasure' : '')}
     ${renderSoloHeader(`<span class="ce-emoji">${t.icon}</span> ${t.label}`)}
     ${renderSoloStatus()}
-    <div class="flex-1 min-h-0 overflow-y-auto no-scrollbar p-6 flex flex-col items-center justify-center text-center gap-3">
+    <div class="relative flex-1 min-h-0 overflow-y-auto no-scrollbar p-6 flex flex-col items-center justify-center text-center gap-3">
       <div class="coop-step-in coop-step-icon text-7xl leading-none ce-emoji solo-node-icon--${n.type}">${t.icon}</div>
       <p class="text-2xl font-black text-white">${t.label}</p>
       ${body}
@@ -788,9 +794,10 @@ function renderSoloCampfire(n, t) {
       <div class="w-full max-w-sm space-y-2 text-left mt-1">${options}</div>`;
   }
   return `
+    ${renderSoloScene(n.region, 'campfire')}
     ${renderSoloHeader(`<span class="ce-emoji">${t.icon}</span> ${t.label}`)}
     ${renderSoloStatus()}
-    <div class="flex-1 min-h-0 overflow-y-auto no-scrollbar p-6 flex flex-col items-center justify-center text-center gap-3">
+    <div class="relative flex-1 min-h-0 overflow-y-auto no-scrollbar p-6 flex flex-col items-center justify-center text-center gap-3">
       <div class="coop-step-in coop-step-icon text-7xl leading-none ce-emoji solo-node-icon--campfire">${t.icon}</div>
       <p class="text-[0.7rem] font-bold uppercase tracking-widest text-orange-300"><span class="ce-emoji">${SOLO_REGIONS[n.region].icon}</span> ${SOLO_REGIONS[n.region].name}</p>
       <p class="text-2xl font-black text-white -mt-2">${t.label}</p>
@@ -820,9 +827,10 @@ function renderSoloEvent(n, t) {
     body = `<p class="text-sm text-slate-200 italic max-w-sm leading-snug">${ev.text}</p><div class="w-full max-w-sm space-y-2 text-left mt-1">${options}</div>`;
   }
   return `
+    ${renderSoloScene(n.region, 'shadow', ev.id)}
     ${renderSoloHeader(`<span class="ce-emoji">${t.icon}</span> ${t.label}`)}
     ${renderSoloStatus()}
-    <div class="flex-1 min-h-0 overflow-y-auto no-scrollbar p-6 flex flex-col items-center justify-center text-center gap-3">
+    <div class="relative flex-1 min-h-0 overflow-y-auto no-scrollbar p-6 flex flex-col items-center justify-center text-center gap-3">
       <div class="coop-step-in coop-step-icon text-7xl leading-none ce-emoji solo-node-icon--event">${e.icon}</div>
       <p class="text-[0.7rem] font-bold uppercase tracking-widest text-violet-300"><span class="ce-emoji">${SOLO_REGIONS[n.region].icon}</span> Shadow Game</p>
       <p class="text-2xl font-black text-white -mt-2">${e.name}</p>
@@ -907,16 +915,116 @@ function soloFightSceneArt(region, id) {
     + `<rect y="510" width="360" height="${H - 510}" fill="#12071f"/><g transform="translate(0 400)">${band}</g>`;
 }
 
-function renderSoloFightScene(f) {
-  const region = SOLO_MAP_ART[f.region] ? f.region : 'castle';
+// Moods for the campfire, Shadow Game and treasure screens: extra particles on top of the region's.
+const SOLO_SCENE_MOODS = {
+  campfire: [['ember', 25, 62, 50, 34, 12, 3.2]],
+  shadow: [['wisp', 0, 8, 92, 80, 10, 8]],
+  treasure: [['spray', 22, 22, 56, 40, 8, 3]]
+};
+
+// Shadow Game scenes (effects.css "Shadow Game scenes"): each event's own particles and art over the
+// region, lit by its .solo-ev--{id} mood. Art is drawn in a 360×720 box. `own` drops the region's particles.
+const sevSvg = body => `<svg class="solo-ev-svg" viewBox="0 0 360 720" preserveAspectRatio="xMidYMid slice">${body}</svg>`;
+const SEV_EYE = '<path d="M110 150Q180 90 250 150Q180 196 110 150Z"/><circle cx="180" cy="146" r="18" fill="currentColor"/><path d="M100 124Q180 60 260 122"/><path d="M166 186L156 240Q152 256 168 256"/><path d="M198 186Q226 232 262 220"/>';
+const sevStars = (n, h) => Array.from({ length: n }, (_, i) => `<circle cx="${(smRand(i + 200) * 360).toFixed(0)}" cy="${(smRand(i + 260) * h).toFixed(0)}" r="${smRand(i + 320) > 0.8 ? 1.6 : 1}"/>`).join('');
+const SEV_HAIR = {
+  yugi: '<path d="M-14 -40L-24 -64L-8 -50L0 -72L8 -50L24 -64L14 -40Z"/>',
+  joey: '<path d="M-13 -44L-18 -54L-7 -50L0 -58L7 -50L18 -54L13 -44Z"/>',
+  tea: '<path d="M-13 -38Q-15 -54 0 -52Q15 -54 13 -38V-28H-13Z"/>',
+  tristan: '<path d="M-4 -46L18 -60L10 -42Z"/>'
+};
+const sevSitter = (x, y, s, hair) => `<g transform="translate(${x} ${y}) scale(${s})"><circle cy="-38" r="11"/><path d="M-20 0Q-21 -27 0 -27Q21 -27 20 0Z"/>${SEV_HAIR[hair]}</g>`;
+const sevHat = x => `<g transform="translate(${x} 652)"><ellipse rx="28" ry="7"/><path d="M-17 -2V-46Q0 -52 17 -46V-2Z"/><path class="sev-hat-band" d="M-17 -14H17V-7H-17Z"/></g>`;
+const sevStone = (x, s) => `<path transform="translate(${x} 712) scale(${s})" d="M-16 0V-34Q-16 -50 0 -50Q16 -50 16 -34V0Z"/>`;
+const sevFlame = (cls = '') => `<path class="sev-flame ${cls}" d="M0 -60C18 -34 26 -16 17 0Q0 12 -17 0C-26 -16 -16 -34 0 -60Z"/>`;
+
+const SOLO_EVENT_SCENES = {
+  stranger: { art: sevSvg('<g class="sev-figure"><path d="M180 92C140 92 118 130 116 180L106 262L58 720H302L254 262L244 180C242 130 220 92 180 92Z"/><ellipse cx="180" cy="182" rx="33" ry="42" fill="#000"/><g class="sev-eyes"><ellipse cx="167" cy="184" rx="6" ry="2.6"/><ellipse cx="193" cy="184" rx="6" ry="2.6"/></g></g>') },
+  shadi: {
+    parts: [['dust', 0, 10, 100, 80, 10, 6]],
+    art: sevSvg(`<g class="sev-wdjat">${SEV_EYE}</g><g class="sev-scale"><path d="M180 560V690M140 692H220"/><g class="sev-scale-arm"><path d="M100 572H260M100 572L84 626M100 572L116 626M260 572L244 626M260 572L276 626"/><path d="M80 626Q100 646 120 626ZM240 626Q260 646 280 626Z"/></g><circle cx="180" cy="556" r="6"/></g>`)
+  },
+  hunter: { parts: [['card', 0, 5, 100, 85, 10, 9]] },
+  hustler: { parts: [['glint', 10, 15, 80, 75, 12, 3]] },
+  spring: { parts: [['bubble', 20, 60, 60, 35, 10, 5], ['spray', 10, 20, 80, 60, 6, 3]] },
+  video: { art: sevSvg(`<g class="sev-peye">${SEV_EYE}</g>`) },
+  hats: {
+    art: sevSvg(`<g class="sev-curtains"><path d="M0 0H78Q58 180 72 360T52 720H0Z"/><path d="M360 0H282Q302 180 288 360T308 720H360Z"/><path d="M0 0H360V26Q330 46 300 26Q270 46 240 26Q210 46 180 26Q150 46 120 26Q90 46 60 26Q30 46 0 26Z"/></g>`
+      + '<path class="sev-folds" d="M22 0Q14 360 18 720M46 0Q34 360 40 720M338 0Q346 360 342 720M314 0Q326 360 320 720"/>'
+      + `<g class="sev-spot"><path d="M168 30H192L226 652H134Z"/><ellipse cx="180" cy="652" rx="46" ry="12"/></g><g class="sev-hats">${[96, 180, 264].map(sevHat).join('')}</g>`)
+  },
+  mokuba: { art: '<div class="sev-beam"></div>' },
+  case: { parts: [['glint', 30, 74, 40, 14, 8, 3], ['card', 32, 76, 36, 12, 3, 8]] },
+  fortune: {
+    parts: [['tarot', 5, 18, 90, 50, 6, 7]],
+    art: sevSvg('<path class="sev-stand" d="M140 692L152 652H208L220 692Z"/><circle class="sev-ball" cx="180" cy="610" r="46"/><path class="sev-swirl" d="M150 610Q165 585 185 600T210 612M160 630Q180 640 200 622"/>')
+  },
+  lunch: { parts: [['steam', 38, 72, 24, 14, 8, 4]] },
+  rift: { parts: [['wisp', 0, 8, 92, 80, 10, 8]] },
+  toll: { parts: [['ember', 0, 45, 15, 30, 4, 3], ['ember', 85, 45, 15, 30, 4, 3]], art: '<div class="sev-barrier"></div>' },
+  dice: { parts: [['die', 0, 5, 100, 80, 8, 8]] },
+  duke: { parts: [['die', 5, 10, 90, 50, 5, 8], ['glint', 0, 60, 100, 35, 10, 3]] },
+  number: { parts: [['num', 5, 10, 90, 80, 12, 4]] },
+  well: {
+    parts: [['coin', 42, 8, 16, 50, 6, 3.5]],
+    art: sevSvg('<g class="sev-well"><path d="M92 572L180 522L268 572Z"/><path class="sev-well-line" d="M116 572V650M244 572V650M180 540V612"/><path d="M170 612H190L187 628H173Z"/><path d="M104 650H256V720H104Z"/><ellipse class="sev-rim" cx="180" cy="650" rx="78" ry="14"/></g>')
+  },
+  stump: { parts: [['mote', 35, 20, 35, 70, 14, 7]] },
+  swarm: { parts: [['kuri', 0, 80, 100, 16, 12, 6], ['kuri', 0, 25, 12, 50, 3, 6], ['kuri', 88, 25, 12, 50, 3, 6]] },
+  bugrace: {
+    parts: [['bug', -10, 58, 80, 32, 7, 9]],
+    art: sevSvg('<path class="sev-track" d="M-10 470C80 420 130 560 210 500S320 430 370 520"/><path class="sev-track" d="M-10 640C70 600 150 700 230 650S330 600 370 670"/><g class="sev-flag" transform="translate(322 492)"><path d="M0 0V-44" stroke="#e2e8f0" stroke-width="2"/><path d="M0 -44H24V-30H0Z"/><path d="M0 -44H6V-37H0ZM12 -44H18V-37H12ZM6 -37H12V-30H6ZM18 -37H24V-30H18Z" fill="#0f172a"/></g>')
+  },
+  friends: {
+    parts: [['ember', 46, 82, 8, 4, 8, 3]],
+    art: sevSvg(`<g class="sev-stars">${sevStars(26, 360)}</g><g transform="translate(180 670)"><path class="sev-log" d="M-30 6L30 -6M-30 -6L30 6"/>${sevFlame()}<g transform="scale(0.5)">${sevFlame('sev-flame--in')}</g></g>`
+      + `<g class="sev-friends">${sevSitter(92, 692, 1.1, 'joey')}${sevSitter(132, 716, 1.25, 'tea')}${sevSitter(228, 716, 1.25, 'tristan')}${sevSitter(268, 692, 1.1, 'yugi')}</g>`)
+  },
+  shortcut: { parts: [['speed', 0, 8, 100, 85, 14, 1.4], ['dust', 0, 75, 100, 20, 6, 4]] },
+  rigged: { art: '<div class="sev-coin"><span class="ce-emoji">🪙</span></div>' },
+  arm: { parts: [['heat', 15, 60, 70, 30, 9, 4]] },
+  nest: {
+    parts: [['ember', 0, 50, 100, 45, 8, 4]],
+    art: sevSvg('<g class="sev-fly"><g transform="translate(0 150) scale(1.6)"><ellipse rx="38" ry="11"/><path d="M30 -5Q52 -16 70 -12L86 -8L70 -2Q52 0 32 6Z"/><path d="M-34 -3Q-80 2 -118 -8Q-84 14 -34 6Z"/><path class="sev-wing" d="M-14 -6L-50 -72L-30 -60L-14 -82L2 -58L20 -68L18 -4Z"/></g></g>')
+  },
+  storm: { own: true, parts: [['rain', -10, -10, 120, 30, 36, 0.9]], art: sevSvg('<path class="sev-bolt" d="M220 0L196 120L222 124L184 260L206 262L160 400L236 228L212 226L248 110L224 106L246 0Z"/>') },
+  egg: { parts: [['glint', 25, 25, 50, 35, 10, 2.6]] },
+  grave: {
+    art: sevSvg(`<circle class="sev-halo" cx="292" cy="92" r="56"/><circle class="sev-moon" cx="292" cy="92" r="28"/><g class="sev-stones">${sevStone(46, 1.2)}${sevStone(104, 0.9)}${sevStone(262, 1.1)}${sevStone(320, 0.8)}<path transform="translate(186 712)" d="M-4 0V-40H-14V-48H-4V-62H4V-48H14V-40H4V0Z"/></g>`)
+  },
+  bet: {
+    parts: [['skull', 5, 15, 90, 70, 6, 7]],
+    art: sevSvg([72, 288].map(x => `<g transform="translate(${x} 660)"><path class="sev-candle" d="M-8 0V-46H8V0ZM-18 0H18V6H-18Z"/><g transform="translate(0 -50) scale(0.45)">${sevFlame('sev-flame--green')}</g></g>`).join(''))
+  },
+  lottery: { parts: [['ticket', 0, -5, 100, 50, 9, 7], ['spray', 5, 10, 90, 80, 8, 3]] },
+  bottle: {
+    art: sevSvg('<g class="sev-bob"><g transform="translate(180 612) rotate(-24)"><path class="sev-glass" d="M-9 -44H9V-28Q22 -20 22 -2V40Q22 48 14 48H-14Q-22 48 -22 40V-2Q-22 -20 -9 -28Z"/><rect class="sev-cork" x="-7" y="-54" width="14" height="10"/><rect class="sev-note" x="-10" y="-6" width="20" height="30" rx="2"/></g><path class="sev-glint" d="M196 572L199 580L207 583L199 586L196 594L193 586L185 583L193 580Z"/></g>'
+      + '<path class="sev-waves" d="M0 640Q22 628 45 640T90 640T135 640T180 640T225 640T270 640T315 640T360 640T405 640T450 640V720H0Z"/>')
+  },
+  fishing: {
+    parts: [['fish', -15, 80, 60, 15, 4, 9]],
+    art: sevSvg('<path class="sev-line" d="M-10 30Q170 90 236 596"/><ellipse class="sev-ripple" cx="236" cy="604" rx="18" ry="5"/><ellipse class="sev-ripple sev-ripple--b" cx="236" cy="604" rx="18" ry="5"/><g class="sev-bobber"><circle cx="236" cy="600" r="7" fill="#ef4444"/><path d="M229 600A7 7 0 0 0 243 600Z" fill="#f8fafc"/></g>')
+  },
+  tide: { parts: [['bubble', 5, 55, 90, 40, 12, 5]] }
+};
+
+// The region's map art behind a duel or a node screen, with an optional mood layer.
+// A Shadow Game with an entry in SOLO_EVENT_SCENES (`ev`) gets its own scene instead of the plain shadow mood.
+function renderSoloScene(regionId, mood = '', ev = '') {
+  const region = SOLO_MAP_ART[regionId] ? regionId : 'castle';
   const { colors } = SOLO_MAP_ART[region];
   const id = `sfight${++soloMapUid}`;
   const defs = `${smBrickDef(id)}<linearGradient id="${id}-fill" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="${colors[0]}"/><stop offset="1" stop-color="${colors[1]}"/></linearGradient>`;
+  const scene = ev && SOLO_EVENT_SCENES[ev];
+  const cls = scene ? ` solo-scene--ev solo-ev--${ev}` : mood ? ` solo-scene--${mood}` : '';
+  const parts = [...(scene?.own ? [] : SOLO_FIGHT_PARTICLES[region] || []), ...(scene ? scene.parts || [] : SOLO_SCENE_MOODS[mood] || [])];
   return `
-    <div class="solo-scene" aria-hidden="true" style="--sm-t: -${(performance.now() / 1000).toFixed(2)}s;">
+    <div class="solo-scene${cls}" aria-hidden="true" style="--sm-t: -${(performance.now() / 1000).toFixed(2)}s;">
       <svg class="solo-scene-art" viewBox="0 0 ${SOLO_MAP_W} ${SOLO_FIGHT_SCENE_H}" preserveAspectRatio="xMidYMid slice"><defs>${defs}</defs>${soloFightSceneArt(region, id)}</svg>
       <div class="solo-scene-dim"></div>
-      <div class="solo-atmo">${soloParticles(SOLO_FIGHT_PARTICLES[region] || [], 1, 1)}</div>
+      ${mood ? '<div class="solo-scene-mood"></div>' : ''}
+      ${scene?.art ? `<div class="solo-ev-art">${scene.art}</div>` : ''}
+      <div class="solo-atmo">${soloParticles(parts, 1, 1)}</div>
     </div>
   `;
 }
@@ -926,7 +1034,7 @@ function renderSoloFight() {
   const kind = { duelist: 'Duelist', elite: 'Elite', gate: 'Labyrinth guard', ambush: 'Ambush', boss: f.title || 'Castle guard' }[f.kind];
   const p = SOLO_PERSONALITIES[f.personality];
   return `
-    ${renderSoloFightScene(f)}
+    ${renderSoloScene(f.region)}
     ${renderSoloHeader(`<span class="ce-emoji">${f.icon}</span> ${kind}`, renderSoloTurnBadge(f))}
     <div class="relative flex-1 min-h-0 overflow-y-auto no-scrollbar px-3 pt-3 flex flex-col gap-2">
       ${renderSoloEnemyBoard(f, p)}

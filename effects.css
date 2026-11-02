@@ -15495,7 +15495,7 @@ html.fx-lite .solo-node-frame::before { animation: none; }
 .solo-monster { border-color: rgba(244, 63, 94, 0.35); background: rgba(15, 23, 42, 0.9); animation: coop-pop-in 0.3s ease-out; }
 .solo-monster--def { border-color: rgba(56, 189, 248, 0.35); background: rgba(12, 74, 110, 0.2); }
 .solo-trap { animation: coop-pop-in 0.3s ease-out; }
-/* --- Fight scene (solo-view.js renderSoloFightScene): the region's map art and particles behind the duel. --- */
+/* --- Solo scene (solo-view.js renderSoloScene): the region's map art and particles behind the duel and the node screens. --- */
 .solo-scene { position: absolute; inset: 0; overflow: hidden; pointer-events: none; }
 .solo-scene-art { position: absolute; inset: 0; width: 100%; height: 100%; }
 .solo-scene-dim {
@@ -15504,6 +15504,705 @@ html.fx-lite .solo-node-frame::before { animation: none; }
   background: linear-gradient(to bottom, rgba(2, 6, 23, 0.6), rgba(2, 6, 23, 0.3) 45%, rgba(2, 6, 23, 0.55) 70%, rgba(2, 6, 23, 0.85));
 }
 .solo-fight-foot .coop-panel { background-color: rgba(2, 6, 23, 0.88); }
+/* Node moods (renderSoloScene): a darker dim so the text reads, plus a light layer.
+   Campfire: night falls and firelight flickers up from below. */
+.solo-scene--campfire .solo-scene-dim,
+.solo-scene--shadow .solo-scene-dim,
+.solo-scene--treasure .solo-scene-dim,
+.solo-scene--ev .solo-scene-dim {
+  background: linear-gradient(to bottom, rgba(2, 6, 23, 0.7), rgba(2, 6, 23, 0.55) 40%, rgba(2, 6, 23, 0.65) 70%, rgba(2, 6, 23, 0.9));
+}
+.solo-scene--campfire .solo-scene-dim,
+.solo-ev--friends .solo-scene-dim { background-color: rgba(15, 23, 62, 0.35); }
+.solo-scene-mood { position: absolute; inset: 0; }
+.solo-scene--campfire .solo-scene-mood,
+.solo-ev--friends .solo-scene-mood {
+  background:
+    radial-gradient(ellipse 60% 30% at 50% 102%, rgba(253, 186, 116, 0.55), transparent 70%),
+    radial-gradient(ellipse 110% 65% at 50% 105%, rgba(234, 88, 12, 0.42), rgba(194, 65, 12, 0.14) 50%, transparent 75%),
+    radial-gradient(circle at 50% 30%, rgba(251, 146, 60, 0.18), transparent 45%);
+  transform-origin: 50% 100%;
+  animation: solo-fire-flicker 2.3s ease-in-out infinite;
+}
+@keyframes solo-fire-flicker {
+  0%, 100% { opacity: 0.85; transform: scale(1); }
+  18% { opacity: 1; transform: scale(1.03, 1.06); }
+  33% { opacity: 0.72; transform: scale(0.99, 0.97); }
+  52% { opacity: 0.95; transform: scale(1.02, 1.04); }
+  70% { opacity: 0.78; transform: scale(1); }
+}
+/* Shadow Game: the Shadow Realm closes in, a violet vignette and drifting dark fog. */
+.solo-scene--shadow .solo-scene-mood {
+  background:
+    radial-gradient(ellipse 75% 60% at 50% 42%, transparent 35%, rgba(46, 16, 101, 0.55) 75%, rgba(20, 6, 40, 0.9)),
+    linear-gradient(rgba(76, 29, 149, 0.22), rgba(76, 29, 149, 0.22));
+  animation: solo-shadow-pulse 6s ease-in-out infinite;
+}
+.solo-scene--shadow .solo-scene-mood::before,
+.solo-scene--shadow .solo-scene-mood::after {
+  content: '';
+  position: absolute;
+  width: 120%;
+  height: 45%;
+  left: -10%;
+  border-radius: 50%;
+  background: radial-gradient(closest-side, rgba(88, 28, 135, 0.55), rgba(30, 10, 60, 0.3) 60%, transparent);
+  animation: solo-shadow-fog 14s ease-in-out infinite alternate;
+}
+.solo-scene--shadow .solo-scene-mood::before { top: -12%; }
+.solo-scene--shadow .solo-scene-mood::after { bottom: -14%; animation-duration: 17s; animation-direction: alternate-reverse; }
+@keyframes solo-shadow-pulse {
+  0%, 100% { opacity: 0.85; }
+  50% { opacity: 1; }
+}
+@keyframes solo-shadow-fog {
+  from { transform: translateX(-8%) scale(1); }
+  to { transform: translateX(8%) scale(1.1, 1.2); }
+}
+/* Treasure: a soft golden gleam where the case lies. */
+.solo-scene--treasure .solo-scene-mood {
+  background: radial-gradient(circle at 50% 35%, rgba(251, 191, 36, 0.28), transparent 50%);
+  animation: solo-shadow-pulse 3s ease-in-out infinite;
+}
+html.fx-lite .solo-scene-mood,
+html.fx-lite .solo-scene-mood::before,
+html.fx-lite .solo-scene-mood::after { animation: none; }
+
+/* --- Shadow Game scenes (solo-view.js SOLO_EVENT_SCENES): each event's light (.solo-scene-mood and its
+   ::before/::after), art (.solo-ev-art, a 360×720 SVG or divs) and particles over the region art. --- */
+.solo-scene--ev { isolation: isolate; }
+.solo-ev-art { position: absolute; inset: 0; overflow: hidden; }
+.solo-ev-svg { position: absolute; inset: 0; width: 100%; height: 100%; }
+.solo-scene--ev .solo-scene-mood::before,
+.solo-scene--ev .solo-scene-mood::after { position: absolute; pointer-events: none; }
+@keyframes sev-flicker {
+  0%, 100% { opacity: 0.8; }
+  30% { opacity: 1; }
+  55% { opacity: 0.65; }
+  75% { opacity: 0.95; }
+}
+@keyframes sev-pulse {
+  0%, 100% { opacity: var(--lo, 0.55); }
+  50% { opacity: var(--hi, 1); }
+}
+@keyframes sev-spin { to { transform: translate(-50%, -50%) rotate(360deg); } }
+@keyframes sev-sway {
+  from { transform: rotate(calc(var(--r, 0deg) - 7deg)); }
+  to { transform: rotate(calc(var(--r, 0deg) + 7deg)); }
+}
+@keyframes sev-drift {
+  from { transform: translateX(-20px); }
+  to { transform: translateX(20px); }
+}
+@keyframes sev-blink {
+  0%, 90%, 96%, 100% { transform: scaleY(1); }
+  93% { transform: scaleY(0.1); }
+}
+/* Drifting fog banks, coloured by --fog on the mood. */
+.solo-ev--stranger .solo-scene-mood::before,
+.solo-ev--stranger .solo-scene-mood::after,
+.solo-ev--grave .solo-scene-mood::before,
+.solo-ev--grave .solo-scene-mood::after,
+.solo-ev--spring .solo-scene-mood::after,
+.solo-ev--rigged .solo-scene-mood::after,
+.solo-ev--shortcut .solo-scene-mood::after {
+  content: '';
+  left: -15%;
+  width: 130%;
+  height: 40%;
+  border-radius: 50%;
+  background: radial-gradient(closest-side, var(--fog, rgba(148, 163, 184, 0.3)), transparent);
+  animation: solo-shadow-fog 14s ease-in-out infinite alternate;
+}
+/* Spotlight cones from above. */
+.solo-ev--hustler .solo-scene-mood::before,
+.solo-ev--hustler .solo-scene-mood::after,
+.solo-ev--rigged .solo-scene-mood::before,
+.solo-ev--arm .solo-scene-mood::before {
+  content: '';
+  top: -5%;
+  width: 50%;
+  height: 95%;
+  background: linear-gradient(to bottom, rgba(254, 249, 195, 0.3), rgba(254, 249, 195, 0));
+  clip-path: polygon(45% 0, 55% 0, 100% 100%, 0 100%);
+  transform-origin: 50% 0;
+  animation: sev-sway 6s ease-in-out infinite alternate;
+}
+/* A glowing floor grid in perspective (KaibaCorp, Dungeon Dice), coloured by --grid. */
+.solo-ev--mokuba .solo-scene-mood::before,
+.solo-ev--duke .solo-scene-mood::before {
+  content: '';
+  left: -50%;
+  right: -50%;
+  bottom: 0;
+  height: 45%;
+  background:
+    linear-gradient(var(--grid) 1px, transparent 1px) 0 0 / 40px 40px,
+    linear-gradient(90deg, var(--grid) 1px, transparent 1px) 0 0 / 40px 40px;
+  transform: perspective(300px) rotateX(60deg);
+  transform-origin: 50% 100%;
+  -webkit-mask-image: linear-gradient(to top, #000, transparent);
+  mask-image: linear-gradient(to top, #000, transparent);
+  animation: sev-grid 2s linear infinite;
+}
+@keyframes sev-grid { to { background-position: 0 40px, 0 40px; } }
+/* A big spinning disc behind the middle (rift vortex, egg rays, roulette wheel). */
+.solo-ev--rift .solo-scene-mood::before,
+.solo-ev--egg .solo-scene-mood::before,
+.solo-ev--number .solo-scene-mood::before {
+  content: '';
+  left: 50%;
+  top: 45%;
+  width: 140%;
+  aspect-ratio: 1;
+  transform: translate(-50%, -50%);
+  animation: sev-spin 14s linear infinite;
+}
+
+/* Hooded Stranger: grey fog and a looming figure with red eyes that blink. */
+.solo-ev--stranger .solo-scene-mood {
+  --fog: rgba(148, 163, 184, 0.32);
+  background:
+    radial-gradient(ellipse 85% 65% at 50% 45%, transparent 30%, rgba(8, 6, 16, 0.8) 85%),
+    linear-gradient(rgba(30, 27, 46, 0.35), rgba(30, 27, 46, 0.35));
+}
+.solo-ev--stranger .solo-scene-mood::before { bottom: -14%; }
+.solo-ev--stranger .solo-scene-mood::after { top: 30%; animation-duration: 19s; animation-direction: alternate-reverse; }
+.sev-figure { fill: #05020b; opacity: 0.8; }
+.sev-eyes { fill: #f43f5e; filter: drop-shadow(0 0 4px #f43f5e); transform-box: fill-box; transform-origin: center; animation: sev-blink 5s infinite; }
+/* Shadi's Test: sandy dusk, the Eye of Wdjat and a tipping Millennium Scale. */
+.solo-ev--shadi .solo-scene-mood {
+  background:
+    radial-gradient(ellipse 70% 30% at 50% 18%, rgba(251, 191, 36, 0.25), transparent 70%),
+    linear-gradient(to bottom, rgba(180, 83, 9, 0.35), rgba(120, 53, 15, 0.15) 50%, rgba(28, 25, 23, 0.5));
+}
+.sev-wdjat, .sev-peye { color: #fbbf24; fill: none; stroke: currentColor; stroke-width: 5; stroke-linecap: round; stroke-linejoin: round; }
+.sev-wdjat { opacity: 0.3; --lo: 0.2; --hi: 0.4; animation: sev-pulse 4s ease-in-out infinite; }
+.sev-scale { fill: none; stroke: #fbbf24; stroke-width: 4; stroke-linecap: round; opacity: 0.55; }
+.sev-scale circle { fill: #fbbf24; }
+.sev-scale-arm { transform-box: view-box; transform-origin: 180px 572px; animation: sev-tilt 5s ease-in-out infinite alternate; }
+@keyframes sev-tilt {
+  from { transform: rotate(-7deg); }
+  to { transform: rotate(7deg); }
+}
+/* Rare Hunter's Offer: red-black alley glow with drifting cards. */
+.solo-ev--hunter .solo-scene-mood {
+  background: radial-gradient(ellipse 80% 60% at 50% 50%, rgba(127, 29, 29, 0.15), rgba(69, 10, 10, 0.65) 70%, rgba(10, 0, 0, 0.9));
+}
+/* Star Chip Hustler: casino felt and two swaying spotlights. */
+.solo-ev--hustler .solo-scene-mood {
+  background: radial-gradient(ellipse 80% 60% at 50% 55%, rgba(6, 95, 70, 0.55), rgba(2, 44, 34, 0.75) 65%, rgba(2, 6, 23, 0.9));
+}
+.solo-ev--hustler .solo-scene-mood::before { left: 0; --r: -14deg; }
+.solo-ev--hustler .solo-scene-mood::after { right: 0; --r: 14deg; animation-delay: -3s; }
+/* Hidden Spring: cool blue mist and shimmering light. */
+.solo-ev--spring .solo-scene-mood {
+  --fog: rgba(186, 230, 253, 0.25);
+  background:
+    radial-gradient(ellipse at 50% 50%, rgba(165, 243, 252, 0.18), transparent 60%),
+    linear-gradient(to bottom, rgba(14, 116, 144, 0.35), rgba(8, 47, 73, 0.55));
+}
+.solo-ev--spring .solo-scene-mood::before {
+  content: '';
+  top: 0;
+  bottom: 0;
+  left: -10%;
+  width: 120%;
+  background: repeating-linear-gradient(100deg, transparent 0 22px, rgba(186, 230, 253, 0.09) 22px 27px);
+  animation: sev-drift 7s ease-in-out infinite alternate;
+}
+.solo-ev--spring .solo-scene-mood::after { bottom: -10%; }
+/* Pegasus's Video: CRT scanlines, a rolling band, colour bleed and his eye fading in. */
+.solo-ev--video .solo-scene-mood {
+  background:
+    repeating-linear-gradient(to bottom, rgba(0, 0, 0, 0.3) 0 2px, transparent 2px 4px),
+    radial-gradient(ellipse 75% 65% at 50% 50%, transparent 45%, rgba(0, 0, 0, 0.75)),
+    linear-gradient(rgba(30, 58, 138, 0.28), rgba(30, 58, 138, 0.28));
+}
+.solo-ev--video .solo-scene-mood::before {
+  content: '';
+  left: 0;
+  right: 0;
+  top: -20%;
+  height: 18%;
+  background: linear-gradient(transparent, rgba(255, 255, 255, 0.09), transparent);
+  animation: sev-roll 5s linear infinite;
+}
+.solo-ev--video .solo-scene-mood::after {
+  content: '';
+  inset: 0;
+  box-shadow: inset 8px 0 22px rgba(239, 68, 68, 0.3), inset -8px 0 22px rgba(34, 211, 238, 0.3);
+  animation: sev-jitter 2.6s steps(1) infinite;
+}
+@keyframes sev-roll { to { transform: translateY(780%); } }
+@keyframes sev-jitter {
+  0%, 28%, 73%, 100% { transform: none; }
+  20% { transform: translateX(2px); }
+  24% { transform: translateX(-2px); }
+  70% { transform: translateX(-1px); }
+}
+.sev-peye { opacity: 0.3; animation: sev-peye 7s ease-in-out infinite; }
+@keyframes sev-peye {
+  0%, 100% { opacity: 0.05; }
+  40%, 60% { opacity: 0.5; }
+}
+/* Magical Hats: stage curtains and a spotlight hopping between three hats. */
+.solo-ev--hats .solo-scene-mood {
+  background:
+    radial-gradient(ellipse 60% 40% at 50% 88%, transparent 20%, rgba(10, 5, 20, 0.7) 75%),
+    linear-gradient(rgba(10, 5, 20, 0.35), rgba(10, 5, 20, 0.35));
+}
+.sev-curtains { fill: #7f1d1d; opacity: 0.9; }
+.sev-folds { fill: none; stroke: #450a0a; stroke-width: 4; opacity: 0.7; }
+.sev-spot { fill: rgba(254, 240, 138, 0.12); animation: sev-spot 7.5s ease-in-out infinite; }
+.sev-spot ellipse { fill: rgba(254, 240, 138, 0.3); }
+@keyframes sev-spot {
+  0%, 22%, 100% { transform: translateX(0); }
+  33%, 55% { transform: translateX(-84px); }
+  66%, 88% { transform: translateX(84px); }
+}
+.sev-hats { fill: #1e1b4b; stroke: #a78bfa; stroke-width: 1.5; }
+.sev-hat-band { fill: #a855f7; stroke: none; }
+/* Mokuba in Trouble: red alarm pulse, KaibaCorp grid and a sweeping searchlight. */
+.solo-ev--mokuba .solo-scene-mood { --grid: rgba(56, 189, 248, 0.45); background: linear-gradient(rgba(15, 23, 42, 0.35), rgba(15, 23, 42, 0.35)); }
+.solo-ev--mokuba .solo-scene-mood::after {
+  content: '';
+  inset: 0;
+  background: radial-gradient(ellipse 80% 70% at 50% 50%, transparent 40%, rgba(220, 38, 38, 0.6));
+  --lo: 0.2;
+  animation: sev-pulse 1.6s ease-in-out infinite;
+}
+.sev-beam {
+  position: absolute;
+  top: -10%;
+  left: 20%;
+  width: 60%;
+  height: 120%;
+  background: linear-gradient(to bottom, rgba(224, 242, 254, 0.22), transparent 80%);
+  clip-path: polygon(47% 0, 53% 0, 85% 100%, 15% 100%);
+  transform-origin: 50% 0;
+  animation: sev-sweep 4.5s ease-in-out infinite alternate;
+}
+@keyframes sev-sweep {
+  from { transform: rotate(-35deg); }
+  to { transform: rotate(35deg); }
+}
+/* Lost Duelist's Case: one torch-lit spot on the ground in the dark. */
+.solo-ev--case .solo-scene-mood {
+  background:
+    radial-gradient(ellipse 45% 20% at 50% 82%, rgba(254, 243, 199, 0.35), rgba(254, 243, 199, 0.08) 60%, transparent 75%),
+    radial-gradient(ellipse 90% 80% at 50% 70%, transparent 30%, rgba(2, 6, 23, 0.8) 75%);
+  animation: sev-torch 4s ease-in-out infinite alternate;
+}
+@keyframes sev-torch {
+  from { transform: translate(-6px, 2px); }
+  to { transform: translate(6px, -2px); }
+}
+/* Fortune Teller: a striped tent, a swirling crystal ball and turning tarot cards. */
+.solo-ev--fortune .solo-scene-mood {
+  background:
+    radial-gradient(circle at 50% 84%, rgba(216, 180, 254, 0.4), transparent 22%),
+    radial-gradient(ellipse at 50% 50%, rgba(88, 28, 135, 0.35), rgba(46, 16, 101, 0.75) 75%);
+}
+.solo-ev--fortune .solo-scene-mood::before {
+  content: '';
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 20%;
+  background: repeating-linear-gradient(90deg, rgba(126, 34, 206, 0.45) 0 30px, rgba(190, 24, 93, 0.35) 30px 60px);
+  clip-path: polygon(0 0, 100% 0, 100% 55%, 50% 100%, 0 55%);
+}
+.sev-ball { fill: rgba(196, 181, 253, 0.22); stroke: rgba(233, 213, 255, 0.7); stroke-width: 2; --lo: 0.6; animation: sev-pulse 3s ease-in-out infinite; }
+.sev-stand { fill: #3b0764; stroke: #a855f7; stroke-width: 1.5; }
+.sev-swirl { fill: none; stroke: rgba(240, 171, 252, 0.8); stroke-width: 3; stroke-linecap: round; transform-box: view-box; transform-origin: 180px 610px; animation: sev-swirl 6s linear infinite; }
+@keyframes sev-swirl { to { transform: rotate(360deg); } }
+/* Joey's Lunch: a warm picnic sunset with steam. */
+.solo-ev--lunch .solo-scene-mood {
+  background:
+    radial-gradient(ellipse 60% 25% at 50% 18%, rgba(254, 215, 170, 0.35), transparent 70%),
+    linear-gradient(to bottom, rgba(251, 146, 60, 0.35), rgba(244, 114, 182, 0.2) 45%, rgba(120, 53, 15, 0.3));
+}
+/* Shadow Realm Rift: a spinning vortex with a black core, and the edges closing in. */
+.solo-ev--rift .solo-scene-mood { background: linear-gradient(rgba(46, 16, 101, 0.3), rgba(46, 16, 101, 0.3)); }
+.solo-ev--rift .solo-scene-mood::before {
+  background: repeating-conic-gradient(rgba(126, 34, 206, 0) 0deg, rgba(168, 85, 247, 0.4) 15deg, rgba(126, 34, 206, 0) 30deg);
+  -webkit-mask-image: radial-gradient(circle, transparent 6%, #000 18%, #000 35%, transparent 62%);
+  mask-image: radial-gradient(circle, transparent 6%, #000 18%, #000 35%, transparent 62%);
+}
+.solo-ev--rift .solo-scene-mood::after {
+  content: '';
+  inset: -10%;
+  background:
+    radial-gradient(circle at 50% 45%, rgba(0, 0, 0, 0.85) 0 5%, rgba(88, 28, 135, 0.45) 10%, transparent 22%),
+    radial-gradient(ellipse 75% 65% at 50% 45%, transparent 45%, rgba(10, 0, 20, 0.92) 85%);
+  transform-origin: 50% 45%;
+  animation: sev-close 4s ease-in-out infinite;
+}
+@keyframes sev-close {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(0.92); }
+}
+/* Rare Hunters' Toll: red torchlight from both sides and a hazard-striped barrier. */
+.solo-ev--toll .solo-scene-mood {
+  background:
+    radial-gradient(ellipse 35% 50% at 0% 60%, rgba(239, 68, 68, 0.45), transparent 70%),
+    radial-gradient(ellipse 35% 50% at 100% 60%, rgba(239, 68, 68, 0.45), transparent 70%),
+    radial-gradient(ellipse 85% 75% at 50% 50%, transparent 40%, rgba(10, 0, 0, 0.8));
+  animation: sev-flicker 2.2s ease-in-out infinite;
+}
+.sev-barrier {
+  position: absolute;
+  left: 6%;
+  right: 6%;
+  bottom: 16%;
+  height: 24px;
+  background: repeating-linear-gradient(-45deg, #facc15 0 14px, #111 14px 28px);
+  border: 2px solid #111;
+  border-radius: 3px;
+  box-shadow: 0 0 18px rgba(239, 68, 68, 0.45);
+  opacity: 0.8;
+}
+.sev-barrier::before,
+.sev-barrier::after { content: ''; position: absolute; top: 100%; width: 10px; height: 80px; background: #1c1917; }
+.sev-barrier::before { left: 8%; }
+.sev-barrier::after { right: 8%; }
+/* Joey's Lucky Dice: a warm glow with tumbling dice. */
+.solo-ev--dice .solo-scene-mood {
+  background:
+    radial-gradient(ellipse at 50% 60%, rgba(251, 191, 36, 0.25), transparent 60%),
+    linear-gradient(rgba(120, 53, 15, 0.2), rgba(120, 53, 15, 0.2));
+}
+/* Duke's Dungeon Dice: a glowing dungeon floor grid. */
+.solo-ev--duke .solo-scene-mood {
+  --grid: rgba(45, 212, 191, 0.5);
+  background:
+    radial-gradient(ellipse 85% 70% at 50% 45%, transparent 35%, rgba(2, 6, 23, 0.8)),
+    linear-gradient(rgba(4, 47, 46, 0.35), rgba(4, 47, 46, 0.35));
+}
+.solo-ev--duke .solo-scene-mood::before { animation-duration: 4s; }
+/* Gambler's Number: a slow roulette wheel rising from below and flickering numbers. */
+.solo-ev--number .solo-scene-mood { background: radial-gradient(circle at 50% 50%, rgba(190, 18, 60, 0.25), rgba(2, 6, 23, 0.75) 70%); }
+.solo-ev--number .solo-scene-mood::before {
+  top: 96%;
+  width: 130%;
+  background: repeating-conic-gradient(rgba(190, 18, 60, 0.45) 0 10deg, rgba(0, 0, 0, 0.5) 10deg 20deg);
+  -webkit-mask-image: radial-gradient(circle, transparent 56%, #000 57%, #000 68%, transparent 69%);
+  mask-image: radial-gradient(circle, transparent 56%, #000 57%, #000 68%, transparent 69%);
+  animation-duration: 30s;
+}
+/* Wishing Well: moonlight from above and coins falling into a well. */
+.solo-ev--well .solo-scene-mood {
+  background:
+    radial-gradient(ellipse 70% 45% at 50% -5%, rgba(224, 242, 254, 0.4), transparent 70%),
+    linear-gradient(rgba(15, 23, 62, 0.35), rgba(15, 23, 62, 0.35));
+}
+.sev-well { fill: #1c1917; opacity: 0.9; }
+.sev-well-line { fill: none; stroke: #44403c; stroke-width: 5; }
+.sev-rim { fill: #0c0a09; stroke: #78716c; stroke-width: 3; }
+/* A Star Chip on a Stump: one sunbeam through the leaves, with dust motes. */
+.solo-ev--stump .solo-scene-mood {
+  background:
+    radial-gradient(ellipse 85% 75% at 50% 50%, transparent 40%, rgba(2, 20, 10, 0.75)),
+    linear-gradient(rgba(20, 83, 45, 0.25), rgba(20, 83, 45, 0.25));
+}
+.solo-ev--stump .solo-scene-mood::before {
+  content: '';
+  top: -10%;
+  left: 15%;
+  width: 75%;
+  height: 105%;
+  background: linear-gradient(to bottom, rgba(254, 249, 195, 0.38), rgba(254, 249, 195, 0.06));
+  clip-path: polygon(30% 0, 52% 0, 78% 100%, 36% 100%);
+  --lo: 0.7;
+  animation: sev-pulse 5s ease-in-out infinite;
+}
+/* Kuriboh Swarm and Weevil's Bug Race: dark forest edges (and green haze and a dotted race track). */
+.solo-ev--swarm .solo-scene-mood { background: radial-gradient(ellipse 90% 70% at 50% 40%, transparent 45%, rgba(5, 20, 10, 0.75)); }
+.solo-ev--bugrace .solo-scene-mood {
+  background:
+    radial-gradient(ellipse at 50% 60%, rgba(132, 204, 22, 0.22), transparent 65%),
+    radial-gradient(ellipse 90% 75% at 50% 50%, transparent 45%, rgba(5, 20, 5, 0.7));
+}
+.sev-track { fill: none; stroke: rgba(217, 249, 157, 0.55); stroke-width: 3; stroke-dasharray: 2 10; stroke-linecap: round; animation: sev-march 1.2s linear infinite; }
+@keyframes sev-march { to { stroke-dashoffset: -12; } }
+.sev-flag { fill: #f8fafc; opacity: 0.7; }
+/* Friends' Campfire (shares the campfire light above): stars, a fire and the gang around it. */
+.sev-stars { fill: #fef9c3; opacity: 0.75; }
+.sev-log { stroke: #451a03; stroke-width: 7; stroke-linecap: round; }
+.sev-flame { fill: #fb923c; filter: drop-shadow(0 0 6px rgba(251, 146, 60, 0.8)); transform-box: fill-box; transform-origin: 50% 100%; animation: sev-flame 0.9s ease-in-out infinite alternate; }
+.sev-flame--in { fill: #fde68a; animation-duration: 0.6s; }
+.sev-flame--green { fill: #a3e635; filter: drop-shadow(0 0 8px rgba(163, 230, 53, 0.9)); }
+@keyframes sev-flame {
+  from { transform: scale(1, 1) skewX(-3deg); }
+  to { transform: scale(0.9, 1.12) skewX(3deg); }
+}
+.sev-friends { fill: #070512; }
+/* Tristan's Shortcut: speed lines, a dust trail and a passing headlight. */
+.solo-ev--shortcut .solo-scene-mood { --fog: rgba(214, 185, 140, 0.35); background: linear-gradient(to top, rgba(180, 140, 90, 0.4), transparent 40%); }
+.solo-ev--shortcut .solo-scene-mood::before {
+  content: '';
+  top: 35%;
+  left: -20%;
+  width: 140%;
+  height: 40%;
+  background: radial-gradient(ellipse 50% 50% at 50% 50%, rgba(254, 249, 195, 0.3), transparent 70%);
+  animation: sev-headlight 3.5s ease-in-out infinite;
+}
+.solo-ev--shortcut .solo-scene-mood::after { bottom: -14%; animation-duration: 5s; }
+@keyframes sev-headlight {
+  0% { opacity: 0; transform: translateX(-40%); }
+  40% { opacity: 1; }
+  100% { opacity: 0; transform: translateX(40%); }
+}
+/* Bandit Keith's Coin: flag stripes, bar smoke and a coin spinning in the spotlight. */
+.solo-ev--rigged .solo-scene-mood {
+  --fog: rgba(120, 113, 108, 0.35);
+  background:
+    linear-gradient(to bottom, rgba(220, 38, 38, 0.22) 0 3%, rgba(248, 250, 252, 0.1) 3% 6%, rgba(37, 99, 235, 0.2) 6% 9%, transparent 9%),
+    radial-gradient(ellipse 85% 70% at 50% 40%, rgba(180, 83, 9, 0.2), rgba(2, 6, 23, 0.7) 80%);
+}
+.solo-ev--rigged .solo-scene-mood::before,
+.solo-ev--arm .solo-scene-mood::before { left: 25%; height: 60%; }
+.solo-ev--rigged .solo-scene-mood::after { bottom: 20%; animation-duration: 20s; }
+.sev-coin { position: absolute; left: 50%; top: 24%; font-size: 3rem; line-height: 1; opacity: 0.75; transform: translateX(-50%); }
+.sev-coin .ce-emoji { display: inline-block; filter: drop-shadow(0 0 10px rgba(253, 224, 71, 0.6)); animation: sev-coin 1.4s linear infinite; }
+@keyframes sev-coin { to { transform: rotateY(360deg); } }
+/* Tristan's Arm Wrestle: a hot orange arena with heat shimmer. */
+.solo-ev--arm .solo-scene-mood { background: radial-gradient(ellipse at 50% 60%, rgba(249, 115, 22, 0.35), rgba(124, 45, 18, 0.4) 50%, rgba(2, 6, 23, 0.75) 85%); }
+/* Dragon's Nest: embers and a dragon flying over now and then. */
+.solo-ev--nest .solo-scene-mood {
+  background:
+    radial-gradient(ellipse 85% 75% at 50% 45%, transparent 40%, rgba(20, 8, 2, 0.75)),
+    linear-gradient(rgba(69, 26, 3, 0.25), rgba(69, 26, 3, 0.25));
+}
+.sev-fly { fill: #0a0510; opacity: 0; animation: sev-fly 15s ease-in-out -4s infinite; }
+@keyframes sev-fly {
+  0% { opacity: 0.85; transform: translate(-200px, 20px); }
+  35% { opacity: 0.85; transform: translate(580px, -30px); }
+  35.1%, 100% { opacity: 0; transform: translate(580px, -30px); }
+}
+.sev-wing { transform-box: fill-box; transform-origin: 50% 100%; animation: sev-flap 0.7s ease-in-out infinite alternate; }
+@keyframes sev-flap { to { transform: scaleY(-0.5); } }
+/* Thunderstorm: driving rain and lightning with a sky flash. */
+.solo-ev--storm .solo-scene-mood { background: linear-gradient(rgba(15, 23, 42, 0.55), rgba(30, 41, 59, 0.4)); }
+.solo-ev--storm .solo-scene-mood::after { content: ''; inset: 0; background: rgba(224, 242, 254, 0.55); opacity: 0; animation: sev-flash 7s linear infinite; }
+.sev-bolt { fill: #e0f2fe; filter: drop-shadow(0 0 10px #7dd3fc); opacity: 0; animation: sev-flash 7s linear infinite; }
+@keyframes sev-flash {
+  0%, 80%, 86%, 100% { opacity: 0; }
+  81% { opacity: 0.9; }
+  82% { opacity: 0.1; }
+  83.5% { opacity: 0.8; }
+}
+/* Dragon Egg: a golden heartbeat with slowly turning rays. */
+.solo-ev--egg .solo-scene-mood {
+  background: radial-gradient(circle at 50% 42%, rgba(253, 224, 71, 0.4), rgba(245, 158, 11, 0.15) 30%, transparent 55%);
+  transform-origin: 50% 42%;
+  animation: sev-heartbeat 1.6s ease-in-out infinite;
+}
+.solo-ev--egg .solo-scene-mood::before {
+  top: 42%;
+  width: 160%;
+  background: repeating-conic-gradient(rgba(253, 224, 71, 0.2) 0 6deg, transparent 6deg 22deg);
+  -webkit-mask-image: radial-gradient(circle, #000 8%, transparent 55%);
+  mask-image: radial-gradient(circle, #000 8%, transparent 55%);
+  animation-duration: 40s;
+}
+@keyframes sev-heartbeat {
+  0%, 40%, 100% { opacity: 0.75; transform: scale(1); }
+  10% { opacity: 1; transform: scale(1.06); }
+  20% { opacity: 0.85; transform: scale(1.01); }
+  28% { opacity: 1; transform: scale(1.05); }
+}
+/* Open Grave: a pale moon, tombstones and green fog rolling in front of them. */
+.solo-ev--grave .solo-scene-mood {
+  --fog: rgba(134, 239, 172, 0.25);
+  z-index: 1;
+  background:
+    radial-gradient(ellipse 85% 75% at 50% 45%, transparent 40%, rgba(2, 12, 8, 0.75)),
+    linear-gradient(rgba(20, 40, 30, 0.35), rgba(20, 40, 30, 0.35));
+}
+.solo-ev--grave .solo-scene-mood::before { bottom: -16%; }
+.solo-ev--grave .solo-scene-mood::after { bottom: 2%; animation-duration: 18s; animation-direction: alternate-reverse; }
+.sev-moon { fill: #e7e5e4; opacity: 0.85; }
+.sev-halo { fill: rgba(231, 229, 228, 0.12); }
+.sev-stones { fill: #0b0f0c; }
+/* Bonz's Bet: sickly green candlelight and floating skulls. */
+.solo-ev--bet .solo-scene-mood {
+  background:
+    radial-gradient(ellipse 30% 25% at 20% 85%, rgba(132, 204, 22, 0.4), transparent 70%),
+    radial-gradient(ellipse 30% 25% at 80% 85%, rgba(132, 204, 22, 0.4), transparent 70%),
+    radial-gradient(ellipse 85% 75% at 50% 45%, rgba(20, 40, 10, 0.2), rgba(2, 10, 4, 0.8) 85%);
+  animation: sev-flicker 1.8s ease-in-out infinite;
+}
+.sev-candle { fill: #d6d3d1; opacity: 0.7; }
+/* Skull Servant Lottery: tickets fluttering down under a bone-white glow. */
+.solo-ev--lottery .solo-scene-mood {
+  background:
+    radial-gradient(ellipse 70% 35% at 50% 10%, rgba(245, 245, 244, 0.18), transparent 70%),
+    linear-gradient(rgba(68, 64, 60, 0.3), rgba(68, 64, 60, 0.3));
+}
+/* Message in a Bottle: a sunset sea with a bottle bobbing on the waves. */
+.solo-ev--bottle .solo-scene-mood {
+  background:
+    radial-gradient(ellipse 40% 18% at 50% 74%, rgba(253, 186, 116, 0.45), transparent 70%),
+    linear-gradient(to bottom, rgba(249, 115, 22, 0.38), rgba(236, 72, 153, 0.22) 45%, rgba(14, 74, 92, 0.35) 80%);
+}
+.sev-bob { transform-box: fill-box; transform-origin: 50% 50%; animation: sev-bob 3s ease-in-out infinite; }
+@keyframes sev-bob {
+  0%, 100% { transform: translateY(0) rotate(0deg); }
+  50% { transform: translateY(-8px) rotate(4deg); }
+}
+.sev-glass { fill: rgba(74, 222, 128, 0.4); stroke: #bbf7d0; stroke-width: 2; }
+.sev-cork { fill: #a16207; }
+.sev-note { fill: #fef3c7; opacity: 0.85; }
+.sev-glint { fill: #fff; transform-box: fill-box; transform-origin: center; animation: solo-p-twinkle 2.4s ease-in-out infinite; }
+.sev-waves { fill: #0e4a5c; opacity: 0.9; animation: sev-waves 4s linear infinite; }
+@keyframes sev-waves { to { transform: translateX(-90px); } }
+/* Mako's Fishing Contest: a fishing line, a bobbing float with ripples and fish passing below. */
+.solo-ev--fishing .solo-scene-mood {
+  background:
+    radial-gradient(ellipse 85% 75% at 50% 45%, transparent 45%, rgba(2, 6, 23, 0.6)),
+    linear-gradient(rgba(14, 116, 144, 0.2), rgba(14, 116, 144, 0.2));
+}
+.sev-line { fill: none; stroke: rgba(248, 250, 252, 0.55); stroke-width: 1.2; }
+.sev-bobber { animation: sev-bobber 2.4s ease-in-out infinite; }
+@keyframes sev-bobber {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(3px); }
+  80% { transform: translateY(-1px); }
+}
+.sev-ripple { fill: none; stroke: rgba(224, 242, 254, 0.6); stroke-width: 1.5; opacity: 0; transform-box: fill-box; transform-origin: center; animation: sev-ripple 2.4s ease-out infinite; }
+.sev-ripple--b { animation-delay: 1.2s; }
+@keyframes sev-ripple {
+  from { opacity: 0.8; transform: scale(0.3); }
+  to { opacity: 0; transform: scale(2.4); }
+}
+/* Tide Pool: dappled underwater light and rising bubbles. */
+.solo-ev--tide .solo-scene-mood { background: linear-gradient(rgba(8, 145, 178, 0.3), rgba(8, 47, 73, 0.45)); }
+.solo-ev--tide .solo-scene-mood::before,
+.solo-ev--tide .solo-scene-mood::after {
+  content: '';
+  inset: -20%;
+  background:
+    radial-gradient(circle at 30% 30%, rgba(165, 243, 252, 0.16) 0 8%, transparent 14%) 0 0 / 90px 90px,
+    radial-gradient(circle at 70% 60%, rgba(165, 243, 252, 0.12) 0 6%, transparent 12%) 0 0 / 70px 70px;
+  animation: sev-caustic 9s ease-in-out infinite alternate;
+}
+.solo-ev--tide .solo-scene-mood::after { background-size: 130px 130px, 110px 110px; animation-duration: 13s; animation-direction: alternate-reverse; }
+@keyframes sev-caustic {
+  from { transform: translate(-20px, -10px) rotate(0deg); }
+  to { transform: translate(20px, 10px) rotate(4deg); }
+}
+
+/* Shadow Game particles (soloParticles kinds). */
+.solo-p--glint { background: #fde68a; box-shadow: 0 0 5px 1px rgba(251, 191, 36, 0.8); animation-name: solo-p-twinkle; }
+.solo-p--mote { width: 2px; height: 2px; margin: -1px 0 0 -1px; background: #fef3c7; box-shadow: 0 0 3px rgba(254, 243, 199, 0.8); animation-name: solo-p-firefly; animation-timing-function: ease-in-out; }
+.solo-p--bubble { width: 7px; height: 7px; margin: -3.5px 0 0 -3.5px; border: 1px solid rgba(186, 230, 253, 0.75); animation-name: solo-p-rise; animation-timing-function: ease-in; }
+@keyframes solo-p-rise {
+  0% { opacity: 0; transform: translate(0, 0); }
+  15%, 80% { opacity: 0.8; }
+  100% { opacity: 0; transform: translate(calc(var(--dx) * 0.4), -120px); }
+}
+.solo-p--steam,
+.solo-p--heat { width: 26px; height: 26px; margin: -13px 0 0 -13px; background: radial-gradient(closest-side, rgba(248, 250, 252, 0.35), transparent); animation-name: solo-p-steam; animation-timing-function: ease-out; }
+.solo-p--heat { background: radial-gradient(closest-side, rgba(253, 186, 116, 0.3), transparent); }
+@keyframes solo-p-steam {
+  0% { opacity: 0; transform: translate(0, 0) scale(0.5); }
+  30% { opacity: 0.8; }
+  100% { opacity: 0; transform: translate(var(--dx), -90px) scale(1.8); }
+}
+.solo-p--card,
+.solo-p--tarot { width: 12px; height: 17px; margin: -8px 0 0 -6px; border-radius: 2px; background: linear-gradient(135deg, #7c2d12, #451a03); border: 1px solid #f59e0b; animation-timing-function: ease-in-out; }
+.solo-p--card { animation-name: solo-p-drift; }
+.solo-p--tarot { width: 16px; height: 26px; margin: -13px 0 0 -8px; background: linear-gradient(135deg, #581c87, #1e1b4b); border-color: #e9d5ff; animation-name: solo-p-turn; }
+@keyframes solo-p-drift {
+  0% { opacity: 0; transform: translate(0, 0) rotate(0deg); }
+  20%, 80% { opacity: 0.7; }
+  100% { opacity: 0; transform: translate(calc(var(--dx) * 2), -50px) rotate(160deg); }
+}
+@keyframes solo-p-turn {
+  0% { opacity: 0; transform: translateY(0) rotateY(0deg); }
+  20%, 80% { opacity: 0.75; }
+  100% { opacity: 0; transform: translateY(-30px) rotateY(360deg); }
+}
+.solo-p--die,
+.solo-p--coin,
+.solo-p--skull,
+.solo-p--ticket,
+.solo-p--bug,
+.solo-p--num { width: auto; height: auto; margin: 0; border-radius: 0; font-size: 18px; line-height: 1; }
+.solo-p--die { font-size: 22px; animation-name: solo-p-tumble; animation-timing-function: ease-in-out; }
+.solo-p--coin { font-size: 16px; animation-name: solo-p-coin; animation-timing-function: ease-in; }
+.solo-p--ticket { animation-name: solo-p-flutter; animation-timing-function: ease-in-out; }
+.solo-p--skull { font-size: 16px; animation-name: solo-p-haunt; animation-timing-function: ease-in-out; }
+.solo-p--bug { font-size: 14px; animation-name: solo-p-crawl; }
+.solo-p--num { font-family: 'Cinzel', serif; font-weight: 900; font-size: 28px; color: rgba(253, 224, 71, 0.6); text-shadow: 0 0 8px rgba(225, 29, 72, 0.8); animation-name: solo-p-twinkle; }
+@keyframes solo-p-tumble {
+  0% { opacity: 0; transform: translate(0, 0) rotate(0deg); }
+  15%, 85% { opacity: 0.55; }
+  100% { opacity: 0; transform: translate(calc(var(--dx) * 2), 60px) rotate(360deg); }
+}
+@keyframes solo-p-coin {
+  0% { opacity: 0; transform: translateY(0) rotateY(0deg); }
+  10%, 80% { opacity: 0.85; }
+  100% { opacity: 0; transform: translateY(170px) rotateY(900deg); }
+}
+@keyframes solo-p-flutter {
+  0% { opacity: 0; transform: translate(0, 0) rotate(-20deg); }
+  15%, 85% { opacity: 0.7; }
+  50% { transform: translate(var(--dx), 70px) rotate(25deg); }
+  100% { opacity: 0; transform: translate(calc(var(--dx) * -1), 150px) rotate(-15deg); }
+}
+@keyframes solo-p-haunt {
+  0%, 100% { opacity: 0; transform: translate(0, 0); }
+  50% { opacity: 0.55; transform: translate(var(--dx), -18px); }
+}
+@keyframes solo-p-crawl {
+  0% { opacity: 0; transform: translateX(0); }
+  10%, 90% { opacity: 0.8; }
+  100% { opacity: 0; transform: translateX(150px); }
+}
+/* Kuriboh: a fuzzy brown ball with blinking eyes, peeking up. */
+.solo-p--kuri { width: 18px; height: 16px; margin: -8px 0 0 -9px; background: radial-gradient(circle at 40% 35%, #9a6a3a, #5b3716 70%); box-shadow: 0 0 3px 1px #4a2c12; animation-name: solo-p-peek; animation-timing-function: ease-in-out; }
+.solo-p--kuri::before {
+  content: '';
+  position: absolute;
+  inset: 4px 3px 5px;
+  background:
+    radial-gradient(circle at 28% 50%, #fff 0 2px, transparent 2.5px),
+    radial-gradient(circle at 72% 50%, #fff 0 2px, transparent 2.5px);
+  animation: sev-blink 3.2s infinite;
+}
+@keyframes solo-p-peek {
+  0%, 100% { opacity: 0; transform: translateY(8px); }
+  20%, 80% { opacity: 0.9; }
+  35%, 65% { transform: translateY(-4px); }
+  50% { transform: translateY(0); }
+}
+.solo-p--rain { width: 1px; height: 18px; margin: 0; border-radius: 0; background: linear-gradient(transparent, rgba(186, 230, 253, 0.75)); animation-name: solo-p-rain; }
+@keyframes solo-p-rain {
+  0% { opacity: 0; transform: translate(0, 0) rotate(10deg); }
+  10%, 90% { opacity: 0.7; }
+  100% { opacity: 0; transform: translate(-60px, 80vh) rotate(10deg); }
+}
+.solo-p--speed { width: 46px; height: 1.5px; margin: 0; border-radius: 1px; background: linear-gradient(90deg, rgba(248, 250, 252, 0.7), transparent); animation-name: solo-p-speed; }
+@keyframes solo-p-speed {
+  0% { opacity: 0; transform: translateX(0); }
+  10% { opacity: 0.7; }
+  100% { opacity: 0; transform: translateX(-220px); }
+}
+.solo-p--fish { width: 26px; height: 9px; margin: -4px 0 0 -13px; background: rgba(8, 47, 73, 0.65); animation-name: solo-p-swim; animation-timing-function: ease-in-out; }
+.solo-p--fish::after { content: ''; position: absolute; left: -7px; top: 0.5px; border: 4px solid transparent; border-left: 0; border-right: 8px solid rgba(8, 47, 73, 0.65); }
+@keyframes solo-p-swim {
+  0% { opacity: 0; transform: translate(0, 0); }
+  15%, 85% { opacity: 1; }
+  100% { opacity: 0; transform: translate(160px, var(--dx)); }
+}
+html.fx-lite .sev-eyes,
+html.fx-lite .sev-flame,
+html.fx-lite .sev-bolt,
+html.fx-lite .sev-coin .ce-emoji { filter: none; }
 /* Field Spell chip: a little teal Spell card next to the bonus. */
 .solo-field {
   border: 1px solid rgba(45, 212, 191, 0.45);
