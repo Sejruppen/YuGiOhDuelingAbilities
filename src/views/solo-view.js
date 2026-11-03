@@ -1093,7 +1093,7 @@ function renderSoloCutscene(f) {
         <p class="text-[0.7rem] font-bold uppercase tracking-widest text-fuchsia-300">${f.name} · ${f.lp} LP</p>
         <p class="text-2xl font-black text-white">${c.title}</p>
         <p class="text-sm italic text-amber-100 max-w-sm">“${c.quote}”</p>
-        <ul class="text-left text-sm text-slate-200 space-y-1.5 max-w-sm leading-snug mt-2">${c.rules.map(l => `<li>${soloEmojiLead(l)}</li>`).join('')}</ul>
+        <ul class="text-left text-sm text-slate-200 space-y-1.5 max-w-sm leading-snug mt-2">${c.rules.map(l => `<li>${soloEmojiLead(soloPegasusText(l))}</li>`).join('')}</ul>
         <button onclick="dismissSoloCutscene()" class="mt-3 px-8 py-3 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold text-lg">Continue ➜</button>
       </div>
     </div>
@@ -1389,14 +1389,14 @@ function soloIntentDetail(f, action, peek = {}) {
   if (action === 'glare') return `<b>Millennium Glare</b>: ${soloGlareDamage(f)} damage to your LP`;
   if (action === 'bluff' && peek.options) {
     const fake = peek.options.find(o => o !== peek.real);
-    const real = peek.real === 'crush' ? `Mind Crush (<b>${peek.cardType}</b>)` : SOLO_PEGASUS.bluffs[peek.real].text;
-    return `<b>${real}</b> <span class="text-slate-400">(the ${SOLO_PEGASUS.bluffs[fake].text} is a bluff)</span>`;
+    const real = peek.real === 'crush' ? `Mind Crush (<b>${peek.cardType}</b>)` : soloPegasusText(SOLO_PEGASUS.bluffs[peek.real].text);
+    return `<b>${real}</b> <span class="text-slate-400">(the ${soloPegasusText(SOLO_PEGASUS.bluffs[fake].text)} is a bluff)</span>`;
   }
   return base;
 }
 
 // Pegasus' bluff shows both moves; only one of them is real.
-const soloBluffText = peek => peek.options.map(o => `<span class="ce-emoji">${SOLO_PEGASUS.bluffs[o].icon}</span> ${SOLO_PEGASUS.bluffs[o].text}`).join(' <i class="text-slate-400">or</i> ');
+const soloBluffText = peek => peek.options.map(o => `<span class="ce-emoji">${SOLO_PEGASUS.bluffs[o].icon}</span> ${soloPegasusText(SOLO_PEGASUS.bluffs[o].text)}`).join(' <i class="text-slate-400">or</i> ');
 
 function soloIntentLines(f) {
   const eye = soloHas('eye');
@@ -1579,7 +1579,7 @@ function renderSoloStepCard() {
   } else if (step.kind === 'crush') {
     body = title + text(`His Millennium Eye reads your hand and names <b>${step.cardType}</b>. Discard a ${step.cardType} card.`) +
       text(step.bluffNote, 'text-xs text-rose-300') +
-      text(`No ${step.cardType} card in your hand? He read you wrong and takes ${SOLO_PEGASUS.crushMiss}.`, 'text-xs text-slate-400') +
+      text(`No ${step.cardType} card in your hand? He read you wrong and takes ${soloPegasusLevel().crushMiss}.`, 'text-xs text-slate-400') +
       row([coopBtn('🗑️ I discarded one', 'soloCrushClick(true)', 'danger'), coopBtn('🙅 I have none', 'soloCrushClick(false)', 'primary')]);
   } else if (step.kind === 'restrict') {
     body = title + text('It absorbs your strongest monster. Remove it from your field: Restrict takes its ATK.') +
@@ -1613,7 +1613,7 @@ function renderSoloFightIntro(f, kind, p) {
   if (f.kind === 'elite') lines.push('<span class="ce-emoji">🎁</span> Win to choose a ${soloDiff().commonsOnly ? '' : 'rare '}relic.');
   const e = f.elite && SOLO_ELITES[f.elite];
   if (e) lines.unshift(`<span class="text-rose-200">${e.gimmick}</span>`);
-  if (f.pegasus) lines.unshift(...SOLO_PEGASUS.cutscenes.intro.rules.map(l => `<span class="text-fuchsia-200">${soloEmojiLead(l)}</span>`));
+  if (f.pegasus) lines.unshift(...SOLO_PEGASUS.cutscenes.intro.rules.map(l => `<span class="text-fuchsia-200">${soloEmojiLead(soloPegasusText(l))}</span>`));
   if (f.video) lines.push(`<span class="ce-emoji">📼</span> <span class="text-violet-200">His tape gave it away: he opens with <b>${f.video}</b>.</span>`);
   const quote = e ? e.quote : f.pegasus ? SOLO_PEGASUS.cutscenes.intro.quote : '';
   if (soloHas('swords')) lines.push("<span class=\"ce-emoji\">🌟</span> Swords of Revealing Light: they can't attack on their first turn.");

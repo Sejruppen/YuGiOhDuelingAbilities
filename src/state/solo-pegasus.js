@@ -7,7 +7,29 @@
 //   3 Final Read: Thousand-Eyes Restrict absorbs your strongest monster, and
 //     he bluffs (two moves shown, one real). Three actions a turn.
 // fight.pegasus = { stage, toonWorld (played), pages, bunny (used), restrict (used) }.
-const newSoloPegasus = () => ({ stage: 1, toonWorld: false, pages: SOLO_PEGASUS.pages, bunny: false, restrict: false });
+const newSoloPegasus = () => ({ stage: 1, toonWorld: false, pages: soloDiff().pegasusPages, bunny: false, restrict: false });
+
+const soloPegasusLevel = () => SOLO_PEGASUS_LEVELS[soloDiff().pegasusLevel];
+const soloPegasusActions = stage => SOLO_PEGASUS.actions[stage] + soloPegasusLevel().actions[stage];
+const soloGlareDamage = f => (f.pegasus.stage === 3 ? SOLO_PEGASUS.finalGlare : SOLO_PEGASUS.glare) + soloPegasusLevel().glare;
+
+// The LPs where he enters stage 2 and 3, scaled with his starting LP.
+function soloPegasusStages() {
+  const k = soloDiff().pegasusLp / SOLO_PEGASUS.lp;
+  return { 2: Math.round(SOLO_PEGASUS.stage2At * k / 50) * 50, 3: Math.round(SOLO_PEGASUS.stage3At * k / 50) * 50 };
+}
+
+// Fills the {tokens} of Pegasus' texts with this difficulty's numbers.
+function soloPegasusText(s) {
+  const lv = soloPegasusLevel();
+  const stages = soloPegasusStages();
+  const vars = {
+    stage2: stages[2], stage3: stages[3], crushMiss: lv.crushMiss, glare: SOLO_PEGASUS.glare + lv.glare,
+    finalGlare: SOLO_PEGASUS.finalGlare + lv.glare, actions3: soloPegasusActions(3),
+    bluffs2: lv.bluffs > 1 ? ' He does it twice a turn.' : ''
+  };
+  return s.replace(/\{(\w+)\}/g, (_, k) => vars[k]);
+}
 
 const soloToonWorldUp = f => !!f?.pegasus?.toonWorld && f.pegasus.pages > 0;
 
@@ -17,22 +39,25 @@ function soloPegasusPool(f, { toonWorld = soloToonWorldUp(f), taken = f.monsters
   const toons = SOLO_PEGASUS.toons;
   const out = toons.filter(t => taken.includes(t.name)).length;
   const free = toons.filter(t => !taken.includes(t.name));
-  return toonWorld && out < SOLO_PEGASUS.maxToons && free.length ? free : SOLO_PEGASUS.deck;
+  return toonWorld && out < soloPegasusLevel().maxToons && free.length ? free : SOLO_PEGASUS.deck;
 }
 
 function buildPegasusIntents(f) {
   const g = f.pegasus;
   if (!g.toonWorld) return ['toonworld', 'summon'];
   const w = SOLO_PEGASUS.weights[g.stage];
+  const lv = soloPegasusLevel();
   const intents = [];
   if (g.stage === 3 && !g.restrict) intents.push('restrict');
-  if (g.stage === 3) intents.push('bluff');
+  if (g.stage === 3) for (let i = 0; i < lv.bluffs; i++) intents.push('bluff');
   let monsters = f.monsters.length + (intents.includes('restrict') ? 1 : 0);
   let trap = f.trap;
   let bunny = g.bunny;
-  while (intents.length < SOLO_PEGASUS.actions[g.stage]) {
+  while (intents.length < soloPegasusActions(g.stage)) {
     const action = soloWeighted({
       ...w,
+      crush: (w.crush || 0) * lv.mind,
+      glare: (w.glare || 0) * lv.mind,
       summon: monsters < SOLO_MAX_MONSTERS ? w.summon : 0,
       equip: monsters ? w.equip || 0 : 0,
       trap: trap ? 0 : w.trap || 0,
@@ -52,8 +77,6 @@ function soloPegasusBluff() {
   return { options, real: soloPick(options), cardType: soloPick(SOLO_PEGASUS.cardTypes) };
 }
 
-const soloGlareDamage = f => (f.pegasus.stage === 3 ? SOLO_PEGASUS.finalGlare : SOLO_PEGASUS.glare);
-
 // Pegasus's Video (a Shadow Game) gives away his first Toon.
 function soloApplyVideo(f) {
   const toon = SOLO_PEGASUS.toons.find(t => t.name === solo.video);
@@ -66,7 +89,8 @@ function soloApplyVideo(f) {
 // Moves to the next stage when his LP drops low enough (stages can be skipped).
 function soloPegasusStage(f) {
   const g = f.pegasus;
-  const stage = f.lp <= SOLO_PEGASUS.stage3At ? 3 : f.lp <= SOLO_PEGASUS.stage2At ? 2 : 1;
+  const stages = soloPegasusStages();
+  const stage = f.lp <= stages[3] ? 3 : f.lp <= stages[2] ? 2 : 1;
   if (stage <= g.stage) return;
   g.stage = stage;
   f.cutscene = `stage${stage}`;
@@ -115,10 +139,10 @@ function soloPegasusStep(step, f, info) {
   switch (step.type) {
     case 'toonworld':
       g.toonWorld = true;
-      g.pages = SOLO_PEGASUS.pages;
+      g.pages = soloDiff().pegasusPages;
       step.spell = { kind: 'toonworld', name: 'Toon World' };
       playSound({ name: 'co-book' });
-      return info('📖', 'Toon World!', "Pegasus opens his book and the pages come to life. Toons attack you directly and can't be blocked.", `Tear out its ${SOLO_PEGASUS.pages} pages: attack the book with ${SOLO_PEGASUS.pageMinAtk}+ ATK.`);
+      return info('📖', 'Toon World!', "Pegasus opens his book and the pages come to life. Toons attack you directly and can't be blocked.", `Tear out its ${g.pages} pages: attack the book with ${SOLO_PEGASUS.pageMinAtk}+ ATK.`);
     case 'bunny': {
       if (g.bunny || f.monsters.length >= SOLO_MAX_MONSTERS) return false;
       g.bunny = true;
@@ -144,7 +168,7 @@ function soloPegasusStep(step, f, info) {
     case 'bluff': {
       const pk = step.peek?.options ? step.peek : soloPegasusBluff();
       const fake = pk.options.find(o => o !== pk.real);
-      Object.assign(step, { type: pk.real, peek: { cardType: pk.cardType }, bluffNote: `🎭 The ${SOLO_PEGASUS.bluffs[fake].text} was a bluff!` });
+      Object.assign(step, { type: pk.real, peek: { cardType: pk.cardType }, bluffNote: `🎭 The ${soloPegasusText(SOLO_PEGASUS.bluffs[fake].text)} was a bluff!` });
       return prepareSoloStepType(step, f);
     }
     case 'restrict':
@@ -174,7 +198,7 @@ function soloMindCrush(had) {
     playSound({ name: 'co-destroy' });
     return finishSoloStep({ tone: 'bad', text: `🧠 You discard a ${step.cardType} card.` });
   }
-  const dealt = damageSoloEnemy(SOLO_PEGASUS.crushMiss);
+  const dealt = damageSoloEnemy(soloPegasusLevel().crushMiss);
   if (solo.phase === 'fight') finishSoloStep({ tone: 'good', text: `🧠 Nothing there! His Millennium Eye was wrong. Pegasus takes ${dealt}.` });
 }
 

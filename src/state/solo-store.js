@@ -593,7 +593,7 @@ function createSoloFight(node) {
   } else if (node.type === 'ambush') {
     spec = { kind: 'ambush', maxAtk: tier.maxAtk, actions: 1, chips: 0, ...node.ambush };
   } else {
-    spec = { kind: 'boss', boss: 'pegasus', name: SOLO_PEGASUS.name, title: SOLO_PEGASUS.title, icon: SOLO_PEGASUS.icon, lp: SOLO_PEGASUS.lp, personality: SOLO_PEGASUS.personality, actions: SOLO_PEGASUS.actions[1], chips: 0 };
+    spec = { kind: 'boss', boss: 'pegasus', name: SOLO_PEGASUS.name, title: SOLO_PEGASUS.title, icon: SOLO_PEGASUS.icon, lp: soloDiff().pegasusLp, personality: SOLO_PEGASUS.personality, actions: soloPegasusActions(1), chips: 0 };
   }
   if (spec.kind !== 'boss') {
     const diff = soloDiff();

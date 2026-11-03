@@ -392,10 +392,10 @@ const SOLO_OATH_TRIBUTES = 2;
 // Eye, the Final Read). `weights` per stage pick his intents.
 const SOLO_PEGASUS = {
   name: 'Pegasus J. Crawford', title: 'Final duel', icon: '👁️', lp: 8000, personality: 'trickster',
+  // The stage LPs below are for his base LP (8000); other difficulties scale them (soloPegasusStages).
   stage2At: 5000,
   stage3At: 2000,
   actions: { 1: 2, 2: 2, 3: 3 },
-  pages: 3,
   pageMinAtk: 1500,
   maxToons: 3,
   crushMiss: 1000,
@@ -426,7 +426,7 @@ const SOLO_PEGASUS = {
   bunny: { name: 'Funny Bunny', type: 'Beast', atk: 100, def: 100, icon: '🐰', pos: 'def', bunny: true },
   restrict: { name: 'Thousand-Eyes Restrict', type: 'Spellcaster', icon: '🧿', unique: true },
   bluffs: {
-    glare: { icon: '👁️', text: 'Millennium Glare (2000 damage)' },
+    glare: { icon: '👁️', text: 'Millennium Glare ({finalGlare} damage)' },
     crush: { icon: '🧠', text: 'Mind Crush' },
     barrage: { icon: '🌪️', text: 'Illusion Barrage (1000 damage)' }
   },
@@ -437,7 +437,7 @@ const SOLO_PEGASUS = {
         '📖 Toon World: his Toons attack you directly and <b>can\'t be blocked</b>. While the book stands, they can\'t be destroyed by battle and Pegasus takes <b>no damage at all</b>.',
         '📄 Attack Toon World with 1500+ ATK to tear out one of its pages. Only when the last page is gone (it takes every Toon with it) can you hurt Pegasus.',
         '🐰 While Funny Bunny hops around, Pegasus takes no damage.',
-        '👁️ At 5000 LP his Millennium Eye opens. At 2000 LP comes the Final Read.'
+        '👁️ At {stage2} LP his Millennium Eye opens. At {stage3} LP comes the Final Read.'
       ]
     },
     stage2: {
@@ -445,8 +445,8 @@ const SOLO_PEGASUS = {
       quote: "Enough playtime. Let's see what's in that pretty little head of yours…",
       rules: [
         '❓ You can no longer see his next moves. A Millennium Eye of your own would cancel his.',
-        '🧠 Mind Crush: he names a card type. Discard one, or if you have none, he read you wrong and takes 1000.',
-        '👁️ Millennium Glare: 1500 damage straight to your LP.'
+        '🧠 Mind Crush: he names a card type. Discard one, or if you have none, he read you wrong and takes {crushMiss}.',
+        '👁️ Millennium Glare: {glare} damage straight to your LP.'
       ]
     },
     stage3: {
@@ -454,8 +454,8 @@ const SOLO_PEGASUS = {
       quote: 'Your soul will make a lovely addition to my collection!',
       rules: [
         '🧿 Thousand-Eyes Restrict absorbs your strongest monster and takes its ATK.',
-        '🎭 He bluffs: he shows two moves, but only one is real.',
-        '⚡ Three actions every turn. Finish him!'
+        '🎭 He bluffs: he shows two moves, but only one is real.{bluffs2}',
+        '⚡ {actions3} actions every turn. Finish him!'
       ]
     }
   },
@@ -463,6 +463,16 @@ const SOLO_PEGASUS = {
   lose: '"Don\'t worry, you will look lovely in my card collection!"',
   eyeLine: '"Another Millennium Eye?! You see through me as I see through you…"'
 };
+
+// What each difficulty's pegasusLevel adds to the final duel (see SOLO_DIFFICULTIES).
+//   actions   extra actions per stage      glare  extra Glare damage
+//   mind      weight multiplier of Mind Crush and Glare      maxToons  Toons out at once
+//   crushMiss  damage he takes when you have no card of the named type      bluffs  bluffs per turn in stage 3
+const SOLO_PEGASUS_LEVELS = [
+  { actions: { 1: 0, 2: 0, 3: 0 }, glare: 0, mind: 1, maxToons: 3, crushMiss: 1000, bluffs: 1 },
+  { actions: { 1: 1, 2: 0, 3: 0 }, glare: 500, mind: 1.5, maxToons: 4, crushMiss: 1000, bluffs: 1 },
+  { actions: { 1: 1, 2: 1, 3: 1 }, glare: 1000, mind: 2, maxToons: 5, crushMiss: 500, bluffs: 2 }
+];
 
 // Enemy actions. `weights` per personality pick the intents.
 const SOLO_ACTIONS = {
