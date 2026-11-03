@@ -100,8 +100,6 @@ const SOLO_DIFFICULTY_KEY = 'ygo_solo_difficulty';
 // `clears` wins against Pegasus on `difficulty`. `unlocks` opens a difficulty
 // (soloDifficultyUnlocked) or the Millennium theme (keep in sync with its
 // `unlockClears` in app-themes.js). Icons: SOLO_SHELF_ART (solo-view.js).
-// TEMP (testing): lights every item. Set back to false before committing.
-const SOLO_SHELF_TEST = true;
 const SOLO_SHELF = [
   { id: 'puzzle', name: 'Millennium Puzzle', difficulty: 'easy', clears: 1 },
   { id: 'necklace', name: 'Millennium Necklace', difficulty: 'easy', clears: 2, unlocks: 'hard' },

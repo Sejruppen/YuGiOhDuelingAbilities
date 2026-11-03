@@ -708,7 +708,7 @@ const EY_CYNDIA_SVG = `
 // motion). Lines appear one by one (--d), then the seven Items light up.
 function eyThanks() {
   const theme = APP_THEMES.find(t => t.id === 'millennium');
-  const canWear = (SOLO_SHELF_TEST || isThemeAvailable(theme)) && document.documentElement.dataset.theme !== 'millennium';
+  const canWear = isThemeAvailable(theme) && document.documentElement.dataset.theme !== 'millennium';
   return `
     <div class="ey-thanks">
       <p class="ey-t ey-t--title" style="--d: 0.6s;">Thank you for playing</p>

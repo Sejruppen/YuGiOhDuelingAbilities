@@ -110,7 +110,7 @@ function renderSoloShelf() {
   const wins = id => soloClears[id] || 0;
   const pick = SOLO_SHELF.find(item => item.id === soloUi.shelfItem);
   const items = SOLO_SHELF.map(item => {
-    const lit = SOLO_SHELF_TEST || wins(item.difficulty) >= item.clears;
+    const lit = wins(item.difficulty) >= item.clears;
     return `<button type="button" onclick="toggleSoloShelfItem('${item.id}')" onpointerdown="startSoloShelfHold(this, '${item.id}')" onpointerup="cancelSoloShelfHold()" onpointerleave="cancelSoloShelfHold()" onpointercancel="cancelSoloShelfHold()" oncontextmenu="return false" aria-pressed="${pick === item}" aria-label="${item.name}${lit ? '' : ' (not earned yet)'}" class="solo-shelf-item${lit ? ' is-lit' : ''}${pick === item ? ' is-picked' : ''}">${soloShelfIcon(item.id)}</button>`;
   }).join('');
   let caption;
@@ -119,7 +119,7 @@ function renderSoloShelf() {
     const got = Math.min(wins(pick.difficulty), pick.clears);
     const how = `beat Pegasus ${soloTimes(pick.clears)} on <span class="ce-emoji">${d.icon}</span> ${d.name}`;
     const opens = pick.unlocks ? ` · opens ${soloUnlockLabel(pick.unlocks)}` : '';
-    caption = SOLO_SHELF_TEST || got >= pick.clears
+    caption = got >= pick.clears
       ? `<b>${pick.name}</b> · earned: ${how}${opens}${soloShelfScene(pick.id) ? '<br>Hold to replay the cutscene' : ''}`
       : `<b>${pick.name}</b> · ${how} (${got}/${pick.clears})${opens}`;
   } else {
