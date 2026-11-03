@@ -193,7 +193,7 @@ function soloRegionAt(floor, col) {
 
 // --- Map generation (Slay the Spire style, scaled down) ----------------------------
 
-function generateSoloMap() {
+function generateSoloMap(diff = soloDiff()) {
   const nodes = {};
   const edges = [];
   const hasEdge = (a, b) => edges.some(([x, y]) => x === a && y === b);
@@ -229,13 +229,13 @@ function generateSoloMap() {
   });
   addEdge('labyrinth', 'castle');
 
-  // Node types, floor by floor so an elite never follows an elite.
-  // The beach has no elite of its own, so it stays a warm-up.
-  // Special floors (SOLO_FLOOR_KINDS) are never hidden: the player plans around them.
+  // Node types, floor by floor so an elite never follows an elite (unless the difficulty allows it).
+  // Easy keeps the beach a warm-up with no elites. Special floors (diff.floorKinds) are never hidden:
+  // the player plans around them.
   const eliteRegions = new Set();
   for (let floor = 1; floor <= SOLO_BRANCH_FLOORS; floor++) {
     const row = shuffled(Object.values(nodes).filter(n => n.floor === floor));
-    const kind = SOLO_FLOOR_KINDS[floor];
+    const kind = diff.floorKinds[floor];
     row.forEach((n, i) => {
       if (kind === 'duelist') n.type = 'duelist';
       else if (kind === 'treasure') n.type = 'treasure';
@@ -244,16 +244,17 @@ function generateSoloMap() {
         n.kind = kind;
       } else if (kind === 'fork') n.type = i === 0 ? 'duelist' : 'event';
       else {
-        const afterElite = edges.some(([a, b]) => b === n.id && nodes[a].type === 'elite');
-        let type = soloWeighted(SOLO_MIXED_ODDS);
-        if (type === 'elite' && (afterElite || eliteRegions.has(n.region) || n.region === 'beach')) type = soloWeighted({ ...SOLO_MIXED_ODDS, elite: 0 });
+        const afterElite = diff.eliteLoosen < 2 && edges.some(([a, b]) => b === n.id && nodes[a].type === 'elite');
+        const noElite = afterElite || (diff.eliteLoosen < 2 && eliteRegions.has(n.region)) || (diff.eliteLoosen < 1 && n.region === 'beach');
+        let type = soloWeighted(diff.mixedOdds);
+        if (type === 'elite' && noElite) type = soloWeighted({ ...diff.mixedOdds, elite: 0 });
         if (type === 'elite') eliteRegions.add(n.region);
-        else if (Math.random() < SOLO_HIDDEN_CHANCE) n.hidden = true;
+        else if (Math.random() < diff.hiddenChance) n.hidden = true;
         n.type = type;
       }
     });
   }
-  placeSoloCampfires(nodes, edges);
+  placeSoloCampfires(nodes, edges, diff);
   // Who waits at each elite node. Bandit Keith turns up at most once.
   let keithUsed = false;
   Object.values(nodes).filter(n => n.type === 'elite').forEach(n => {
@@ -264,10 +265,10 @@ function generateSoloMap() {
   return { nodes, edges, layout: SOLO_MAP_LAYOUT };
 }
 
-// Campfires replace mixed duelists and Shadow Games: a few at random, then one on
-// every path that has none. A path normally gets at most SOLO_CAMPFIRE_MAX, and
+// Campfires replace mixed duelists and Shadow Games: a few at random, then (if the difficulty
+// guarantees it) one on every path that has none. A path gets at most diff.campfireMax, and
 // two campfires are never next to each other unless a path has no other spot.
-function placeSoloCampfires(nodes, edges) {
+function placeSoloCampfires(nodes, edges, diff) {
   const [from, to] = SOLO_CAMPFIRE_FLOORS;
   const paths = [];
   const walk = path => {
@@ -279,10 +280,10 @@ function placeSoloCampfires(nodes, edges) {
   Object.values(nodes).filter(n => n.floor === 1).forEach(n => walk([n.id]));
   const fires = path => path.filter(id => nodes[id].type === 'campfire').length;
   const nearFire = id => edges.some(([a, b]) => (a === id && nodes[b].type === 'campfire') || (b === id && nodes[a].type === 'campfire'));
-  const underMax = id => paths.every(p => !p.includes(id) || fires(p) < SOLO_CAMPFIRE_MAX);
+  const underMax = id => paths.every(p => !p.includes(id) || fires(p) < diff.campfireMax);
   const fits = id => {
     const n = nodes[id];
-    return n.floor >= from && n.floor <= to && !SOLO_FLOOR_KINDS[n.floor] && ['duelist', 'event'].includes(n.type) && !nearFire(id) && underMax(id);
+    return n.floor >= from && n.floor <= to && !diff.floorKinds[n.floor] && ['duelist', 'event'].includes(n.type) && !nearFire(id) && underMax(id);
   };
   // When a path has no regular spot left, the rules loosen step by step,
   // so every path still gets its campfire.
@@ -297,8 +298,9 @@ function placeSoloCampfires(nodes, edges) {
     delete nodes[id].kind;
   };
   shuffled(Object.keys(nodes)).forEach(id => {
-    if (Math.random() < SOLO_CAMPFIRE_CHANCE && fits(id)) light(id);
+    if (Math.random() < diff.campfireChance && fits(id)) light(id);
   });
+  if (!diff.campfireGuarantee) return;
   shuffled(paths).forEach(p => {
     if (fires(p)) return;
     const spot = [fits, ...fallbacks].map(ok => p.filter(ok)).find(list => list.length);
@@ -351,7 +353,7 @@ function createSoloRun() {
     lp: SOLO_START_LP,
     maxLp: SOLO_MAX_LP,
     chips: SOLO_START_CHIPS,
-    map: generateSoloMap(),
+    map: generateSoloMap(soloDiff(soloUi.difficulty)),
     at: null,
     path: [],
     node: null,
@@ -392,7 +394,7 @@ function enterSoloNode(id) {
 // --- Campfire: rest, train with Joey or polish a relic ------------------------------
 
 // The Millennium Ring halves the campfire.
-const soloCampfireHeal = () => SOLO_CAMPFIRE_HEAL * (soloHas('ring') ? 0.5 : 1);
+const soloCampfireHeal = () => soloDiff().campfireHeal * (soloHas('ring') ? 0.5 : 1);
 const soloRestAmount = () => Math.round((solo.maxLp * soloCampfireHeal()) / 100) * 100;
 
 function soloRest() {
@@ -759,9 +761,15 @@ function destroySoloMonsters(match) {
   return hit.length;
 }
 
+// Mako's sea monsters, weakest first: they are the tributes for Fortress Whale's Oath.
+const soloOathTributes = f => f.monsters
+  .filter(m => SOLO_REGIONS.beach.types.includes(m.type))
+  .sort((a, b) => soloStats(a, f).atk - soloStats(b, f).atk);
+
 // Elite special cards: can the gimmick be played right now?
 function soloSpecialReady(f) {
   const g = f.gimmick || {};
+  if (f.elite === 'mako') return !g.oath && soloOathTributes(f).length >= SOLO_OATH_TRIBUTES;
   if (f.elite === 'weevil') return !g.cocoon && f.monsters.length < SOLO_MAX_MONSTERS;
   if (f.elite === 'mai') return !g.egotist && f.monsters.some(m => m.name === 'Harpie Lady');
   if (f.elite === 'paradox') return !g.fuse && SOLO_PARADOX_TRIO.every(name => f.monsters.some(m => m.name === name));
@@ -1184,6 +1192,15 @@ function soloSpecialStep(f, info) {
     const m = f.monsters.find(x => x.name === 'Harpie Lady');
     Object.assign(m, SOLO_GIMMICK_CARDS.sisters);
     return info('🪞', 'Elegant Egotist!', `Harpie Lady becomes ${m.icon} ${m.name}: ${soloStats(m, f).atk} ATK / ${m.def} DEF.`, 'Swap the card on the table. It keeps its position and equips.');
+  }
+  if (f.elite === 'mako') {
+    f.gimmick = { ...f.gimmick, oath: true };
+    const tributes = soloOathTributes(f).slice(0, SOLO_OATH_TRIBUTES);
+    f.monsters = f.monsters.filter(m => !tributes.includes(m));
+    tributes.forEach(soloBury);
+    const m = { ...SOLO_ELITES.mako.monsters.find(x => x.special), uid: f.nextUid++, pos: 'atk', equips: [] };
+    f.monsters.push(m);
+    return info('🐋', "Fortress Whale's Oath!", `${tributes.map(t => `${t.icon} ${t.name}`).join(' and ')} are sacrificed. ${m.icon} ${m.name} rises: ${soloStats(m, f).atk} ATK in <b>Attack Position</b>.`, 'Replace the two cards on the table with Fortress Whale.');
   }
   f.gimmick = { ...f.gimmick, fuse: true };
   f.monsters = f.monsters.filter(m => !SOLO_PARADOX_TRIO.includes(m.name));

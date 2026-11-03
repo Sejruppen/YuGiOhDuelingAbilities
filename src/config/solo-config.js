@@ -43,7 +43,8 @@ const SOLO_HIDDEN_CHANCE = 0.33;
 // and the region field bonuses.
 //   lpMult / actionBonus / maxAtkBonus  enemy LP, extra actions per turn, higher ATK cap of generic cards
 //   hideIntents        how many of the enemy's planned moves show as ❓ (Infinity = all)
-//   mixedOdds / eliteAnywhere  node odds on mixed floors; elites may also land on the beach and back to back
+//   mixedOdds / eliteLoosen  node odds on mixed floors; elite rules: 0 = as before, 1 = elites may also land
+//                            on the beach, 2 = also back to back and twice in one region
 //   floorKinds / hiddenChance  which floors are special, and the share of mixed nodes shown as ❓
 //   campfire*          heal share, per-node chance, max per path and whether every path gets one
 //   treasureChoices / eliteChoices / commonsOnly  relic offers (commonsOnly = elites offer commons too)
@@ -55,7 +56,7 @@ const SOLO_DIFFICULTIES = {
   easy: {
     name: 'Easy', icon: '🟢', desc: 'The original road across Duelist Kingdom.',
     lpMult: 1, actionBonus: 0, maxAtkBonus: 0, hideIntents: 0,
-    mixedOdds: SOLO_MIXED_ODDS, eliteAnywhere: false, floorKinds: SOLO_FLOOR_KINDS, hiddenChance: SOLO_HIDDEN_CHANCE,
+    mixedOdds: SOLO_MIXED_ODDS, eliteLoosen: 0, floorKinds: SOLO_FLOOR_KINDS, hiddenChance: SOLO_HIDDEN_CHANCE,
     campfireHeal: SOLO_CAMPFIRE_HEAL, campfireChance: SOLO_CAMPFIRE_CHANCE, campfireMax: SOLO_CAMPFIRE_MAX, campfireGuarantee: true,
     treasureChoices: 3, eliteChoices: 2, commonsOnly: false,
     tollMult: 1, giftWeight: 1, ambushWeight: 1,
@@ -64,8 +65,8 @@ const SOLO_DIFFICULTIES = {
   hard: {
     name: 'Hard', icon: '🟠', desc: 'Tougher duelists, hidden moves, fewer campfires and a longer book to tear.',
     lpMult: 1.5, actionBonus: 1, maxAtkBonus: 200, hideIntents: 1,
-    mixedOdds: { duelist: 40, event: 30, elite: 30 }, eliteAnywhere: true,
-    floorKinds: { 3: 'events', 7: 'fork', 11: 'gamble' }, hiddenChance: 0.55,
+    mixedOdds: { duelist: 40, event: 30, elite: 30 }, eliteLoosen: 1,
+    floorKinds: { 3: 'events', 6: 'treasure', 7: 'fork', 11: 'gamble' }, hiddenChance: 0.55,
     campfireHeal: 0.15, campfireChance: 0.08, campfireMax: 1, campfireGuarantee: false,
     treasureChoices: 2, eliteChoices: 1, commonsOnly: false,
     tollMult: 1.5, giftWeight: 0.6, ambushWeight: 1.5,
@@ -74,8 +75,8 @@ const SOLO_DIFFICULTIES = {
   nightmare: {
     name: 'Nightmare', icon: '💀', desc: 'Extremely punishing. Every duel is a fight for your soul.',
     lpMult: 2.25, actionBonus: 2, maxAtkBonus: 400, hideIntents: Infinity,
-    mixedOdds: { duelist: 30, event: 30, elite: 40 }, eliteAnywhere: true,
-    floorKinds: { 7: 'fork' }, hiddenChance: 0.8,
+    mixedOdds: { duelist: 30, event: 30, elite: 40 }, eliteLoosen: 2,
+    floorKinds: { 6: 'treasure', 7: 'fork' }, hiddenChance: 0.8,
     campfireHeal: 0.1, campfireChance: 0.04, campfireMax: 1, campfireGuarantee: false,
     treasureChoices: 1, eliteChoices: 1, commonsOnly: true,
     tollMult: 2, giftWeight: 0.2, ambushWeight: 2,
@@ -92,7 +93,7 @@ const SOLO_NODE_TYPES = {
     treasure: { icon: '🎁', label: 'Treasure', desc: "A lost Duelist's Case. Pick 1 of 3 relics." },
   event: { icon: '🌀', label: 'Shadow Game', desc: 'A strange encounter. Choose wisely: some choices are a gamble.' },
   hidden: { icon: '❓', label: 'Unknown', desc: 'Hidden in the mist: a duelist or a Shadow Game. You find out when you get there.' },
-  campfire: { icon: '🔥', label: 'Campfire', desc: `Choose one: rest (heal ${SOLO_CAMPFIRE_HEAL * 100}% of your max LP), train with Joey (+${SOLO_CAMPFIRE_TRAIN} max LP) or polish a relic.` },
+  campfire: { icon: '🔥', label: 'Campfire', desc: `Choose one: rest (heal a share of your max LP), train with Joey (+${SOLO_CAMPFIRE_TRAIN} max LP) or polish a relic.` },
   labyrinth: { icon: '🧱', label: 'Labyrinth', desc: `Only if you have fewer than ${SOLO_GATE_CHIPS} ⭐. The Paradox Brothers guard it. Win to get the missing chips.` },
   castle: { icon: '🏰', label: 'Castle', desc: "Pegasus' castle. Win to finish the run." }
 };
@@ -217,9 +218,27 @@ const SOLO_ELITE = { lp: 4000, maxAtk: 2000, actions: 2, chips: 2 };
 //   minRound  the card only shows up from that round (aces)
 //   unique    never twice on the field; special = only via the gimmick
 //   pos       always summoned in this position
-// One elite per region; Bandit Keith can show up in any region instead.
+// One elite per region (Mako on the beach); Bandit Keith can show up in any region instead.
 const SOLO_KEITH_CHANCE = 0.2;
 const SOLO_ELITES = {
+  mako: {
+    name: 'Mako Tsunami', icon: '🎣', region: 'beach', personality: 'aggressive', specialCard: "Fortress Whale's Oath",
+    quote: "Ahoy, landlubber! I'm the Ocean Master, and the sea is about to swallow you whole!",
+    gimmick: "🐋 Fortress Whale's Oath: he sacrifices two of his sea monsters (Fish, Aqua or Sea Serpent) to summon Fortress Whale (2900 ATK).",
+    monsters: [
+      { name: 'Island Turtle', type: 'Aqua', atk: 1000, def: 2000, icon: '🐢' },
+      { name: 'Jellyfish', type: 'Aqua', atk: 1200, def: 1500, icon: '🪼' },
+      { name: 'Mother Grizzly', type: 'Beast-Warrior', atk: 1400, def: 1000, icon: '🐻' },
+      { name: 'Great White', type: 'Fish', atk: 1600, def: 800, icon: '🦈' },
+      { name: 'Great White', type: 'Fish', atk: 1600, def: 800, icon: '🦈' },
+      { name: '7 Colored Fish', type: 'Fish', atk: 1800, def: 800, icon: '🐠' },
+      { name: 'Giant Red Seasnake', type: 'Aqua', atk: 1800, def: 800, icon: '🐍' },
+      { name: 'Kairyu-Shin', type: 'Sea Serpent', atk: 1800, def: 1500, icon: '🐉' },
+      { name: 'The Legendary Fisherman', type: 'Warrior', atk: 1850, def: 1600, icon: '🎣', minRound: 2, unique: true },
+      { name: 'Amphibian Beast', type: 'Fish', atk: 2400, def: 2000, icon: '🐸', minRound: 3, unique: true },
+      { name: 'Fortress Whale', type: 'Fish', atk: 2900, def: 2150, icon: '🐋', special: true }
+    ]
+  },
   weevil: {
     name: 'Weevil Underwood', icon: '🐛', region: 'forest', personality: 'trickster', specialCard: 'Cocoon of Evolution',
     quote: 'Heh heh heh… my insects are hungry, and you look delicious!',
@@ -356,6 +375,8 @@ const SOLO_SPECIAL_WEIGHT = 6;
 // Bandit Keith's sleeve card: from round 2, 50% each turn, surely by round 4.
 const SOLO_SLEEVE = { fromRound: 2, chance: 0.5, byRound: 4 };
 const SOLO_PARADOX_TRIO = ['Sanga of the Thunder', 'Kazejin', 'Suijin'];
+// Mako sacrifices this many sea monsters for Fortress Whale.
+const SOLO_OATH_TRIBUTES = 2;
 
 // Pegasus guards the castle: three stages by LP (Toon World, the Millennium
 // Eye, the Final Read). `weights` per stage pick his intents.
@@ -459,6 +480,7 @@ const SOLO_PERSONALITIES = {
 // always summoned that way. Any monster not listed here can go either way.
 const SOLO_ROLE_ATK = [
   'Great White', '7 Colored Fish', 'Kairyu-Shin', 'Giant Red Seasnake', 'High Tide Gyojin', 'Sea Serpent Warrior of Darkness', 'Spike Seadra', 'Deepsea Shark',
+  'Mother Grizzly', 'The Legendary Fisherman', 'Amphibian Beast', 'Fortress Whale',
   'Leogun', 'Flying Kamakiri #2', 'Girochin Kuwagata', 'Gazelle the King of Mythical Beasts', 'Great Angus', 'Queen of Autumn Leaves',
   'Flying Kamakiri #1', 'Giant Flea', 'Neo Bug', 'Hunter Spider', 'Kwagar Hercules', 'Insect Queen',
   'Kojikocy', 'Axe Raider', 'Battle Ox', 'Panther Warrior', 'Warrior Dai Grepher', 'Beautiful Headhuntress', 'Battle Steer', 'Ansatsu', 'Rude Kaiser', 'Stone Ogre Grotto',
@@ -471,7 +493,7 @@ const SOLO_ROLE_ATK = [
   'Destroyer Golem', 'Sanga of the Thunder', 'Kazejin', 'Suijin', 'Bickuribox'
 ];
 const SOLO_ROLE_DEF = [
-  'Aqua Madoor', 'Jellyfish', 'Hercules Beetle', 'Trent', 'Petit Moth', 'Kumootoko',
+  'Aqua Madoor', 'Jellyfish', 'Island Turtle', 'Hercules Beetle', 'Trent', 'Petit Moth', 'Kumootoko',
   'Swordsman of Landstar', 'Battle Warrior', 'Giant Soldier of Stone', 'Alpha the Magnet Warrior',
   'Queen Bird', 'Skull Servant', 'The Statue of Easter Island', 'Legendary Jujitsu Master', 'Illusionist Faceless Mage'
 ];
@@ -503,6 +525,15 @@ const SOLO_GENERIC_CARDS = {
   heal: { name: "Goblin's Secret Remedy", lp: 600 }
 };
 const SOLO_OWNER_CARDS = {
+  mako: {
+    equips: [
+      { name: 'Power of Kaishin', atk: 500, only: ['Aqua', 'Fish', 'Sea Serpent'] },
+      { name: 'Legendary Sword', atk: 300 }
+    ],
+    trap: { name: 'Tornado Wall', kind: 'negate', text: 'Your attack is negated and your Battle Phase ends.' },
+    removal: null,
+    heal: null
+  },
   weevil: {
     equips: [
       { name: 'Armor with Laser Cannon', atk: 500, only: ['Insect'] },

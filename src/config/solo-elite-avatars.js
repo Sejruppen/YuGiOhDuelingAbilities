@@ -31,6 +31,23 @@ const seaParadoxBrother = (x, coat, kanji) => `
   </g>`;
 
 const SOLO_ELITE_AVATARS = {
+  // Tanned skin, thick black swept-back hair, a blue sailor collar with white stripes, a wide grin and a fish-hook earring.
+  mako: seaSvg(`
+    <path d="${SEA_SHOULDERS}" fill="#1d4ed8"/>
+    <path d="M38 72 L50 92 L62 72 Z" fill="#f8fafc"/>
+    <path d="M41 74 L50 88 L59 74" stroke="#1d4ed8" stroke-width="2" fill="none"/>
+    <path d="${SEA_NECK}" fill="#c98a5b"/>
+    ${seaHead('#c98a5b')}
+    <path d="M32 46 C26 26 36 14 50 14 C64 14 74 26 68 46 L65 44 C64 34 60 30 50 29 C40 30 36 34 35 44 Z" fill="#111827"/>
+    <path d="M38 22 L35 12 L45 18 L50 9 L55 18 L65 12 L62 22" fill="#111827"/>
+    <path d="M42 22 Q50 18 58 22" stroke="#4b5563" stroke-width="2" fill="none"/>
+    <path d="M37.5 41.5 L46 43 M62.5 41.5 L54 43" stroke-width="3" fill="none"/>
+    <circle cx="43" cy="46" r="2" fill="${SEA_INK}"/>
+    <circle cx="57" cy="46" r="2" fill="${SEA_INK}"/>
+    <path d="M49 48 L48 51.5 L51.5 51.5" fill="none"/>
+    <path d="M42 54 Q50 62 58 54 Q50 57 42 54 Z" fill="#f8fafc"/>
+    <path d="M65.5 49 L65.5 55 Q65.5 58 63 57" stroke="#e5e7eb" stroke-width="1.6" fill="none"/>
+  `),
   // Teal bowl cut, magnifying yellow glasses joined by an insect horn, green raised-collar jacket, red bow tie.
   weevil: seaSvg(`
     <path d="${SEA_SHOULDERS}" fill="#2f8f4e"/>

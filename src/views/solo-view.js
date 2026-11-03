@@ -786,7 +786,7 @@ function renderSoloCampfire(n, t) {
   } else {
     const ring = soloHas('ring') ? ' <span class="ce-emoji">💍</span> The Millennium Ring keeps you from resting well.' : '';
     const options = [
-      coopOption({ icon: '<span class="ce-emoji">🔥</span>', label: 'Rest', sub: `Heal ${soloRestAmount()} LP (${soloCampfireHeal() * 100}% of your max LP).${ring}`, disabled: solo.lp >= solo.maxLp, reason: 'Your LP is already full.' }, 'soloRestClick()'),
+      coopOption({ icon: '<span class="ce-emoji">🔥</span>', label: 'Rest', sub: `Heal ${soloRestAmount()} LP (${Math.round(soloCampfireHeal() * 100)}% of your max LP).${ring}`, disabled: solo.lp >= solo.maxLp, reason: 'Your LP is already full.' }, 'soloRestClick()'),
       coopOption({ icon: '<span class="ce-emoji">💪</span>', label: 'Train with Joey', sub: `+${SOLO_CAMPFIRE_TRAIN} max LP for the rest of the run (and heal ${SOLO_CAMPFIRE_TRAIN}).` }, 'soloTrainClick()'),
       coopOption({ icon: '<span class="ce-emoji">✨</span>', label: 'Polish a relic', sub: 'Upgrade one of your relics for the rest of the run.', disabled: !soloPolishable().length, reason: solo.relics.length ? "None of your relics can be polished." : 'You have no relics to polish yet.' }, 'openSoloPolish()')
     ].join('');
