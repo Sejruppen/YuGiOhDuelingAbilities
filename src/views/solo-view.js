@@ -35,23 +35,93 @@ function renderSoloView() {
 // "⚔️ Hard · " for harder runs; nothing on Easy.
 const soloDiffBadge = (id = solo.difficulty) => (soloDiffKey(id) === SOLO_DEFAULT_DIFFICULTY ? '' : `<span class="ce-emoji">${soloDiff(id).icon}</span> ${soloDiff(id).name} · `);
 
+// Gold icons for the seven Millennium Items (40 x 40). GOLD is replaced by a
+// gradient with a fresh id per icon, so repeated renders never share one.
+const SOLO_SHELF_ART = {
+  puzzle: `<path d="M20 1.5 L20 6" stroke="#78350f" stroke-width="1.6"/><circle cx="20" cy="3" r="2" fill="none" stroke="GOLD" stroke-width="1.6"/>
+    <polygon points="4,7 36,7 20,37" fill="GOLD" stroke="#78350f" stroke-width="1.3" stroke-linejoin="round"/>
+    <path d="M7 7 L20 13 L33 7" fill="none" stroke="#fef3c7" stroke-width="0.8" opacity="0.7"/>
+    <path d="M12 12 Q20 8 28 12" fill="none" stroke="#78350f" stroke-width="1.4" stroke-linecap="round"/>
+    <path d="M12 16 Q20 11 28 16 Q20 21 12 16 Z" fill="#78350f"/><circle cx="20" cy="16" r="2.2" fill="#fde68a"/>
+    <path d="M17 19.5 L15.5 24" stroke="#78350f" stroke-width="1.2" stroke-linecap="round"/>
+    <path d="M12 24 L28 24 M15.5 30.5 L24.5 30.5" stroke="#92400e" stroke-width="0.8" opacity="0.8"/>`,
+  ring: `<circle cx="20" cy="16" r="12" fill="none" stroke="GOLD" stroke-width="3.6"/>
+    <circle cx="20" cy="16" r="12" fill="none" stroke="#78350f" stroke-width="0.6" opacity="0.6"/>
+    <polygon points="20,6.5 28.5,21.5 11.5,21.5" fill="GOLD" stroke="#78350f" stroke-width="1"/>
+    <path d="M16 16.5 Q20 13 24 16.5 Q20 20 16 16.5 Z" fill="#78350f"/><circle cx="20" cy="16.5" r="1.4" fill="#fde68a"/>
+    <g fill="GOLD" stroke="#78350f" stroke-width="0.7">
+      <polygon points="9.5,25 12.5,25 10.5,36"/><polygon points="14.5,28 17.5,28 15.5,38.5"/><polygon points="18.5,29.5 21.5,29.5 20,39.5"/>
+      <polygon points="22.5,28 25.5,28 24.5,38.5"/><polygon points="27.5,25 30.5,25 29.5,36"/>
+    </g>`,
+  key: `<ellipse cx="20" cy="10" rx="6.5" ry="8" fill="none" stroke="GOLD" stroke-width="3.6"/>
+    <ellipse cx="20" cy="10" rx="6.5" ry="8" fill="none" stroke="#78350f" stroke-width="0.6" opacity="0.6"/>
+    <path d="M16.5 10 Q20 7 23.5 10 Q20 13 16.5 10 Z" fill="#78350f"/><circle cx="20" cy="10" r="1.2" fill="#fde68a"/>
+    <rect x="6" y="17.5" width="28" height="4.2" rx="2" fill="GOLD" stroke="#78350f" stroke-width="1"/>
+    <rect x="18" y="21" width="4" height="17" rx="1.4" fill="GOLD" stroke="#78350f" stroke-width="1"/>
+    <rect x="22" y="31" width="4" height="2.6" fill="GOLD" stroke="#78350f" stroke-width="0.8"/>
+    <rect x="22" y="35" width="3" height="2.4" fill="GOLD" stroke="#78350f" stroke-width="0.8"/>`,
+  scale: `<rect x="18.6" y="8" width="2.8" height="26" fill="GOLD" stroke="#78350f" stroke-width="0.8"/>
+    <polygon points="15,33 25,33 29,37.5 11,37.5" fill="GOLD" stroke="#78350f" stroke-width="1" stroke-linejoin="round"/>
+    <path d="M5 11.5 Q20 7.5 35 11.5" fill="none" stroke="GOLD" stroke-width="2.8" stroke-linecap="round"/>
+    <path d="M6 12 L2.5 23 M6 12 L9.5 23 M34 12 L30.5 23 M34 12 L37.5 23" stroke="#b45309" stroke-width="0.9"/>
+    <path d="M1.5 23 Q6 29 10.5 23 Z M29.5 23 Q34 29 38.5 23 Z" fill="GOLD" stroke="#78350f" stroke-width="1"/>
+    <circle cx="20" cy="6.5" r="3.4" fill="GOLD" stroke="#78350f" stroke-width="1"/>
+    <path d="M18 6.5 Q20 5 22 6.5 Q20 8 18 6.5 Z" fill="#78350f"/>`,
+  eye: `<circle cx="20" cy="20" r="16" fill="GOLD" stroke="#78350f" stroke-width="1.3"/>
+    <path d="M9 14 Q20 7 31 14" fill="none" stroke="#78350f" stroke-width="1.8" stroke-linecap="round"/>
+    <path d="M8 20 Q20 11 32 20 Q20 29 8 20 Z" fill="#fffbeb" stroke="#78350f" stroke-width="1.3"/>
+    <circle cx="20" cy="20" r="4.8" fill="#78350f"/><circle cx="18.5" cy="18.5" r="1.4" fill="#fde68a"/>
+    <path d="M16.5 26 L14 33.5" stroke="#78350f" stroke-width="1.5" stroke-linecap="round"/>
+    <path d="M22.5 27 Q24 33.5 29.5 32.5 Q32 31.5 30 29.5" fill="none" stroke="#78350f" stroke-width="1.4" stroke-linecap="round"/>`,
+  rod: `<rect x="18.3" y="16" width="3.4" height="21" rx="1.4" fill="GOLD" stroke="#78350f" stroke-width="1"/>
+    <polygon points="18.3,36.5 21.7,36.5 20,39.5" fill="GOLD" stroke="#78350f" stroke-width="0.8"/>
+    <path d="M13.5 11 Q5 4 1.5 12.5 Q8 10.5 13.5 15 Z M26.5 11 Q35 4 38.5 12.5 Q32 10.5 26.5 15 Z" fill="GOLD" stroke="#78350f" stroke-width="1"/>
+    <circle cx="20" cy="11.5" r="6.8" fill="GOLD" stroke="#78350f" stroke-width="1.2"/>
+    <path d="M15.5 11.5 Q20 8 24.5 11.5 Q20 15 15.5 11.5 Z" fill="#78350f"/><circle cx="20" cy="11.5" r="1.4" fill="#fde68a"/>
+    <path d="M18.3 21 L21.7 21 M18.3 26 L21.7 26" stroke="#78350f" stroke-width="0.8"/>`,
+  necklace: `<ellipse cx="20" cy="17" rx="17.5" ry="12.5" fill="none" stroke="#78350f" stroke-width="3.6"/>
+    <ellipse cx="20" cy="17" rx="17.5" ry="12.5" fill="none" stroke="GOLD" stroke-width="2.4"/>
+    <path d="M19.3 3.4 L19.3 5.8 M20.7 3.4 L20.7 5.8 M10.4 5.1 L11.5 7.2 M11.7 4.5 L12.8 6.6 M28.2 7.2 L29.3 5.1 M27.2 6.6 L28.3 4.5 M3.8 10.4 L5.8 11.5 M3.2 11.7 L5.2 12.8 M34.2 11.5 L36.2 10.4 M34.8 12.8 L36.8 11.7" stroke="#78350f" stroke-width="0.7"/>
+    <g fill="GOLD" stroke="#78350f" stroke-width="0.8">
+      <rect x="9.8" y="23" width="2.4" height="9.5" rx="1"/><rect x="8.2" y="22.2" width="5.6" height="1.8" rx="0.8"/><circle cx="11" cy="33.5" r="1.3"/>
+      <rect x="27.8" y="23" width="2.4" height="9.5" rx="1"/><rect x="26.2" y="22.2" width="5.6" height="1.8" rx="0.8"/><circle cx="29" cy="33.5" r="1.3"/>
+      <path d="M12.5 29.5 Q20 22.5 27.5 29.5 Q20 36.5 12.5 29.5 Z" stroke-width="1"/>
+    </g>
+    <path d="M15 29.5 Q20 25.3 25 29.5 Q20 33.7 15 29.5 Z" fill="#fffbeb" stroke="#78350f" stroke-width="0.8"/>
+    <circle cx="20" cy="29.5" r="2.3" fill="#78350f"/><circle cx="19.3" cy="28.8" r="0.7" fill="#fde68a"/>`
+};
+let soloShelfArtSeq = 0;
+function soloShelfIcon(id, cls = '') {
+  const gid = `ssa-gold-${++soloShelfArtSeq}`;
+  return `<svg class="solo-shelf-icon ${cls}" viewBox="0 0 40 40" aria-hidden="true">
+    <defs><linearGradient id="${gid}" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#fef3c7"/><stop offset="0.35" stop-color="#fbbf24"/><stop offset="0.7" stop-color="#d97706"/><stop offset="1" stop-color="#92400e"/>
+    </linearGradient></defs>
+    ${SOLO_SHELF_ART[id].replace(/GOLD/g, `url(#${gid})`)}
+  </svg>`;
+}
+
+// What a shelf item's `unlocks` opens: a difficulty or the Millennium theme.
+const soloUnlockLabel = u => (SOLO_DIFFICULTIES[u] ? `<span class="ce-emoji">${SOLO_DIFFICULTIES[u].icon}</span> ${SOLO_DIFFICULTIES[u].name}` : 'the Millennium theme');
+
 // The Millennium Items shelf: each item lights up after enough wins against Pegasus
 // (SOLO_SHELF). Tap one for its condition; otherwise the caption counts the wins.
 function renderSoloShelf() {
   const wins = id => soloClears[id] || 0;
   const pick = SOLO_SHELF.find(item => item.id === soloUi.shelfItem);
   const items = SOLO_SHELF.map(item => {
-    const lit = wins(item.difficulty) >= item.clears;
-    return `<button type="button" onclick="toggleSoloShelfItem('${item.id}')" aria-pressed="${pick === item}" aria-label="${item.name}${lit ? '' : ' (not earned yet)'}" class="solo-shelf-item${lit ? ' is-lit' : ''}${pick === item ? ' is-picked' : ''}"><span class="ce-emoji">${item.icon}</span></button>`;
+    const lit = SOLO_SHELF_TEST || wins(item.difficulty) >= item.clears;
+    return `<button type="button" onclick="toggleSoloShelfItem('${item.id}')" onpointerdown="startSoloShelfHold(this, '${item.id}')" onpointerup="cancelSoloShelfHold()" onpointerleave="cancelSoloShelfHold()" onpointercancel="cancelSoloShelfHold()" oncontextmenu="return false" aria-pressed="${pick === item}" aria-label="${item.name}${lit ? '' : ' (not earned yet)'}" class="solo-shelf-item${lit ? ' is-lit' : ''}${pick === item ? ' is-picked' : ''}">${soloShelfIcon(item.id)}</button>`;
   }).join('');
   let caption;
   if (pick) {
     const d = SOLO_DIFFICULTIES[pick.difficulty];
     const got = Math.min(wins(pick.difficulty), pick.clears);
-    const times = pick.clears === 1 ? 'once' : `${pick.clears} times`;
-    caption = got >= pick.clears
-      ? `<b>${pick.name}</b> · earned!`
-      : `<b>${pick.name}</b> · beat Pegasus ${times} on <span class="ce-emoji">${d.icon}</span> ${d.name} (${got}/${pick.clears})`;
+    const how = `beat Pegasus ${soloTimes(pick.clears)} on <span class="ce-emoji">${d.icon}</span> ${d.name}`;
+    const opens = pick.unlocks ? ` · opens ${soloUnlockLabel(pick.unlocks)}` : '';
+    caption = SOLO_SHELF_TEST || got >= pick.clears
+      ? `<b>${pick.name}</b> · earned: ${how}${opens}${soloShelfScene(pick.id) ? '<br>Hold to replay the cutscene' : ''}`
+      : `<b>${pick.name}</b> · ${how} (${got}/${pick.clears})${opens}`;
   } else {
     caption = 'Pegasus beaten: ' + SOLO_DIFFICULTY_ORDER.map(id => soloDifficultyUnlocked(id)
       ? `<span class="ce-emoji">${SOLO_DIFFICULTIES[id].icon}</span> ×${wins(id)}`
@@ -345,7 +415,10 @@ function renderSoloDifficultyPicker() {
     <p class="text-xs font-semibold uppercase tracking-widest text-slate-400 mb-2">Difficulty</p>
     <div class="grid grid-cols-3 gap-2">${options}</div>
     <p class="text-xs text-slate-300 mt-2 leading-snug">${soloDiff(picked).desc}</p>
-    ${soloDifficultyUnlocked('nightmare') ? '' : `<p class="text-xs text-slate-500 mt-1 leading-snug"><span class="ce-emoji">🔒</span> ${soloDiff('nightmare').name} opens once you have beaten Pegasus on ${soloDiff(SOLO_NIGHTMARE_UNLOCK).name}.</p>`}
+    ${SOLO_DIFFICULTY_ORDER.filter(id => !soloDifficultyUnlocked(id)).map(id => {
+      const item = SOLO_SHELF.find(i => i.unlocks === id);
+      return `<p class="text-xs text-slate-500 mt-1 leading-snug"><span class="ce-emoji">🔒</span> ${soloDiff(id).name} opens with the ${item.name}: beat Pegasus ${soloTimes(item.clears)} on ${soloDiff(item.difficulty).name}.</p>`;
+    }).join('')}
     ${notes.length ? `<ul class="text-xs text-slate-300 space-y-1 leading-relaxed mt-2">${notes.map(n => `<li>${soloEmojiLead(n)}</li>`).join('')}</ul>` : ''}
     <div class="border-t border-slate-800 my-4"></div>
   `;
@@ -1870,6 +1943,7 @@ function renderSoloEnd() {
     <div class="coop-end ${win ? 'coop-end--win' : 'coop-end--lose'} flex-1 min-h-0 overflow-y-auto p-6 flex flex-col items-center justify-center text-center gap-3">
       ${top}
       ${soloDiffKey() === SOLO_DEFAULT_DIFFICULTY ? '' : `<p class="text-xs font-bold uppercase tracking-widest text-amber-300">${soloDiffBadge().replace(/ · $/, '')}</p>`}
+      ${win && solo.unlocked === 'hard' ? '<p class="solo-unlock-note text-slate-100"><span class="ce-emoji">⚔️</span> <b>Hard unlocked!</b> Pick it when you start a new run.</p>' : ''}
       ${win && solo.unlocked === 'nightmare' ? '<p class="solo-unlock-note text-slate-100"><span class="ce-emoji">💀</span> <b>Nightmare unlocked!</b> Pick it when you start a new run.</p>' : ''}
       ${win && solo.unlocked === 'millennium' ? `<div class="solo-unlock-note text-slate-100"><p><span class="ce-emoji">👁️</span> <b>Millennium theme unlocked!</b></p>${document.documentElement.dataset.theme === 'millennium' ? '' : '<button onclick="setAppTheme(\'millennium\')" class="mt-2 px-4 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-white text-xs font-bold transition">Put it on</button>'}</div>` : ''}
       <div class="grid grid-cols-3 gap-2 w-full max-w-xs mt-2">

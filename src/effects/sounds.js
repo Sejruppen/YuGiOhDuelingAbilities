@@ -3330,32 +3330,296 @@ function rockDrum(t, kind, out) {
   }
 }
 
-// Solo unlock scenes (solo-unlock-scenes.js). Timed to their 7.6 s timelines.
-// An Egyptian-flavoured scale (Phrygian dominant on D) for both.
+// Solo unlock scenes (solo-unlock-scenes.js), timed to their timelines.
+// An Egyptian-flavoured scale (Phrygian dominant on D).
 const SU_SCALE = [62, 63, 66, 67, 69, 70, 72, 74];
 
-// Shadi: desert wind, the Eye's hum, then a stone door grinding open on a dark chord.
-COOP_SOUNDS['su-shadi'] = t => {
-  const room = darkBus({ reverb: 0.7, echo: 0.2 });
-  noise({ t, dur: 4.5, gain: 0.03, freq: 500, to: 900, q: 0.6, attack: 1.2, out: room });
-  eyeHum(t + 0.4, 4, 0.05, room);
-  bell({ t: t + 0.5, freq: midi(74), dur: 2, gain: 0.03, out: room });
-  arpeggio(t + 1, [62, 63, 66, 67], 0.45, (at, n) => bell({ t: at, freq: midi(n + 12), dur: 1.4, gain: 0.02, out: room }));
-  noise({ t: t + 4.7, dur: 1.8, gain: 0.08, type: 'lowpass', freq: 220, to: 120, q: 2, attack: 0.15, out: room });
-  boom(t + 4.7, 0.9, room);
-  darkCluster({ t: t + 4.8, notes: [38, 39, 45, 50], dur: 2.8, gain: 0.05, out: room });
-  choir({ t: t + 5, notes: [62, 66, 69], dur: 2.4, gain: 0.014, out: room });
+// Yami Yugi gives you the Millennium Puzzle (solo-unlock-scenes.js 'puzzle'):
+// a Soul Room drone, the Eye's shing (0.4s), a choir as he appears (0.9s), the
+// Puzzle breaking (5.5s), seven rising clicks (6.4s + k*0.14s) and a golden
+// fanfare on "obtained" (7.3s).
+COOP_SOUNDS['su-puzzle'] = t => {
+  const room = darkBus({ reverb: 0.7, echo: 0.15 });
+  tone({ t, freq: 55, dur: 9.5, gain: 0.035, attack: 1.2, filter: 400, out: room });
+  tone({ t, freq: 82.4, dur: 9.5, gain: 0.02, attack: 2, filter: 500, out: room });
+  noise({ t: t + 0.35, dur: 0.7, gain: 0.05, type: 'highpass', freq: 3000, to: 9000, q: 0.8, out: room });
+  bell({ t: t + 0.4, freq: midi(86), dur: 2.2, gain: 0.035, out: room });
+  eyeHum(t + 0.4, 3, 0.04, room);
+  choir({ t: t + 0.9, notes: [57, 64, 69, 72], dur: 3.6, gain: 0.013, out: room });
+  noise({ t: t + 5.45, dur: 0.4, gain: 0.07, freq: 2500, to: 6000, q: 1.5, out: room });
+  arpeggio(t + 5.5, [93, 88, 91, 86, 89], 0.04, (at, n) => bell({ t: at, freq: midi(n), dur: 0.5, gain: 0.015, out: room }));
+  for (let k = 0; k < 7; k++) {
+    const at = t + 6.4 + k * 0.14;
+    tone({ t: at, freq: midi(67 + k * 2), dur: 0.05, type: 'square', gain: 0.035, filter: 3500 });
+    noise({ t: at, dur: 0.03, gain: 0.05, type: 'highpass', freq: 4000, q: 1 });
+  }
+  boom(t + 7.3, 0.6, room);
+  choir({ t: t + 7.3, notes: [62, 66, 69, 74], dur: 3, gain: 0.017, out: room });
+  arpeggio(t + 7.35, SU_SCALE.map(n => n + 24), 0.06, (at, n) => bell({ t: at, freq: midi(n), dur: 1.4, gain: 0.03, out: room }));
+  bell({ t: t + 8.1, freq: midi(81), dur: 2, gain: 0.02, out: room });
 };
 
-// The Eye of Wdjat opens: a rising hum, a golden choir and a bell cascade.
-COOP_SOUNDS['su-millennium'] = t => {
-  const room = darkBus({ reverb: 0.7 });
-  eyeHum(t, 4.5, 0.05, room);
-  tone({ t: t + 0.3, freq: 80, to: 160, dur: 4.2, gain: 0.04, attack: 1.5, out: room });
-  arpeggio(t + 0.9, SU_SCALE, 0.28, (at, n) => bell({ t: at, freq: midi(n + 12), dur: 1.2, gain: 0.02, out: room }));
-  boom(t + 4.7, 0.7, room);
-  choir({ t: t + 4.7, notes: [62, 66, 69, 74], dur: 2.6, gain: 0.016, out: room });
-  arpeggio(t + 4.8, SU_SCALE.map(n => n + 24), 0.06, (at, n) => bell({ t: at, freq: midi(n), dur: 1.4, gain: 0.03, out: room }));
+// Ishizu gives you the Millennium Necklace (solo-unlock-scenes.js 'necklace'):
+// a tomb drone with crackling torches, a harp as she appears (0.4s), the vision's
+// hum (5.2s), thunder (6.1s), clashing blades (6.8s), a whoosh as the Necklace
+// floats to you (7.6s) and the golden fanfare on "obtained" (8.1s).
+COOP_SOUNDS['su-necklace'] = t => {
+  const room = darkBus({ reverb: 0.65, echo: 0.15 });
+  tone({ t, freq: 73.4, dur: 10.5, gain: 0.035, attack: 1.2, filter: 320, out: room });
+  for (let k = 0; k < 36; k++) {
+    noise({ t: t + rnd(0, 10), dur: 0.03, gain: rnd(0.01, 0.025), type: 'bandpass', freq: rnd(1500, 4000), q: 2 });
+  }
+  arpeggio(t + 0.4, SU_SCALE, 0.12, (at, n) => bell({ t: at, freq: midi(n + 12), dur: 1.2, gain: 0.018, out: room }));
+  choir({ t: t + 0.6, notes: [62, 66, 69], dur: 3.4, gain: 0.012, out: room });
+  eyeHum(t + 5.2, 2.6, 0.05, room);
+  noise({ t: t + 5.2, dur: 2.2, gain: 0.03, type: 'highpass', freq: 3000, to: 8000, q: 0.7, attack: 0.6, out: room });
+  darkCluster({ t: t + 5.6, notes: [38, 39, 45, 50], dur: 2.2, gain: 0.045, out: room });
+  noise({ t: t + 6.1, dur: 1.2, gain: 0.07, type: 'lowpass', freq: 300, to: 90, q: 1, out: room });
+  boom(t + 6.8, 0.6, room);
+  noise({ t: t + 6.8, dur: 0.25, gain: 0.06, type: 'highpass', freq: 5000, q: 1, out: room });
+  bell({ t: t + 6.8, freq: midi(91), dur: 1, gain: 0.03, out: room });
+  bell({ t: t + 6.84, freq: midi(90), dur: 1, gain: 0.025, out: room });
+  noise({ t: t + 7.6, dur: 0.5, gain: 0.05, freq: 600, to: 5000, q: 1.5, out: room });
+  boom(t + 8.1, 0.6, room);
+  choir({ t: t + 8.1, notes: [62, 66, 69, 74], dur: 3, gain: 0.017, out: room });
+  arpeggio(t + 8.15, SU_SCALE.map(n => n + 24), 0.06, (at, n) => bell({ t: at, freq: midi(n), dur: 1.4, gain: 0.03, out: room }));
+  bell({ t: t + 8.9, freq: midi(81), dur: 2, gain: 0.02, out: room });
+};
+
+// Shadi weighs your heart on the Millennium Scale (solo-unlock-scenes.js 'scale'):
+// night wind, a mirage shimmer as he appears (0.4s), heartbeats from 5.6s every
+// 0.8s, chain clinks as the beam swings (6.7, 7.2, 7.6, 7.9s), a pure chord as
+// it balances (8.3s) and the golden fanfare on "obtained" (9.6s).
+COOP_SOUNDS['su-scale'] = t => {
+  const room = darkBus({ reverb: 0.7, echo: 0.2 });
+  noise({ t, dur: 11.5, gain: 0.025, freq: 400, to: 900, q: 0.5, attack: 1.5, out: room });
+  tone({ t, freq: 61.7, dur: 8.5, gain: 0.03, attack: 1.5, filter: 300, out: room });
+  noise({ t: t + 0.4, dur: 1.4, gain: 0.03, type: 'highpass', freq: 4000, to: 9000, q: 0.6, attack: 0.5, out: room });
+  arpeggio(t + 0.5, [62, 66, 69, 74], 0.18, (at, n) => bell({ t: at, freq: midi(n + 12), dur: 1.4, gain: 0.018, out: room }));
+  choir({ t: t + 0.8, notes: [50, 57, 62], dur: 4, gain: 0.012, out: room });
+  for (let k = 0; k < 4; k++) bigHeartbeat(t + 5.6 + k * 0.8, 0.14, room);
+  [6.7, 7.2, 7.6, 7.9].forEach((at, i) => {
+    noise({ t: t + at, dur: 0.06, gain: 0.04, type: 'highpass', freq: 5000, q: 1, out: room });
+    bell({ t: t + at, freq: midi(i % 2 ? 88 : 86), dur: 0.6, gain: 0.018, out: room });
+  });
+  healPad({ t: t + 8.3, notes: [62, 69, 74, 78], dur: 1.6, gain: 0.025, out: room });
+  bell({ t: t + 8.3, freq: midi(86), dur: 2, gain: 0.03, out: room });
+  boom(t + 9.6, 0.6, room);
+  choir({ t: t + 9.6, notes: [62, 66, 69, 74], dur: 3, gain: 0.017, out: room });
+  arpeggio(t + 9.65, SU_SCALE.map(n => n + 24), 0.06, (at, n) => bell({ t: at, freq: midi(n), dur: 1.4, gain: 0.03, out: room }));
+  bell({ t: t + 10.2, freq: midi(81), dur: 2, gain: 0.02, out: room });
+};
+
+// Shadi opens the door to your soul with the Millennium Key (solo-unlock-scenes.js
+// 'key'): a stone-hall drone, a dark shimmer as he appears (0.4s), the Key rising
+// (5.7s), plunging (7.2s) and turning with two clicks (7.75s), the door grinding
+// open on the Nightmare road (8.4s) and the golden fanfare on "obtained" (10.6s).
+COOP_SOUNDS['su-key'] = t => {
+  const room = darkBus({ reverb: 0.75, echo: 0.2 });
+  tone({ t, freq: 55, dur: 12.5, gain: 0.035, attack: 1.5, filter: 300, out: room });
+  noise({ t: t + 0.3, dur: 1.4, gain: 0.03, type: 'highpass', freq: 3000, to: 7000, q: 0.6, attack: 0.5, out: room });
+  arpeggio(t + 0.4, [74, 70, 67, 62], 0.2, (at, n) => bell({ t: at, freq: midi(n + 12), dur: 1.4, gain: 0.018, out: room }));
+  choir({ t: t + 0.7, notes: [50, 57, 62], dur: 4, gain: 0.012, out: room });
+  eyeHum(t + 5.7, 2, 0.04, room);
+  arpeggio(t + 5.7, [62, 66, 69, 74, 78], 0.1, (at, n) => bell({ t: at, freq: midi(n + 12), dur: 1, gain: 0.02, out: room }));
+  noise({ t: t + 7.2, dur: 0.5, gain: 0.05, freq: 5000, to: 600, q: 1.5, out: room });
+  [7.75, 7.95].forEach((at, i) => {
+    noise({ t: t + at, dur: 0.04, gain: 0.08, type: 'highpass', freq: 3500, q: 1, out: room });
+    tone({ t: t + at, freq: i ? 1400 : 1100, dur: 0.06, type: 'square', gain: 0.035, filter: 3000 });
+    tone({ t: t + at, freq: 140, to: 70, dur: 0.15, gain: 0.08 });
+  });
+  noise({ t: t + 8.4, dur: 1.6, gain: 0.09, type: 'lowpass', freq: 240, to: 110, q: 2, attack: 0.1, out: room });
+  boom(t + 8.4, 0.9, room);
+  darkCluster({ t: t + 8.6, notes: [38, 39, 45, 50], dur: 2, gain: 0.045, out: room });
+  choir({ t: t + 8.8, notes: [50, 53, 56], dur: 1.8, gain: 0.014, out: room });
+  boom(t + 10.6, 0.6, room);
+  choir({ t: t + 10.6, notes: [62, 66, 69, 74], dur: 3, gain: 0.017, out: room });
+  arpeggio(t + 10.65, SU_SCALE.map(n => n + 24), 0.06, (at, n) => bell({ t: at, freq: midi(n), dur: 1.4, gain: 0.03, out: room }));
+  bell({ t: t + 11.4, freq: midi(81), dur: 2, gain: 0.02, out: room });
+};
+
+// Yami Bakura gives you the Millennium Ring (solo-unlock-scenes.js 'ring'): a
+// ghostly drone, a creepy music box as he appears (0.4s), jangling pointers
+// from 5.6s, a sharp shing as they lock onto you (7.4s) and the golden fanfare
+// on "obtained" (9.0s).
+COOP_SOUNDS['su-ring'] = t => {
+  const room = darkBus({ reverb: 0.75, echo: 0.25 });
+  tone({ t, freq: 51.9, dur: 11, gain: 0.035, attack: 1.5, filter: 300, out: room });
+  tone({ t, freq: 77.8, dur: 11, gain: 0.015, attack: 2, filter: 400, detune: 12, out: room });
+  arpeggio(t + 0.4, [76, 79, 75, 72, 76, 71, 72, 68], 0.32, (at, n) => bell({ t: at, freq: midi(n + 12), dur: 0.9, gain: 0.016, out: room }));
+  choir({ t: t + 0.8, notes: [52, 55, 58], dur: 4, gain: 0.011, out: room });
+  eyeHum(t + 5.6, 1.8, 0.04, room);
+  for (let k = 0; k < 14; k++) {
+    const at = t + 5.6 + k * 0.12 + rnd(0, 0.04);
+    bell({ t: at, freq: midi([86, 89, 91, 94, 88][k % 5]), dur: 0.35, gain: 0.012, out: room });
+    noise({ t: at, dur: 0.03, gain: 0.025, type: 'highpass', freq: 6000, q: 1, out: room });
+  }
+  noise({ t: t + 7.4, dur: 0.6, gain: 0.07, type: 'highpass', freq: 3000, to: 9000, q: 0.8, out: room });
+  [88, 91, 95].forEach(n => bell({ t: t + 7.4, freq: midi(n), dur: 1.6, gain: 0.025, out: room }));
+  boom(t + 7.4, 0.5, room);
+  boom(t + 9, 0.6, room);
+  choir({ t: t + 9, notes: [62, 66, 69, 74], dur: 3, gain: 0.017, out: room });
+  arpeggio(t + 9.05, SU_SCALE.map(n => n + 24), 0.06, (at, n) => bell({ t: at, freq: midi(n), dur: 1.4, gain: 0.03, out: room }));
+  darkCluster({ t: t + 9.8, notes: [40, 46], dur: 2, gain: 0.025, out: room });
+};
+
+// Marik gives you the Millennium Rod (solo-unlock-scenes.js 'rod'): a night-city
+// drone, an ominous choir as he appears (0.4s), a hypnotic wobbling hum during
+// the mind control (5.5s), glass shattering as your will breaks it (7.3s) and
+// the golden fanfare on "obtained" (9.0s).
+COOP_SOUNDS['su-rod'] = t => {
+  const room = darkBus({ reverb: 0.7, echo: 0.2 });
+  tone({ t, freq: 49, dur: 11, gain: 0.035, attack: 1.5, filter: 300, out: room });
+  noise({ t, dur: 11, gain: 0.015, type: 'lowpass', freq: 500, q: 0.5, attack: 2, out: room });
+  boom(t + 0.4, 0.35, room);
+  arpeggio(t + 0.5, [62, 63, 66, 70], 0.22, (at, n) => bell({ t: at, freq: midi(n + 12), dur: 1.2, gain: 0.016, out: room }));
+  choir({ t: t + 0.7, notes: [50, 53, 57], dur: 4, gain: 0.012, out: room });
+  eyeHum(t + 5.5, 1.9, 0.06, room);
+  for (let k = 0; k < 6; k++) {
+    tone({ t: t + 5.5 + k * 0.3, freq: 220, to: 330, slide: 0.3, dur: 0.3, type: 'triangle', gain: 0.02, filter: 1200, out: room });
+  }
+  darkCluster({ t: t + 5.6, notes: [38, 44, 45], dur: 1.7, gain: 0.04, out: room });
+  noise({ t: t + 7.3, dur: 0.5, gain: 0.09, type: 'highpass', freq: 2500, to: 8000, q: 0.7, out: room });
+  boom(t + 7.3, 0.7, room);
+  arpeggio(t + 7.32, [98, 94, 96, 91, 93, 89, 86], 0.035, (at, n) => bell({ t: at, freq: midi(n), dur: 0.6, gain: 0.02, out: room }));
+  boom(t + 9, 0.6, room);
+  choir({ t: t + 9, notes: [62, 66, 69, 74], dur: 3, gain: 0.017, out: room });
+  arpeggio(t + 9.05, SU_SCALE.map(n => n + 24), 0.06, (at, n) => bell({ t: at, freq: midi(n), dur: 1.4, gain: 0.03, out: room }));
+  bell({ t: t + 9.8, freq: midi(81), dur: 2, gain: 0.02, out: room });
+};
+
+// The Eye finale's score plays on its own bus, so skipping or closing the scene
+// can fade it out (stopSoloSceneSound, called by solo-unlock-scenes.js).
+let suSceneBus = null;
+function suBus(opts) {
+  suSceneBus = darkBus(opts);
+  return suSceneBus;
+}
+function stopSoloSceneSound() {
+  if (!suSceneBus || !sfxCtx) return;
+  suSceneBus.gain.setTargetAtTime(0, sfxCtx.currentTime, 0.25);
+  suSceneBus = null;
+}
+
+// A small film orchestra for the finale.
+function suStrings({ t, notes, dur, gain = 0.012, attack = 0.6, filter = 1600, out }) {
+  notes.forEach(n => [-7, 6].forEach(detune => tone({ t, freq: midi(n), dur, type: 'sawtooth', gain, attack, filter, detune, out })));
+}
+function suLead(t, note, dur, gain, out) {
+  tone({ t, freq: midi(note), dur, type: 'triangle', gain, attack: 0.08, out });
+  tone({ t, freq: midi(note), dur, type: 'sawtooth', gain: gain * 0.25, attack: 0.1, filter: 2000, detune: 5, out });
+}
+function suPiano(t, note, dur, gain, out) {
+  tone({ t, freq: midi(note), dur, type: 'triangle', gain, attack: 0.004, out });
+  tone({ t, freq: midi(note) * 2, dur: dur * 0.5, gain: gain * 0.25, attack: 0.004, out });
+}
+function suTimpani(t, gain, out) {
+  tone({ t, freq: 82, to: 70, dur: 1.1, gain, attack: 0.004, out });
+  noise({ t, dur: 0.15, gain: gain * 0.3, type: 'lowpass', freq: 400, attack: 0.002, out });
+}
+// Plays [note, beats] pairs from t (a 0 note is a rest).
+function suMelody(t, beat, phrase, play) {
+  let at = t;
+  phrase.forEach(([n, b]) => {
+    if (n) play(at, n, b * beat);
+    at += b * beat;
+  });
+}
+// Pegasus' theme: heroic in D major, and its minor lament.
+const SU_EYE_THEME = [[74, 1], [78, 0.5], [81, 0.5], [83, 1.5], [81, 0.5], [78, 1], [76, 1], [78, 2]];
+const SU_EYE_LAMENT = [[74, 1], [77, 0.5], [81, 0.5], [82, 1.5], [81, 0.5], [77, 2]];
+
+// Pegasus surrenders the Millennium Eye (solo-unlock-scenes.js 'eye'), scored
+// like a film's final scene: cello tremolo and his LP ticking away (0.7s), the
+// final blow (2.0s), his Toon music box winding down (3.1s), a pulse of denial
+// (5.2s), the Eye's hum and flipping cards (7.6s), light blinding it (9.6s), the
+// glass shattering (11.9s), the lament as he kneels (12.2s), Cyndia's music box
+// (14.6s), the surrender (17.4s), the Eye rising on a harp (19.8s), six chimes
+// for the Items (21.8s), the heroic theme on "obtained" (22.8s), a last chord and
+// one heartbeat in the dark (27.4s).
+COOP_SOUNDS['su-eye'] = t => {
+  const room = suBus({ reverb: 0.75, echo: 0.12 });
+  tone({ t, freq: midi(26), dur: 3.2, gain: 0.04, attack: 0.8, filter: 260, out: room });
+  for (let k = 0; k < 24; k++) tone({ t: t + 0.3 + k * 0.07, freq: midi(50), dur: 0.09, type: 'sawtooth', gain: 0.01 + k * 0.0006, filter: 900, out: room });
+  for (let k = 0; k < 24; k++) tone({ t: t + 0.7 + k * 0.05, freq: 1800 - k * 40, dur: 0.04, type: 'square', gain: 0.01, filter: 3000, out: room });
+  suTimpani(t + 2, 0.3, room);
+  boom(t + 2, 0.9, room);
+  suStrings({ t: t + 2, notes: [38, 45, 50, 53], dur: 1.6, gain: 0.02, attack: 0.02, out: room });
+  suStrings({ t: t + 2, notes: [62, 65, 69], dur: 1.2, gain: 0.012, attack: 0.02, filter: 2600, out: room });
+
+  let at = t + 3.1, step = 0.2;
+  [79, 83, 86, 83, 81, 84, 88, 84, 79, 83, 86, 91, 90, 86].forEach((n, i) => {
+    bell({ t: at, freq: midi(n) * Math.pow(2, -i * 0.012), dur: 0.5, gain: 0.02, out: room });
+    at += step;
+    step *= 1.06;
+  });
+  suStrings({ t: t + 3, notes: [38, 50, 53, 57], dur: 4.8, gain: 0.009, attack: 1.2, out: room });
+  [38, 38, 45, 38, 38, 45, 46, 45].forEach((n, i) => tone({ t: t + 5.2 + i * 0.3, freq: midi(n), dur: 0.28, type: 'sawtooth', gain: 0.018 + i * 0.002, attack: 0.02, filter: 700, out: room }));
+
+  eyeHum(t + 7.6, 2, 0.06, room);
+  tone({ t: t + 7.6, freq: 600, to: 1200, slide: 1.8, dur: 2, gain: 0.012, attack: 0.6, out: room });
+  suStrings({ t: t + 7.6, notes: [62, 63], dur: 2, gain: 0.007, attack: 0.8, filter: 2400, out: room });
+  for (let i = 0; i < 5; i++) {
+    noise({ t: t + 8.8 + i * 0.15, dur: 0.06, gain: 0.08, freq: 2600, to: 1100, q: 0.9, out: room });
+    noise({ t: t + 8.84 + i * 0.15, dur: 0.05, gain: 0.05, freq: 2000, to: 900, q: 0.9, out: room });
+  }
+
+  noise({ t: t + 9.6, dur: 0.9, gain: 0.08, type: 'highpass', freq: 2000, to: 9000, q: 0.7, out: room });
+  for (let i = 0; i < 10; i++) noise({ t: t + 9.7 + rnd(0, 1.1), dur: rnd(0.03, 0.08), gain: 0.04, type: 'highpass', freq: rnd(3000, 7000), out: room });
+  suTimpani(t + 9.6, 0.25, room);
+  darkCluster({ t: t + 9.6, notes: [38, 44, 50], dur: 1.6, gain: 0.03, attack: 0.05, out: room });
+
+  noise({ t: t + 11.9, dur: 0.4, gain: 0.12, type: 'highpass', freq: 3500, to: 1500, attack: 0.002, out: room });
+  for (let i = 0; i < 9; i++) bell({ t: t + 11.9 + rnd(0, 0.3), freq: rnd(2500, 5200), dur: 0.4, gain: 0.025, out: room });
+
+  boom(t + 12.2, 0.5, room);
+  noise({ t: t + 12.2, dur: 2.4, gain: 0.05, type: 'lowpass', freq: 160, to: 90, q: 1, attack: 0.3, out: room });
+  suStrings({ t: t + 12.2, notes: [38, 50, 53, 57], dur: 1.4, gain: 0.012, out: room });
+  suStrings({ t: t + 13.4, notes: [46, 58, 62, 65], dur: 1.5, gain: 0.012, out: room });
+  suMelody(t + 12.4, 0.36, SU_EYE_LAMENT, (a, n, d) => suLead(a, n, d + 0.2, 0.03, room));
+
+  suStrings({ t: t + 14.6, notes: [53, 60, 65, 69], dur: 1.6, gain: 0.009, attack: 0.8, out: room });
+  suStrings({ t: t + 16, notes: [46, 58, 62, 65], dur: 1.6, gain: 0.009, attack: 0.6, out: room });
+  suMelody(t + 14.7, 0.35, [[77, 1], [81, 1], [84, 1], [82, 0.5], [81, 0.5], [79, 1], [77, 2]], (a, n) => bell({ t: a, freq: midi(n + 12), dur: 1.2, gain: 0.018, out: room }));
+
+  suStrings({ t: t + 17.4, notes: [43, 55, 58, 62], dur: 2.6, gain: 0.011, attack: 1, out: room });
+  suMelody(t + 18.4, 0.5, [[74, 1], [72, 1], [70, 0.5], [69, 1.5]], (a, n, d) => suLead(a, n, d + 0.3, 0.022, room));
+
+  choir({ t: t + 19.8, notes: [57, 61, 64, 69], dur: 2.4, gain: 0.014, out: room });
+  suStrings({ t: t + 19.8, notes: [45, 57, 61, 64], dur: 2.6, gain: 0.01, attack: 0.8, out: room });
+  arpeggio(t + 20.4, [57, 61, 64, 69, 73, 76, 81, 85, 88], 0.1, (a, n) => bell({ t: a, freq: midi(n), dur: 1.2, gain: 0.02, out: room }));
+  arpeggio(t + 21.8, [81, 83, 85, 86, 88, 90], 0.15, (a, n) => bell({ t: a, freq: midi(n), dur: 1.6, gain: 0.024, out: room }));
+
+  suTimpani(t + 22.8, 0.3, room);
+  boom(t + 22.8, 0.6, room);
+  [50, 57, 62, 66, 69].forEach(n => [-6, 7].forEach(detune => tone({ t: t + 22.8, freq: midi(n), dur: 2.6, type: 'sawtooth', gain: 0.012, attack: 0.04, filter: [600, 2600], detune, out: room })));
+  choir({ t: t + 22.8, notes: [62, 66, 69, 74], dur: 3.2, gain: 0.017, out: room });
+  arpeggio(t + 22.85, SU_SCALE.map(n => n + 24), 0.06, (a, n) => bell({ t: a, freq: midi(n), dur: 1.4, gain: 0.026, out: room }));
+  suStrings({ t: t + 23, notes: [38, 50, 57, 62, 66], dur: 3.4, gain: 0.01, attack: 0.5, out: room });
+  suMelody(t + 23, 0.38, SU_EYE_THEME, (a, n, d) => {
+    suLead(a, n, d + 0.25, 0.03, room);
+    suLead(a, n - 12, d + 0.25, 0.014, room);
+  });
+  suStrings({ t: t + 26, notes: [50, 57, 62, 66, 69], dur: 2.2, gain: 0.011, attack: 0.3, out: room });
+  bigHeartbeat(t + 27.4, 0.3, room);
+};
+
+// The thank-you card: a soft piano version of Pegasus' theme over strings, like
+// the end credits, ending on a music-box sparkle (~12.5s).
+COOP_SOUNDS['su-eye-thanks'] = t => {
+  const room = suBus({ reverb: 0.7, echo: 0.1 });
+  const beat = 0.5, start = t + 1;
+  const phrase = [...SU_EYE_THEME, [83, 1], [81, 0.5], [79, 0.5], [78, 1.5], [76, 0.5], [74, 1], [73, 1], [74, 3]];
+  const chords = [[50, 57, 62, 66], [47, 54, 59, 62], [43, 50, 55, 59], [45, 52, 57, 61], [43, 50, 55, 59], [42, 54, 57, 62], [40, 52, 55, 59], [45, 52, 57, 61]];
+  chords.forEach((c, i) => {
+    const at = start + i * 2 * beat;
+    c.forEach((n, k) => suPiano(at + k * 0.25, n, 1.6, 0.02, room));
+    suStrings({ t: at, notes: c, dur: 1.4, gain: 0.005, attack: 0.4, out: room });
+  });
+  [50, 57, 62, 66, 69].forEach((n, k) => suPiano(start + 16 * beat + k * 0.12, n, 3, 0.02, room));
+  suStrings({ t: start + 16 * beat, notes: [38, 50, 57, 62, 66], dur: 3.2, gain: 0.007, attack: 0.5, out: room });
+  suMelody(start, beat, phrase, (a, n, d) => suPiano(a, n, d + 0.6, 0.035, room));
+  arpeggio(start + 17 * beat, [86, 90, 93, 98], 0.12, (a, n) => bell({ t: a, freq: midi(n), dur: 1.6, gain: 0.014, out: room }));
 };
 
 // ---------------------------------------------------------------------------
@@ -3691,7 +3955,7 @@ SOUND_KITS.xmas = {
   }
 };
 
-// --- Millennium (Solo reward: beat Pegasus on Nightmare). --------------------
+// --- Millennium (Solo reward: the Millennium Eye, beat Pegasus 3 times on Nightmare). ---
 // The dark kit with the Millennium Eye's hum and bells in an Egyptian scale.
 SOUND_KITS.millennium = {
   ...SOUND_KITS.dark,

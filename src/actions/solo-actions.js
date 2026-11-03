@@ -159,6 +159,7 @@ function toggleSoloHistoryEntry(id) {
 // The Millennium Items shelf on the menu: tap an item to see how it lights up.
 // Repaints just the shelf, so the menu's entrance animations don't replay.
 function toggleSoloShelfItem(id) {
+  if (soloShelfHold.fired) { soloShelfHold.fired = false; return; }
   soloUi.shelfItem = soloUi.shelfItem === id ? null : id;
   playSound({ name: 'tap' });
   const shelf = document.querySelector('.solo-shelf');
@@ -166,12 +167,39 @@ function toggleSoloShelfItem(id) {
   else render();
 }
 
+// Hold a lit shelf item to replay its cutscene. The click that ends the hold is
+// swallowed so the item doesn't also toggle. Not an easter egg.
+const SOLO_SHELF_HOLD_MS = 600;
+const soloShelfHold = { timer: null, el: null, fired: false };
+const soloShelfScene = id => (SOLO_SHELF.some(item => item.id === id) ? id : null);
+
+function startSoloShelfHold(el, id) {
+  cancelSoloShelfHold();
+  soloShelfHold.fired = false;
+  if (!el.classList.contains('is-lit') || !soloShelfScene(id)) return;
+  soloShelfHold.el = el;
+  el.classList.add('is-holding');
+  soloShelfHold.timer = setTimeout(() => {
+    soloShelfHold.timer = null;
+    soloShelfHold.fired = true;
+    el.classList.remove('is-holding');
+    playSoloUnlockScene(soloShelfScene(id));
+  }, SOLO_SHELF_HOLD_MS);
+}
+
+function cancelSoloShelfHold() {
+  clearTimeout(soloShelfHold.timer);
+  soloShelfHold.timer = null;
+  soloShelfHold.el?.classList.remove('is-holding');
+  soloShelfHold.el = null;
+}
+
 // The sealed Millennium tile in the theme picker.
 function teaseMillenniumTheme(button) {
   restartClass(button, 'theme-locked-shake', 450);
   playSound({ name: 'theme-locked' });
   if (document.querySelector('#fx-layer .egg-found')) return;
-  showEggPill('<span class="ce-emoji">👁️</span> Beat Pegasus on <b><span class="ce-emoji">💀</span> Nightmare</b> to unlock');
+  showEggPill('<span class="ce-emoji">👁️</span> Beat Pegasus 3 times on <b><span class="ce-emoji">💀</span> Nightmare</b> to unlock');
 }
 
 // Settings: first tap arms the button, a second tap within a few seconds wipes the history.

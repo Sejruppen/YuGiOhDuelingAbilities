@@ -98,7 +98,7 @@ function soloRecordClear(id) {
   return soloClears[key];
 }
 
-// Undo after a victory takes the win back (and the Millennium theme, if that was the only Nightmare win).
+// Undo after a victory takes the win back (and the Millennium theme, if that win earned it).
 function soloForgetClear(id) {
   const key = soloDiffKey(id);
   if (!soloClears[key]) return;
@@ -110,7 +110,12 @@ function soloForgetClear(id) {
   if (theme && !isThemeAvailable(theme)) applyAppTheme(getAppTheme());
 }
 
-const soloDifficultyUnlocked = id => id !== 'nightmare' || (soloClears[SOLO_NIGHTMARE_UNLOCK] || 0) > 0;
+const soloShelfEarned = item => (soloClears[item.difficulty] || 0) >= item.clears;
+// A difficulty opens with its shelf item (or if you have already won on it).
+const soloDifficultyUnlocked = id => {
+  const item = SOLO_SHELF.find(i => i.unlocks === id);
+  return !item || soloShelfEarned(item) || (soloClears[id] || 0) > 0;
+};
 
 const soloHeroName = () => {
   const hero = getSelectedCharacter();
@@ -890,14 +895,15 @@ function soloWin() {
     solo.phase = 'victory';
     soloArchiveRun('victory');
     const key = soloDiffKey();
-    const first = soloRecordClear(key) === 1;
-    // The first Hard win opens Nightmare; the first Nightmare win earns the Millennium theme.
-    solo.unlocked = !first ? null : key === SOLO_NIGHTMARE_UNLOCK ? 'nightmare' : key === 'nightmare' ? 'millennium' : null;
+    // A newly earned shelf item may open a difficulty or the Millennium theme.
+    const before = new Set(SOLO_SHELF.filter(soloShelfEarned).map(i => i.id));
+    const wasOpen = SOLO_DIFFICULTY_ORDER.filter(soloDifficultyUnlocked);
+    soloRecordClear(key);
+    const gained = SOLO_SHELF.find(i => !before.has(i.id) && soloShelfEarned(i));
+    solo.unlocked = gained?.unlocks && !wasOpen.includes(gained.unlocks) ? gained.unlocks : null;
     playSound({ name: 'co-victory' });
-    if (solo.unlocked) {
-      const unlocked = solo.unlocked;
-      setTimeout(() => playSoloUnlockScene(unlocked), 1200);
-    }
+    const scene = gained && soloShelfScene(gained.id);
+    if (scene) setTimeout(() => playSoloUnlockScene(scene), 1200);
     return;
   }
   solo.chips += f.chips;

@@ -8,13 +8,14 @@ const TREASURE_UNLOCK_KEY = 'ygo_theme_treasure_unlocked';
 const SOLO_CLEARS_KEY = 'ygo_solo_clears';
 
 // Seasonal themes are only available (and shown) during their month (0 = January).
-// `unlock: '<difficulty>'` themes are earned by beating Pegasus on that difficulty in Solo.
+// `unlock: '<difficulty>'` themes are earned by beating Pegasus `unlockClears` times on that difficulty in Solo
+// (the Millennium Eye on the Solo shelf, SOLO_SHELF).
 const APP_THEMES = [
   { id: 'dark', label: 'Dark', metaColor: '#090d16' },
   { id: 'light', label: 'Light', metaColor: '#f1f5f9' },
   { id: 'poc', label: 'Power of Chaos', metaColor: '#c99a52' },
   { id: 'gold', label: 'Treasure', metaColor: '#0d0a08', secret: true },
-  { id: 'millennium', label: 'Millennium', metaColor: '#0a1030', unlock: 'nightmare' },
+  { id: 'millennium', label: 'Millennium', metaColor: '#0a1030', unlock: 'nightmare', unlockClears: 3 },
   { id: 'halloween', label: 'Halloween', metaColor: '#120a1a', season: { month: 9, emoji: '🎃', monthName: 'October' } },
   { id: 'xmas', label: 'Christmas', metaColor: '#081410', season: { month: 11, emoji: '🎄', monthName: 'December' } }
 ];
@@ -41,7 +42,7 @@ function readSoloClears(difficulty) {
 const isThemeAvailable = theme =>
   (!theme.secret || isTreasureThemeUnlocked()) &&
   (!theme.season || isSeasonActive(theme)) &&
-  (!theme.unlock || readSoloClears(theme.unlock) > 0);
+  (!theme.unlock || readSoloClears(theme.unlock) >= (theme.unlockClears || 1));
 
 function getAppTheme() {
   let savedId = null;

@@ -16696,14 +16696,20 @@ html[data-theme="millennium"]::view-transition-new(root) { animation: vt-eye 1s 
   display: grid;
   place-items: center;
   border-radius: 50%;
-  font-size: 1.2rem;
   transition: transform 0.2s ease-out, box-shadow 0.2s ease-out;
 }
-.solo-shelf-item .ce-emoji { opacity: 0.45; filter: grayscale(1) brightness(0.4); }
+.solo-shelf-icon { width: 1.65rem; height: 1.65rem; display: block; overflow: visible; }
+.solo-shelf-item .solo-shelf-icon { opacity: 0.45; filter: grayscale(1) brightness(0.45); }
 .solo-shelf-item.is-lit { background: radial-gradient(circle, rgb(251 191 36 / 0.3), transparent 70%); }
-.solo-shelf-item.is-lit .ce-emoji { opacity: 1; animation: solo-shelf-glow 2.6s ease-in-out infinite alternate; }
-.solo-shelf-item.is-lit:nth-child(2n) .ce-emoji { animation-delay: -1.3s; }
+.solo-shelf-item.is-lit .solo-shelf-icon { opacity: 1; animation: solo-shelf-glow 2.6s ease-in-out infinite alternate; }
+.solo-shelf-item.is-lit:nth-child(2n) .solo-shelf-icon { animation-delay: -1.3s; }
 .solo-shelf-item.is-picked { transform: scale(1.18); box-shadow: 0 0 0 1.5px #fbbf24; }
+.solo-shelf-item { -webkit-touch-callout: none; user-select: none; -webkit-user-select: none; }
+.solo-shelf-item.is-holding { animation: solo-shelf-hold 0.6s ease-in forwards; }
+@keyframes solo-shelf-hold {
+  from { box-shadow: 0 0 0 1.5px rgb(251 191 36 / 0.6), 0 0 0 0 rgb(253 224 71 / 0); }
+  to { transform: scale(1.35); box-shadow: 0 0 0 2.5px #fde68a, 0 0 18px 6px rgb(253 224 71 / 0.85); }
+}
 @keyframes solo-shelf-glow {
   from { filter: drop-shadow(0 0 2px rgb(251 191 36 / 0.5)); }
   to { filter: drop-shadow(0 0 8px rgb(251 191 36 / 1)); }
@@ -16724,138 +16730,15 @@ html[data-theme="millennium"]::view-transition-new(root) { animation: vt-eye 1s 
   to { box-shadow: 0 0 16px rgb(251 191 36 / 0.7); }
 }
 
-/* --- SOLO UNLOCK SCENES (solo-unlock-scenes.js), 7.6s, tap to skip ---
-   nightmare:  Shadi rises from the sand (shadi-in 0.5s), the door opens (open 4.7s).
-   millennium: the Eye of Wdjat opens (eye-open 0.3s) and flares (crown 4.7s). --- */
+/* --- SOLO UNLOCK SCENES (solo-unlock-scenes.js), tap to skip ---
+   Shared by every scene: the overlay, floating dust and the skip hint. --- */
 .fx-su {
   pointer-events: auto;
   cursor: pointer;
   animation: dd-fade 500ms ease-out both;
 }
 .fx-su.is-out { animation: pg-out 600ms ease-in forwards; }
-.su-bg { position: absolute; inset: 0; background: radial-gradient(ellipse at 50% 60%, #6b4a22, #2a1a0c 55%, #0a0603); }
-.fx-su--millennium .su-bg { background: radial-gradient(ellipse at 50% 50%, #1e3a8a, #0b1640 55%, #03060f); }
-
-.su-rays {
-  position: absolute;
-  left: 50%;
-  top: 50%;
-  width: 160vmax;
-  height: 160vmax;
-  translate: -50% -50%;
-  background: repeating-conic-gradient(rgb(251 191 36 / 0.2) 0 6deg, transparent 6deg 18deg);
-  -webkit-mask: radial-gradient(circle, #000 0 12%, transparent 55%);
-  mask: radial-gradient(circle, #000 0 12%, transparent 55%);
-  opacity: 0;
-  transition: opacity 1s ease-out;
-  animation: su-spin 40s linear infinite;
-}
-.fx-su--nightmare .su-rays { background: repeating-conic-gradient(rgb(244 63 94 / 0.22) 0 6deg, transparent 6deg 18deg); }
-.fx-su.eye-open .su-rays { opacity: 0.55; }
-.fx-su.open .su-rays,
-.fx-su.crown .su-rays { opacity: 1; }
 @keyframes su-spin { to { transform: rotate(360deg); } }
-
-/* The stone door (Nightmare only), with the Eye carved above Shadi. */
-.su-door {
-  position: absolute;
-  left: 50%;
-  top: 50%;
-  width: min(62vw, 260px);
-  height: 44vh;
-  translate: -50% -50%;
-  overflow: hidden;
-  border: 4px solid #8a6a3a;
-  border-bottom: none;
-  border-radius: 50% 50% 0 0 / 16% 16% 0 0;
-  box-shadow: 0 0 40px rgb(0 0 0 / 0.8);
-}
-.su-door-glow {
-  position: absolute;
-  inset: 0;
-  background: radial-gradient(ellipse at 50% 70%, #f43f5e, #7e22ce 45%, #1e0b33 85%);
-  opacity: 0;
-  transition: opacity 1.2s ease-out;
-}
-.su-door-l,
-.su-door-r {
-  position: absolute;
-  top: 0;
-  bottom: 0;
-  width: 50%;
-  background: linear-gradient(90deg, #5c4322, #a3824e 50%, #5c4322);
-  transition: transform 1.8s cubic-bezier(0.5, 0, 0.3, 1);
-}
-.su-door-l { left: 0; border-right: 2px solid #3f2d16; }
-.su-door-r { right: 0; border-left: 2px solid #3f2d16; }
-.su-door-l::after,
-.su-door-r::after {
-  content: '';
-  position: absolute;
-  inset: 10% 16%;
-  border: 2px solid rgb(63 45 22 / 0.6);
-  border-radius: 4px;
-}
-.fx-su.open .su-door-l { transform: translateX(-100%); }
-.fx-su.open .su-door-r { transform: translateX(100%); }
-.fx-su.open .su-door-glow { opacity: 1; }
-
-.su-eye {
-  position: absolute;
-  left: 50%;
-  top: calc(50% - 12vh);
-  width: min(30vw, 120px);
-  aspect-ratio: 180 / 220;
-  translate: -50% -50%;
-  color: #fbbf24;
-  filter: drop-shadow(0 0 8px rgb(251 191 36 / 0.7));
-  opacity: 0.55;
-  transition: opacity 0.8s ease-out, transform 1.2s cubic-bezier(0.3, 1.4, 0.5, 1);
-}
-.su-eye svg { fill: none; stroke: currentColor; stroke-width: 7; stroke-linecap: round; stroke-linejoin: round; }
-.fx-su--nightmare.open .su-eye { opacity: 0; }
-.fx-su--millennium .su-eye { top: 50%; width: min(66vw, 280px); opacity: 0; transform: scaleY(0); }
-.fx-su--millennium.eye-open .su-eye { opacity: 1; transform: none; }
-.fx-su.crown .su-eye { animation: su-eye-flare 1.4s ease-out forwards; }
-@keyframes su-eye-flare {
-  0% { filter: drop-shadow(0 0 8px rgb(251 191 36 / 0.7)); }
-  35% { transform: scale(1.12); filter: drop-shadow(0 0 40px rgb(253 224 71 / 1)); }
-  100% { transform: none; filter: drop-shadow(0 0 16px rgb(251 191 36 / 0.9)); }
-}
-
-/* Shadi, with the Millennium Key and Scale. Steps aside as the door opens. */
-.su-shadi {
-  position: absolute;
-  left: 50%;
-  bottom: calc(50% - 22vh);
-  width: min(30vw, 120px);
-  aspect-ratio: 120 / 200;
-  translate: -50% 0;
-  opacity: 0;
-  transform: translateY(5vh);
-  filter: blur(4px) sepia(1);
-  transition: opacity 1.4s ease-out, transform 1.4s ease-out, filter 1.4s ease-out;
-}
-.fx-su--millennium .su-door,
-.fx-su--millennium .su-shadi { display: none; }
-.fx-su.shadi-in .su-shadi { opacity: 1; transform: none; filter: blur(0) sepia(0); }
-.fx-su.open .su-shadi { transform: translateX(-45%) scale(0.92); }
-.su-item {
-  position: absolute;
-  top: 55%;
-  font-size: 1.7rem;
-  filter: drop-shadow(0 0 6px rgb(251 191 36 / 0.8));
-  animation: su-bob 2.4s ease-in-out infinite alternate;
-}
-.su-item--key { left: -26%; }
-.su-item--scale { right: -30%; animation-delay: -1.2s; }
-@keyframes su-bob { to { transform: translateY(-6px); } }
-.fx-su.open .su-item--key { animation: su-key 0.9s ease-out forwards; }
-@keyframes su-key {
-  0% { filter: drop-shadow(0 0 6px rgb(251 191 36 / 0.8)); }
-  50% { transform: scale(1.6) rotate(-25deg); filter: drop-shadow(0 0 20px rgb(253 224 71 / 1)); }
-  100% { transform: scale(1.25) rotate(-10deg); filter: drop-shadow(0 0 12px rgb(253 224 71 / 1)); }
-}
 
 .su-dust i {
   position: absolute;
@@ -16874,31 +16757,6 @@ html[data-theme="millennium"]::view-transition-new(root) { animation: vt-eye 1s 
   to { transform: translateY(-100vh); opacity: 0; }
 }
 
-/* Lines: P1 below the stage, P2 mirrored above it. The last line is the unlock title. */
-.su-say {
-  position: absolute;
-  left: 50%;
-  width: max-content;
-  max-width: min(340px, 86vw);
-  padding: 0.55rem 0.9rem;
-  border-radius: 1rem;
-  translate: -50% 0;
-  background: #fef9e7;
-  box-shadow: 0 0.6rem 1.2rem rgb(0 0 0 / 0.5), 0 0 0 2px #d4a537;
-  color: #422006;
-  font: italic 700 0.95rem/1.3 'Cinzel', Georgia, serif;
-  text-align: center;
-  opacity: 0;
-}
-.su-say--1 { top: calc(50% + 24vh); }
-.su-say--2 { bottom: calc(50% + 24vh); rotate: 180deg; }
-.su-say.is-on { animation: pg-say 350ms cubic-bezier(0.3, 1.5, 0.5, 1) both; }
-.su-say.is-title {
-  font: 900 1.2rem/1.2 'Cinzel Decorative', 'Cinzel', Georgia, serif;
-  background: linear-gradient(#fef3c7, #fbbf24);
-  color: #1c1003;
-  box-shadow: 0 0 24px rgb(251 191 36 / 0.8), 0 0 0 2px #fff7d6;
-}
 .su-skip {
   position: absolute;
   left: 50%;
@@ -16910,8 +16768,1371 @@ html[data-theme="millennium"]::view-transition-new(root) { animation: vt-eye 1s 
   color: rgb(255 255 255 / 0.45);
 }
 .su-skip--1 { bottom: 1rem; }
-.su-skip--2 { top: 1rem; rotate: 180deg; }
-html.fx-lite .su-rays { display: none; }
+
+/* --- Solo unlock scene "puzzle": Yami Yugi's Soul Room (yp-*), 10.4s ---
+   flare 0.4s (Eye of Wdjat), yami 0.9s (he rises, the dialogue box opens),
+   lift 5.5s (his Puzzle breaks into 7 pieces), assemble 6.1s (each piece
+   clicks home 0.14s apart: 6.4s .. 7.24s), obtained 7.3s (flash + title). --- */
+.yp-bg { position: absolute; inset: 0; background: radial-gradient(ellipse at 50% 45%, #4c1d95, #1e0b3a 55%, #07030f); }
+.yp-room {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  opacity: 0.3;
+  animation: yp-drift 18s ease-in-out infinite alternate;
+}
+@keyframes yp-drift { to { transform: scale(1.08) rotate(3deg); } }
+.yp-flare {
+  position: absolute;
+  left: 50%;
+  top: 46%;
+  width: min(74vw, 320px);
+  aspect-ratio: 180 / 220;
+  translate: -50% -50%;
+  color: #fde047;
+  opacity: 0;
+}
+.yp-flare svg { fill: none; stroke: currentColor; stroke-width: 6; stroke-linecap: round; stroke-linejoin: round; }
+.fx-su.flare .yp-flare { animation: yp-flare 1.8s ease-out forwards; }
+@keyframes yp-flare {
+  0% { opacity: 0; transform: scale(0.5); }
+  30% { opacity: 1; transform: scale(1.1); filter: drop-shadow(0 0 30px rgb(253 224 71 / 1)); }
+  100% { opacity: 0.16; transform: scale(1); filter: drop-shadow(0 0 10px rgb(253 224 71 / 0.6)); }
+}
+.yp-rays {
+  position: absolute;
+  left: 50%;
+  top: 46%;
+  width: 160vmax;
+  height: 160vmax;
+  translate: -50% -50%;
+  background: repeating-conic-gradient(rgb(253 224 71 / 0.16) 0 5deg, transparent 5deg 15deg);
+  -webkit-mask: radial-gradient(circle, #000 0 10%, transparent 50%);
+  mask: radial-gradient(circle, #000 0 10%, transparent 50%);
+  opacity: 0;
+  transition: opacity 1s ease-out;
+  animation: su-spin 50s linear infinite;
+}
+.fx-su.flare .yp-rays { opacity: 0.4; }
+.fx-su.obtained .yp-rays { opacity: 1; }
+
+.yp-yami {
+  position: absolute;
+  left: 50%;
+  top: 46%;
+  width: min(72vw, 300px);
+  aspect-ratio: 200 / 260;
+  translate: -50% -50%;
+  opacity: 0;
+  transform: translateY(6vh) scale(0.94);
+  filter: brightness(3) blur(6px);
+  transition: opacity 1.2s ease-out, transform 1.2s ease-out, filter 1.2s ease-out;
+}
+.yp-yami svg { width: 100%; height: 100%; display: block; overflow: visible; }
+.fx-su.yami .yp-yami { opacity: 1; transform: none; filter: none; }
+.fx-su.assemble .yp-yami { opacity: 0.3; transform: scale(0.96); filter: brightness(0.6) blur(1px); }
+.yp-brow-eye { opacity: 0; }
+.fx-su.yami .yp-brow-eye { animation: yp-brow 1.4s ease-in-out 0.4s infinite alternate; }
+@keyframes yp-brow {
+  from { opacity: 0.35; }
+  to { opacity: 1; filter: drop-shadow(0 0 3px #fde047); }
+}
+.yp-worn { transition: opacity 0.3s ease-out; }
+.fx-su.lift .yp-worn { opacity: 0; }
+
+/* The Puzzle: seven pieces burst out, then click home one by one. */
+.yp-puzzle {
+  position: absolute;
+  left: 50%;
+  top: 46%;
+  width: min(46vw, 190px);
+  aspect-ratio: 1;
+  translate: -50% -50%;
+  opacity: 0;
+  transition: opacity 0.3s ease-out;
+}
+.yp-puzzle svg { width: 100%; height: 100%; display: block; overflow: visible; }
+.fx-su.lift .yp-puzzle { opacity: 1; }
+.fx-su.obtained .yp-puzzle { animation: yp-pop 0.6s ease-out, yp-glow 1.8s ease-in-out 0.6s infinite alternate; }
+@keyframes yp-pop {
+  0% { transform: scale(1); }
+  40% { transform: scale(1.18); filter: drop-shadow(0 0 30px rgb(253 224 71 / 1)); }
+  100% { transform: scale(1); }
+}
+@keyframes yp-glow {
+  from { filter: drop-shadow(0 0 8px rgb(251 191 36 / 0.7)); }
+  to { filter: drop-shadow(0 0 22px rgb(253 224 71 / 1)); }
+}
+.yp-piece {
+  transform-box: fill-box;
+  transform-origin: center;
+  opacity: 0;
+  transform: translate(calc(var(--fx) * 0.45), calc(var(--fy) * 0.45)) rotate(var(--rot)) scale(0.3);
+  transition: transform 0.5s ease-out, opacity 0.3s ease-out;
+}
+.fx-su.lift .yp-piece {
+  opacity: 1;
+  transform: translate(calc(var(--fx) * 0.45), calc(var(--fy) * 0.45)) rotate(calc(var(--rot) * 0.4));
+}
+.fx-su.assemble .yp-piece {
+  transform: none;
+  transition: transform 0.3s cubic-bezier(0.6, 0, 0.9, 0.4) calc(var(--i) * 0.14s), opacity 0.3s;
+}
+.yp-puzzle-eye { opacity: 0; transition: opacity 0.4s ease-out; }
+.fx-su.obtained .yp-puzzle-eye { opacity: 1; }
+
+.yp-flash {
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(circle at 50% 46%, #fffbeb, rgb(253 224 71 / 0.6) 30%, transparent 70%);
+  opacity: 0;
+}
+.fx-su.lift .yp-flash { animation: yp-flash 0.5s ease-out; }
+.fx-su.obtained .yp-flash { animation: yp-flash-big 0.9s ease-out; }
+@keyframes yp-flash { 30% { opacity: 0.6; } }
+@keyframes yp-flash-big { 20% { opacity: 1; } }
+
+/* "Millennium Puzzle obtained!": P1 under the Puzzle, P2 mirrored above it. */
+.yp-title {
+  position: absolute;
+  left: 50%;
+  width: max-content;
+  max-width: 90vw;
+  translate: -50% 0;
+  text-align: center;
+  opacity: 0;
+}
+.yp-title--1 { top: calc(46% + min(25vw, 104px)); }
+.yp-title b {
+  display: block;
+  font: 900 1.3rem/1.15 'Cinzel Decorative', 'Cinzel', Georgia, serif;
+  background: linear-gradient(#fffbeb, #fbbf24 60%, #b45309);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  filter: drop-shadow(0 2px 6px rgb(0 0 0 / 0.8));
+}
+.yp-title span {
+  font: 700 0.65rem/1 'Cinzel', Georgia, serif;
+  letter-spacing: 0.25em;
+  text-transform: uppercase;
+  color: #ddd6fe;
+}
+.fx-su.obtained .yp-title { animation: yp-title-in 0.7s cubic-bezier(0.3, 1.5, 0.5, 1) 0.15s both; }
+@keyframes yp-title-in {
+  from { opacity: 0; transform: scale(0.6); }
+  to { opacity: 1; transform: none; }
+}
+
+/* Dialogue boxes with a name plate: P1 at the bottom, P2 mirrored at the top. */
+.yp-box {
+  position: absolute;
+  left: 50%;
+  width: min(92vw, 380px);
+  padding: 0.95rem 1rem 0.75rem;
+  translate: -50% 0;
+  border: 1.5px solid #fbbf24;
+  border-radius: 0.8rem;
+  background: linear-gradient(rgb(38 14 74 / 0.94), rgb(12 4 28 / 0.94));
+  box-shadow: 0 0 24px rgb(124 58 237 / 0.5);
+  opacity: 0;
+  transform: translateY(1rem);
+  transition: opacity 0.4s ease-out, transform 0.4s ease-out;
+}
+.yp-box--1 { bottom: 2.6rem; }
+.fx-su.yami .yp-box { opacity: 1; transform: none; }
+.yp-name {
+  position: absolute;
+  top: -0.7rem;
+  left: 1rem;
+  padding: 0.15rem 0.65rem;
+  border-radius: 999px;
+  background: linear-gradient(#fde68a, #f59e0b);
+  color: #1c1003;
+  font: 900 0.65rem/1.2 'Cinzel', Georgia, serif;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+.yp-line {
+  margin: 0;
+  min-height: 2.7em;
+  color: #f5f3ff;
+  font: 600 0.95rem/1.35 'Cinzel', Georgia, serif;
+  opacity: 0;
+}
+.yp-line.is-on { animation: yp-line-in 0.4s ease-out both; }
+@keyframes yp-line-in {
+  from { opacity: 0; transform: translateY(4px); }
+  to { opacity: 1; transform: none; }
+}
+html.fx-lite .yp-rays { display: none; }
+html.fx-lite .yp-room { animation: none; }
+.fx-su.ishizu .yp-box { opacity: 1; transform: none; }
+.yp-title em {
+  display: block;
+  margin-top: 0.4rem;
+  font: 800 0.8rem/1.2 'Cinzel', Georgia, serif;
+  font-style: normal;
+  letter-spacing: 0.12em;
+  color: #fecaca;
+  text-shadow: 0 0 8px rgb(244 63 94 / 0.8);
+}
+
+/* --- Solo unlock scene "necklace": Ishizu's tomb (iz-*), 11.4s ---
+   ishizu 0.4s (she steps out of the dark, the dialogue box opens), vision 5.2s
+   (the Necklace glows and a vision of the hard road swirls open: road 5.7-7.3s,
+   lightning from 6.1s, crossed blades 6.8s), give 7.6s (the Necklace floats
+   from her chest to you), obtained 8.1s (flash + title). --- */
+.fx-su--necklace { --izw: min(72vw, 300px); }
+.iz-bg { position: absolute; inset: 0; background: radial-gradient(ellipse at 50% 42%, #5a3714, #2a1708 50%, #0c0603); }
+.fx-cegg svg.iz-pillar { position: absolute; top: 0; width: min(13vw, 64px); height: 100%; overflow: hidden; opacity: 0.35; }
+.iz-pillar--l { left: 2vw; }
+.iz-pillar--r { right: 2vw; }
+.iz-torch { position: absolute; top: 16%; width: 1.1rem; height: 4.5rem; }
+.iz-torch--l { left: calc(2vw + min(13vw, 64px) + 0.6rem); }
+.iz-torch--r { right: calc(2vw + min(13vw, 64px) + 0.6rem); }
+.iz-torch::before {
+  content: '';
+  position: absolute;
+  left: 30%;
+  top: 1.7rem;
+  bottom: 0;
+  width: 40%;
+  border-radius: 2px;
+  background: linear-gradient(#78350f, #3b1d06);
+}
+.iz-torch i {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 2rem;
+  transform-origin: 50% 100%;
+  border-radius: 50% 50% 45% 45% / 65% 65% 35% 35%;
+  background: radial-gradient(ellipse at 50% 75%, #fff7ed, #fde047 30%, #f97316 60%, rgb(234 88 12 / 0) 72%);
+  animation: iz-flicker 0.18s ease-in-out infinite alternate;
+}
+.iz-torch--r i { animation-delay: -0.09s; }
+@keyframes iz-flicker {
+  from { transform: scale(1, 1) skewX(-3deg); }
+  to { transform: scale(0.9, 1.12) skewX(4deg); }
+}
+.iz-torch-glow {
+  position: absolute;
+  left: 50%;
+  top: 1rem;
+  width: 9rem;
+  height: 9rem;
+  translate: -50% -50%;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgb(251 146 60 / 0.35), transparent 65%);
+  animation: iz-glow 1.6s ease-in-out infinite alternate;
+}
+@keyframes iz-glow { to { opacity: 0.6; transform: scale(0.9); } }
+
+.iz-ishizu {
+  position: absolute;
+  left: 50%;
+  top: 46%;
+  width: var(--izw);
+  aspect-ratio: 200 / 260;
+  translate: -50% -50%;
+  opacity: 0;
+  transform: translateY(2vh) scale(0.96);
+  filter: brightness(0);
+  transition: opacity 1.4s ease-out, transform 1.4s ease-out, filter 1.4s ease-out;
+}
+.fx-su.ishizu .iz-ishizu { opacity: 1; transform: none; filter: none; }
+.fx-su.give .iz-ishizu { opacity: 0.35; }
+.iz-ishizu-svg { width: 100%; height: 100%; display: block; overflow: visible; transition: filter 0.8s ease-out; }
+.fx-su.vision .iz-ishizu-svg { filter: brightness(0.5) saturate(0.7); }
+.iz-worn {
+  position: absolute;
+  left: 50%;
+  top: 80.5%;
+  width: 21%;
+  aspect-ratio: 1;
+  translate: -50% -50%;
+  transition: opacity 0.3s ease-out;
+}
+.iz-worn .solo-shelf-icon,
+.iz-necklace .solo-shelf-icon { width: 100%; height: 100%; }
+.fx-su.vision .iz-worn { animation: iz-worn-glow 0.9s ease-in-out infinite alternate; }
+@keyframes iz-worn-glow {
+  from { filter: drop-shadow(0 0 4px #5eead4); }
+  to { filter: drop-shadow(0 0 14px #5eead4) brightness(1.3); }
+}
+.fx-su.give .iz-worn { opacity: 0; }
+
+/* The vision: a swirling window onto Pegasus' castle and the crimson road. */
+.iz-vision {
+  position: absolute;
+  left: 50%;
+  top: 38%;
+  width: min(64vw, 270px);
+  aspect-ratio: 1;
+  translate: -50% -50%;
+  overflow: hidden;
+  border: 2px solid #fbbf24;
+  border-radius: 50%;
+  box-shadow: 0 0 30px rgb(94 234 212 / 0.6), inset 0 0 30px rgb(0 0 0 / 0.8);
+  opacity: 0;
+  transform: scale(0.2);
+  transition: opacity 0.6s ease-out, transform 0.8s cubic-bezier(0.3, 1.4, 0.5, 1);
+}
+.iz-vision svg { width: 100%; height: 100%; display: block; }
+.iz-vision::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  background: repeating-conic-gradient(rgb(94 234 212 / 0.12) 0 8deg, transparent 8deg 24deg);
+  mix-blend-mode: screen;
+  animation: su-spin 6s linear infinite;
+}
+.fx-su.vision .iz-vision { opacity: 1; transform: none; }
+.fx-su.give .iz-vision { opacity: 0; transform: scale(1.3); transition: opacity 0.5s ease-in, transform 0.5s ease-in; }
+.iz-road { stroke-dasharray: 120; stroke-dashoffset: 120; filter: drop-shadow(0 0 2px #f43f5e); }
+.fx-su.vision .iz-road { stroke-dashoffset: 0; transition: stroke-dashoffset 1.6s ease-out 0.5s; }
+.iz-bolt { opacity: 0; }
+.fx-su.vision .iz-bolt { animation: iz-bolt 1.4s steps(1) 0.9s infinite; }
+@keyframes iz-bolt {
+  0% { opacity: 1; }
+  8% { opacity: 0; }
+  14% { opacity: 1; }
+  20%, 100% { opacity: 0; }
+}
+.iz-swords { opacity: 0; transform-box: fill-box; transform-origin: center; transform: scale(1.6); }
+.fx-su.vision .iz-swords { animation: iz-swords 0.4s ease-out 1.6s forwards; }
+@keyframes iz-swords {
+  to { opacity: 1; transform: none; filter: drop-shadow(0 0 3px #f43f5e); }
+}
+
+/* The Necklace floats from her chest to the centre. */
+.iz-necklace {
+  position: absolute;
+  left: 50%;
+  top: 46%;
+  width: min(40vw, 170px);
+  aspect-ratio: 1;
+  translate: -50% -50%;
+  opacity: 0;
+  transform: translateY(calc(var(--izw) * 0.39)) scale(0.24);
+}
+.fx-su.give .iz-necklace {
+  opacity: 1;
+  transform: none;
+  transition: opacity 0.3s ease-out, transform 0.5s cubic-bezier(0.3, 1.3, 0.5, 1);
+}
+.fx-su.obtained .iz-necklace { animation: yp-pop 0.6s ease-out, iz-neck-glow 1.8s ease-in-out 0.6s infinite alternate; }
+@keyframes iz-neck-glow {
+  from { filter: drop-shadow(0 0 8px rgb(94 234 212 / 0.7)); }
+  to { filter: drop-shadow(0 0 22px rgb(253 224 71 / 1)); }
+}
+.fx-su.give .yp-flash { animation: yp-flash 0.5s ease-out; }
+.fx-su.give.obtained .yp-flash { animation: yp-flash-big 0.9s ease-out; }
+.fx-su--necklace .yp-box {
+  background: linear-gradient(rgb(16 46 50 / 0.94), rgb(5 18 20 / 0.94));
+  box-shadow: 0 0 24px rgb(45 212 191 / 0.4);
+}
+.fx-su--necklace .yp-title span { color: #ccfbf1; }
+html.fx-lite .iz-torch-glow,
+html.fx-lite .iz-vision::after { display: none; }
+
+/* --- Solo unlock scene "scale": Shadi weighs your heart (sd-*), 12.6s ---
+   shadi 0.4s (he rises out of a sand mirage, the dialogue box opens), weigh
+   5.6s (the Scale appears; the beam tips 6.2-8.2s: heart down 6.7s, feather
+   down 7.2s, 7.6s, 7.9s), balanced 8.3s (level + glow), obtained 9.6s. --- */
+.fx-su--scale { --sdw: min(72vw, 300px); }
+.sd-sky { position: absolute; inset: 0; background: linear-gradient(#070b24, #1e1b4b 55%, #4a2c4f); }
+.fx-cegg svg.sd-stars { position: absolute; inset: 0; }
+.sd-stars circle { animation: sd-twinkle var(--d) ease-in-out var(--delay) infinite alternate; }
+@keyframes sd-twinkle { from { opacity: 0.25; } }
+.sd-moon {
+  position: absolute;
+  top: 9%;
+  right: 16%;
+  width: 2.6rem;
+  height: 2.6rem;
+  border-radius: 50%;
+  box-shadow: -0.7rem 0.35rem 0 0 #fef3c7;
+  filter: drop-shadow(0 0 10px rgb(254 243 199 / 0.6));
+}
+.fx-cegg svg.sd-dunes { position: absolute; left: 0; bottom: 0; height: 30%; }
+
+.sd-shadi {
+  position: absolute;
+  left: 50%;
+  top: 46%;
+  width: var(--sdw);
+  aspect-ratio: 200 / 260;
+  translate: -50% -50%;
+  opacity: 0;
+  transform: translateY(2vh) scale(0.96);
+  filter: blur(8px) sepia(1) brightness(1.4);
+  transition: opacity 1.4s ease-out, transform 1.4s ease-out, filter 1.4s ease-out;
+}
+.fx-su.shadi .sd-shadi { opacity: 1; transform: none; filter: none; }
+.fx-su.weigh .sd-shadi { opacity: 0.3; transform: scale(0.94); filter: brightness(0.6) blur(1px); }
+
+/* The Scale: the beam wavers and the pans counter-rotate to hang straight. */
+.sd-scale {
+  position: absolute;
+  left: 50%;
+  top: 42%;
+  width: min(66vw, 280px);
+  aspect-ratio: 1;
+  translate: -50% -50%;
+  opacity: 0;
+  transform: translateY(4vh) scale(0.6);
+  transition: opacity 0.6s ease-out, transform 0.7s cubic-bezier(0.3, 1.3, 0.5, 1), filter 0.6s ease-out;
+}
+.fx-su.weigh .sd-scale { opacity: 1; transform: none; filter: drop-shadow(0 0 12px rgb(251 191 36 / 0.5)); }
+.fx-su.balanced .sd-scale { filter: drop-shadow(0 0 26px rgb(253 224 71 / 0.95)); }
+.fx-su.obtained .sd-scale { animation: yp-pop 0.6s ease-out, yp-glow 1.8s ease-in-out 0.6s infinite alternate; }
+.sd-beam { transform-box: view-box; transform-origin: 100px 51.5px; }
+.sd-pan { transform-box: view-box; }
+.fx-su.weigh .sd-beam { animation: sd-tilt 2s ease-in-out 0.6s forwards; }
+.fx-su.weigh .sd-pan { animation: sd-untilt 2s ease-in-out 0.6s forwards; }
+.fx-su.balanced .sd-beam { animation: sd-level 0.5s ease-out forwards; }
+.fx-su.balanced .sd-pan { animation: sd-level-pan 0.5s ease-out forwards; }
+@keyframes sd-tilt {
+  0% { transform: rotate(0); }
+  25% { transform: rotate(-14deg); }
+  50% { transform: rotate(8deg); }
+  70% { transform: rotate(-5deg); }
+  85% { transform: rotate(3deg); }
+  100% { transform: rotate(-2deg); }
+}
+@keyframes sd-untilt {
+  0% { transform: rotate(0); }
+  25% { transform: rotate(14deg); }
+  50% { transform: rotate(-8deg); }
+  70% { transform: rotate(5deg); }
+  85% { transform: rotate(-3deg); }
+  100% { transform: rotate(2deg); }
+}
+@keyframes sd-level {
+  from { transform: rotate(-2deg); }
+  to { transform: rotate(0); }
+}
+@keyframes sd-level-pan {
+  from { transform: rotate(2deg); }
+  to { transform: rotate(0); }
+}
+.sd-heart { transform-box: fill-box; transform-origin: center; }
+.fx-su.weigh .sd-heart { animation: sd-beat 0.8s ease-in-out infinite; }
+@keyframes sd-beat {
+  0%, 100% { transform: scale(1); }
+  15% { transform: scale(1.18); }
+  30% { transform: scale(1); }
+  45% { transform: scale(1.1); }
+}
+.fx-su.balanced .yp-rays { opacity: 0.5; }
+.fx-su.shadi .yp-box { opacity: 1; transform: none; }
+.fx-su--scale .yp-box {
+  background: linear-gradient(rgb(46 30 62 / 0.94), rgb(18 12 30 / 0.94));
+  box-shadow: 0 0 24px rgb(251 191 36 / 0.35);
+}
+.fx-su--scale .yp-title span { color: #fde68a; }
+html.fx-lite .sd-stars circle { animation: none; }
+
+/* --- Solo unlock scene "key": Shadi opens the door to your soul (ky-*), 13.8s ---
+   shadi 0.4s (he steps out of the dark before a sealed door, the dialogue box
+   opens), unlock 5.7s (the door lights up, his Key lifts off and hovers),
+   turn 7.2s (it plunges into the ankh keyhole, turns at 7.75s), open 8.4s (the
+   leaves swing inwards on the Nightmare road: red Eye 8.9s, road 9.1-10.3s),
+   obtained 10.6s (the Key flies back out of the doorway + flash + title). --- */
+.fx-su--key { --kyw: min(58vw, 240px); --kyk: min(36vw, 150px); }
+.ky-bg { position: absolute; inset: 0; background: radial-gradient(ellipse at 50% 40%, #2a2347, #120e22 55%, #050309); }
+.ky-floor {
+  position: absolute;
+  left: -50%;
+  bottom: 0;
+  width: 200%;
+  height: 34%;
+  background:
+    repeating-linear-gradient(90deg, rgb(196 181 253 / 0.14) 0 1px, transparent 1px 6%),
+    repeating-linear-gradient(0deg, rgb(196 181 253 / 0.14) 0 1px, transparent 1px 16%);
+  -webkit-mask: linear-gradient(transparent, #000 70%);
+  mask: linear-gradient(transparent, #000 70%);
+  transform: perspective(300px) rotateX(55deg);
+  transform-origin: 50% 100%;
+}
+.ky-light {
+  position: absolute;
+  left: 50%;
+  top: 40%;
+  width: 140vmax;
+  height: 140vmax;
+  translate: -50% -50%;
+  background: radial-gradient(circle, rgb(244 63 94 / 0.55), rgb(127 29 29 / 0.25) 22%, transparent 48%);
+  opacity: 0;
+  transition: opacity 1.2s ease-out 0.3s;
+}
+.fx-su.open .ky-light { opacity: 1; }
+
+/* The door: hidden in the dark behind Shadi, it lights up when the Key rises. */
+.ky-door {
+  position: absolute;
+  left: calc(50% - var(--kyw) / 2);
+  top: calc(40% - var(--kyw) * 0.675);
+  width: var(--kyw);
+  height: calc(var(--kyw) * 1.35);
+  perspective: calc(var(--kyw) * 3);
+  opacity: 0;
+  filter: brightness(0.5);
+  transform: scale(0.96);
+  transition: opacity 1.2s ease-out, filter 0.8s ease-out, transform 0.8s ease-out;
+}
+.fx-su.shadi .ky-door { opacity: 0.6; }
+.fx-su.unlock .ky-door { opacity: 1; filter: none; transform: none; }
+.fx-su.open .ky-door { animation: ky-rumble 0.7s linear; }
+@keyframes ky-rumble {
+  0%, 100% { transform: none; }
+  20% { transform: translate(-2px, 1px); }
+  40% { transform: translate(2px, -1px); }
+  60% { transform: translate(-1.5px, 0); }
+  80% { transform: translate(1px, 1px); }
+}
+.fx-cegg svg.ky-frame { position: absolute; left: -14%; top: -17.78%; width: 128%; height: 120.74%; }
+.ky-eye { opacity: 0.55; transition: opacity 0.6s ease-out; }
+.fx-su.unlock .ky-eye { opacity: 1; }
+.ky-leaf {
+  position: absolute;
+  top: 0;
+  width: 50%;
+  height: 100%;
+  transition: transform 1.3s cubic-bezier(0.5, 0, 0.3, 1), filter 1.3s ease-out;
+}
+.ky-leaf svg { display: block; }
+.ky-leaf--l { left: 0; transform-origin: 0 50%; }
+.ky-leaf--r { right: 0; transform-origin: 100% 50%; }
+.fx-su.open .ky-leaf--l { transform: rotateY(80deg); filter: brightness(0.35); }
+.fx-su.open .ky-leaf--r { transform: rotateY(-80deg); filter: brightness(0.35); }
+.ky-hole {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 15%;
+  aspect-ratio: 20 / 30;
+  translate: -50% -50%;
+  transition: opacity 0.3s ease-out;
+}
+.fx-su.unlock .ky-hole { animation: ky-hole 0.9s ease-in-out infinite alternate; }
+@keyframes ky-hole {
+  from { filter: drop-shadow(0 0 2px rgb(251 191 36 / 0.5)); }
+  to { filter: drop-shadow(0 0 10px rgb(253 224 71 / 1)); }
+}
+.fx-su.open .ky-hole { opacity: 0; }
+
+/* Behind the door: the Nightmare road under a glaring red Eye. */
+.ky-beyond { position: absolute; inset: 0; overflow: hidden; background: #1a0306; }
+.ky-glare { transform-box: fill-box; transform-origin: center; opacity: 0; transform: scale(0.4); }
+.fx-su.open .ky-glare {
+  opacity: 1;
+  transform: none;
+  transition: opacity 0.6s ease-out 0.5s, transform 0.8s cubic-bezier(0.3, 1.4, 0.5, 1) 0.5s;
+}
+.ky-road { stroke-dasharray: 70; stroke-dashoffset: 70; }
+.fx-su.open .ky-road { stroke-dashoffset: 0; transition: stroke-dashoffset 1.2s ease-out 0.7s; }
+
+.ky-shadi {
+  position: absolute;
+  left: 50%;
+  top: 46%;
+  width: min(72vw, 300px);
+  aspect-ratio: 200 / 260;
+  translate: -50% -50%;
+  opacity: 0;
+  transform: translateY(2vh) scale(0.96);
+  filter: brightness(0) blur(4px);
+  transition: opacity 1.4s ease-out, transform 1.4s ease-out, filter 1.4s ease-out;
+}
+.fx-su.shadi .ky-shadi { opacity: 1; transform: none; filter: none; }
+.fx-su.unlock .ky-shadi { opacity: 0; transform: scale(0.94); filter: brightness(0.4) blur(2px); transition-duration: 0.9s; }
+.ky-shadi .sd-key { transition: opacity 0.2s ease-out; }
+.fx-su.unlock .ky-shadi .sd-key { opacity: 0; }
+
+/* The Key: lifts off Shadi's chest, hovers over the door, plunges into the
+   keyhole and turns (squashed edge-on), then flies back out to you. */
+.ky-key {
+  position: absolute;
+  left: 50%;
+  top: 40%;
+  width: var(--kyk);
+  aspect-ratio: 1;
+  translate: -50% -50%;
+  opacity: 0;
+  transform: translateY(calc(6vh + min(72vw, 300px) * 0.53)) scale(0.3);
+}
+.ky-key .solo-shelf-icon { width: 100%; height: 100%; display: block; }
+.fx-su.unlock .ky-key {
+  opacity: 1;
+  transform: translateY(-16vh) scale(0.8);
+  transition: opacity 0.3s ease-out, transform 1.1s cubic-bezier(0.3, 1.2, 0.5, 1);
+  animation: ky-key-glow 1s ease-in-out 0.3s infinite alternate;
+}
+@keyframes ky-key-glow {
+  from { filter: drop-shadow(0 0 6px rgb(251 191 36 / 0.6)); }
+  to { filter: drop-shadow(0 0 18px rgb(253 224 71 / 1)); }
+}
+.fx-su.turn .ky-key {
+  transform: translateY(0) scale(0.42, 0.42);
+  filter: drop-shadow(0 0 14px #fde047);
+  transition: transform 0.5s cubic-bezier(0.6, 0, 0.9, 0.4);
+  animation: ky-turn 0.35s ease-in-out 0.55s forwards;
+}
+@keyframes ky-turn {
+  from { transform: translateY(0) scale(0.42, 0.42); }
+  to { transform: translateY(0) scale(0.06, 0.42); }
+}
+.fx-su.open .ky-key { opacity: 0; transition: opacity 0.25s ease-out; }
+.fx-su.obtained .ky-key {
+  opacity: 1;
+  transform: none;
+  transition: none;
+  animation: ky-fly 0.8s cubic-bezier(0.3, 1.3, 0.5, 1) both, yp-glow 1.8s ease-in-out 0.8s infinite alternate;
+}
+@keyframes ky-fly {
+  from { opacity: 0; transform: scale(0.1); }
+  30% { opacity: 1; }
+  to { opacity: 1; transform: none; }
+}
+.fx-su--key .yp-rays { top: 40%; }
+.fx-su.open:not(.obtained) .yp-rays {
+  opacity: 0.6;
+  background: repeating-conic-gradient(rgb(244 63 94 / 0.2) 0 5deg, transparent 5deg 15deg);
+}
+.fx-su--key .yp-box {
+  background: linear-gradient(rgb(34 30 54 / 0.94), rgb(14 10 24 / 0.94));
+  box-shadow: 0 0 24px rgb(244 63 94 / 0.35);
+}
+.fx-su--key .yp-title span { color: #fde68a; }
+html.fx-lite .ky-light,
+html.fx-lite .ky-floor { display: none; }
+
+/* --- Solo unlock scene "ring": Yami Bakura and the pointers (br-*), 12.4s ---
+   bakura 0.4s (he grins out of the dark, the dialogue box opens), point 5.6s
+   (he dims, the big Ring rises from his chest and its five pointers swing),
+   lock 7.4s (every pointer snaps onto you, flash), obtained 9.0s. --- */
+.fx-su--ring { --brw: min(56vw, 230px); }
+.br-bg { position: absolute; inset: 0; background: radial-gradient(ellipse at 50% 42%, #2e1a4f, #120a24 55%, #04020a); }
+.br-mist {
+  position: absolute;
+  inset: -20%;
+  background:
+    radial-gradient(ellipse 40% 25% at 30% 70%, rgb(99 102 241 / 0.22), transparent),
+    radial-gradient(ellipse 45% 30% at 72% 30%, rgb(139 92 246 / 0.2), transparent);
+  animation: br-mist 14s ease-in-out infinite alternate;
+}
+@keyframes br-mist { to { transform: translate(6%, -4%) scale(1.1); } }
+.br-sigil {
+  position: absolute;
+  left: 50%;
+  top: 40%;
+  width: min(92vw, 390px);
+  aspect-ratio: 1;
+  translate: -50% -50%;
+  color: #a78bfa;
+  opacity: 0.12;
+  transition: opacity 0.6s ease-out;
+  animation: su-spin 60s linear infinite;
+}
+.br-sigil svg { fill: none; stroke: currentColor; stroke-width: 1.2; }
+.fx-su.lock .br-sigil { opacity: 0.32; }
+.br-souls i {
+  position: absolute;
+  bottom: 0;
+  left: var(--x);
+  width: var(--s);
+  height: calc(var(--s) * 1.6);
+  border-radius: 50% 50% 45% 45% / 60% 60% 40% 40%;
+  background: radial-gradient(circle at 50% 35%, #e0e7ff, #818cf8 45%, transparent 72%);
+  opacity: 0;
+  animation: br-soul var(--d) ease-in-out var(--delay) infinite;
+}
+@keyframes br-soul {
+  from { transform: translate(0, 5vh); opacity: 0; }
+  20% { opacity: 0.6; }
+  50% { transform: translate(var(--sway), -50vh); }
+  to { transform: translate(0, -105vh); opacity: 0; }
+}
+
+.br-bakura {
+  position: absolute;
+  left: 50%;
+  top: 46%;
+  width: min(72vw, 300px);
+  aspect-ratio: 200 / 260;
+  translate: -50% -50%;
+  opacity: 0;
+  transform: translateY(2vh) scale(0.96);
+  filter: brightness(0) blur(4px);
+  transition: opacity 1.4s ease-out, transform 1.4s ease-out, filter 1.4s ease-out;
+}
+.fx-su.bakura .br-bakura { opacity: 1; transform: none; filter: none; }
+.fx-su.point .br-bakura { opacity: 0.3; transform: scale(0.94); filter: brightness(0.6) blur(1px); }
+.br-worn { transition: opacity 0.3s ease-out; }
+.fx-su.point .br-worn { opacity: 0; }
+
+/* The big Ring rises from his chest; its pointers swing, then aim at you. */
+.br-ring {
+  position: absolute;
+  left: 50%;
+  top: 38%;
+  width: var(--brw);
+  aspect-ratio: 120 / 140;
+  translate: -50% -50%;
+  opacity: 0;
+  transform: translateY(calc(8vh + min(72vw, 300px) * 0.5)) scale(0.2);
+}
+.fx-su.point .br-ring {
+  opacity: 1;
+  transform: none;
+  filter: drop-shadow(0 0 10px rgb(251 191 36 / 0.5));
+  transition: opacity 0.3s ease-out, transform 1s cubic-bezier(0.3, 1.2, 0.5, 1);
+}
+.fx-su.lock .br-ring {
+  transform: scale(1.1);
+  filter: drop-shadow(0 0 22px rgb(253 224 71 / 0.95));
+  transition: transform 0.3s cubic-bezier(0.3, 1.6, 0.5, 1), filter 0.3s ease-out;
+}
+.fx-su.obtained .br-ring {
+  transform: none;
+  animation: yp-pop 0.6s ease-out, yp-glow 1.8s ease-in-out 0.6s infinite alternate;
+}
+.br-ptr { transform-box: view-box; }
+.fx-su.point .br-ptr { animation: br-swing 0.45s ease-in-out calc(var(--i) * -0.17s) infinite alternate; }
+@keyframes br-swing {
+  from { transform: rotate(-28deg); }
+  to { transform: rotate(28deg); }
+}
+.fx-su.lock .br-ptr { animation: br-aim 0.3s cubic-bezier(0.3, 1.6, 0.5, 1) forwards; }
+@keyframes br-aim { to { transform: rotate(var(--aim)); } }
+.fx-su.lock .br-tip { animation: br-tip 0.5s ease-in-out infinite alternate; }
+@keyframes br-tip { to { fill: #fef9c3; } }
+.br-iris { transition: fill 0.3s ease-out; }
+.fx-su.lock .br-iris { fill: #fff; }
+.fx-su.lock .yp-flash { animation: yp-flash 0.5s ease-out; }
+.fx-su.lock.obtained .yp-flash { animation: yp-flash-big 0.9s ease-out; }
+.fx-su.lock:not(.obtained) .yp-rays { opacity: 0.5; }
+.fx-su.bakura .yp-box { opacity: 1; transform: none; }
+.fx-su--ring .yp-box {
+  background: linear-gradient(rgb(30 27 60 / 0.94), rgb(10 9 24 / 0.94));
+  box-shadow: 0 0 24px rgb(129 140 248 / 0.45);
+}
+.fx-su--ring .yp-title span { color: #c7d2fe; }
+html.fx-lite .br-mist { display: none; }
+html.fx-lite .br-sigil { animation: none; }
+
+/* --- Solo unlock scene "rod": Marik and the mind control (rd-*), 12.4s ---
+   marik 0.4s (he steps out of the dark over Battle City, the dialogue box
+   opens), control 5.5s (he dims, the Rod rises from his fist, the violet Eye
+   flares, hypnotic rings and a pulsing vignette close in), resist 7.3s (it all
+   shatters into shards, flash), obtained 9.0s. --- */
+.rd-sky { position: absolute; inset: 0; background: linear-gradient(#0b0718, #2a1450 55%, #5b2a63); }
+.rd-blimp {
+  position: absolute;
+  top: 9%;
+  left: 6%;
+  width: min(30vw, 130px);
+  aspect-ratio: 60 / 22;
+  opacity: 0.85;
+  animation: rd-blimp 24s linear forwards;
+}
+@keyframes rd-blimp { to { transform: translateX(45vw); } }
+.fx-cegg svg.rd-city { position: absolute; left: 0; bottom: 0; height: 30%; }
+
+.rd-eye {
+  position: absolute;
+  left: 50%;
+  top: 40%;
+  width: min(80vw, 340px);
+  aspect-ratio: 180 / 220;
+  translate: -50% -50%;
+  color: #c084fc;
+  opacity: 0;
+}
+.rd-eye svg { fill: none; stroke: currentColor; stroke-width: 6; stroke-linecap: round; stroke-linejoin: round; }
+.fx-su.control .rd-eye { animation: rd-eye 1.2s ease-out forwards; }
+@keyframes rd-eye {
+  0% { opacity: 0; transform: scale(0.5); }
+  40% { opacity: 0.9; transform: scale(1.08); filter: drop-shadow(0 0 26px rgb(192 132 252 / 1)); }
+  100% { opacity: 0.5; transform: scale(1); filter: drop-shadow(0 0 12px rgb(192 132 252 / 0.8)); }
+}
+.fx-su.resist .rd-eye { animation: none; opacity: 0; }
+.rd-hypno { position: absolute; left: 50%; top: 40%; }
+.rd-hypno i {
+  position: absolute;
+  left: -10vmin;
+  top: -10vmin;
+  width: 20vmin;
+  height: 20vmin;
+  border: 3px solid #c084fc;
+  border-radius: 50%;
+  box-shadow: 0 0 12px rgb(168 85 247 / 0.8), inset 0 0 12px rgb(168 85 247 / 0.6);
+  opacity: 0;
+}
+.fx-su.control .rd-hypno i { animation: rd-ring 1.6s linear calc(var(--i) * -0.27s) infinite; }
+@keyframes rd-ring {
+  from { transform: scale(0.2); opacity: 0; }
+  20% { opacity: 0.9; }
+  to { transform: scale(5); opacity: 0; }
+}
+.fx-su.resist .rd-hypno { display: none; }
+
+.rd-marik {
+  position: absolute;
+  left: 50%;
+  top: 46%;
+  width: min(72vw, 300px);
+  aspect-ratio: 200 / 260;
+  translate: -50% -50%;
+  opacity: 0;
+  transform: translateY(2vh) scale(0.96);
+  filter: brightness(0) blur(4px);
+  transition: opacity 1.4s ease-out, transform 1.4s ease-out, filter 1.4s ease-out;
+}
+.fx-su.marik .rd-marik { opacity: 1; transform: none; filter: none; }
+.fx-su.control .rd-marik { opacity: 0.35; transform: scale(0.94); filter: brightness(0.6) blur(1px); }
+.rd-held { transition: opacity 0.3s ease-out; }
+.fx-su.control .rd-held { opacity: 0; }
+
+/* The Rod rises from his fist, glows violet, then gold once your will wins. */
+.rd-rod {
+  position: absolute;
+  left: 50%;
+  top: 40%;
+  width: min(40vw, 170px);
+  aspect-ratio: 1;
+  translate: -50% -50%;
+  opacity: 0;
+  transform: translate(calc(min(72vw, 300px) * 0.27), calc(6vh + min(72vw, 300px) * 0.42)) scale(0.45);
+}
+.rd-rod .solo-shelf-icon { width: 100%; height: 100%; display: block; }
+.fx-su.control .rd-rod {
+  opacity: 1;
+  transform: none;
+  transition: opacity 0.3s ease-out, transform 1s cubic-bezier(0.3, 1.2, 0.5, 1);
+  animation: rd-rod-glow 0.6s ease-in-out 0.3s infinite alternate;
+}
+@keyframes rd-rod-glow {
+  from { filter: drop-shadow(0 0 6px rgb(192 132 252 / 0.7)); }
+  to { filter: drop-shadow(0 0 20px rgb(168 85 247 / 1)) brightness(1.2); }
+}
+.fx-su.resist .rd-rod { animation: none; filter: drop-shadow(0 0 16px rgb(253 224 71 / 0.9)); }
+.fx-su.obtained .rd-rod { animation: yp-pop 0.6s ease-out, yp-glow 1.8s ease-in-out 0.6s infinite alternate; }
+.rd-tint {
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(circle at 50% 40%, transparent 22%, rgb(88 28 135 / 0.55) 58%, rgb(46 16 101 / 0.92));
+  opacity: 0;
+  transition: opacity 0.8s ease-out;
+}
+.fx-su.control .rd-tint { opacity: 1; animation: rd-tint 1.2s ease-in-out infinite alternate; }
+@keyframes rd-tint { from { opacity: 0.7; } }
+.fx-su.resist .rd-tint { animation: none; opacity: 0; transition-duration: 0.25s; }
+.rd-shards i {
+  position: absolute;
+  left: 50%;
+  top: 40%;
+  width: var(--s);
+  height: calc(var(--s) * 1.3);
+  margin: calc(var(--s) * -0.65) 0 0 calc(var(--s) * -0.5);
+  background: linear-gradient(#f3e8ff, #7c3aed);
+  clip-path: polygon(50% 0, 100% 70%, 20% 100%);
+  opacity: 0;
+}
+.fx-su.resist .rd-shards i { animation: rd-shard 1s cubic-bezier(0.2, 0.7, 0.4, 1) forwards; }
+@keyframes rd-shard {
+  from { opacity: 1; transform: rotate(var(--a)) translateY(0) rotate(0); }
+  to { opacity: 0; transform: rotate(var(--a)) translateY(calc(-1 * var(--dist))) rotate(var(--spin)); }
+}
+.fx-su.resist .yp-flash { animation: yp-flash 0.5s ease-out; }
+.fx-su.resist.obtained .yp-flash { animation: yp-flash-big 0.9s ease-out; }
+.fx-su.resist:not(.obtained) .yp-rays { opacity: 0.5; }
+.fx-su.marik .yp-box { opacity: 1; transform: none; }
+.fx-su.control:not(.resist) .yp-line { color: #f3e8ff; text-shadow: 0 0 8px #a855f7; }
+.fx-su--rod .yp-box {
+  background: linear-gradient(rgb(42 20 72 / 0.94), rgb(16 8 30 / 0.94));
+  box-shadow: 0 0 24px rgb(168 85 247 / 0.45);
+}
+.fx-su--rod .yp-title span { color: #e9d5ff; }
+html.fx-lite .rd-hypno i { box-shadow: none; }
+
+/* --- Solo unlock scene "eye": Pegasus surrenders (ey-*), the finale ---
+   hall 0.3s, drain 0.7s (his LP ticks to 0), zero 2.0s (final blow), pegasus
+   3.0s (he appears, the box opens), read 7.6s (lock lifts, the Eye scans your
+   hand, cards flip blank at 8.8s), blind 9.6s (light bursts, the Eye greys),
+   drop 11.4s (the wine glass falls and shatters at 11.9s), kneel 12.2s (Toon
+   pages burn), cyndia 14.6s (her portrait), bow 17.4s (light shaft), offer
+   19.8s (lock lifts, the Eye rises at 20.6s, his hand covers the socket),
+   items 21.8s (the six Items circle it, 0.15s apart), obtained 22.8s, fade
+   26.4s (to black), thanks 28.4s or on the first tap (the thank-you card).
+   His expression is the overlay's data-face. --- */
+.fx-su--eye {
+  --eyw: min(72vw, 300px);
+  --eyr: min(26vw, 105px);
+  --eys: min(12vw, 50px);
+  background: #05020a;
+}
+
+/* The duel hall of his castle: stained glass, a red carpet, candles. */
+.ey-hall {
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(ellipse at 50% 30%, #3b1438, #1c0a22 55%, #08030c);
+  opacity: 0;
+  transition: opacity 1s ease-out;
+}
+.fx-su.hall .ey-hall { opacity: 1; }
+.ey-window {
+  position: absolute;
+  top: 7%;
+  width: min(22vw, 90px);
+  height: 34%;
+  border: 3px solid #1a0b12;
+  border-radius: 50% 50% 0 0 / 28% 28% 0 0;
+  background:
+    repeating-linear-gradient(90deg, transparent 0 calc(33% - 2px), #1a0b12 calc(33% - 2px) 33%),
+    repeating-linear-gradient(0deg, transparent 0 calc(25% - 2px), #1a0b12 calc(25% - 2px) 25%),
+    linear-gradient(160deg, rgb(244 114 182 / 0.6), rgb(96 165 250 / 0.55) 35%, rgb(250 204 21 / 0.55) 65%, rgb(52 211 153 / 0.5));
+  box-shadow: 0 0 40px rgb(251 191 36 / 0.25);
+  filter: brightness(1) saturate(1);
+  transition: filter 2s ease-out;
+}
+.ey-window--l { left: 6%; }
+.ey-window--r { right: 6%; }
+.ey-window::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: #f8fafc;
+  clip-path: polygon(48% 0, 55% 18%, 44% 36%, 57% 54%, 45% 72%, 53% 100%, 50% 100%, 42% 72%, 54% 54%, 41% 36%, 52% 18%, 45% 0);
+  opacity: 0;
+  transition: opacity 0.3s ease-out 0.4s;
+}
+.fx-su.kneel .ey-window { filter: brightness(0.4) saturate(0.4); }
+.fx-su.kneel .ey-window::after { opacity: 0.7; }
+.ey-carpet {
+  position: absolute;
+  left: 50%;
+  bottom: 0;
+  width: 80%;
+  height: 46%;
+  translate: -50% 0;
+  background: linear-gradient(#5f1414, #b91c1c);
+  clip-path: polygon(40% 0, 60% 0, 100% 100%, 0 100%);
+  opacity: 0.55;
+}
+.ey-candle {
+  position: absolute;
+  bottom: 34%;
+  left: calc(8% + var(--i) * 28%);
+  width: 8px;
+  height: 34px;
+  border: 1.5px solid #1a0b12;
+  border-radius: 2px;
+  background: linear-gradient(90deg, #f5e6c8, #d6c3a0);
+}
+.ey-candle::before {
+  content: '';
+  position: absolute;
+  left: 50%;
+  top: -17px;
+  width: 9px;
+  height: 15px;
+  translate: -50% 0;
+  border-radius: 50% 50% 50% 50% / 65% 65% 35% 35%;
+  background: radial-gradient(circle at 50% 70%, #fffbeb, #fbbf24 55%, #ea580c);
+  box-shadow: 0 0 18px 6px rgb(251 191 36 / 0.4);
+  transform-origin: 50% 100%;
+  animation: ey-flicker 0.32s ease-in-out calc(var(--i) * -0.13s) infinite alternate;
+}
+@keyframes ey-flicker { to { transform: scale(0.85, 1.12) rotate(4deg); opacity: 0.85; } }
+
+/* His Life Points, ticking down to 0. */
+.ey-lp {
+  position: absolute;
+  left: 50%;
+  top: 40%;
+  translate: -50% -50%;
+  text-align: center;
+  opacity: 0;
+  transition: opacity 0.6s ease-out, top 0.9s ease-in-out, transform 0.9s ease-in-out;
+}
+.ey-lp span {
+  display: block;
+  font: 800 0.75rem/1 'Cinzel', Georgia, serif;
+  letter-spacing: 0.3em;
+  text-transform: uppercase;
+  color: #fecaca;
+}
+.ey-lp b {
+  display: block;
+  font: 900 3.6rem/1.1 'Cinzel Decorative', 'Cinzel', Georgia, serif;
+  color: #fde68a;
+  text-shadow: 0 0 18px rgb(251 191 36 / 0.7), 0 3px 0 #7c2d12;
+}
+.fx-su.hall .ey-lp { opacity: 1; }
+.fx-su.zero .ey-lp b { color: #ef4444; text-shadow: 0 0 24px rgb(239 68 68 / 0.9), 0 3px 0 #450a0a; animation: ey-lp-zero 0.7s ease-out; }
+@keyframes ey-lp-zero {
+  0% { transform: scale(1); }
+  25% { transform: scale(1.45) translateX(-6px); }
+  40% { transform: scale(1.3) translateX(6px); }
+  55% { transform: scale(1.2) translateX(-4px); }
+  70% { transform: scale(1.1) translateX(3px); }
+}
+.fx-su.pegasus .ey-lp { top: 8%; transform: scale(0.55); }
+.fx-su.kneel .ey-lp { opacity: 0; }
+
+/* Pegasus. */
+.ey-peg {
+  position: absolute;
+  left: 50%;
+  top: 46%;
+  width: var(--eyw);
+  aspect-ratio: 200 / 260;
+  translate: -50% -50%;
+  opacity: 0;
+  transform: translateY(6vh) scale(0.94);
+  filter: brightness(0) blur(6px);
+  transition: opacity 1.2s ease-out, transform 1.2s ease-out, filter 1.2s ease-out;
+}
+.fx-su.pegasus .ey-peg { opacity: 1; transform: none; filter: brightness(1) blur(0); }
+.fx-su.blind .ey-peg svg { animation: ey-reel 0.7s ease-out; }
+@keyframes ey-reel {
+  20% { transform: translateX(-10px) rotate(-2deg); }
+  45% { transform: translateX(8px) rotate(1.5deg); }
+  70% { transform: translateX(-4px); }
+}
+.fx-su.kneel .ey-peg { transform: translateY(8vh) scale(0.9); transition-duration: 1.2s, 1.6s, 1.2s; }
+.fx-su.items .ey-peg { opacity: 0.3; filter: brightness(0.6) blur(1px); }
+
+/* Expressions (data-face). */
+.ey-x { opacity: 0; }
+.fx-su[data-face='smug'] :is(.ey-x--calm, .ey-x--smirk),
+.fx-su[data-face='shock'] :is(.ey-x--shock, .ey-x--open, .ey-x--sweat),
+.fx-su[data-face='sad'] :is(.ey-x--sad, .ey-x--frown),
+.fx-su[data-face='cry'] :is(.ey-x--sad, .ey-x--frown, .ey-x--tear),
+.fx-su[data-face='closed'] :is(.ey-x--closed, .ey-x--frown),
+.fx-su[data-face='soft'] :is(.ey-x--sad, .ey-x--smile) { opacity: 1; }
+.fx-su[data-face='cry'] .ey-x--tear { animation: ey-tear 1.6s ease-in infinite; }
+@keyframes ey-tear {
+  0% { transform: none; opacity: 0; }
+  15% { opacity: 1; }
+  100% { transform: translateY(16px); opacity: 0; }
+}
+
+/* The lock over his Eye lifts to read you, falls when he kneels, lifts to give it. */
+.ey-lock {
+  transform-box: view-box;
+  transform-origin: 96px 62px;
+  transition: transform 0.8s ease-in-out;
+}
+.fx-su.read .ey-lock { transform: rotate(-35deg); }
+.fx-su.kneel .ey-lock { transform: none; }
+.fx-su.offer .ey-lock { transform: rotate(-35deg); }
+.fx-su.read .ey-meye { animation: ey-meye-glow 0.8s ease-in-out 0.6s infinite alternate; }
+@keyframes ey-meye-glow {
+  from { filter: grayscale(0) drop-shadow(0 0 2px rgb(253 224 71 / 0.6)); }
+  to { filter: grayscale(0) drop-shadow(0 0 6px rgb(253 224 71 / 1)); }
+}
+.fx-su.blind .ey-meye { animation: ey-meye-blind 1.4s linear forwards; }
+@keyframes ey-meye-blind {
+  0% { filter: grayscale(0) drop-shadow(0 0 8px rgb(255 255 255 / 1)); opacity: 1; }
+  15% { opacity: 0.3; }
+  25% { opacity: 1; }
+  35% { opacity: 0.2; }
+  50% { opacity: 0.9; }
+  100% { filter: grayscale(1) drop-shadow(0 0 0 rgb(255 255 255 / 0)); opacity: 0.6; }
+}
+.fx-su.offer .ey-meye { animation: ey-meye-give 1s ease-in 0.2s forwards; }
+@keyframes ey-meye-give {
+  0% { filter: brightness(1) drop-shadow(0 0 0 rgb(253 224 71 / 0)); opacity: 1; }
+  60% { filter: brightness(1.8) drop-shadow(0 0 10px rgb(253 224 71 / 1)); opacity: 1; }
+  100% { filter: brightness(2) drop-shadow(0 0 16px rgb(253 224 71 / 1)); opacity: 0; }
+}
+.ey-hand {
+  opacity: 0;
+  transform: translateY(30px);
+  transition: opacity 0.6s ease-out, transform 0.8s ease-out;
+}
+.fx-su.offer .ey-hand { opacity: 1; transform: none; transition-delay: 1.2s; }
+
+/* The wine glass slips, falls and shatters. */
+.ey-glass { transform-box: fill-box; transform-origin: center; }
+.fx-su.drop .ey-glass { animation: ey-glass-fall 0.55s ease-in forwards; }
+@keyframes ey-glass-fall {
+  85% { opacity: 1; }
+  100% { transform: translate(8px, 38px) rotate(100deg); opacity: 0; }
+}
+.ey-shatter polygon { opacity: 0; transform-box: fill-box; transform-origin: center; }
+.fx-su.drop .ey-shatter polygon { animation: ey-shard 0.8s ease-out 0.5s forwards; }
+@keyframes ey-shard {
+  0% { transform: none; opacity: 1; }
+  100% { transform: translate(calc(var(--dx) * 2), calc(var(--dy) * 2)) rotate(var(--r)); opacity: 0; }
+}
+
+/* Mind scan: eye-shaped rings pulse out of the Eye. */
+.ey-scan {
+  position: absolute;
+  left: calc(50% + var(--eyw) * 0.0725);
+  top: 46%;
+}
+.ey-scan i {
+  position: absolute;
+  left: -24px;
+  top: -12px;
+  width: 48px;
+  height: 24px;
+  border: 2px solid #fde047;
+  border-radius: 50%;
+  box-shadow: 0 0 10px rgb(253 224 71 / 0.8);
+  opacity: 0;
+}
+.fx-su.read:not(.blind) .ey-scan i { animation: ey-scan 1.5s ease-out calc(0.6s + var(--i) * 0.5s) infinite; }
+@keyframes ey-scan {
+  from { transform: scale(0.4); opacity: 0.9; }
+  to { transform: scale(7); opacity: 0; }
+}
+
+/* Your hand: five cards he tries to read. They flip... blank, then burst. */
+.ey-cards {
+  position: absolute;
+  left: 50%;
+  top: 66%;
+  --cw: min(14vw, 56px);
+  opacity: 0;
+}
+.ey-cards i {
+  position: absolute;
+  left: calc((var(--i) - 2) * min(15vw, 62px) - var(--cw) / 2);
+  top: calc(var(--cw) * -0.73 + (var(--i) - 2) * (var(--i) - 2) * 3px);
+  width: var(--cw);
+  aspect-ratio: 59 / 86;
+  rotate: calc((var(--i) - 2) * 8deg);
+  border: 2px solid #1c1917;
+  border-radius: 4px;
+  background: radial-gradient(circle, #f59e0b 0 14%, #7c2d12 15% 22%, transparent 23%), linear-gradient(135deg, #78350f, #451a03);
+}
+.fx-su.read .ey-cards { animation: ey-cards-in 0.6s ease-out 0.3s both; }
+@keyframes ey-cards-in {
+  from { opacity: 0; transform: translateY(6vh); }
+  to { opacity: 1; transform: none; }
+}
+.fx-su.read .ey-cards i { animation: ey-card-flip 0.5s ease-in-out calc(1.2s + var(--i) * 0.15s) both; }
+@keyframes ey-card-flip {
+  0% { transform: scaleX(1); }
+  49.9% { transform: scaleX(0); background: radial-gradient(circle, #f59e0b 0 14%, #7c2d12 15% 22%, transparent 23%), linear-gradient(135deg, #78350f, #451a03); }
+  50% { transform: scaleX(0); background: radial-gradient(circle, #fff 0 14%, #fff 15% 22%, transparent 23%), linear-gradient(135deg, #fffbeb, #fef3c7); }
+  100% { transform: scaleX(1); background: radial-gradient(circle, #fff 0 14%, #fff 15% 22%, transparent 23%), linear-gradient(135deg, #fffbeb, #fef3c7); box-shadow: 0 0 14px #fffbeb; }
+}
+.fx-su.blind .ey-cards { animation: ey-cards-burst 0.8s ease-out forwards; }
+@keyframes ey-cards-burst {
+  from { opacity: 1; transform: none; filter: brightness(1); }
+  to { opacity: 0; transform: translateY(-4vh) scale(1.4); filter: brightness(3); }
+}
+
+/* His Toon World pages burn and drift up. */
+.ey-pages i {
+  position: absolute;
+  left: var(--x);
+  top: var(--y);
+  width: min(9vw, 36px);
+  aspect-ratio: 3 / 4;
+  border: 1px solid #1c1917;
+  background:
+    radial-gradient(circle at 35% 40%, #f472b6 0 12%, transparent 13%),
+    radial-gradient(circle at 65% 40%, #60a5fa 0 12%, transparent 13%),
+    linear-gradient(#fef9c3, #fde68a);
+  box-shadow: inset 0 0 6px #ea580c, 0 0 10px rgb(249 115 22 / 0.8);
+  opacity: 0;
+}
+.fx-su.kneel .ey-pages i { animation: ey-page var(--d) ease-out var(--delay) forwards; }
+@keyframes ey-page {
+  0% { transform: none; opacity: 0; filter: brightness(1) sepia(0); }
+  15% { opacity: 1; }
+  100% { transform: translate(var(--sway), -40vh) rotate(var(--r)) scale(0.6); opacity: 0; filter: brightness(0.3) sepia(1); }
+}
+
+/* Cyndia's portrait. */
+.ey-cyndia {
+  position: absolute;
+  left: 50%;
+  top: 17%;
+  width: min(30vw, 120px);
+  aspect-ratio: 4 / 5;
+  translate: -50% -50%;
+  overflow: hidden;
+  border: 4px solid #d4a017;
+  border-radius: 50%;
+  box-shadow: 0 0 0 2px #0b0b12, 0 0 28px rgb(253 230 138 / 0.6);
+  opacity: 0;
+  transform: scale(0.85);
+  filter: sepia(0.3) blur(0) brightness(1);
+  transition: opacity 1.2s ease-out, transform 1.2s ease-out, filter 1.4s ease-out;
+}
+.fx-su.cyndia .ey-cyndia { opacity: 1; transform: none; }
+.fx-su.bow .ey-cyndia { opacity: 0; transform: translateY(-5vh) scale(1.05); filter: sepia(0.3) blur(4px) brightness(1.6); transition-duration: 2s; }
+
+/* A warm shaft of light as he bows. */
+.ey-shaft {
+  position: absolute;
+  left: 50%;
+  top: 0;
+  width: min(90vw, 420px);
+  height: 85%;
+  translate: -50% 0;
+  background: linear-gradient(rgb(254 243 199 / 0.45), rgb(253 230 138 / 0.12) 70%, transparent);
+  clip-path: polygon(42% 0, 58% 0, 100% 100%, 0 100%);
+  opacity: 0;
+  transition: opacity 2s ease-out;
+}
+.fx-su.bow .ey-shaft { opacity: 1; }
+.fx-su.items .ey-shaft { opacity: 0.5; }
+
+/* The Eye leaves him and rises; the six other Items circle it. */
+.ey-item {
+  position: absolute;
+  left: 50%;
+  top: 46%;
+  width: min(30vw, 130px);
+  aspect-ratio: 1;
+  translate: -50% -50%;
+  opacity: 0;
+  transform: translate(calc(var(--eyw) * 0.065), 8vh) scale(0.08);
+  transition: transform 1.6s cubic-bezier(0.3, 0.7, 0.3, 1) 0.8s, opacity 0.6s ease-out 0.8s;
+}
+.fx-su.offer .ey-item { opacity: 1; transform: translateY(-12vh); }
+.fx-su.offer .ey-item svg { filter: drop-shadow(0 0 14px rgb(253 224 71 / 0.9)); }
+.fx-su.obtained .ey-item svg { animation: yp-pop 0.6s ease-out, yp-glow 1.8s ease-in-out 0.6s infinite alternate; }
+.ey-orbit {
+  position: absolute;
+  left: 50%;
+  top: 46%;
+  width: calc(var(--eyr) * 2);
+  aspect-ratio: 1;
+  translate: -50% -50%;
+  transform: translateY(-12vh);
+}
+.ey-orbit-spin { position: absolute; inset: 0; animation: su-spin 14s linear infinite; }
+.ey-orbit-spin > span {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: var(--eys);
+  height: var(--eys);
+  margin: calc(var(--eys) / -2);
+  transform: rotate(var(--a)) translateY(calc(var(--eyr) * -1)) rotate(calc(var(--a) * -1));
+  opacity: 0;
+}
+.fx-su.items .ey-orbit-spin > span { animation: ey-orb-in 0.6s ease-out calc(var(--i) * 0.15s) both; }
+@keyframes ey-orb-in {
+  from { opacity: 0; scale: 0.2; }
+  to { opacity: 1; scale: 1; }
+}
+.ey-orb {
+  display: block;
+  width: 100%;
+  height: 100%;
+  filter: drop-shadow(0 0 6px rgb(253 224 71 / 0.8));
+  animation: su-spin 14s linear infinite reverse;
+}
+.fx-su.obtained .ey-orb { filter: drop-shadow(0 0 12px rgb(253 224 71 / 1)); }
+
+.fx-su--eye .yp-rays { top: calc(46% - 12vh); }
+.fx-su.zero .yp-flash { animation: yp-flash 0.5s ease-out; }
+.fx-su.blind .yp-flash { animation: ey-flash-white 1s ease-out; }
+@keyframes ey-flash-white {
+  15% { opacity: 1; filter: brightness(2); }
+}
+.fx-su.obtained .yp-flash { animation: yp-flash-big 0.9s ease-out; }
+.fx-su.pegasus .yp-box { opacity: 1; transform: none; }
+.fx-su--eye .yp-box {
+  background: linear-gradient(rgb(76 12 24 / 0.94), rgb(28 4 10 / 0.94));
+  box-shadow: 0 0 24px rgb(220 38 38 / 0.45);
+}
+.fx-su--eye .yp-title span { color: #fecaca; }
+
+/* Fade to black, then the thank-you card. */
+.ey-black {
+  position: absolute;
+  inset: 0;
+  background: #000;
+  opacity: 0;
+  transition: opacity 1.8s ease-in;
+}
+.fx-su.fade .ey-black { opacity: 1; }
+.ey-thanks {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 1rem;
+  padding: 2rem 1.5rem;
+  text-align: center;
+  visibility: hidden;
+}
+.fx-su.thanks .ey-thanks { visibility: visible; }
+.ey-t {
+  margin: 0;
+  max-width: 22rem;
+  color: #e7e5e4;
+  font: 600 0.95rem/1.45 'Cinzel', Georgia, serif;
+  opacity: 0;
+}
+.fx-su.thanks .ey-t { animation: ey-t-in 1.2s ease-out var(--d) both; }
+@keyframes ey-t-in {
+  from { opacity: 0; transform: translateY(8px); filter: blur(4px); }
+  to { opacity: 1; transform: none; filter: blur(0); }
+}
+.ey-t--title {
+  font: 900 1.8rem/1.2 'Cinzel Decorative', 'Cinzel', Georgia, serif;
+  background: linear-gradient(#fffbeb, #fbbf24 60%, #b45309);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+.ey-shelf { display: flex; gap: 0.5rem; justify-content: center; }
+.ey-shelf span {
+  width: min(9vw, 38px);
+  aspect-ratio: 1;
+  filter: grayscale(1) brightness(0.45) drop-shadow(0 0 0 rgb(251 191 36 / 0));
+}
+.fx-su.thanks .ey-shelf span { animation: ey-shelf-lit 0.7s ease-out calc(var(--d) + 0.5s + var(--i) * 0.3s) forwards; }
+@keyframes ey-shelf-lit {
+  to { filter: grayscale(0) brightness(1) drop-shadow(0 0 8px rgb(251 191 36 / 0.9)); }
+}
+.ey-t--unlock { color: #fde68a; font-weight: 800; text-shadow: 0 0 10px rgb(251 191 36 / 0.7); }
+.ey-wear {
+  padding: 0.45rem 1.2rem;
+  border: 1.5px solid #fbbf24;
+  border-radius: 999px;
+  background: linear-gradient(#fde68a, #d97706);
+  color: #1c1003;
+  font: 900 0.8rem/1.2 'Cinzel', Georgia, serif;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  cursor: pointer;
+}
+.ey-wear:disabled { background: transparent; color: #fde68a; cursor: default; }
+.ey-sign { color: #fcd34d; font-style: italic; }
+.ey-close {
+  margin-top: 0.5rem;
+  font-size: 0.65rem;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  color: rgb(255 255 255 / 0.45);
+}
+html.fx-lite .ey-pages,
+html.fx-lite .ey-scan { display: none; }
+html.fx-lite .ey-window,
+html.fx-lite .ey-candle::before { box-shadow: none; }
 
 /* =========================================================================
    Respect the OS "reduce motion" setting.

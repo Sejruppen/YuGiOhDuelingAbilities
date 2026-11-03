@@ -93,22 +93,25 @@ const SOLO_DIFFICULTIES = {
     pegasusLp: 12000, pegasusPages: 6, pegasusLevel: 2
   }
 };
-// Nightmare opens once you have beaten Pegasus on Hard.
-const SOLO_NIGHTMARE_UNLOCK = 'hard';
 // SOLO_CLEARS_KEY lives in app-themes.js (the Millennium theme reads it before this file loads).
 const SOLO_DIFFICULTY_KEY = 'ygo_solo_difficulty';
 
 // The Millennium Items shelf on the Solo menu: each item lights up after
-// `clears` wins against Pegasus on `difficulty`.
+// `clears` wins against Pegasus on `difficulty`. `unlocks` opens a difficulty
+// (soloDifficultyUnlocked) or the Millennium theme (keep in sync with its
+// `unlockClears` in app-themes.js). Icons: SOLO_SHELF_ART (solo-view.js).
+// TEMP (testing): lights every item. Set back to false before committing.
+const SOLO_SHELF_TEST = true;
 const SOLO_SHELF = [
-  { id: 'puzzle', name: 'Millennium Puzzle', icon: '🔺', difficulty: 'easy', clears: 1 },
-  { id: 'key', name: 'Millennium Key', icon: '🗝️', difficulty: 'easy', clears: 3 },
-  { id: 'ring', name: 'Millennium Ring', icon: '💍', difficulty: 'hard', clears: 1 },
-  { id: 'scale', name: 'Millennium Scale', icon: '⚖️', difficulty: 'hard', clears: 3 },
-  { id: 'eye', name: 'Millennium Eye', icon: '👁️', difficulty: 'nightmare', clears: 1 },
-  { id: 'rod', name: 'Millennium Rod', icon: '🪄', difficulty: 'nightmare', clears: 2 },
-  { id: 'necklace', name: 'Millennium Necklace', icon: '📿', difficulty: 'nightmare', clears: 3 }
+  { id: 'puzzle', name: 'Millennium Puzzle', difficulty: 'easy', clears: 1 },
+  { id: 'necklace', name: 'Millennium Necklace', difficulty: 'easy', clears: 2, unlocks: 'hard' },
+  { id: 'scale', name: 'Millennium Scale', difficulty: 'hard', clears: 1 },
+  { id: 'key', name: 'Millennium Key', difficulty: 'hard', clears: 2, unlocks: 'nightmare' },
+  { id: 'ring', name: 'Millennium Ring', difficulty: 'nightmare', clears: 1 },
+  { id: 'rod', name: 'Millennium Rod', difficulty: 'nightmare', clears: 2 },
+  { id: 'eye', name: 'Millennium Eye', difficulty: 'nightmare', clears: 3, unlocks: 'millennium' }
 ];
+const soloTimes = n => (n === 1 ? 'once' : n === 2 ? 'twice' : `${n} times`);
 
 const SOLO_NODE_TYPES = {
   duelist: { icon: '⚔️', label: 'Duelist', desc: 'A wandering duelist. Win for +1 ⭐.' },

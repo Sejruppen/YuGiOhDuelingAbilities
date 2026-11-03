@@ -1,7 +1,7 @@
 function renderThemeButton(theme, activeId = getAppTheme().id) {
   // Earned in Solo mode: a wide tile, sealed until Pegasus falls on that difficulty.
   if (theme.unlock && !isThemeAvailable(theme)) {
-    return `<button onclick="teaseMillenniumTheme(this)" aria-disabled="true" title="Beat Pegasus on Nightmare to unlock" class="theme-btn-sealed col-span-2 py-2 px-1 rounded-lg text-xs font-bold leading-tight transition text-slate-500 border border-dashed border-slate-700"><span class="ce-emoji">🔒</span> ??? <span class="ce-emoji">👁️</span></button>`;
+    return `<button onclick="teaseMillenniumTheme(this)" aria-disabled="true" title="Beat Pegasus 3 times on Nightmare to unlock" class="theme-btn-sealed col-span-2 py-2 px-1 rounded-lg text-xs font-bold leading-tight transition text-slate-500 border border-dashed border-slate-700"><span class="ce-emoji">🔒</span> ??? <span class="ce-emoji">👁️</span></button>`;
   }
   if (!isThemeAvailable(theme)) {
     return `<button onclick="teaseTreasureTheme(this)" aria-disabled="true" title="Find every secret to unlock" class="theme-btn-locked py-2 px-1 rounded-lg text-xs font-bold leading-tight transition text-slate-500 border border-dashed border-slate-700"><span class="ce-emoji">🔒</span> ???</button>`;
