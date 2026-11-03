@@ -9,7 +9,7 @@ A mobile-first PWA that two players use side by side during physical Yu-Gi-Oh! d
   - Don't run syntax checks (`node --check`), scripts, servers or other "verification" commands. Re-read your edits with view instead.
   - If a task really can't be done without the terminal, ask the owner first and explain why.
 - Keep replies short. When asked to "come up with ideas" or "jam", brainstorm a numbered list and do not implement anything until the owner picks.
-- Never suggest or build anything listed under **Non-goals** in `README.md`, such as coin flips or dice rolls, counters, duel or match tracking, achievements, an ability editor, haptics or notifications, and backup.
+- Never suggest or build anything listed under **Non-goals** in `README.md`, such as coin flips or dice rolls, counters, duel or match tracking, an ability editor, haptics or notifications, and backup.
 - **After every change that ships:**
   1. Bump `CACHE_NAME` in `sw.js` (`ygo-skills-mvp-vNNN`).
   2. Tell the owner to reload twice (the service worker updates on the first reload).
