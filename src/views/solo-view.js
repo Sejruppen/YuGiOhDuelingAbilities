@@ -1409,6 +1409,11 @@ function soloIntentLines(f) {
     const detail = eye || (f.video && f.round === 1 && a === 'summon');
     return { ...SOLO_ACTIONS[a], label: detail ? soloIntentDetail(f, a, pk) : SOLO_ACTIONS[a].label };
   });
+  // Harder runs hide the last planned moves. The display only: the plan itself is unchanged.
+  if (!g) {
+    const hide = soloDiff()[eye ? 'hideIntentsEye' : 'hideIntents'];
+    for (let i = Math.max(0, lines.length - hide); i < lines.length; i++) lines[i] = { icon: '❓', label: '???' };
+  }
   if (g?.stage === 2) lines.unshift({ icon: '👁️', label: `<i class="text-amber-200">${SOLO_PEGASUS.eyeLine}</i>` });
   return lines;
 }

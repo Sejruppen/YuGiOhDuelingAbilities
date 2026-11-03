@@ -566,6 +566,16 @@ function soloPool(fight, opts) {
   return pool.length ? pool : all;
 }
 
+// Harder runs lean towards the stronger half of the pool.
+function soloPickSummon(pool) {
+  const bias = soloDiff().cardBias;
+  if (bias > 0 && pool.length > 2 && Math.random() < bias) {
+    const sorted = [...pool].sort((a, b) => (b.atk + b.def) - (a.atk + a.def));
+    return soloPick(sorted.slice(0, Math.ceil(sorted.length / 2)));
+  }
+  return soloPick(pool);
+}
+
 // node.type 'ambush' comes from a Shadow Game; node.ambush holds its duelist.
 function createSoloFight(node) {
   const tier = SOLO_TIERS.find(t => node.floor <= t.maxFloor);
@@ -584,6 +594,15 @@ function createSoloFight(node) {
     spec = { kind: 'ambush', maxAtk: tier.maxAtk, actions: 1, chips: 0, ...node.ambush };
   } else {
     spec = { kind: 'boss', boss: 'pegasus', name: SOLO_PEGASUS.name, title: SOLO_PEGASUS.title, icon: SOLO_PEGASUS.icon, lp: SOLO_PEGASUS.lp, personality: SOLO_PEGASUS.personality, actions: SOLO_PEGASUS.actions[1], chips: 0 };
+  }
+  if (spec.kind !== 'boss') {
+    const diff = soloDiff();
+    spec.lp = Math.round(spec.lp * diff.lpMult / 50) * 50;
+    if (spec.elite) spec.actions += diff.actionBonusElite;
+    else {
+      spec.maxAtk += diff.maxAtkBonus;
+      spec.actions += diff.actionBonusDuelist + (node.floor > SOLO_TIERS[0].maxFloor ? diff.actionBonusDuelistLate : 0);
+    }
   }
   const fight = {
     ...spec,
@@ -657,7 +676,7 @@ function planSoloTurn(f) {
     if (action !== 'summon') return {};
     const pool = soloPool(f, { toonWorld, taken });
     const free = pool.filter(c => !(c.unique && taken.includes(c.name)));
-    const card = soloPick(free.length ? free : pool);
+    const card = soloPickSummon(free.length ? free : pool);
     taken.push(card.name);
     return { card, pos: soloSummonPos(f, card) };
   });
@@ -779,9 +798,10 @@ function soloSpecialReady(f) {
 // The enemy's next turn, shown to the player as categories only.
 function buildSoloIntents(f) {
   const p = SOLO_PERSONALITIES[f.personality];
+  const boost = soloDiff().spellBoost;
   let monsters = f.monsters.length;
   let trap = f.trap;
-  let removal = f.used.removal || f.floor < SOLO_REMOVAL_FROM_FLOOR || !soloCards(f).removal;
+  let removal = f.used.removal || f.floor < soloDiff().removalFrom || !soloCards(f).removal;
   let heal = f.used.heal || f.lp >= f.maxLp || !soloCards(f).heal;
   let special = !soloSpecialReady(f);
   const intents = [];
@@ -793,9 +813,9 @@ function buildSoloIntents(f) {
         ...p.weights,
         special: special ? 0 : SOLO_SPECIAL_WEIGHT,
         summon: monsters < SOLO_MAX_MONSTERS ? p.weights.summon : 0,
-        equip: monsters ? p.weights.equip : 0,
-        trap: trap ? 0 : p.weights.trap,
-        removal: removal ? 0 : p.weights.removal,
+        equip: monsters ? p.weights.equip * boost : 0,
+        trap: trap ? 0 : p.weights.trap * boost,
+        removal: removal ? 0 : p.weights.removal * boost,
         heal: heal ? 0 : p.weights.heal
       }) || 'equip';
     }

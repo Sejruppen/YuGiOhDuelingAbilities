@@ -41,8 +41,12 @@ const SOLO_HIDDEN_CHANCE = 0.33;
 // Difficulty levels. Easy is the original run, so its values are the constants above.
 // Never scaled, because they match the anime: starting Star Chips, the chips needed for the castle
 // and the region field bonuses.
-//   lpMult / actionBonus / maxAtkBonus  enemy LP, extra actions per turn, higher ATK cap of generic cards
-//   hideIntents        how many of the enemy's planned moves show as ❓ (Infinity = all)
+//   lpMult / maxAtkBonus  enemy LP (not Pegasus) and how much higher the ATK cap of generic cards is
+//   actionBonusDuelist / actionBonusDuelistLate / actionBonusElite  extra cards the enemy plays each turn
+//                      (the late bonus comes on top from the second floor tier on; elites include the Paradox Brothers)
+//   cardBias           chance that a summon is picked from the stronger half of the deck
+//   spellBoost / removalFrom  how much likelier Spells/Traps are, and the floor Spell/Trap removal starts at
+//   hideIntents / hideIntentsEye  how many of the enemy's planned moves show as ❓, without and with the Millennium Eye (Infinity = all)
 //   mixedOdds / eliteLoosen  node odds on mixed floors; elite rules: 0 = as before, 1 = elites may also land
 //                            on the beach, 2 = also back to back and twice in one region
 //   floorKinds / hiddenChance  which floors are special, and the share of mixed nodes shown as ❓
@@ -55,7 +59,8 @@ const SOLO_DEFAULT_DIFFICULTY = 'easy';
 const SOLO_DIFFICULTIES = {
   easy: {
     name: 'Easy', icon: '🟢', desc: 'The original road across Duelist Kingdom.',
-    lpMult: 1, actionBonus: 0, maxAtkBonus: 0, hideIntents: 0,
+    lpMult: 1, maxAtkBonus: 0, actionBonusDuelist: 0, actionBonusDuelistLate: 0, actionBonusElite: 0,
+    cardBias: 0, spellBoost: 1, removalFrom: 5, hideIntents: 0, hideIntentsEye: 0,
     mixedOdds: SOLO_MIXED_ODDS, eliteLoosen: 0, floorKinds: SOLO_FLOOR_KINDS, hiddenChance: SOLO_HIDDEN_CHANCE,
     campfireHeal: SOLO_CAMPFIRE_HEAL, campfireChance: SOLO_CAMPFIRE_CHANCE, campfireMax: SOLO_CAMPFIRE_MAX, campfireGuarantee: true,
     treasureChoices: 3, eliteChoices: 2, commonsOnly: false,
@@ -64,7 +69,8 @@ const SOLO_DIFFICULTIES = {
   },
   hard: {
     name: 'Hard', icon: '🟠', desc: 'Tougher duelists, hidden moves, fewer campfires and a longer book to tear.',
-    lpMult: 1.5, actionBonus: 1, maxAtkBonus: 200, hideIntents: 1,
+    lpMult: 1.5, maxAtkBonus: 200, actionBonusDuelist: 0, actionBonusDuelistLate: 1, actionBonusElite: 1,
+    cardBias: 0.3, spellBoost: 1.5, removalFrom: 3, hideIntents: 1, hideIntentsEye: 0,
     mixedOdds: { duelist: 40, event: 30, elite: 30 }, eliteLoosen: 1,
     floorKinds: { 3: 'events', 6: 'treasure', 7: 'fork', 11: 'gamble' }, hiddenChance: 0.55,
     campfireHeal: 0.15, campfireChance: 0.08, campfireMax: 1, campfireGuarantee: false,
@@ -74,7 +80,8 @@ const SOLO_DIFFICULTIES = {
   },
   nightmare: {
     name: 'Nightmare', icon: '💀', desc: 'Extremely punishing. Every duel is a fight for your soul.',
-    lpMult: 2.25, actionBonus: 2, maxAtkBonus: 400, hideIntents: Infinity,
+    lpMult: 2.25, maxAtkBonus: 400, actionBonusDuelist: 1, actionBonusDuelistLate: 1, actionBonusElite: 2,
+    cardBias: 0.6, spellBoost: 2, removalFrom: 1, hideIntents: Infinity, hideIntentsEye: 1,
     mixedOdds: { duelist: 30, event: 30, elite: 40 }, eliteLoosen: 2,
     floorKinds: { 6: 'treasure', 7: 'fork' }, hiddenChance: 0.8,
     campfireHeal: 0.1, campfireChance: 0.04, campfireMax: 1, campfireGuarantee: false,
@@ -595,7 +602,6 @@ const SOLO_OWNER_CARDS = {
     heal: null
   }
 };
-const SOLO_REMOVAL_FROM_FLOOR = 5;
 
 // Relics: Treasure offers 3 commons, an elite win 2 rares. `value` is the
 // relic's number (LP, ATK). Consumables vanish when used.
