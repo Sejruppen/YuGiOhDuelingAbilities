@@ -83,6 +83,14 @@ function soloTearPage(atk) {
     playSound({ name: 'co-bounce' });
     return { tone: 'meh', text: `📖 ${atk} ATK bounces off the cover. You need ${SOLO_PEGASUS.pageMinAtk}+ ATK to tear a page.`, negated: true };
   }
+  return soloRipPage();
+}
+
+// Removes one page of Toon World (a big enough attack, or destroying a Spell).
+function soloRipPage() {
+  const f = solo.fight;
+  const g = f.pegasus;
+  if (!soloToonWorldUp(f)) return null;
   g.pages--;
   playSound({ name: 'co-page' });
   if (g.pages > 0) return { tone: 'good', text: `📄 You tear out a page! Toon World has ${g.pages} page${g.pages === 1 ? '' : 's'} left.` };

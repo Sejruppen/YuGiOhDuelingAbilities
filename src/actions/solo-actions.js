@@ -605,6 +605,15 @@ function confirmSoloDestroyTrap() {
   });
 }
 
+function confirmSoloDestroyBook() {
+  if (!soloToonWorldUp(solo.fight)) return;
+  soloAct(() => {
+    const result = soloRipPage();
+    result.text = `🌪️ Toon World is hit! ${result.text}`;
+    return result;
+  });
+}
+
 // `uid` is the equip card's own uid; its monster loses that card's ATK.
 function confirmSoloDestroyEquip(uid) {
   const m = solo.fight?.monsters.find(x => x.equips?.some(e => e.uid === uid));

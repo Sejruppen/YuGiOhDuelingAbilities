@@ -1314,7 +1314,7 @@ function soloCardDetail() {
   }
   if (id === 'book' && soloToonWorldUp(f)) {
     const pages = f.pegasus.pages;
-    return { icon: '📖', name: 'Toon World', tag: 'Continuous Spell', lines: [`${pages} page${pages === 1 ? '' : 's'} left. Attack it with ${SOLO_PEGASUS.pageMinAtk}+ ATK to tear one out.`, 'While it is up, Pegasus takes no damage.'] };
+    return { icon: '📖', name: 'Toon World', tag: 'Continuous Spell', lines: [`${pages} page${pages === 1 ? '' : 's'} left. Attack it with ${SOLO_PEGASUS.pageMinAtk}+ ATK to tear one out.`, 'While it is up, Pegasus takes no damage.', 'Played a Spell/Trap removal card? Destroy it below to rip out a page.'], destroy: 'confirmSoloDestroyBook()' };
   }
   return null;
 }
@@ -1493,7 +1493,7 @@ function renderSoloPanel() {
     if (!panel.kind) {
       const options = [
         coopOption({ icon: '💥', label: 'Destroy a monster', sub: 'Raigeki, Fissure, Dark Hole…', disabled: !f.monsters.length, reason: 'The enemy has no monsters' }, "setSoloPanel({ kind: 'destroy' })"),
-        coopOption({ icon: '🌪️', label: 'Destroy a Spell/Trap', sub: 'Mystical Space Typhoon, Harpie\'s Feather Duster…', disabled: !f.trap && !f.monsters.some(m => m.equips?.length), reason: 'The enemy has no face-down or equip card' }, "setSoloPanel({ kind: 'spelltrap' })"),
+        coopOption({ icon: '🌪️', label: 'Destroy a Spell/Trap', sub: 'Mystical Space Typhoon, Harpie\'s Feather Duster…', disabled: !f.trap && !soloToonWorldUp(f) && !f.monsters.some(m => m.equips?.length), reason: 'The enemy has no face-down, equip or Toon World card' }, "setSoloPanel({ kind: 'spelltrap' })"),
         coopOption({ icon: '🔥', label: 'Burn damage', sub: 'Damage straight to the enemy\'s LP', disabled: soloToonWorldUp(f), reason: 'Toon World shields Pegasus: tear out all its pages first' }, "setSoloPanel({ kind: 'burn' })")
       ];
       if (soloHas('raigeki')) {
@@ -1507,8 +1507,9 @@ function renderSoloPanel() {
     }
     if (panel.kind === 'spelltrap') {
       const trap = f.trap ? coopOption({ icon: '🂠', label: 'Face-down card', sub: 'Set Spell/Trap Card' }, 'confirmSoloDestroyTrap()') : '';
+      const book = soloToonWorldUp(f) ? coopOption({ icon: '📖', label: 'Toon World', sub: 'Rips out a page' }, 'confirmSoloDestroyBook()') : '';
       const equips = f.monsters.flatMap(m => (m.equips || []).map(e => coopOption({ icon: '⚔️', label: soloEscape(e.name), sub: `+${e.atk} ATK on ${soloEscape(m.name)}` }, `confirmSoloDestroyEquip(${e.uid})`))).join('');
-      return renderSoloPanelShell('🌪️ Destroy which card?', trap + equips +
+      return renderSoloPanelShell('🌪️ Destroy which card?', book + trap + equips +
         `<div class="flex">${coopBtn('← Back', 'setSoloPanel({ kind: null })')}</div>`);
     }
     if (panel.kind === 'burn') {
