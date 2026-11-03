@@ -611,7 +611,7 @@ function renderSoloMap(mini = false, run = solo, peek = false) {
     // Layers: glow (type aura) < frame (shape, rim and fill) < icon. The state ring is the node's ::after.
     const stamp = state === 'visited' ? '<span class="solo-node-stamp" aria-hidden="true">✓</span>' : '';
     const inner = `<span class="solo-node-glow"></span><span class="solo-node-frame"></span><span class="solo-node-icon ce-emoji">${t.icon}</span>${stamp}`;
-    if (mini) return `<span class="solo-node solo-node--${state} solo-node--${look} ${special}" ${pos}>${inner}</span>`;
+    if (mini) return `<span class="solo-node solo-node--${state} solo-node--${look} ${special}" ${state === 'current' ? 'data-solo-mini-focus' : ''} ${pos}>${inner}</span>`;
     const picked = (peek ? soloUi.peekNode : soloUi.preview) === n.id;
     return `
       <button onclick="${peek ? 'tapSoloPeekNode' : 'tapSoloNode'}('${n.id}')" ${n.id === focusId ? (peek ? 'data-solo-peek-focus' : 'data-solo-focus') : ''} aria-label="${t.label}"
@@ -1766,6 +1766,12 @@ function renderSoloEnd() {
       </div>
       <h2 class="text-3xl font-black text-white">Your run is over…</h2>
       <p class="text-sm italic text-emerald-200 max-w-xs">${solo.fight?.pegasus ? SOLO_PEGASUS.lose : '"Every duelist falls. Get back up, shuffle your deck and try again!"'}</p>`;
+  // The map is capped in height, so start it scrolled to where the run ended.
+  setTimeout(() => {
+    const box = document.querySelector('[data-solo-end-map]');
+    const node = box?.querySelector('[data-solo-mini-focus]');
+    if (node) box.scrollTop = node.offsetTop - box.clientHeight / 2;
+  });
   return `
     <div class="coop-end ${win ? 'coop-end--win' : 'coop-end--lose'} flex-1 min-h-0 overflow-y-auto p-6 flex flex-col items-center justify-center text-center gap-3">
       ${top}
@@ -1775,7 +1781,7 @@ function renderSoloEnd() {
         ${soloStat(win ? 'LP left' : 'Floor', win ? solo.lp : at ? at.floor : 0)}
       </div>
       ${solo.relics?.length ? `<p class="text-2xl tracking-widest">${solo.relics.map(id => `<span class="ce-emoji" title="${SOLO_RELICS[id].name}">${SOLO_RELICS[id].icon}</span>`).join(' ')}</p>` : ''}
-      ${solo.map ? renderSoloMap(true) : ''}
+      ${solo.map ? `<div data-solo-end-map class="solo-end-map shrink-0 w-full max-w-[200px] overflow-y-auto no-scrollbar">${renderSoloMap(true)}</div>` : ''}
       <div class="flex flex-col gap-2 w-full max-w-xs mt-3">
         ${!win && soloUi.undo.length ? '<button onclick="undoSolo()" class="w-full py-3 rounded-xl bg-slate-800 hover:bg-slate-700 text-white font-semibold transition">↩️ Undo last step</button>' : ''}
         <button onclick="startSoloRun()" class="w-full py-3.5 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold text-lg transition"><span class="ce-emoji">🏝️</span> New run</button>

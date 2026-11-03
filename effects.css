@@ -16493,6 +16493,14 @@ html.fx-lite .sev-coin .ce-emoji { filter: none; }
 .solo-map--mini .solo-node--current::after { box-shadow: 0 0 0 2px rgba(251, 191, 36, 0.8), 0 0 8px rgba(251, 191, 36, 0.8); }
 .solo-map--mini .solo-region-label { display: none; }
 .solo-map--mini .solo-art-fine { display: none; }
+/* End-screen map: capped height, scrolls, edges fade out to hint there is more */
+.solo-end-map {
+  max-height: min(18rem, 38vh);
+  border-radius: 0.75rem;
+  overscroll-behavior: contain;
+  -webkit-mask-image: linear-gradient(transparent, #000 1.5rem, #000 calc(100% - 1.5rem), transparent);
+  mask-image: linear-gradient(transparent, #000 1.5rem, #000 calc(100% - 1.5rem), transparent);
+}
 /* Defeat: your soul sealed in a card */
 .solo-sealed-card {
   width: 9rem;
