@@ -1349,7 +1349,7 @@ function renderSoloEnemyBoard(f, p) {
   return `
     <section class="solo-enemy rounded-2xl border border-rose-500/30 bg-slate-950/80 p-3">
       <div class="flex items-center gap-2">
-        <span class="text-3xl leading-none ce-emoji">${f.icon}</span>
+        ${soloFoeFace(f, 'solo-avatar--sm') || `<span class="text-3xl leading-none ce-emoji">${f.icon}</span>`}
         <div class="flex-1 min-w-0">
           <p class="font-black text-white truncate">${f.name}</p>
           <p class="text-[0.65rem] text-slate-400"><span class="ce-emoji">${p.icon}</span> ${p.label} · ${where}</p>
@@ -1635,10 +1635,18 @@ function renderSoloFightIntro(f, kind, p) {
 // --rps-t is a negative delay (time since the throw), so a re-render resumes the animation instead of replaying it.
 const soloRpsElapsed = r => (r?.you ? Math.min(Date.now() - (r.at || 0), 9999) : 0);
 
+// An elite's anime portrait (SOLO_ELITE_AVATARS), or null for everyone else.
+function soloFoeFace(f, cls = '') {
+  const svg = f.elite && SOLO_ELITE_AVATARS[f.elite];
+  return svg ? `<span class="solo-avatar ${cls}" role="img" aria-label="${f.name}">${svg}</span>` : null;
+}
+
 // During Pegasus' rock-paper-scissors his 👁️ icon becomes the glowing Millennium Eye,
 // which flares as it reads your hand.
 function soloIntroIcon(f) {
   const r = f.rps;
+  const face = soloFoeFace(f);
+  if (face) return `<div class="coop-cut-icon">${face}</div>`;
   if (!f.pegasus || !r) return `<div class="coop-cut-icon text-7xl leading-none ce-emoji">${f.icon}</div>`;
   return `<div class="coop-cut-icon" style="filter: none"><div class="solo-rps-eye ${r.you ? 'solo-rps-eye--read' : ''}" style="--rps-t: -${soloRpsElapsed(r)}ms">${MILLENNIUM_EYE_SVG}</div></div>`;
 }

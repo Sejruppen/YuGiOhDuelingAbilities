@@ -16399,6 +16399,10 @@ html.fx-lite .sev-coin .ce-emoji { filter: none; }
 .solo-intro { animation: coop-fade-in 0.4s ease-out; }
 .solo-intro--still,
 .solo-intro--still .coop-cut-icon { animation: none; }
+/* Elite portraits: same footprint as the text-7xl 👤 a generic duelist gets. */
+.solo-avatar { display: block; width: 4.5rem; height: 4.5rem; }
+.solo-avatar svg { display: block; width: 100%; height: 100%; }
+.solo-avatar--sm { flex-shrink: 0; width: 2.25rem; height: 2.25rem; }
 .solo-node-icon--campfire { filter: drop-shadow(0 0 18px rgba(251, 146, 60, 0.9)); }
 .solo-node-icon--event { filter: drop-shadow(0 0 18px rgba(167, 139, 250, 0.9)); }
 .solo-relic {
