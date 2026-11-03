@@ -59,7 +59,7 @@ const SOLO_DIFFICULTIES = {
     campfireHeal: SOLO_CAMPFIRE_HEAL, campfireChance: SOLO_CAMPFIRE_CHANCE, campfireMax: SOLO_CAMPFIRE_MAX, campfireGuarantee: true,
     treasureChoices: 3, eliteChoices: 2, commonsOnly: false,
     tollMult: 1, giftWeight: 1, ambushWeight: 1,
-    pegasusLp: 8000, pegasusPages: 4, pegasusLevel: 0
+    pegasusLp: 8000, pegasusPages: 3, pegasusLevel: 0
   },
   hard: {
     name: 'Hard', icon: '🟠', desc: 'Tougher duelists, hidden moves, fewer campfires and a longer book to tear.',
@@ -69,7 +69,7 @@ const SOLO_DIFFICULTIES = {
     campfireHeal: 0.15, campfireChance: 0.08, campfireMax: 1, campfireGuarantee: false,
     treasureChoices: 2, eliteChoices: 1, commonsOnly: false,
     tollMult: 1.5, giftWeight: 0.6, ambushWeight: 1.5,
-    pegasusLp: 10000, pegasusPages: 6, pegasusLevel: 1
+    pegasusLp: 10000, pegasusPages: 4, pegasusLevel: 1
   },
   nightmare: {
     name: 'Nightmare', icon: '💀', desc: 'Extremely punishing. Every duel is a fight for your soul.',
@@ -79,7 +79,7 @@ const SOLO_DIFFICULTIES = {
     campfireHeal: 0.1, campfireChance: 0.04, campfireMax: 1, campfireGuarantee: false,
     treasureChoices: 1, eliteChoices: 1, commonsOnly: true,
     tollMult: 2, giftWeight: 0.2, ambushWeight: 2,
-    pegasusLp: 12000, pegasusPages: 8, pegasusLevel: 2
+    pegasusLp: 12000, pegasusPages: 6, pegasusLevel: 2
   }
 };
 // Nightmare opens once you have beaten Pegasus on Hard.
@@ -364,7 +364,7 @@ const SOLO_PEGASUS = {
   stage2At: 5000,
   stage3At: 2000,
   actions: { 1: 2, 2: 2, 3: 3 },
-  pages: 4,
+  pages: 3,
   pageMinAtk: 1500,
   maxToons: 3,
   crushMiss: 1000,
@@ -404,7 +404,7 @@ const SOLO_PEGASUS = {
       quote: "Welcome to my castle, little duelist! Let's see if you can survive my Toon World.",
       rules: [
         '📖 Toon World: his Toons attack you directly and <b>can\'t be blocked</b>. While the book stands, they can\'t be destroyed by battle and Pegasus takes <b>no damage at all</b>.',
-        '📄 Attack Toon World with 1500+ ATK to tear out one of its 4 pages. Only when the last page is gone (it takes every Toon with it) can you hurt Pegasus.',
+        '📄 Attack Toon World with 1500+ ATK to tear out one of its pages. Only when the last page is gone (it takes every Toon with it) can you hurt Pegasus.',
         '🐰 While Funny Bunny hops around, Pegasus takes no damage.',
         '👁️ At 5000 LP his Millennium Eye opens. At 2000 LP comes the Final Read.'
       ]
