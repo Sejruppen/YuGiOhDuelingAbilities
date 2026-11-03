@@ -95,9 +95,10 @@ function soloRecordClear(id) {
   try {
     localStorage.setItem(SOLO_CLEARS_KEY, JSON.stringify(soloClears));
   } catch {}
+  return soloClears[key];
 }
 
-// Undo after a victory takes the win back.
+// Undo after a victory takes the win back (and the Millennium theme, if that was the only Nightmare win).
 function soloForgetClear(id) {
   const key = soloDiffKey(id);
   if (!soloClears[key]) return;
@@ -105,6 +106,8 @@ function soloForgetClear(id) {
   try {
     localStorage.setItem(SOLO_CLEARS_KEY, JSON.stringify(soloClears));
   } catch {}
+  const theme = APP_THEMES.find(t => t.id === document.documentElement.dataset.theme);
+  if (theme && !isThemeAvailable(theme)) applyAppTheme(getAppTheme());
 }
 
 const soloDifficultyUnlocked = id => id !== 'nightmare' || (soloClears[SOLO_NIGHTMARE_UNLOCK] || 0) > 0;
@@ -886,8 +889,15 @@ function soloWin() {
   if (f.kind === 'boss') {
     solo.phase = 'victory';
     soloArchiveRun('victory');
-    soloRecordClear(solo.difficulty);
+    const key = soloDiffKey();
+    const first = soloRecordClear(key) === 1;
+    // The first Hard win opens Nightmare; the first Nightmare win earns the Millennium theme.
+    solo.unlocked = !first ? null : key === SOLO_NIGHTMARE_UNLOCK ? 'nightmare' : key === 'nightmare' ? 'millennium' : null;
     playSound({ name: 'co-victory' });
+    if (solo.unlocked) {
+      const unlocked = solo.unlocked;
+      setTimeout(() => playSoloUnlockScene(unlocked), 1200);
+    }
     return;
   }
   solo.chips += f.chips;

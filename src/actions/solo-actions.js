@@ -17,6 +17,8 @@ const soloUi = {
   difficulty: SOLO_DEFAULT_DIFFICULTY,
   historyFilter: null,
   openHistoryId: null,
+  // The Millennium Items shelf item whose condition is shown on the menu.
+  shelfItem: null,
   preview: null,
   legend: false,
   panel: null,
@@ -152,6 +154,24 @@ function setSoloHistoryFilter(id) {
 function toggleSoloHistoryEntry(id) {
   soloUi.openHistoryId = soloUi.openHistoryId === id ? null : id;
   render();
+}
+
+// The Millennium Items shelf on the menu: tap an item to see how it lights up.
+// Repaints just the shelf, so the menu's entrance animations don't replay.
+function toggleSoloShelfItem(id) {
+  soloUi.shelfItem = soloUi.shelfItem === id ? null : id;
+  playSound({ name: 'tap' });
+  const shelf = document.querySelector('.solo-shelf');
+  if (shelf) shelf.outerHTML = renderSoloShelf().trim();
+  else render();
+}
+
+// The sealed Millennium tile in the theme picker.
+function teaseMillenniumTheme(button) {
+  restartClass(button, 'theme-locked-shake', 450);
+  playSound({ name: 'theme-locked' });
+  if (document.querySelector('#fx-layer .egg-found')) return;
+  showEggPill('<span class="ce-emoji">👁️</span> Beat Pegasus on <b><span class="ce-emoji">💀</span> Nightmare</b> to unlock');
 }
 
 // Settings: first tap arms the button, a second tap within a few seconds wipes the history.

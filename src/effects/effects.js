@@ -344,13 +344,15 @@ function getFxLayer() {
   return layer;
 }
 
-// Seasonal themes: a persistent particle layer (outside #app, below #fx-layer)
-// that lives as long as the theme is active: snow for Christmas, rising embers
-// for Halloween. Skipped under reduced motion.
+// Seasonal themes (and the Millennium theme): a persistent particle layer (outside #app,
+// below #fx-layer) that lives as long as the theme is active: snow for Christmas, rising
+// embers for Halloween, drifting gold dust for Millennium. Skipped under reduced motion.
+const SEASON_FX_THEMES = ['xmas', 'halloween', 'millennium'];
+
 function syncSeasonFx() {
   const theme = document.documentElement.dataset.theme;
   const existing = document.getElementById('season-fx');
-  const wanted = (theme === 'xmas' || theme === 'halloween') && !prefersReducedMotion();
+  const wanted = SEASON_FX_THEMES.includes(theme) && !prefersReducedMotion();
   if (existing && (!wanted || !existing.classList.contains(`season-fx--${theme}`))) existing.remove();
   if (!wanted || document.getElementById('season-fx') || !document.body) return;
 

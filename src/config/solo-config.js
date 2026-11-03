@@ -95,8 +95,20 @@ const SOLO_DIFFICULTIES = {
 };
 // Nightmare opens once you have beaten Pegasus on Hard.
 const SOLO_NIGHTMARE_UNLOCK = 'hard';
-const SOLO_CLEARS_KEY = 'ygo_solo_clears';
+// SOLO_CLEARS_KEY lives in app-themes.js (the Millennium theme reads it before this file loads).
 const SOLO_DIFFICULTY_KEY = 'ygo_solo_difficulty';
+
+// The Millennium Items shelf on the Solo menu: each item lights up after
+// `clears` wins against Pegasus on `difficulty`.
+const SOLO_SHELF = [
+  { id: 'puzzle', name: 'Millennium Puzzle', icon: '🔺', difficulty: 'easy', clears: 1 },
+  { id: 'key', name: 'Millennium Key', icon: '🗝️', difficulty: 'easy', clears: 3 },
+  { id: 'ring', name: 'Millennium Ring', icon: '💍', difficulty: 'hard', clears: 1 },
+  { id: 'scale', name: 'Millennium Scale', icon: '⚖️', difficulty: 'hard', clears: 3 },
+  { id: 'eye', name: 'Millennium Eye', icon: '👁️', difficulty: 'nightmare', clears: 1 },
+  { id: 'rod', name: 'Millennium Rod', icon: '🪄', difficulty: 'nightmare', clears: 2 },
+  { id: 'necklace', name: 'Millennium Necklace', icon: '📿', difficulty: 'nightmare', clears: 3 }
+];
 
 const SOLO_NODE_TYPES = {
   duelist: { icon: '⚔️', label: 'Duelist', desc: 'A wandering duelist. Win for +1 ⭐.' },

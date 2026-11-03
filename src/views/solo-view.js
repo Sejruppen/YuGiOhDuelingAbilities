@@ -35,6 +35,36 @@ function renderSoloView() {
 // "⚔️ Hard · " for harder runs; nothing on Easy.
 const soloDiffBadge = (id = solo.difficulty) => (soloDiffKey(id) === SOLO_DEFAULT_DIFFICULTY ? '' : `<span class="ce-emoji">${soloDiff(id).icon}</span> ${soloDiff(id).name} · `);
 
+// The Millennium Items shelf: each item lights up after enough wins against Pegasus
+// (SOLO_SHELF). Tap one for its condition; otherwise the caption counts the wins.
+function renderSoloShelf() {
+  const wins = id => soloClears[id] || 0;
+  const pick = SOLO_SHELF.find(item => item.id === soloUi.shelfItem);
+  const items = SOLO_SHELF.map(item => {
+    const lit = wins(item.difficulty) >= item.clears;
+    return `<button type="button" onclick="toggleSoloShelfItem('${item.id}')" aria-pressed="${pick === item}" aria-label="${item.name}${lit ? '' : ' (not earned yet)'}" class="solo-shelf-item${lit ? ' is-lit' : ''}${pick === item ? ' is-picked' : ''}"><span class="ce-emoji">${item.icon}</span></button>`;
+  }).join('');
+  let caption;
+  if (pick) {
+    const d = SOLO_DIFFICULTIES[pick.difficulty];
+    const got = Math.min(wins(pick.difficulty), pick.clears);
+    const times = pick.clears === 1 ? 'once' : `${pick.clears} times`;
+    caption = got >= pick.clears
+      ? `<b>${pick.name}</b> · earned!`
+      : `<b>${pick.name}</b> · beat Pegasus ${times} on <span class="ce-emoji">${d.icon}</span> ${d.name} (${got}/${pick.clears})`;
+  } else {
+    caption = 'Pegasus beaten: ' + SOLO_DIFFICULTY_ORDER.map(id => soloDifficultyUnlocked(id)
+      ? `<span class="ce-emoji">${SOLO_DIFFICULTIES[id].icon}</span> ×${wins(id)}`
+      : '<span class="ce-emoji">🔒</span>').join(' · ');
+  }
+  return `
+    <div class="solo-shelf">
+      <div class="solo-shelf-row bg-slate-900/80 border border-slate-800">${items}</div>
+      <p class="solo-shelf-caption text-slate-400">${caption}</p>
+    </div>
+  `;
+}
+
 function renderSoloMenu() {
   const active = isSoloRunActive();
   const at = active && solo.at && solo.map.nodes[solo.at];
@@ -57,6 +87,7 @@ function renderSoloMenu() {
           A solo run across Pegasus' island. Play your own deck against duelists that live on the phone. Choose your path, collect Star Chips and reach the castle.
         </p>
       </div>
+      ${renderSoloShelf()}
       ${renderSoloRoute(at ? at.floor : 0)}
       ${renderTournamentMenuButton({ icon: '▶️', label: active && solo.name ? `Continue · ${soloEscape(solo.name)}` : 'Continue', sub: continueSub, onclick: 'continueSoloRun()', primary: active, disabled: !active })}
       ${renderTournamentMenuButton({
@@ -1839,6 +1870,8 @@ function renderSoloEnd() {
     <div class="coop-end ${win ? 'coop-end--win' : 'coop-end--lose'} flex-1 min-h-0 overflow-y-auto p-6 flex flex-col items-center justify-center text-center gap-3">
       ${top}
       ${soloDiffKey() === SOLO_DEFAULT_DIFFICULTY ? '' : `<p class="text-xs font-bold uppercase tracking-widest text-amber-300">${soloDiffBadge().replace(/ · $/, '')}</p>`}
+      ${win && solo.unlocked === 'nightmare' ? '<p class="solo-unlock-note text-slate-100"><span class="ce-emoji">💀</span> <b>Nightmare unlocked!</b> Pick it when you start a new run.</p>' : ''}
+      ${win && solo.unlocked === 'millennium' ? `<div class="solo-unlock-note text-slate-100"><p><span class="ce-emoji">👁️</span> <b>Millennium theme unlocked!</b></p>${document.documentElement.dataset.theme === 'millennium' ? '' : '<button onclick="setAppTheme(\'millennium\')" class="mt-2 px-4 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-white text-xs font-bold transition">Put it on</button>'}</div>` : ''}
       <div class="grid grid-cols-3 gap-2 w-full max-w-xs mt-2">
         ${soloStat('Duels won', solo.stats?.duels ?? 0)}
         ${soloStat('Damage', solo.stats?.damage ?? 0)}

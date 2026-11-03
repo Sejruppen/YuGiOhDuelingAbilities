@@ -105,7 +105,7 @@ function handleOverlayBack() {
 
   const layer = document.getElementById('fx-layer');
   // Tap-to-skip scenes (end credits, Pegasus cutscenes).
-  const skippable = layer?.querySelector('.fx-credits, .fx-pg');
+  const skippable = layer?.querySelector('.fx-credits, .fx-pg, .fx-su');
   if (skippable) { skippable.click(); return true; }
   return !!layer?.querySelector(BACK_BLOCKING_FX);
 }

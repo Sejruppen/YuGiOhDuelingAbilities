@@ -3330,6 +3330,34 @@ function rockDrum(t, kind, out) {
   }
 }
 
+// Solo unlock scenes (solo-unlock-scenes.js). Timed to their 7.6 s timelines.
+// An Egyptian-flavoured scale (Phrygian dominant on D) for both.
+const SU_SCALE = [62, 63, 66, 67, 69, 70, 72, 74];
+
+// Shadi: desert wind, the Eye's hum, then a stone door grinding open on a dark chord.
+COOP_SOUNDS['su-shadi'] = t => {
+  const room = darkBus({ reverb: 0.7, echo: 0.2 });
+  noise({ t, dur: 4.5, gain: 0.03, freq: 500, to: 900, q: 0.6, attack: 1.2, out: room });
+  eyeHum(t + 0.4, 4, 0.05, room);
+  bell({ t: t + 0.5, freq: midi(74), dur: 2, gain: 0.03, out: room });
+  arpeggio(t + 1, [62, 63, 66, 67], 0.45, (at, n) => bell({ t: at, freq: midi(n + 12), dur: 1.4, gain: 0.02, out: room }));
+  noise({ t: t + 4.7, dur: 1.8, gain: 0.08, type: 'lowpass', freq: 220, to: 120, q: 2, attack: 0.15, out: room });
+  boom(t + 4.7, 0.9, room);
+  darkCluster({ t: t + 4.8, notes: [38, 39, 45, 50], dur: 2.8, gain: 0.05, out: room });
+  choir({ t: t + 5, notes: [62, 66, 69], dur: 2.4, gain: 0.014, out: room });
+};
+
+// The Eye of Wdjat opens: a rising hum, a golden choir and a bell cascade.
+COOP_SOUNDS['su-millennium'] = t => {
+  const room = darkBus({ reverb: 0.7 });
+  eyeHum(t, 4.5, 0.05, room);
+  tone({ t: t + 0.3, freq: 80, to: 160, dur: 4.2, gain: 0.04, attack: 1.5, out: room });
+  arpeggio(t + 0.9, SU_SCALE, 0.28, (at, n) => bell({ t: at, freq: midi(n + 12), dur: 1.2, gain: 0.02, out: room }));
+  boom(t + 4.7, 0.7, room);
+  choir({ t: t + 4.7, notes: [62, 66, 69, 74], dur: 2.6, gain: 0.016, out: room });
+  arpeggio(t + 4.8, SU_SCALE.map(n => n + 24), 0.06, (at, n) => bell({ t: at, freq: midi(n), dur: 1.4, gain: 0.03, out: room }));
+};
+
 // ---------------------------------------------------------------------------
 // Theme kits
 // ---------------------------------------------------------------------------
@@ -3660,6 +3688,20 @@ SOUND_KITS.xmas = {
   'quest-complete': t => {
     sleighBells(t, 8, 0.025);
     arpeggio(t + 0.1, [67, 72, 76, 79, 84], 0.14, (at, n) => bell({ t: at, freq: midi(n), dur: 1.4, gain: 0.04 }));
+  }
+};
+
+// --- Millennium (Solo reward: beat Pegasus on Nightmare). --------------------
+// The dark kit with the Millennium Eye's hum and bells in an Egyptian scale.
+SOUND_KITS.millennium = {
+  ...SOUND_KITS.dark,
+  theme: t => {
+    eyeHum(t, 1.2, 0.05);
+    arpeggio(t + 0.1, [62, 63, 66, 69, 74], 0.1, (at, n) => bell({ t: at, freq: midi(n + 12), dur: 1.2, gain: 0.035 }));
+  },
+  'quest-complete': t => {
+    eyeHum(t, 1.6, 0.05);
+    arpeggio(t + 0.1, [62, 66, 67, 70, 74, 78], 0.12, (at, n) => bell({ t: at, freq: midi(n + 12), dur: 1.5, gain: 0.04 }));
   }
 };
 

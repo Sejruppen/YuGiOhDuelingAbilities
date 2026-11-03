@@ -4,13 +4,17 @@
 const THEME_STORAGE_KEY = 'ygo_theme';
 // Set by src/effects/egg-tracker.js once every easter egg has been found.
 const TREASURE_UNLOCK_KEY = 'ygo_theme_treasure_unlocked';
+// Solo-mode wins per difficulty ({ easy, hard, nightmare }), written by src/state/solo-store.js.
+const SOLO_CLEARS_KEY = 'ygo_solo_clears';
 
 // Seasonal themes are only available (and shown) during their month (0 = January).
+// `unlock: '<difficulty>'` themes are earned by beating Pegasus on that difficulty in Solo.
 const APP_THEMES = [
   { id: 'dark', label: 'Dark', metaColor: '#090d16' },
   { id: 'light', label: 'Light', metaColor: '#f1f5f9' },
   { id: 'poc', label: 'Power of Chaos', metaColor: '#c99a52' },
   { id: 'gold', label: 'Treasure', metaColor: '#0d0a08', secret: true },
+  { id: 'millennium', label: 'Millennium', metaColor: '#0a1030', unlock: 'nightmare' },
   { id: 'halloween', label: 'Halloween', metaColor: '#120a1a', season: { month: 9, emoji: '🎃', monthName: 'October' } },
   { id: 'xmas', label: 'Christmas', metaColor: '#081410', season: { month: 11, emoji: '🎄', monthName: 'December' } }
 ];
@@ -26,8 +30,18 @@ function isTreasureThemeUnlocked() {
   }
 }
 
+function readSoloClears(difficulty) {
+  try {
+    return Number(JSON.parse(localStorage.getItem(SOLO_CLEARS_KEY))?.[difficulty]) || 0;
+  } catch {
+    return 0;
+  }
+}
+
 const isThemeAvailable = theme =>
-  (!theme.secret || isTreasureThemeUnlocked()) && (!theme.season || isSeasonActive(theme));
+  (!theme.secret || isTreasureThemeUnlocked()) &&
+  (!theme.season || isSeasonActive(theme)) &&
+  (!theme.unlock || readSoloClears(theme.unlock) > 0);
 
 function getAppTheme() {
   let savedId = null;

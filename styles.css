@@ -459,6 +459,91 @@ html[data-theme="halloween"] .modal-panel {
 }
 
 /* ===================================================================== */
+/* MILLENNIUM THEME (Solo reward: beat Pegasus on Nightmare)             */
+/* A lapis-lazuli night over the desert: gold trim, gold buttons and a   */
+/* faint Eye of Wdjat watching from the sky. Gold dust is #season-fx and */
+/* the theme tile / Eye-opening switch are in effects.css.               */
+/* ===================================================================== */
+html[data-theme="millennium"] {
+  --app-bg: 8 13 36;
+  --app-fg: 254 247 224;
+
+  --c-slate-50: 254 247 224;
+  --c-slate-100: 246 236 206;
+  --c-slate-200: 226 214 178;
+  --c-slate-300: 196 186 150;
+  --c-slate-400: 160 154 128;
+  --c-slate-500: 112 116 120;
+  --c-slate-600: 70 82 120;
+  --c-slate-700: 44 58 104;
+  --c-slate-800: 26 38 80;
+  --c-slate-900: 16 25 58;
+  --c-slate-950: 8 13 36;
+}
+
+html[data-theme="millennium"] body {
+  background-image:
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='90 50 180 220'%3E%3Cg fill='none' stroke='%23fbbf24' stroke-width='6' stroke-linecap='round' stroke-opacity='0.07'%3E%3Cpath d='M110 150Q180 90 250 150Q180 196 110 150Z'/%3E%3Ccircle cx='180' cy='146' r='18' fill='%23fbbf24' fill-opacity='0.07'/%3E%3Cpath d='M100 124Q180 60 260 122'/%3E%3Cpath d='M166 186L156 240Q152 256 168 256'/%3E%3Cpath d='M198 186Q226 232 262 220'/%3E%3C/g%3E%3C/svg%3E"),
+    radial-gradient(ellipse at 50% -10%, rgba(251, 191, 36, 0.16), transparent 60%),
+    linear-gradient(180deg, #14205a, #080d24);
+  background-repeat: no-repeat;
+  background-position: 50% 6vh, 0 0, 0 0;
+  background-size: min(70vw, 320px) auto, auto, auto;
+  background-attachment: fixed;
+}
+
+html[data-theme="millennium"] h1,
+html[data-theme="millennium"] h2,
+html[data-theme="millennium"] h3 {
+  font-family: 'Cinzel', Georgia, serif;
+}
+
+html[data-theme="millennium"] .brand-title {
+  font-family: 'Cinzel Decorative', 'Cinzel', Georgia, serif;
+  filter: drop-shadow(0 2px 0 #78350f) drop-shadow(0 0 14px rgba(251, 191, 36, 0.6));
+}
+
+html[data-theme="millennium"] .start-screen {
+  background-image: radial-gradient(circle at 50% 30%, rgba(251, 191, 36, 0.14), transparent 60%);
+}
+
+html[data-theme="millennium"] .start-screen img {
+  box-shadow: 0 0 0 3px #d4a537, 0 0 0 6px #1e3a8a, 0 0 26px rgba(251, 191, 36, 0.5);
+}
+
+html[data-theme="millennium"] .border-slate-800,
+html[data-theme="millennium"] .border-slate-700 {
+  border-color: rgba(212, 165, 55, 0.3);
+}
+
+html[data-theme="millennium"] header {
+  border-bottom: 3px solid transparent;
+  border-image: repeating-linear-gradient(90deg, #d4a537 0 14px, #1e3a8a 14px 18px, #0f766e 18px 22px, #1e3a8a 22px 26px) 1;
+}
+
+html[data-theme="millennium"] footer {
+  border-top: 3px solid transparent;
+  border-image: repeating-linear-gradient(90deg, #d4a537 0 14px, #1e3a8a 14px 18px, #0f766e 18px 22px, #1e3a8a 22px 26px) 1;
+}
+
+/* Primary buttons: polished gold with a dark label. */
+html[data-theme="millennium"] .bg-amber-500 {
+  background-image: linear-gradient(to bottom, #fde68a, #f2c94c 40%, #b8860b);
+  border: 1px solid #fff2b8;
+  color: #1c1003;
+  box-shadow: 0 0 0 1.5px #0b1a4a, 0 6px 22px rgba(251, 191, 36, 0.4);
+}
+
+html[data-theme="millennium"] .hover\:bg-amber-400:hover {
+  filter: brightness(1.1);
+}
+
+html[data-theme="millennium"] .modal-panel {
+  border: 2px solid rgba(212, 165, 55, 0.6);
+  box-shadow: 0 0 0 2px rgba(30, 58, 138, 0.7), 0 0 24px rgba(251, 191, 36, 0.2), 0 20px 40px rgba(0, 0, 0, 0.6);
+}
+
+/* ===================================================================== */
 /* TREASURE THEME (secret: unlocked by finding every easter egg)         */
 /* The Pharaoh's vault: black velvet, polished gold filigree and cut     */
 /* gemstones. Sapphire = Skill, Ruby = Comeback, Gold/Topaz = Quest,     */
