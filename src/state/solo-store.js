@@ -385,7 +385,7 @@ function enterSoloNode(id) {
   } else {
     solo.node = id;
     solo.phase = 'node';
-    if (node.type === 'treasure') solo.offer = { source: 'treasure', ids: rollSoloRelics('common', SOLO_TREASURE_CHOICES) };
+    if (node.type === 'treasure') solo.offer = { source: 'treasure', ids: rollSoloRelics('common', soloDiff().treasureChoices) };
     if (node.type === 'event') solo.event = buildSoloEvent(node);
   }
   return true;
@@ -893,10 +893,12 @@ function soloWin() {
   solo.reward = { name: f.name, icon: f.icon, kind: f.kind, chips: f.chips, plural: !!f.plural };
   solo.phase = 'reward';
   if (f.kind === 'elite') {
-    const ids = rollSoloRelics('rare', SOLO_ELITE_CHOICES);
+    const { eliteChoices, commonsOnly } = soloDiff();
+    let ids = rollSoloRelics(commonsOnly ? 'common' : 'rare', eliteChoices);
+    if (!ids.length) ids = rollSoloRelics(commonsOnly ? 'rare' : 'common', eliteChoices);
     const item = Math.random() < SOLO_MILLENNIUM_CHANCE && rollSoloRelics('millennium', 1)[0];
     if (item) {
-      if (ids.length >= SOLO_ELITE_CHOICES) ids.pop();
+      if (ids.length >= eliteChoices) ids.pop();
       ids.push(item);
     }
     solo.offer = { source: 'elite', ids };

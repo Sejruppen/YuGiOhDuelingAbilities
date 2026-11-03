@@ -34,6 +34,9 @@ const SOLO_CAMPFIRE_MAX = 2;
 const SOLO_FLOOR_KINDS = { 1: 'duelist', 3: 'events', 6: 'treasure', 7: 'fork', 11: 'gamble' };
 const SOLO_REGIONAL_EVENT_BOOST = 3;
 const SOLO_GAMBLE_EVENTS = ['dice', 'duke', 'number', 'well', 'hustler', 'stranger', 'nest', 'grave'];
+// Shadow Games that mostly give (giftWeight) or end in a duel (ambushWeight).
+const SOLO_GIFT_EVENTS = ['spring', 'friends', 'shadi', 'lunch'];
+const SOLO_AMBUSH_EVENTS = ['case', 'nest', 'grave', 'lottery'];
 const SOLO_MIXED_ODDS = { duelist: 50, event: 30, elite: 20 };
 // Share of mixed nodes (never elites) shown as ❓ until you step on them.
 const SOLO_HIDDEN_CHANCE = 0.33;
@@ -51,7 +54,7 @@ const SOLO_HIDDEN_CHANCE = 0.33;
 //                            on the beach, 2 = also back to back and twice in one region
 //   floorKinds / hiddenChance  which floors are special, and the share of mixed nodes shown as ❓
 //   campfire*          heal share, per-node chance, max per path and whether every path gets one
-//   treasureChoices / eliteChoices / commonsOnly  relic offers (commonsOnly = elites offer commons too)
+//   treasureChoices / eliteChoices / commonsOnly  relic offers (commonsOnly = elites offer commons instead of rares)
 //   tollMult / giftWeight / ambushWeight  Shadow Game costs and how likely gifts and ambushes are
 //   pegasusLp / pegasusPages / pegasusLevel  the final duel (level 0-2 adds mind games)
 const SOLO_DIFFICULTY_ORDER = ['easy', 'hard', 'nightmare'];
@@ -603,10 +606,8 @@ const SOLO_OWNER_CARDS = {
   }
 };
 
-// Relics: Treasure offers 3 commons, an elite win 2 rares. `value` is the
+// Relics: Treasure offers commons, an elite win rares (how many: see SOLO_DIFFICULTIES). `value` is the
 // relic's number (LP, ATK). Consumables vanish when used.
-const SOLO_TREASURE_CHOICES = 3;
-const SOLO_ELITE_CHOICES = 2;
 // `polish` = the campfire upgrade: a new `value`, or `uses` per duel (instead of once), plus its text.
 const SOLO_RELICS = {
   'dian-keto': { name: 'Dian Keto Charm', icon: '🌿', rarity: 'common', value: 500, text: 'After every duel you win, heal 500 LP.', polish: { value: 1000, text: 'After every duel you win, heal 1000 LP.' } },

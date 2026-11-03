@@ -1610,7 +1610,7 @@ function renderSoloFightIntro(f, kind, p) {
     `<span class="ce-emoji">${p.icon}</span> They look <b>${p.label.toLowerCase()}</b>.`
   ];
   if (f.chips) lines.push(`<span class="ce-emoji">⭐</span> Win to earn ${f.chips} Star Chip${f.chips === 1 ? '' : 's'}.`);
-  if (f.kind === 'elite') lines.push('<span class="ce-emoji">🎁</span> Win to choose a rare relic.');
+  if (f.kind === 'elite') lines.push('<span class="ce-emoji">🎁</span> Win to choose a ${soloDiff().commonsOnly ? '' : 'rare '}relic.');
   const e = f.elite && SOLO_ELITES[f.elite];
   if (e) lines.unshift(`<span class="text-rose-200">${e.gimmick}</span>`);
   if (f.pegasus) lines.unshift(...SOLO_PEGASUS.cutscenes.intro.rules.map(l => `<span class="text-fuchsia-200">${soloEmojiLead(l)}</span>`));
@@ -1753,7 +1753,7 @@ function renderSoloReward() {
         ${r.chips ? `<p class="text-3xl font-black text-amber-300">+${r.chips} <span class="ce-emoji">⭐</span></p>` : ''}
         ${r.healed ? `<p class="text-sm text-emerald-300"><span class="ce-emoji">🌿</span> Dian Keto Charm: +${r.healed} LP</p>` : ''}
         <p class="text-sm text-slate-400">${solo.chips}/${SOLO_GATE_CHIPS} Star Chips · ${solo.lp} LP left</p>
-        ${ids.length ? `<p class="text-xs font-semibold uppercase tracking-widest text-sky-300 mt-2">Choose a rare relic</p><div class="w-full max-w-sm space-y-2 text-left">${ids.map(soloRelicOption).join('')}</div>` : ''}
+        ${ids.length ? `<p class="text-xs font-semibold uppercase tracking-widest text-sky-300 mt-2">Choose a ${soloDiff().commonsOnly ? '' : 'rare '}relic</p><div class="w-full max-w-sm space-y-2 text-left">${ids.map(soloRelicOption).join('')}</div>` : ''}
         ${taken ? `<div class="coop-toast coop-toast--good rounded-lg px-3 py-2 text-sm"><span class="ce-emoji">${taken.icon}</span> You take the ${taken.name}!</div>` : ''}
         ${ids.length
           ? '<button onclick="soloContinueReward()" class="w-full max-w-xs py-2 text-slate-400 hover:text-white text-sm">Skip the relic</button>'

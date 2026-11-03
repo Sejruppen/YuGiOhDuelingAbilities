@@ -17,7 +17,10 @@ const SOLO_FALLBACK_EVENT = 'spring';
 const soloRelicName = id => `<span class="ce-emoji">${SOLO_RELICS[id].icon}</span> ${SOLO_RELICS[id].name}`;
 const soloOneRelic = rarity => rollSoloRelics(rarity, 1)[0] || null;
 const soloTradeable = () => solo.relics.filter(id => SOLO_RELICS[id].rarity !== 'millennium');
-const soloOutcome = (tone, text, effects = {}) => ({ tone, text, effects });
+const soloOutcome = (tone, text, effects = {}) => ({ tone, text, effects: effects.cost ? { ...effects, cost: soloToll(effects.cost) } : effects });
+// Harder runs charge more LP for Shadow Games.
+const soloToll = n => Math.round(n * soloDiff().tollMult / 50) * 50;
+const soloAmbushLp = e => Math.round(e.lp * soloDiff().lpMult / 50) * 50;
 
 // What an outcome does, in short ("−1000 LP · +1 ⭐").
 function soloEffectText(e = {}) {
@@ -31,7 +34,7 @@ function soloEffectText(e = {}) {
   if (e.mod) parts.push(SOLO_EVENT_MODS[e.mod].text);
   if (e.shortcut) parts.push('skip the next floor');
   if (e.fortune) parts.push('see the Shadow Games ahead');
-  if (e.ambush) parts.push(`a duel against ${e.ambush.name} (${e.ambush.lp} LP)`);
+  if (e.ambush) parts.push(`a duel against ${e.ambush.name} (${soloAmbushLp(e.ambush)} LP)`);
   if (e.video) parts.push("see Pegasus' first Toon");
   return parts.join(' · ') || 'Nothing happens.';
 }
@@ -53,7 +56,7 @@ const soloGive = (id, fallback) => (id ? { relic: id } : fallback);
 // The ante every outcome of a gamble costs (LP, or Star Chips on top of what it already does).
 const soloAnte = (table, { cost = 0, chips = 0 }) => table.map(t => ({
   ...t,
-  outcome: { ...t.outcome, effects: { ...t.outcome.effects, cost: (t.outcome.effects.cost || 0) + cost, chips: (t.outcome.effects.chips || 0) - chips } }
+  outcome: { ...t.outcome, effects: { ...t.outcome.effects, cost: (t.outcome.effects.cost || 0) + soloToll(cost), chips: (t.outcome.effects.chips || 0) - chips } }
 }));
 
 // A gamble shows a teaser; the Key adds what could happen.
@@ -101,7 +104,7 @@ const SOLO_EVENTS = {
         choices: [
           soloChoice('💧', 'The water of the Nile', null, soloOutcome('good', 'The water is cool and clear.', { heal: 1000 })),
           soloChoice('🎁', 'The gift of the tomb', 'A common relic', soloOutcome('good', 'Shadi nods slowly.', { relic: gift }), { secret: true, disabled: !gift, reason: 'The tomb is empty' }),
-          soloChoice('✨', 'The Millennium Item', '−2000 LP: a Millennium Item', soloOutcome('meh', '“The Item has chosen you… and taken its price.”', { relic: item, cost: 2000 }), { secret: true, disabled: !item, reason: 'No Item answers you' }),
+          soloChoice('✨', 'The Millennium Item', `−${soloToll(2000)} LP: a Millennium Item`, soloOutcome('meh', '“The Item has chosen you… and taken its price.”', { relic: item, cost: 2000 }), { secret: true, disabled: !item, reason: 'No Item answers you' }),
           soloGamble('⚖️', 'Let the scales decide', 'The scales tremble. Shadi smiles. “Let fate weigh your soul.”', soloD6(), [
             soloOn([1, 2], soloOutcome('meh', 'The scales tip back and forth… and settle on nothing.')),
             soloOn([3, 4], soloOutcome('good', 'The scales drop a gift into your hands.', soloGive(gift, { heal: 1000 }))),
@@ -191,7 +194,7 @@ const SOLO_EVENTS = {
       return {
         text: 'Three hats sit on a stump. A voice whispers: “One hides a rare card, one a card… and one a trap.”',
         choices: [
-          ...['left', 'middle', 'right'].map((side, i) => soloChoice('🎩', `The ${side} hat`, 'A rare relic, a relic or −1500 LP', prizes[i], { secret: true })),
+          ...['left', 'middle', 'right'].map((side, i) => soloChoice('🎩', `The ${side} hat`, `A rare relic, a relic or −${soloToll(1500)} LP`, prizes[i], { secret: true })),
           soloGamble('🌀', 'Spin the hats', 'You spin the hats until even you lose track. Then you snatch one…', soloD6(), [
             soloOn([1, 2], soloOutcome('bad', 'A trap! The hat bites.', { cost: 1500 })),
             soloOn([3, 4], soloOutcome('good', 'A card!', soloGive(common, { heal: 1000 }))),
@@ -244,7 +247,7 @@ const SOLO_EVENTS = {
     build: () => ({
       text: '“Cross my palm with life force, dearie, and I\'ll show you the road ahead.”',
       choices: [
-        soloChoice('🔮', 'Pay 500 LP', '−500 LP · See every Shadow Game further up the road', soloOutcome('good', 'The crystal ball clouds over, then clears…', { cost: 500, fortune: true })),
+        soloChoice('🔮', `Pay ${soloToll(500)} LP`, `−${soloToll(500)} LP · See every Shadow Game further up the road`, soloOutcome('good', 'The crystal ball clouds over, then clears…', { cost: 500, fortune: true })),
         soloGamble('🃏', 'Draw her tarot card', 'She fans out a deck. “Let the cards choose for you, dearie…”', soloD6(), [
           soloOn([1, 2], soloOutcome('bad', 'The Tower! She cackles as the lights flicker and your life force drains.', { cost: 500 })),
           soloOn([3, 4], soloOutcome('good', 'The Star! The crystal ball clears, no charge.', { fortune: true })),
@@ -355,7 +358,7 @@ const SOLO_EVENTS = {
       return {
         text: 'A dragon sleeps on a pile of glittering cards. Its tail twitches.',
         choices: [
-          soloChoice('🤫', 'Sneak in', '−1000 LP · A rare relic', soloOutcome('meh', 'It wakes just as you grab a card! You escape, singed.', { relic, cost: 1000 }), { secret: true }),
+          soloChoice('🤫', 'Sneak in', `−${soloToll(1000)} LP · A rare relic`, soloOutcome('meh', 'It wakes just as you grab a card! You escape, singed.', { relic, cost: 1000 }), { secret: true }),
           soloGamble('🐉', 'Wake the dragon', 'You clear your throat. One golden eye cracks open…', soloCoin(), [
             soloOn('heads', soloOutcome('good', 'The dragon bows its great head and offers you a card from its hoard.', soloGive(relic, { chips: 2 }))),
             soloOn('tails', soloOutcome('bad', 'The dragon roars and a tamer leaps from its back!', { ambush: { name: 'The Dragon Tamer', icon: '🐲', lp: 2000, chips: 1, only: 'Dragon' } }))
@@ -416,7 +419,7 @@ const SOLO_EVENTS = {
       text: 'Hooded figures block the road. “Nobody passes for free, duelist. Pay up… one way or another.”',
       choices: [
         soloChoice('⭐', 'Pay with a Star Chip', '−1 ⭐', soloOutcome('bad', 'They snatch the chip and wave you through.', { chips: -1 }), { disabled: solo.chips < 1, reason: 'You have no ⭐ to pay with' }),
-        soloChoice('🥊', 'Pay with your life force', '−1000 LP', soloOutcome('bad', 'They rough you up, then let you pass. “Toll paid.”', { cost: 1000 }))
+        soloChoice('🥊', 'Pay with your life force', `−${soloToll(1000)} LP`, soloOutcome('bad', 'They rough you up, then let you pass. “Toll paid.”', { cost: 1000 }))
       ]
     })
   },
@@ -661,7 +664,8 @@ function soloPickEvent(node) {
   const gambles = node.kind === 'gamble' ? ids.filter(id => SOLO_GAMBLE_EVENTS.includes(id)) : [];
   const pool = gambles.length ? gambles : ids;
   // Event-only floors favour the region's own Shadow Games.
-  const weight = id => (SOLO_EVENTS[id].weight || 1) * (node.kind === 'events' && SOLO_EVENTS[id].region ? SOLO_REGIONAL_EVENT_BOOST : 1);
+  const weight = id => (SOLO_EVENTS[id].weight || 1) * (node.kind === 'events' && SOLO_EVENTS[id].region ? SOLO_REGIONAL_EVENT_BOOST : 1)
+    * (SOLO_GIFT_EVENTS.includes(id) ? soloDiff().giftWeight : 1) * (SOLO_AMBUSH_EVENTS.includes(id) ? soloDiff().ambushWeight : 1);
   return soloWeighted(Object.fromEntries(pool.map(id => [id, weight(id)]))) || SOLO_FALLBACK_EVENT;
 }
 
