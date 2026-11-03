@@ -209,7 +209,8 @@ const SOLO_ELITES = {
       { name: 'Peacock', type: 'Winged Beast', atk: 1700, def: 1500, icon: '🦚', minRound: 2 },
       { name: 'Queen Bird', type: 'Winged Beast', atk: 1200, def: 2000, icon: '🐤', minRound: 2 },
       { name: 'Punished Eagle', type: 'Winged Beast', atk: 2100, def: 1800, icon: '🦅', minRound: 3, unique: true },
-      { name: "Harpie's Pet Dragon", type: 'Dragon', atk: 2000, def: 2500, icon: '🐉', minRound: 3, unique: true }
+      { name: "Harpie's Pet Dragon", type: 'Dragon', atk: 2000, def: 2500, icon: '🐉', minRound: 3, unique: true },
+      { name: 'Harpie Lady Sisters', type: 'Winged Beast', atk: 1950, def: 2100, icon: '👯‍♀️', minRound: 3, unique: true }
     ]
   },
   rex: {
@@ -401,10 +402,31 @@ const SOLO_ACTIONS = {
 };
 
 const SOLO_PERSONALITIES = {
-  aggressive: { icon: '🗡️', label: 'Aggressive', atkChance: 0.85, rps: 'rock', firstChance: 0.85, weights: { summon: 5, equip: 4, trap: 1, removal: 2, heal: 1 } },
-  wall: { icon: '🛡️', label: 'Wall', atkChance: 0.25, rps: 'paper', firstChance: 0.4, weights: { summon: 5, equip: 1, trap: 2, removal: 1, heal: 3 } },
-  trickster: { icon: '🎭', label: 'Trickster', atkChance: 0.5, rps: 'scissors', firstChance: 0.6, weights: { summon: 4, equip: 2, trap: 4, removal: 2, heal: 1 } }
+  aggressive: { icon: '🗡️', label: 'Aggressive', rps: 'rock', firstChance: 0.85, weights: { summon: 5, equip: 4, trap: 1, removal: 2, heal: 1 } },
+  wall: { icon: '🛡️', label: 'Wall', rps: 'paper', firstChance: 0.4, weights: { summon: 5, equip: 1, trap: 2, removal: 1, heal: 3 } },
+  trickster: { icon: '🎭', label: 'Trickster', rps: 'scissors', firstChance: 0.6, weights: { summon: 4, equip: 2, trap: 4, removal: 2, heal: 1 } }
 };
+
+// Where the enemy summons each monster, by name. Attack and Defense monsters are
+// always summoned that way. Any monster not listed here can go either way.
+const SOLO_ROLE_ATK = [
+  'Great White', '7 Colored Fish', 'Kairyu-Shin', 'Giant Red Seasnake', 'High Tide Gyojin', 'Sea Serpent Warrior of Darkness', 'Spike Seadra', 'Deepsea Shark',
+  'Leogun', 'Flying Kamakiri #2', 'Girochin Kuwagata', 'Gazelle the King of Mythical Beasts', 'Great Angus', 'Queen of Autumn Leaves',
+  'Flying Kamakiri #1', 'Giant Flea', 'Neo Bug', 'Hunter Spider', 'Kwagar Hercules', 'Insect Queen',
+  'Kojikocy', 'Axe Raider', 'Battle Ox', 'Panther Warrior', 'Warrior Dai Grepher', 'Beautiful Headhuntress', 'Battle Steer', 'Ansatsu', 'Rude Kaiser', 'Stone Ogre Grotto',
+  'Harpie Lady', 'Faith Bird', 'Skull Red Bird', 'Blue-Winged Crown', 'Sacred Crane', 'Winged Sage Falcos', 'Cyber Harpie', 'Peacock', 'Punished Eagle', "Harpie's Pet Dragon", 'Harpie Lady Sisters',
+  'Koumori Dragon', 'Thunder Dragon', 'Crawling Dragon', 'Kaminari Attack', 'Blackland Fire Dragon', 'Luster Dragon', 'Sonic Duck', 'Curse of Dragon',
+  'Uraby', 'Gilasaurus', 'Mad Sword Beast', 'Hyper Hammerhead', 'Two-Headed King Rex', 'Crawling Dragon #2', 'Kabazauls', 'Sword Arm of Dragon', 'Megazowler', 'Black Tyranno', 'Red-Eyes Black Dragon',
+  'Clown Zombie', 'Armored Zombie', 'Dragon Zombie', 'Master Kyonshee', 'Regenerating Mummy', 'Giant Axe Mummy', 'Vampire Lord',
+  'Vampire Lady', 'Shadow Ghoul', 'Pumpking the King of Ghosts', 'Patrician of Darkness', 'Ryu Kokki',
+  'Cyber Soldier of Darkworld', 'Ground Attacker Bugroth', 'Robotic Knight', 'Guardian of the Throne Room', 'X-Head Cannon', 'Mechanicalchaser', 'Slot Machine', 'Spikebot', 'Launcher Spider', 'Metal Dragon',
+  'Destroyer Golem', 'Sanga of the Thunder', 'Kazejin', 'Suijin', 'Bickuribox'
+];
+const SOLO_ROLE_DEF = [
+  'Aqua Madoor', 'Jellyfish', 'Hercules Beetle', 'Trent', 'Petit Moth', 'Kumootoko',
+  'Swordsman of Landstar', 'Battle Warrior', 'Giant Soldier of Stone', 'Alpha the Magnet Warrior',
+  'Queen Bird', 'Skull Servant', 'The Statue of Easter Island', 'Legendary Jujitsu Master', 'Illusionist Faceless Mage'
+];
 
 // Rock-paper-scissors before each duel. The winner picks who goes first (the enemy mostly picks
 // by personality, see firstChance). Whoever goes first can't attack on their first turn.
