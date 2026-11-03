@@ -32,11 +32,14 @@ function renderSoloView() {
 
 // --- Menu and history ---------------------------------------------------------------
 
+// "⚔️ Hard · " for harder runs; nothing on Easy.
+const soloDiffBadge = (id = solo.difficulty) => (soloDiffKey(id) === SOLO_DEFAULT_DIFFICULTY ? '' : `<span class="ce-emoji">${soloDiff(id).icon}</span> ${soloDiff(id).name} · `);
+
 function renderSoloMenu() {
   const active = isSoloRunActive();
   const at = active && solo.at && solo.map.nodes[solo.at];
   const continueSub = active
-    ? `Floor ${at ? at.floor : 0}/${SOLO_FLOOR.CASTLE} · ❤️ ${solo.lp} LP · ⭐ ${solo.chips}`
+    ? `${soloDiffBadge()}Floor ${at ? at.floor : 0}/${SOLO_FLOOR.CASTLE} · ❤️ ${solo.lp} LP · ⭐ ${solo.chips}`
     : 'No run in progress';
   const n = soloHistory.length;
   const wins = soloHistory.filter(e => e.result === 'victory').length;
@@ -112,7 +115,7 @@ function renderSoloHistoryEntry(e) {
       <button onclick="toggleSoloHistoryEntry('${e.id}')" aria-expanded="${open}" class="w-full text-left px-4 py-3 flex items-center gap-3">
         <span class="text-2xl leading-none ce-emoji">${r.icon}</span>
         <span class="flex-1 min-w-0">
-          <span class="block text-[0.7rem] text-slate-400 truncate">${tnDate(e.finishedAt)}${e.name ? ` · ${soloEscape(e.hero)}` : ''}</span>
+          <span class="block text-[0.7rem] text-slate-400 truncate">${soloDiffBadge(e.difficulty)}${tnDate(e.finishedAt)}${e.name ? ` · ${soloEscape(e.hero)}` : ''}</span>
           <span class="block font-black text-white leading-tight truncate">${soloEscape(e.name || e.hero)}</span>
           <span class="block text-xs ${r.cls} truncate">${r.text(e)}</span>
         </span>
@@ -134,22 +137,30 @@ function renderSoloHistoryEntry(e) {
 }
 
 function renderSoloHistory() {
-  const n = soloHistory.length;
-  const wins = soloHistory.filter(e => e.result === 'victory').length;
-  const best = Math.max(0, ...soloHistory.map(e => e.damage || 0));
+  const filter = soloUi.historyFilter;
+  const entries = filter ? soloHistory.filter(e => soloDiffKey(e.difficulty) === filter) : soloHistory;
+  const n = entries.length;
+  const wins = entries.filter(e => e.result === 'victory').length;
+  const best = Math.max(0, ...entries.map(e => e.damage || 0));
+  const harder = soloHistory.some(e => soloDiffKey(e.difficulty) !== SOLO_DEFAULT_DIFFICULTY);
+  const chips = harder ? `
+    <div class="flex gap-1.5 mb-4">
+      ${SOLO_DIFFICULTY_ORDER.map(id => `<button onclick="setSoloHistoryFilter('${id}')" aria-pressed="${filter === id}" class="flex-1 rounded-lg border px-2 py-1.5 text-xs font-bold transition ${filter === id ? 'border-amber-400 bg-amber-500/15 text-white' : 'border-slate-700 bg-slate-900/80 text-slate-300'}"><span class="ce-emoji">${soloDiff(id).icon}</span> ${soloDiff(id).name}</button>`).join('')}
+    </div>` : '';
   return `
     ${renderSoloHeader('<span class="ce-emoji">📜</span> History')}
     <div class="flex-1 min-h-0 overflow-y-auto p-4 no-scrollbar">
-      ${!n
+      ${!soloHistory.length
         ? '<p class="text-sm text-slate-400 text-center mt-10 leading-relaxed">No finished runs yet.<br>Every run, won or lost, will be remembered here.</p>'
         : `
+          ${chips}
           <div class="grid grid-cols-3 gap-2 text-center mb-5">
             ${soloStat('Runs', n)}
             ${soloStat('Won', wins)}
             ${soloStat('Best damage', best)}
           </div>
           <p class="text-xs font-semibold uppercase tracking-widest text-slate-400 mb-2">Runs</p>
-          <div class="space-y-2">${soloHistory.map(renderSoloHistoryEntry).join('')}</div>
+          ${n ? `<div class="space-y-2">${entries.map(renderSoloHistoryEntry).join('')}</div>` : '<p class="text-sm text-slate-400 text-center mt-6">No runs on this difficulty yet.</p>'}
         `}
     </div>
   `;
@@ -272,10 +283,48 @@ const soloFieldText = region => {
 
 // --- Intro --------------------------------------------------------------------------
 
+// What a harder difficulty changes, in short, from its table.
+function soloDifficultyNotes(id) {
+  const d = soloDiff(id);
+  if (soloDiffKey(id) === SOLO_DEFAULT_DIFFICULTY) return [];
+  const moves = d.hideIntents === Infinity ? "You can't see the enemy's next moves" : `The enemy's last planned move is hidden`;
+  return [
+    `⚔️ Enemies have ×${d.lpMult} LP, stronger cards and play more cards per turn.`,
+    `❓ ${moves}${d.hideIntentsEye ? ', and the Millennium Eye shows all but the last' : ''}.`,
+    `🔥 Campfires are rare and heal only ${Math.round(d.campfireHeal * 100)}%.`,
+    `🎁 Treasures offer ${d.treasureChoices} relic${d.treasureChoices === 1 ? '' : 's'}, elites ${d.eliteChoices} ${d.commonsOnly ? 'common' : 'rare'}.`,
+    `🌀 Shadow Games cost ×${d.tollMult} LP and ambush you more often.`,
+    `👁️ Pegasus has ${d.pegasusLp} LP and a ${d.pegasusPages}-page Toon World.`
+  ];
+}
+
+function renderSoloDifficultyPicker() {
+  const picked = soloDiffKey(soloUi.difficulty);
+  const notes = soloDifficultyNotes(picked);
+  const options = SOLO_DIFFICULTY_ORDER.map(id => {
+    const d = soloDiff(id);
+    const locked = !soloDifficultyUnlocked(id);
+    const on = id === picked;
+    return `<button onclick="pickSoloDifficulty('${id}')" ${locked ? 'disabled' : ''} aria-pressed="${on}" class="rounded-xl border px-2 py-2 text-center transition ${on ? 'border-amber-400 bg-amber-500/15 text-white' : 'border-slate-700 bg-slate-900/80 text-slate-300'} ${locked ? 'opacity-45' : 'hover:border-amber-500/50'}">
+      <span class="block text-xl leading-none ce-emoji">${locked ? '🔒' : d.icon}</span>
+      <span class="block text-xs font-bold mt-1">${d.name}</span>
+    </button>`;
+  }).join('');
+  return `
+    <p class="text-xs font-semibold uppercase tracking-widest text-slate-400 mb-2">Difficulty</p>
+    <div class="grid grid-cols-3 gap-2">${options}</div>
+    <p class="text-xs text-slate-300 mt-2 leading-snug">${soloDiff(picked).desc}</p>
+    ${soloDifficultyUnlocked('nightmare') ? '' : `<p class="text-xs text-slate-500 mt-1 leading-snug"><span class="ce-emoji">🔒</span> ${soloDiff('nightmare').name} opens once you have beaten Pegasus on ${soloDiff(SOLO_NIGHTMARE_UNLOCK).name}.</p>`}
+    ${notes.length ? `<ul class="text-xs text-slate-300 space-y-1 leading-relaxed mt-2">${notes.map(n => `<li>${soloEmojiLead(n)}</li>`).join('')}</ul>` : ''}
+    <div class="border-t border-slate-800 my-4"></div>
+  `;
+}
+
 function renderSoloIntro() {
   return `
     ${renderSoloHeader('<span class="ce-emoji">🏝️</span> New run')}
     <div class="flex-1 min-h-0 overflow-y-auto p-4 no-scrollbar">
+      ${renderSoloDifficultyPicker()}
       <p class="text-xs font-semibold uppercase tracking-widest text-slate-400 mb-2">How it works</p>
       <ul class="text-xs text-slate-300 space-y-1.5 leading-relaxed">
         <li><span class="ce-emoji">🗺️</span> Pick a path up the map. Every node is a duel, a treasure or something stranger. A <span class="ce-emoji">❓</span> hides a duelist or a Shadow Game until you get there.</li>
@@ -717,7 +766,7 @@ function renderSoloLegend() {
 
 function renderSoloMapScreen() {
   return `
-    ${renderSoloHeader(`${SOLO_MAP_ICON} Duelist's Road`, `<button onclick="toggleSoloLegend()" aria-label="Map legend" class="text-slate-300 text-lg px-2">ⓘ</button>`)}
+    ${renderSoloHeader(`${SOLO_MAP_ICON} Duelist's Road${soloDiffKey() === SOLO_DEFAULT_DIFFICULTY ? '' : ` <span class="ce-emoji" title="${soloDiff().name}">${soloDiff().icon}</span>`}`, `<button onclick="toggleSoloLegend()" aria-label="Map legend" class="text-slate-300 text-lg px-2">ⓘ</button>`)}
     ${renderSoloStatus()}
     <div class="solo-map-scroll flex-1 min-h-0 overflow-y-auto no-scrollbar px-2 py-3" onscroll="soloMapParallax(this)">
       ${renderSoloMap()}
@@ -1610,7 +1659,7 @@ function renderSoloFightIntro(f, kind, p) {
     `<span class="ce-emoji">${p.icon}</span> They look <b>${p.label.toLowerCase()}</b>.`
   ];
   if (f.chips) lines.push(`<span class="ce-emoji">⭐</span> Win to earn ${f.chips} Star Chip${f.chips === 1 ? '' : 's'}.`);
-  if (f.kind === 'elite') lines.push('<span class="ce-emoji">🎁</span> Win to choose a ${soloDiff().commonsOnly ? '' : 'rare '}relic.');
+  if (f.kind === 'elite') lines.push(`<span class="ce-emoji">🎁</span> Win to choose a ${soloDiff().commonsOnly ? '' : 'rare '}relic.`);
   const e = f.elite && SOLO_ELITES[f.elite];
   if (e) lines.unshift(`<span class="text-rose-200">${e.gimmick}</span>`);
   if (f.pegasus) lines.unshift(...SOLO_PEGASUS.cutscenes.intro.rules.map(l => `<span class="text-fuchsia-200">${soloEmojiLead(soloPegasusText(l))}</span>`));
@@ -1789,6 +1838,7 @@ function renderSoloEnd() {
   return `
     <div class="coop-end ${win ? 'coop-end--win' : 'coop-end--lose'} flex-1 min-h-0 overflow-y-auto p-6 flex flex-col items-center justify-center text-center gap-3">
       ${top}
+      ${soloDiffKey() === SOLO_DEFAULT_DIFFICULTY ? '' : `<p class="text-xs font-bold uppercase tracking-widest text-amber-300">${soloDiffBadge().replace(/ · $/, '')}</p>`}
       <div class="grid grid-cols-3 gap-2 w-full max-w-xs mt-2">
         ${soloStat('Duels won', solo.stats?.duels ?? 0)}
         ${soloStat('Damage', solo.stats?.damage ?? 0)}

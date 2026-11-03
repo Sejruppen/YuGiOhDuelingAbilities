@@ -61,7 +61,7 @@ const SOLO_DIFFICULTY_ORDER = ['easy', 'hard', 'nightmare'];
 const SOLO_DEFAULT_DIFFICULTY = 'easy';
 const SOLO_DIFFICULTIES = {
   easy: {
-    name: 'Easy', icon: '🟢', desc: 'The original road across Duelist Kingdom.',
+    name: 'Easy', icon: '🍼', desc: 'The original road across Duelist Kingdom.',
     lpMult: 1, maxAtkBonus: 0, actionBonusDuelist: 0, actionBonusDuelistLate: 0, actionBonusElite: 0,
     cardBias: 0, spellBoost: 1, removalFrom: 5, hideIntents: 0, hideIntentsEye: 0,
     mixedOdds: SOLO_MIXED_ODDS, eliteLoosen: 0, floorKinds: SOLO_FLOOR_KINDS, hiddenChance: SOLO_HIDDEN_CHANCE,
@@ -71,7 +71,7 @@ const SOLO_DIFFICULTIES = {
     pegasusLp: 8000, pegasusPages: 3, pegasusLevel: 0
   },
   hard: {
-    name: 'Hard', icon: '🟠', desc: 'Tougher duelists, hidden moves, fewer campfires and a longer book to tear.',
+    name: 'Hard', icon: '⚔️', desc: 'Tougher duelists, hidden moves, fewer campfires and a longer book to tear.',
     lpMult: 1.5, maxAtkBonus: 200, actionBonusDuelist: 0, actionBonusDuelistLate: 1, actionBonusElite: 1,
     cardBias: 0.3, spellBoost: 1.5, removalFrom: 3, hideIntents: 1, hideIntentsEye: 0,
     mixedOdds: { duelist: 40, event: 30, elite: 30 }, eliteLoosen: 1,
@@ -96,11 +96,12 @@ const SOLO_DIFFICULTIES = {
 // Nightmare opens once you have beaten Pegasus on Hard.
 const SOLO_NIGHTMARE_UNLOCK = 'hard';
 const SOLO_CLEARS_KEY = 'ygo_solo_clears';
+const SOLO_DIFFICULTY_KEY = 'ygo_solo_difficulty';
 
 const SOLO_NODE_TYPES = {
   duelist: { icon: '⚔️', label: 'Duelist', desc: 'A wandering duelist. Win for +1 ⭐.' },
-  elite: { icon: '👹', label: 'Elite', desc:   'A dangerous veteran duelist. Win for +2 ⭐ and a rare relic.' },
-    treasure: { icon: '🎁', label: 'Treasure', desc: "A lost Duelist's Case. Pick 1 of 3 relics." },
+  elite: { icon: '👹', label: 'Elite', desc:     'A dangerous veteran duelist. Win for +2 ⭐ and a relic.' },
+      treasure: { icon: '🎁', label: 'Treasure', desc: "A lost Duelist's Case. Pick one of its relics." },
   event: { icon: '🌀', label: 'Shadow Game', desc: 'A strange encounter. Choose wisely: some choices are a gamble.' },
   hidden: { icon: '❓', label: 'Unknown', desc: 'Hidden in the mist: a duelist or a Shadow Game. You find out when you get there.' },
   campfire: { icon: '🔥', label: 'Campfire', desc: `Choose one: rest (heal a share of your max LP), train with Joey (+${SOLO_CAMPFIRE_TRAIN} max LP) or polish a relic.` },

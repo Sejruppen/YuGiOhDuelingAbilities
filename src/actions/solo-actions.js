@@ -13,8 +13,9 @@ const soloUi = {
   view: 'menu',
   confirmNew: false,
   runName: '',
-  // The difficulty picked for the next run (see SOLO_DIFFICULTIES).
+  // The difficulty picked for the next run (see SOLO_DIFFICULTIES), and the history's filter.
   difficulty: SOLO_DEFAULT_DIFFICULTY,
+  historyFilter: null,
   openHistoryId: null,
   preview: null,
   legend: false,
@@ -66,6 +67,7 @@ function closeSoloPanels() {
 function goToSolo() {
   resetPeek();
   soloUi.mapFocus = null;
+  soloUi.difficulty = loadSoloPickedDifficulty();
   soloUi.view = 'menu';
   setState({ screen: SCREENS.SOLO });
 }
@@ -109,12 +111,40 @@ function newSoloRunClick() {
     soloUi.undo = [];
     saveSolo();
   }
+  soloUi.difficulty = loadSoloPickedDifficulty();
   soloUi.view = 'how';
+  render();
+}
+
+// The last difficulty you picked, unless it is still locked.
+function loadSoloPickedDifficulty() {
+  try {
+    const id = localStorage.getItem(SOLO_DIFFICULTY_KEY);
+    return SOLO_DIFFICULTIES[id] && soloDifficultyUnlocked(id) ? id : SOLO_DEFAULT_DIFFICULTY;
+  } catch {
+    return SOLO_DEFAULT_DIFFICULTY;
+  }
+}
+
+function pickSoloDifficulty(id) {
+  if (!SOLO_DIFFICULTIES[id] || !soloDifficultyUnlocked(id)) return;
+  soloUi.difficulty = id;
+  try {
+    localStorage.setItem(SOLO_DIFFICULTY_KEY, id);
+  } catch {
+    // The pick just isn't remembered.
+  }
   render();
 }
 
 function openSoloHistory() {
   soloUi.view = 'history';
+  soloUi.openHistoryId = null;
+  render();
+}
+
+function setSoloHistoryFilter(id) {
+  soloUi.historyFilter = soloUi.historyFilter === id ? null : id;
   soloUi.openHistoryId = null;
   render();
 }
@@ -162,6 +192,7 @@ function resetSoloHistory() {
 // --- The run ------------------------------------------------------------------------
 
 function startSoloRun() {
+  if (!soloDifficultyUnlocked(soloUi.difficulty)) soloUi.difficulty = SOLO_DEFAULT_DIFFICULTY;
   createSoloRun();
   soloUi.runName = '';
   closeSoloPanels();

@@ -128,6 +128,7 @@ function soloArchiveRun(result) {
     floor: at ? at.floor : 0,
     lp: solo.lp,
     chips: solo.chips,
+    duels: solo.stats?.duels ?? 0,
     difficulty: soloDiffKey(),
     damage: solo.stats?.damage ?? 0,
     relics: [...(solo.relics || [])],
