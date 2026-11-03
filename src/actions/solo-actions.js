@@ -13,6 +13,8 @@ const soloUi = {
   view: 'menu',
   confirmNew: false,
   runName: '',
+  // The difficulty picked for the next run (see SOLO_DIFFICULTIES).
+  difficulty: SOLO_DEFAULT_DIFFICULTY,
   openHistoryId: null,
   preview: null,
   legend: false,

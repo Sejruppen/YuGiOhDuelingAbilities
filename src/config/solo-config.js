@@ -38,6 +38,54 @@ const SOLO_MIXED_ODDS = { duelist: 50, event: 30, elite: 20 };
 // Share of mixed nodes (never elites) shown as ❓ until you step on them.
 const SOLO_HIDDEN_CHANCE = 0.33;
 
+// Difficulty levels. Easy is the original run, so its values are the constants above.
+// Never scaled, because they match the anime: starting Star Chips, the chips needed for the castle
+// and the region field bonuses.
+//   lpMult / actionBonus / maxAtkBonus  enemy LP, extra actions per turn, higher ATK cap of generic cards
+//   hideIntents        how many of the enemy's planned moves show as ❓ (Infinity = all)
+//   mixedOdds / eliteAnywhere  node odds on mixed floors; elites may also land on the beach and back to back
+//   floorKinds / hiddenChance  which floors are special, and the share of mixed nodes shown as ❓
+//   campfire*          heal share, per-node chance, max per path and whether every path gets one
+//   treasureChoices / eliteChoices / commonsOnly  relic offers (commonsOnly = elites offer commons too)
+//   tollMult / giftWeight / ambushWeight  Shadow Game costs and how likely gifts and ambushes are
+//   pegasusLp / pegasusPages / pegasusLevel  the final duel (level 0-2 adds mind games)
+const SOLO_DIFFICULTY_ORDER = ['easy', 'hard', 'nightmare'];
+const SOLO_DEFAULT_DIFFICULTY = 'easy';
+const SOLO_DIFFICULTIES = {
+  easy: {
+    name: 'Easy', icon: '🟢', desc: 'The original road across Duelist Kingdom.',
+    lpMult: 1, actionBonus: 0, maxAtkBonus: 0, hideIntents: 0,
+    mixedOdds: SOLO_MIXED_ODDS, eliteAnywhere: false, floorKinds: SOLO_FLOOR_KINDS, hiddenChance: SOLO_HIDDEN_CHANCE,
+    campfireHeal: SOLO_CAMPFIRE_HEAL, campfireChance: SOLO_CAMPFIRE_CHANCE, campfireMax: SOLO_CAMPFIRE_MAX, campfireGuarantee: true,
+    treasureChoices: 3, eliteChoices: 2, commonsOnly: false,
+    tollMult: 1, giftWeight: 1, ambushWeight: 1,
+    pegasusLp: 8000, pegasusPages: 4, pegasusLevel: 0
+  },
+  hard: {
+    name: 'Hard', icon: '🟠', desc: 'Tougher duelists, hidden moves, fewer campfires and a longer book to tear.',
+    lpMult: 1.5, actionBonus: 1, maxAtkBonus: 200, hideIntents: 1,
+    mixedOdds: { duelist: 40, event: 30, elite: 30 }, eliteAnywhere: true,
+    floorKinds: { 3: 'events', 7: 'fork', 11: 'gamble' }, hiddenChance: 0.55,
+    campfireHeal: 0.15, campfireChance: 0.08, campfireMax: 1, campfireGuarantee: false,
+    treasureChoices: 2, eliteChoices: 1, commonsOnly: false,
+    tollMult: 1.5, giftWeight: 0.6, ambushWeight: 1.5,
+    pegasusLp: 10000, pegasusPages: 6, pegasusLevel: 1
+  },
+  nightmare: {
+    name: 'Nightmare', icon: '💀', desc: 'Extremely punishing. Every duel is a fight for your soul.',
+    lpMult: 2.25, actionBonus: 2, maxAtkBonus: 400, hideIntents: Infinity,
+    mixedOdds: { duelist: 30, event: 30, elite: 40 }, eliteAnywhere: true,
+    floorKinds: { 7: 'fork' }, hiddenChance: 0.8,
+    campfireHeal: 0.1, campfireChance: 0.04, campfireMax: 1, campfireGuarantee: false,
+    treasureChoices: 1, eliteChoices: 1, commonsOnly: true,
+    tollMult: 2, giftWeight: 0.2, ambushWeight: 2,
+    pegasusLp: 12000, pegasusPages: 8, pegasusLevel: 2
+  }
+};
+// Nightmare opens once you have beaten Pegasus on Hard.
+const SOLO_NIGHTMARE_UNLOCK = 'hard';
+const SOLO_CLEARS_KEY = 'ygo_solo_clears';
+
 const SOLO_NODE_TYPES = {
   duelist: { icon: '⚔️', label: 'Duelist', desc: 'A wandering duelist. Win for +1 ⭐.' },
   elite: { icon: '👹', label: 'Elite', desc:   'A dangerous veteran duelist. Win for +2 ⭐ and a rare relic.' },

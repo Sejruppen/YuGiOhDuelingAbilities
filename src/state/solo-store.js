@@ -14,6 +14,7 @@
 //   mods    Shadow Game effects waiting for the next duel; shortcut = skip a floor
 //   video   the Toon Pegasus opens with, seen on his tape (a Shadow Game)
 //   runId   ties the run to its entry in soloHistory; name = optional label typed before sailing
+//   difficulty  'easy' | 'hard' | 'nightmare' (see SOLO_DIFFICULTIES); older saves count as easy
 const newSolo = () => ({ phase: 'intro' });
 
 function loadSolo() {
@@ -25,6 +26,7 @@ function loadSolo() {
     if (!saved.polished) saved.polished = [];
     if (!saved.seenEvents) saved.seenEvents = [];
     if (!saved.mods) saved.mods = {};
+    if (!SOLO_DIFFICULTIES[saved.difficulty]) saved.difficulty = SOLO_DEFAULT_DIFFICULTY;
     if (saved.map && !saved.runId) saved.runId = `${Date.now()}`;
     soloMigrateEquips(saved.fight);
     return saved;
@@ -34,6 +36,9 @@ function loadSolo() {
 }
 
 let solo = loadSolo();
+
+const soloDiffKey = (id = solo.difficulty) => (SOLO_DIFFICULTIES[id] ? id : SOLO_DEFAULT_DIFFICULTY);
+const soloDiff = (id = solo.difficulty) => SOLO_DIFFICULTIES[soloDiffKey(id)];
 
 // Older saves kept a monster's equips as one ATK number; now each equip is its own card.
 function soloMigrateEquips(f) {
@@ -52,7 +57,8 @@ function saveSolo() {
 }
 
 // Finished runs, newest first: { id, finishedAt, result ('victory' | 'defeat' |
-// 'abandoned'), hero, floor, lp, chips, duels, damage, relics, foe, map, path, at }.
+// 'abandoned'), difficulty, hero, floor, lp, chips, duels, damage, relics, foe, map, path, at }.
+// Entries from before the difficulty levels have none and count as easy.
 function loadSoloHistory() {
   try {
     const saved = JSON.parse(localStorage.getItem(SOLO_HISTORY_KEY));
@@ -69,6 +75,39 @@ function saveSoloHistory() {
     localStorage.setItem(SOLO_HISTORY_KEY, JSON.stringify(soloHistory));
   } catch {}
 }
+
+// Wins per difficulty, kept apart from the history (which is capped and can be cleared).
+// They unlock Nightmare and the Millennium rewards.
+function loadSoloClears() {
+  try {
+    const saved = JSON.parse(localStorage.getItem(SOLO_CLEARS_KEY));
+    return saved && typeof saved === 'object' ? saved : {};
+  } catch {
+    return {};
+  }
+}
+
+let soloClears = loadSoloClears();
+
+function soloRecordClear(id) {
+  const key = soloDiffKey(id);
+  soloClears[key] = (soloClears[key] || 0) + 1;
+  try {
+    localStorage.setItem(SOLO_CLEARS_KEY, JSON.stringify(soloClears));
+  } catch {}
+}
+
+// Undo after a victory takes the win back.
+function soloForgetClear(id) {
+  const key = soloDiffKey(id);
+  if (!soloClears[key]) return;
+  soloClears[key]--;
+  try {
+    localStorage.setItem(SOLO_CLEARS_KEY, JSON.stringify(soloClears));
+  } catch {}
+}
+
+const soloDifficultyUnlocked = id => id !== 'nightmare' || (soloClears[SOLO_NIGHTMARE_UNLOCK] || 0) > 0;
 
 const soloHeroName = () => {
   const hero = getSelectedCharacter();
@@ -89,7 +128,7 @@ function soloArchiveRun(result) {
     floor: at ? at.floor : 0,
     lp: solo.lp,
     chips: solo.chips,
-    duels: solo.stats?.duels ?? 0,
+    difficulty: soloDiffKey(),
     damage: solo.stats?.damage ?? 0,
     relics: [...(solo.relics || [])],
     foe: result === 'defeat' ? solo.fight?.name || 'a Shadow Game' : null,
@@ -100,11 +139,14 @@ function soloArchiveRun(result) {
   saveSoloHistory();
 }
 
-// Undo after a defeat brings the run back, so it leaves the history again.
+// Undo after a defeat or victory brings the run back, so it leaves the history again
+// (and a won run gives its clear back).
 function soloUnarchiveRun() {
-  const before = soloHistory.length;
-  soloHistory = soloHistory.filter(e => e.id !== solo.runId);
-  if (soloHistory.length !== before) saveSoloHistory();
+  const gone = soloHistory.find(e => e.id === solo.runId);
+  if (!gone) return;
+  soloHistory = soloHistory.filter(e => e !== gone);
+  saveSoloHistory();
+  if (gone.result === 'victory') soloForgetClear(gone.difficulty);
 }
 
 function clearSoloHistory() {
@@ -303,6 +345,7 @@ function soloAhead(from = soloReachable()) {
 function createSoloRun() {
   solo = {
     runId: `${Date.now()}`,
+    difficulty: soloDiffKey(soloUi.difficulty),
     name: (soloUi.runName || '').trim().slice(0, SOLO_NAME_MAX),
     phase: 'map',
     lp: SOLO_START_LP,
@@ -814,6 +857,7 @@ function soloWin() {
   if (f.kind === 'boss') {
     solo.phase = 'victory';
     soloArchiveRun('victory');
+    soloRecordClear(solo.difficulty);
     playSound({ name: 'co-victory' });
     return;
   }
