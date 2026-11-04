@@ -32,8 +32,8 @@ function renderSoloView() {
 
 // --- Menu and history ---------------------------------------------------------------
 
-// "⚔️ Hard · " for harder runs; nothing on Easy.
-const soloDiffBadge = (id = solo.difficulty) => (soloDiffKey(id) === SOLO_DEFAULT_DIFFICULTY ? '' : `<span class="ce-emoji">${soloDiff(id).icon}</span> ${soloDiff(id).name} · `);
+// "⚔️ Hard · " for harder runs; nothing on Easy unless `always` (the history shows every run's).
+const soloDiffBadge = (id = solo.difficulty, always = false) => (!always && soloDiffKey(id) === SOLO_DEFAULT_DIFFICULTY ? '' : `<span class="ce-emoji">${soloDiff(id).icon}</span> ${soloDiff(id).name} · `);
 
 // Gold icons for the seven Millennium Items (40 x 40). GOLD is replaced by a
 // gradient with a fresh id per icon, so repeated renders never share one.
@@ -216,7 +216,7 @@ function renderSoloHistoryEntry(e) {
       <button onclick="toggleSoloHistoryEntry('${e.id}')" aria-expanded="${open}" class="w-full text-left px-4 py-3 flex items-center gap-3">
         <span class="text-2xl leading-none ce-emoji">${r.icon}</span>
         <span class="flex-1 min-w-0">
-          <span class="block text-[0.7rem] text-slate-400 truncate">${soloDiffBadge(e.difficulty)}${tnDate(e.finishedAt)}${e.name ? ` · ${soloEscape(e.hero)}` : ''}</span>
+          <span class="block text-[0.7rem] text-slate-400 truncate">${soloDiffBadge(e.difficulty, true)}${tnDate(e.finishedAt)}${e.name ? ` · ${soloEscape(e.hero)}` : ''}</span>
           <span class="block font-black text-white leading-tight truncate">${soloEscape(e.name || e.hero)}</span>
           <span class="block text-xs ${r.cls} truncate">${r.text(e)}</span>
         </span>
