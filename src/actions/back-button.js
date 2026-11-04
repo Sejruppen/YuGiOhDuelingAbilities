@@ -66,6 +66,11 @@ function handleAppBack() {
       backInCoop();
       return true;
     case SCREENS.SOLO:
+      if (soloUi.view === 'menu' && soloUi.shelfItem) {
+        soloUi.shelfItem = null;
+        repaintSoloShelf();
+        return true;
+      }
       backInSolo();
       return true;
     case SCREENS.SETTINGS:

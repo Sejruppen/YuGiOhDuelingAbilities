@@ -105,7 +105,7 @@ function soloShelfIcon(id, cls = '') {
 const soloUnlockLabel = u => (SOLO_DIFFICULTIES[u] ? `<span class="ce-emoji">${SOLO_DIFFICULTIES[u].icon}</span> ${SOLO_DIFFICULTIES[u].name}` : 'the Millennium theme');
 
 // The Millennium Items shelf: each item lights up after enough wins against Pegasus
-// (SOLO_SHELF). Tap one for its condition; otherwise the caption counts the wins.
+// (SOLO_SHELF). The wins are counted above it; tap an item for its condition below.
 function renderSoloShelf() {
   const wins = id => soloClears[id] || 0;
   const pick = SOLO_SHELF.find(item => item.id === soloUi.shelfItem);
@@ -113,7 +113,10 @@ function renderSoloShelf() {
     const lit = wins(item.difficulty) >= item.clears;
     return `<button type="button" onclick="toggleSoloShelfItem('${item.id}')" onpointerdown="startSoloShelfHold(this, '${item.id}')" onpointerup="cancelSoloShelfHold()" onpointerleave="cancelSoloShelfHold()" onpointercancel="cancelSoloShelfHold()" oncontextmenu="return false" aria-pressed="${pick === item}" aria-label="${item.name}${lit ? '' : ' (not earned yet)'}" class="solo-shelf-item${lit ? ' is-lit' : ''}${pick === item ? ' is-picked' : ''}">${soloShelfIcon(item.id)}</button>`;
   }).join('');
-  let caption;
+  const beaten = 'Pegasus beaten: ' + SOLO_DIFFICULTY_ORDER.map(id => soloDifficultyUnlocked(id)
+    ? `<span class="ce-emoji">${SOLO_DIFFICULTIES[id].icon}</span> ×${wins(id)}`
+    : '<span class="ce-emoji">🔒</span>').join(' · ');
+  let caption = '';
   if (pick) {
     const d = SOLO_DIFFICULTIES[pick.difficulty];
     const got = Math.min(wins(pick.difficulty), pick.clears);
@@ -122,13 +125,10 @@ function renderSoloShelf() {
     caption = got >= pick.clears
       ? `<b>${pick.name}</b> · earned: ${how}${opens}${soloShelfScene(pick.id) ? '<br>Hold to replay the cutscene' : ''}`
       : `<b>${pick.name}</b> · ${how} (${got}/${pick.clears})${opens}`;
-  } else {
-    caption = 'Pegasus beaten: ' + SOLO_DIFFICULTY_ORDER.map(id => soloDifficultyUnlocked(id)
-      ? `<span class="ce-emoji">${SOLO_DIFFICULTIES[id].icon}</span> ×${wins(id)}`
-      : '<span class="ce-emoji">🔒</span>').join(' · ');
   }
   return `
     <div class="solo-shelf">
+      <p class="solo-shelf-caption text-slate-400">${beaten}</p>
       <div class="solo-shelf-row bg-slate-900/80 border border-slate-800">${items}</div>
       <p class="solo-shelf-caption text-slate-400">${caption}</p>
     </div>

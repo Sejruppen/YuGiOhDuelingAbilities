@@ -165,10 +165,21 @@ function toggleSoloShelfItem(id) {
   if (soloShelfHold.fired) { soloShelfHold.fired = false; return; }
   soloUi.shelfItem = soloUi.shelfItem === id ? null : id;
   playSound({ name: 'tap' });
+  repaintSoloShelf();
+}
+
+function repaintSoloShelf() {
   const shelf = document.querySelector('.solo-shelf');
   if (shelf) shelf.outerHTML = renderSoloShelf().trim();
   else render();
 }
+
+// A tap anywhere outside the shelf items puts the picked item back.
+document.addEventListener('click', e => {
+  if (!soloUi.shelfItem || e.target.closest?.('.solo-shelf-item')) return;
+  soloUi.shelfItem = null;
+  if (document.querySelector('.solo-shelf')) repaintSoloShelf();
+});
 
 // Hold a lit shelf item to replay its cutscene. The click that ends the hold is
 // swallowed so the item doesn't also toggle. Not an easter egg.
