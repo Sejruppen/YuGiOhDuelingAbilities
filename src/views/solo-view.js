@@ -764,7 +764,9 @@ function renderSoloMap(mini = false, run = solo, peek = false) {
     const special = n.col === null ? 'solo-node--special' : '';
     const pos = `style="left: ${(x / SOLO_MAP_W) * 100}%; top: ${(y / SOLO_MAP_H) * 100}%;"`;
     // Layers: glow (type aura) < frame (shape, rim and fill) < icon. The state ring is the node's ::after.
-    const stamp = state === 'visited' ? '<span class="solo-node-stamp" aria-hidden="true">✓</span>' : '';
+    // The node you stand on is done once you're back on the map (or collecting its reward).
+    const done = state === 'visited' || (state === 'current' && !['node', 'fight'].includes(solo.phase));
+    const stamp = done ? '<span class="solo-node-stamp" aria-hidden="true">✓</span>' : '';
     const inner = `<span class="solo-node-glow"></span><span class="solo-node-frame"></span><span class="solo-node-icon ce-emoji">${t.icon}</span>${stamp}`;
     if (mini) return `<span class="solo-node solo-node--${state} solo-node--${look} ${special}" ${state === 'current' ? 'data-solo-mini-focus' : ''} ${pos}>${inner}</span>`;
     const picked = (peek ? soloUi.peekNode : soloUi.preview) === n.id;
