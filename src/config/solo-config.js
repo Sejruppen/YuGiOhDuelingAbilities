@@ -38,6 +38,9 @@ const SOLO_GAMBLE_EVENTS = ['dice', 'duke', 'number', 'well', 'hustler', 'strang
 const SOLO_GIFT_EVENTS = ['spring', 'friends', 'shadi', 'lunch'];
 const SOLO_AMBUSH_EVENTS = ['case', 'nest', 'grave', 'lottery'];
 const SOLO_MIXED_ODDS = { duelist: 50, event: 30, elite: 20 };
+// Chance that a node rerolls when it rolled the same type as another choice at its fork,
+// so branches (almost always) lead to different things.
+const SOLO_FORK_VARIETY = 0.9;
 // Share of mixed nodes (never elites) shown as ❓ until you step on them.
 const SOLO_HIDDEN_CHANCE = 0.33;
 

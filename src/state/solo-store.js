@@ -242,6 +242,11 @@ function generateSoloMap(diff = soloDiff()) {
   // Easy keeps the beach a warm-up with no elites. Special floors (diff.floorKinds) are never hidden:
   // the player plans around them.
   const eliteRegions = new Set();
+  // Types already given to the other choices at n's forks (nodes that share a parent with n).
+  const siblingTypes = n => {
+    const parents = edges.filter(([, b]) => b === n.id).map(([a]) => a);
+    return new Set(edges.filter(([a, b]) => b !== n.id && parents.includes(a) && nodes[b].type).map(([, b]) => nodes[b].type));
+  };
   for (let floor = 1; floor <= SOLO_BRANCH_FLOORS; floor++) {
     const row = shuffled(Object.values(nodes).filter(n => n.floor === floor));
     const kind = diff.floorKinds[floor];
@@ -251,12 +256,19 @@ function generateSoloMap(diff = soloDiff()) {
       else if (kind === 'events' || kind === 'gamble') {
         n.type = 'event';
         n.kind = kind;
-      } else if (kind === 'fork') n.type = i === 0 ? 'duelist' : 'event';
-      else {
+      } else if (kind === 'fork') {
+        const taken = siblingTypes(n);
+        const vary = taken.has('event') && !taken.has('duelist') && Math.random() < SOLO_FORK_VARIETY;
+        n.type = i === 0 || vary ? 'duelist' : 'event';
+      } else {
         const afterElite = diff.eliteLoosen < 2 && edges.some(([a, b]) => b === n.id && nodes[a].type === 'elite');
         const noElite = afterElite || (diff.eliteLoosen < 2 && eliteRegions.has(n.region)) || (diff.eliteLoosen < 1 && n.region === 'beach');
-        let type = soloWeighted(diff.mixedOdds);
-        if (type === 'elite' && noElite) type = soloWeighted({ ...diff.mixedOdds, elite: 0 });
+        const odds = noElite ? { ...diff.mixedOdds, elite: 0 } : diff.mixedOdds;
+        let type = soloWeighted(odds);
+        const taken = siblingTypes(n);
+        if (taken.has(type) && Math.random() < SOLO_FORK_VARIETY) {
+          type = soloWeighted(Object.fromEntries(Object.entries(odds).filter(([t]) => !taken.has(t)))) || type;
+        }
         if (type === 'elite') eliteRegions.add(n.region);
         else if (Math.random() < diff.hiddenChance) n.hidden = true;
         n.type = type;
