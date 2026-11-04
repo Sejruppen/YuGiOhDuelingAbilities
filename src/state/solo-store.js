@@ -774,8 +774,26 @@ function soloCutMonster(m, stat, amount, lasting) {
   return { tone: 'good', text: `📉 ${m.name} loses ${amount} ${name} ${lasting ? 'while it stays on the field' : 'until the end of this turn'}: now ${soloStats(m, f)[stat]} ${name}.` };
 }
 
+// The enemy's position sense, used once per turn right before its attacks (see the 'reposition' step).
+// Cards with a printed position (Toons, Funny Bunny, Labyrinth Wall) and the Cocoon never move.
+// 0 ATK defends; an equipped monster attacks; otherwise its role decides (SOLO_ROLE_ATK / SOLO_ROLE_DEF),
+// and a monster that can go either way stays put.
+const soloFixedPos = m => !!(m.toon || m.bunny || m.hatch > 0 || Object.values(SOLO_ELITES).some(e => (e.monsters || []).some(c => c.pos && c.name === m.name)));
+
+function soloWantedPos(m, f) {
+  if (soloFixedPos(m)) return m.pos;
+  if (soloStats(m, f).atk <= 0) return 'def';
+  if (m.equips?.length) return 'atk';
+  if (SOLO_ROLE_ATK.includes(m.name)) return 'atk';
+  if (SOLO_ROLE_DEF.includes(m.name)) return 'def';
+  return m.pos;
+}
+
+// Monsters summoned, risen or hatched this turn can't change position (f.settled is set as the turn starts).
+const soloRepositions = f => f.monsters.filter(m => f.settled?.includes(m.uid) && soloWantedPos(m, f) !== m.pos);
+
 // Your card changes an enemy monster's battle position (Book of Moon, Stop Defense…).
-// The enemy never turns it back on its own.
+// The enemy may turn it back on its own turn (see soloWantedPos).
 function soloChangePos(m) {
   m.pos = m.pos === 'atk' ? 'def' : 'atk';
   playSound({ name: 'co-reposition' });
@@ -1065,7 +1083,10 @@ function startSoloEnemyTurn() {
   });
   const sleeve = f.elite === 'keith' && !g.sleeve && f.round >= SOLO_SLEEVE.fromRound &&
     (f.round >= SOLO_SLEEVE.byRound || Math.random() < SOLO_SLEEVE.chance);
-  f.steps = [...pre, ...f.intents.map((type, i) => ({ type, peek: f.peek?.[i] })), ...(sleeve ? [{ type: 'sleeve' }] : []), { type: 'attacks' }];
+  // Only monsters already on the field (not hatching) may change position this turn.
+  const hatching = pre.filter(s => s.type === 'hatch').map(s => s.uid);
+  f.settled = f.monsters.filter(m => !hatching.includes(m.uid)).map(m => m.uid);
+  f.steps = [...pre, ...f.intents.map((type, i) => ({ type, peek: f.peek?.[i] })), ...(sleeve ? [{ type: 'sleeve' }] : []), { type: 'reposition' }, { type: 'attacks' }];
   f.stepIndex = 0;
   playSound({ name: 'co-boss-turn' });
   announceSoloTurn('enemy');
@@ -1096,6 +1117,11 @@ function prepareSoloStep() {
       return;
     }
     if (step.ready) return;
+    // Nothing to turn: the step leaves the list, so the step count stays honest.
+    if (step.type === 'reposition' && !soloRepositions(f).length) {
+      f.steps.splice(f.stepIndex, 1);
+      continue;
+    }
     if (step.type === 'attacks') {
       // The enemy can't attack on its first turn when it opens the duel.
       if (f.round === 0) {
@@ -1103,7 +1129,7 @@ function prepareSoloStep() {
         continue;
       }
       // Monsters summoned this turn attack too: this is Yu-Gi-Oh!
-      const attackers = f.monsters.filter(m => m.pos === 'atk' && !m.bound);
+      const attackers = f.monsters.filter(m => m.pos === 'atk' && !m.bound && soloStats(m, f).atk > 0);
       if (attackers.length && f.round === 1 && soloHas('swords')) {
         step.type = 'swords';
       } else {
@@ -1202,6 +1228,8 @@ function prepareSoloStepType(step, f) {
       const m = soloMonster(step.uid);
       if (!m || m.pos !== 'atk' || m.bound) return false;
       const atk = soloAttackAtk(step, m, f);
+      // A monster with 0 ATK doesn't attack.
+      if (atk <= 0) return false;
       const title = `${m.name} attacks directly!${step.hit ? ` (${step.hit}/${m.hits})` : ''}`;
       Object.assign(step, { kind: 'attack', icon: m.icon, title, atk, sub: null, rex: f.elite === 'rex' && m.type === 'Dinosaur', toon: !!m.toon, note: m.seal ? soloToonSeal(f) : '' });
       return true;
@@ -1210,6 +1238,18 @@ function prepareSoloStepType(step, f) {
       playSound({ name: 'co-shield' });
       flashSoloRelic('swords');
       return info('🌟', 'Swords of Revealing Light!', "The enemy's monsters can't attack this turn.");
+    case 'reposition': {
+      const moved = soloRepositions(f);
+      moved.forEach(m => {
+        m.pos = m.pos === 'atk' ? 'def' : 'atk';
+      });
+      playSound({ name: 'co-reposition' });
+      const line = m => {
+        const st = soloStats(m, f);
+        return `${m.icon} ${m.name} → <b>${m.pos === 'atk' ? `Attack Position</b> (${st.atk} ATK)` : `Defense Position</b> (${st.def} DEF)`}`;
+      };
+      return info('🔄', moved.length === 1 ? 'Changes a position!' : 'Changes positions!', moved.map(line).join('<br>'), `Turn the card${moved.length === 1 ? '' : 's'} on the table.`);
+    }
     case 'special':
       return soloSpecialStep(f, info);
     case 'hatch': {
