@@ -58,7 +58,7 @@ function renderPeekCard(abilityType, ability) {
           <span class="text-xs font-extrabold uppercase tracking-wider px-2 py-0.5 rounded bg-slate-700 text-slate-200 border border-slate-600">${isMillenniumTheme() ? 'Necklace Vision' : 'Sneak Peek'}</span>
           ${usesBadge}
         </div>
-        <h3 class="text-lg font-bold text-white mb-1 leading-snug">${ability.name}</h3>
+        <h3 class="text-lg font-bold text-white mb-1 leading-snug">${abilityNameHtml(ability.name)}</h3>
         <p class="text-sm text-slate-200 leading-snug mb-3">${ability.text}</p>
 
         <div class="mt-auto flex gap-2">
@@ -121,7 +121,7 @@ function renderActiveCard({ type, containerClass, badgeClass, badgeText, control
           <span class="text-xs font-extrabold uppercase tracking-wider px-2.5 py-0.5 rounded border ${badgeClass}">${badgeText}</span>
           ${controlsHtml}
         </div>
-        <h3 class="text-lg font-bold text-white mb-1 leading-snug">${ability.name}</h3>
+        <h3 class="text-lg font-bold text-white mb-1 leading-snug">${abilityNameHtml(ability.name)}</h3>
         <p class="text-sm text-slate-100 leading-snug">${ability.text}</p>
       </div>
     </div>

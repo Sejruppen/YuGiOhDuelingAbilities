@@ -73,9 +73,10 @@ function renderScalePicker() {
 
 function renderStartView() {
   return `
-    <div class="start-screen flex-1 min-h-0 flex flex-col bg-gradient-to-b from-slate-900 via-slate-950 to-black">
+    <div class="start-screen start-screen--home flex-1 min-h-0 flex flex-col bg-gradient-to-b from-slate-900 via-slate-950 to-black">
       <div class="flex-1 min-h-0 overflow-y-auto flex flex-col p-6 text-center">
-        <div class="my-auto w-full flex flex-col items-center">
+        <div class="start-hero my-auto w-full flex flex-col items-center">
+          <div class="ra-disc" aria-hidden="true"></div>
           ${renderLogoEgg()}
           <h1 class="brand-title text-4xl font-extrabold tracking-tight text-white mb-2">Yu-Gi-Oh!</h1>
           <p class="text-amber-400 font-semibold tracking-widest uppercase text-sm mb-5">Character Abilities</p>

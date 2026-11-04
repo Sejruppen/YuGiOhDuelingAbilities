@@ -9,7 +9,8 @@
 // (#mil-shadow) creeps in and the Eye burns red. The carved LP digits crumble
 // on damage (stone chips fly) and are re-carved. Around the whole theme:
 // torchlight at the screen edges (#season-fx) and stone doors that grind open
-// on every screen change. Styles: styles.css and effects.css (MILLENNIUM THEME – DUEL).
+// on every screen change. Taps leave a golden ankh or scarab ripple (.fx-mil-tap).
+// Styles: styles.css and effects.css (MILLENNIUM THEME – DUEL).
 
 const MIL_CARD_ITEMS = { skill: 'puzzle', comeback: 'ring', quest: 'scale' };
 const MIL_SHADOW_LP = 1000;
@@ -212,3 +213,18 @@ function spawnMillenniumDoors() {
   // The new screen is revealed by the doors, so it skips its rise-in.
   restartClass(document.documentElement, 'mil-doors-closing', 1400);
 }
+
+// Every tap leaves a tiny golden ankh or scarab rippling in the sand.
+const MIL_TAP_GLYPHS = [
+  '<ellipse cx="12" cy="6.5" rx="3.4" ry="4.4"/><path d="M6.2 12.4H17.8M12 11V22"/>',
+  '<circle cx="12" cy="5.6" r="2.3"/><ellipse cx="12" cy="14" rx="5" ry="6.4"/><path d="M12 8.5V20.2M7.2 11L4 8.8M7 14H3.4M7.4 17L4.2 19.6M16.8 11L20 8.8M17 14H20.6M16.6 17L19.8 19.6"/>'
+];
+let milTapSeq = 0;
+
+document.addEventListener('pointerdown', event => {
+  if (!event.isPrimary || !isMillenniumTheme()) return;
+  spawnFx('fx-mil-tap', 700, {
+    vars: { '--x': `${event.clientX}px`, '--y': `${event.clientY}px` },
+    html: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${MIL_TAP_GLYPHS[milTapSeq++ % 2]}</svg>`
+  });
+}, { capture: true, passive: true });

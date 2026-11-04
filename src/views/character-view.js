@@ -20,9 +20,9 @@ function renderCharacterOption(char) {
     : `onclick="selectCharacter('${char.id}')"`;
 
   return `
-    <button ${clickAttrs} class="${egg ? `${egg.cls} ` : ''}w-full text-left p-4 rounded-xl border ${cardClass} hover:border-amber-500/50 active:scale-[0.99] transition flex items-center justify-between">
+    <button ${clickAttrs} class="${egg ? `${egg.cls} ` : ''}char-card w-full text-left p-4 rounded-xl border ${cardClass} hover:border-amber-500/50 active:scale-[0.99] transition flex items-center justify-between">
       <div>
-        <div class="font-bold text-white text-lg">${char.name}</div>
+        <div class="char-name font-bold text-white text-lg">${char.name}</div>
         <div class="text-sm ${themeClass} mt-0.5">${char.theme}</div>
       </div>
       <span class="text-slate-400 text-xl">→</span>

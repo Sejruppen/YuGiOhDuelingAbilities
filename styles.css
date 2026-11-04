@@ -737,6 +737,153 @@ html[data-theme="millennium"] .duel-card-peek .mil-etch svg {
   opacity: 0.14;
 }
 
+/* Ability types ("(Faith) …", abilityNameHtml in ability-picker.js): a carved
+   royal cartouche with a hieroglyph. Other themes keep the plain "(Faith)". */
+.ab-kind-glyph,
+.ra-disc {
+  display: none;
+}
+
+html[data-theme="millennium"] .ab-kind {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25em;
+  padding: 0.12em 0.7em 0.12em 0.4em;
+  border: 1.5px solid #d4a537;
+  border-right-width: 4px;
+  border-radius: 999px;
+  background: linear-gradient(180deg, #3d2b10, #1c1003);
+  box-shadow: inset 0 0 0 1px rgba(253, 230, 138, 0.25), 0 1px 2px rgba(0, 0, 0, 0.4);
+  color: #f2c94c;
+  font-family: 'Cinzel', Georgia, serif;
+  font-size: 0.66em;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  line-height: 1.4;
+  text-transform: uppercase;
+  text-shadow: none;
+  white-space: nowrap;
+  vertical-align: 0.12em;
+}
+
+html[data-theme="millennium"] .ab-kind-p {
+  display: none;
+}
+
+html[data-theme="millennium"] .ab-kind-glyph {
+  display: block;
+  flex: none;
+  width: 1em;
+  height: 1.2em;
+}
+
+/* Papyrus: picker options and revealed duel cards are papyrus between two
+   wooden rods. The picked option and revealed cards are fresh papyrus in
+   dark ink; the others are old, darkened papyrus. They unroll when picked
+   or activated (effects.css). */
+html[data-theme="millennium"] :is([data-fx-pick], .duel-card-active, .duel-card-exhausted) {
+  --mil-rod: linear-gradient(to bottom, #3a2408, #c99a48 40%, #6b4512 75%, #2a1905);
+  --mil-fibres: repeating-linear-gradient(90deg, rgba(120, 85, 30, 0.1) 0 2px, transparent 2px 7px),
+    repeating-linear-gradient(0deg, rgba(120, 85, 30, 0.08) 0 1px, transparent 1px 5px);
+  position: relative;
+  background:
+    var(--mil-rod) top / 100% 8px no-repeat,
+    var(--mil-rod) bottom / 100% 8px no-repeat,
+    radial-gradient(ellipse at 50% 50%, transparent 55%, rgba(110, 70, 15, 0.4) 100%),
+    var(--mil-fibres),
+    linear-gradient(170deg, #f0ddae, #d6bc84) #e4cf9c;
+  box-shadow: inset 0 0 0 1px rgba(255, 245, 215, 0.35), 0 3px 10px rgba(0, 0, 0, 0.45);
+}
+
+html[data-theme="millennium"] [data-fx-pick]:not(.is-selected) {
+  background:
+    var(--mil-rod) top / 100% 8px no-repeat,
+    var(--mil-rod) bottom / 100% 8px no-repeat,
+    radial-gradient(ellipse at 50% 50%, transparent 50%, rgba(0, 0, 0, 0.35) 100%),
+    var(--mil-fibres),
+    linear-gradient(170deg, #4a3c24, #2b2215) #3a3020;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.4);
+}
+
+html[data-theme="millennium"] [data-fx-pick].is-selected :is(.text-white, .text-slate-200),
+html[data-theme="millennium"] :is(.duel-card-active, .duel-card-exhausted) h3 {
+  color: #2b1a07;
+  text-shadow: none;
+}
+
+html[data-theme="millennium"] [data-fx-pick].is-selected .text-slate-200,
+html[data-theme="millennium"] :is(.duel-card-active, .duel-card-exhausted) p {
+  color: #47300f;
+}
+
+html[data-theme="millennium"] :is(.duel-card-active, .duel-card-exhausted) span.rounded.border {
+  background-color: #2b2213;
+}
+
+html[data-theme="millennium"] .duel-card-exhausted .used-watermark {
+  color: rgba(60, 35, 5, 0.16);
+}
+
+/* Character list: each duelist rests in a sarcophagus, the striped nemes at
+   its rounded head and their name in a royal cartouche. */
+html[data-theme="millennium"] .char-card {
+  padding-left: 2.5rem;
+  border: 2px solid rgba(212, 165, 55, 0.55);
+  border-radius: 2.4rem 0.9rem 0.9rem 2.4rem;
+  background:
+    linear-gradient(90deg, transparent 1.55rem, rgba(212, 165, 55, 0.75) 1.55rem 1.7rem, transparent 1.7rem),
+    repeating-linear-gradient(180deg, #c99a3a 0 5px, #1e3a8a 5px 10px) left / 1.55rem 100% no-repeat,
+    radial-gradient(ellipse at 30% 0%, rgba(253, 230, 138, 0.12), transparent 60%),
+    linear-gradient(170deg, #3d3524, #262016 60%, #1b170f) #241f15;
+  box-shadow: inset 0 0 0 3px #1d1910, inset 0 0 0 4px rgba(212, 165, 55, 0.3), 0 4px 12px rgba(0, 0, 0, 0.5);
+}
+
+html[data-theme="millennium"] .char-name {
+  display: inline-block;
+  padding: 0.1rem 0.95rem 0.15rem 0.75rem;
+  border: 1.5px solid #d4a537;
+  border-right-width: 4px;
+  border-radius: 1.4rem;
+  background: rgba(28, 16, 3, 0.55);
+  box-shadow: inset 0 0 0 1px rgba(253, 230, 138, 0.2);
+  color: #f2d78a;
+  font-family: 'Cinzel', Georgia, serif;
+  font-size: 1.05rem;
+  line-height: 1.3;
+  text-shadow: 0 1px 0 #000;
+}
+
+/* Home: the sun disc of Ra rises behind the logo (animated in effects.css). */
+html[data-theme="millennium"] .start-hero {
+  position: relative;
+  isolation: isolate;
+  overflow-x: clip;
+}
+
+html[data-theme="millennium"] .ra-disc {
+  display: block;
+  position: absolute;
+  left: 50%;
+  top: 4rem;
+  width: 12rem;
+  height: 12rem;
+  margin: -6rem 0 0 -6rem;
+  z-index: -1;
+  pointer-events: none;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(255, 214, 120, 0.55) 0 38%, rgba(242, 170, 60, 0.3) 52%, rgba(214, 120, 30, 0) 70%);
+}
+
+html[data-theme="millennium"] .ra-disc::before {
+  content: '';
+  position: absolute;
+  inset: -60%;
+  border-radius: 50%;
+  background: repeating-conic-gradient(rgba(253, 224, 140, 0.16) 0 4deg, transparent 4deg 15deg);
+  -webkit-mask: radial-gradient(circle, transparent 26%, #000 34%, transparent 70%);
+  mask: radial-gradient(circle, transparent 26%, #000 34%, transparent 70%);
+}
+
 /* Life Points in a royal cartouche: hieroglyph trim down both sides, sand
    filled to your LP (--lp-sand from lp-bar.js) and the Millennium Eye at the foot. */
 html[data-theme="millennium"] .lp-bar {
