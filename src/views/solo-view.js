@@ -1996,7 +1996,7 @@ function renderSoloEnd() {
       ${solo.map ? `<div data-solo-end-map class="solo-end-map shrink-0 w-full max-w-[200px] overflow-y-auto no-scrollbar">${renderSoloMap(true)}</div>` : ''}
       <div class="flex flex-col gap-2 w-full max-w-xs mt-3">
         ${!win && soloUi.undo.length ? '<button onclick="undoSolo()" class="w-full py-3 rounded-xl bg-slate-800 hover:bg-slate-700 text-white font-semibold transition">↩️ Undo last step</button>' : ''}
-        <button onclick="startSoloRun()" class="w-full py-3.5 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold text-lg transition"><span class="ce-emoji">🏝️</span> New run</button>
+        <button onclick="soloEndNewRun()" class="w-full py-3.5 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold text-lg transition"><span class="ce-emoji">🏝️</span> New run</button>
         <button onclick="soloBackToMenu()" class="w-full py-2 text-slate-400 hover:text-white text-sm">Back to menu</button>
       </div>
     </div>

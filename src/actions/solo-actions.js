@@ -291,6 +291,17 @@ function soloBackToMenu() {
   showSoloMenu();
 }
 
+// From the end screen: on to the new-run setup (name and difficulty).
+function soloEndNewRun() {
+  solo = newSolo();
+  saveSolo();
+  closeSoloPanels();
+  soloUi.undo = [];
+  soloUi.difficulty = loadSoloPickedDifficulty();
+  soloUi.view = 'how';
+  render();
+}
+
 // --- Map ----------------------------------------------------------------------------
 
 function tapSoloNode(id) {
