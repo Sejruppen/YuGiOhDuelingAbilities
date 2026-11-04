@@ -1,4 +1,4 @@
-const CACHE_NAME = 'ygo-skills-mvp-v307';
+const CACHE_NAME = 'ygo-skills-mvp-v308';
 const ASSETS = [
   './',
   './index.html',

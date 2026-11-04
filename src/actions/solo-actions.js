@@ -824,6 +824,21 @@ function confirmSoloCutAttacker() {
   commitSolo();
 }
 
+// --- Fight: changing a monster's battle position ------------------------------------
+// On your turn: Effect → Change position → a monster. On the enemy's turn: the attacker.
+
+function confirmSoloPos(uid) {
+  const m = soloMonster(uid);
+  if (!m) return;
+  soloAct(() => soloChangePos(m));
+}
+
+function soloPosAttackerClick() {
+  soloSnapshot();
+  soloPosAttacker();
+  commitSolo();
+}
+
 // --- Fight: Pegasus -----------------------------------------------------------------
 
 function dismissSoloCutscene() {

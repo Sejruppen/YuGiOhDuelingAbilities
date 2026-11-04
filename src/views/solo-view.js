@@ -437,6 +437,7 @@ function renderSoloIntro() {
         <li><span class="ce-emoji">👁️</span> The enemy shows what kind of move it will make next turn. Plan around it!</li>
         <li><span class="ce-emoji">⚔️</span> Attack on the phone: pick a target and enter your monster's ATK. Normal battle rules apply.</li>
         <li><span class="ce-emoji">📉</span> Played a card that lowers ATK or DEF? Use <b>Effect</b> on your turn, or <b>Lower ATK/DEF</b> when a monster attacks you. Pick whether it lasts until the end of the turn or while the monster stays on the field.</li>
+        <li><span class="ce-emoji">🔄</span> Changed an enemy monster's position? Use <b>Effect</b> on your turn, or switch an attacker to <b>Defense Position</b> to stop its attack.</li>
         <li><span class="ce-emoji">🛡️</span> Enemy monsters attack you directly. Block with one of your monsters (each one blocks once per turn) or take the hit. Or spring a Trap Card from your hand to negate the attack or destroy the attacker. When the enemy summons a monster, you can also spring a Trap Card to destroy it. Negate a Spell the enemy plays (equip, removal, healing, Toon World) with a card from your hand, and when you attack, negate their face-down Trap before it springs.</li>
         <li><span class="ce-emoji">🌲</span> Each region has a field: matching monsters gain ${SOLO_FIELD_BONUS * 100}% ATK. That goes for yours too!</li>
         <li><span class="ce-emoji">⭐</span> Start with ${SOLO_START_CHIPS} Star Chips. A duelist gives +1, an elite +2. With fewer than ${SOLO_GATE_CHIPS}, you must go through the Labyrinth.</li>
@@ -1666,6 +1667,7 @@ function renderSoloPanel() {
         coopOption({ icon: '💥', label: 'Destroy a monster', sub: 'Raigeki, Fissure, Dark Hole…', disabled: !f.monsters.length, reason: 'The enemy has no monsters' }, "setSoloPanel({ kind: 'destroy' })"),
         coopOption({ icon: '🌪️', label: 'Destroy a Spell/Trap', sub: 'Mystical Space Typhoon, Harpie\'s Feather Duster…', disabled: !f.trap && !soloToonWorldUp(f) && !f.monsters.some(m => m.equips?.length), reason: 'The enemy has no face-down, equip or Toon World card' }, "setSoloPanel({ kind: 'spelltrap' })"),
         coopOption({ icon: '📉', label: 'Lower ATK/DEF', sub: 'Shadow Spell, Shrink, Mystic Plasma Zone…', disabled: !f.monsters.length, reason: 'The enemy has no monsters' }, "setSoloPanel({ kind: 'cut', uid: null })"),
+        coopOption({ icon: '🔄', label: 'Change position', sub: 'Book of Moon, Stop Defense…', disabled: !f.monsters.length, reason: 'The enemy has no monsters' }, "setSoloPanel({ kind: 'pos' })"),
         coopOption({ icon: '🔥', label: 'Burn damage', sub: 'Damage straight to the enemy\'s LP', disabled: soloToonWorldUp(f), reason: 'Toon World shields Pegasus: tear out all its pages first' }, "setSoloPanel({ kind: 'burn' })")
       ];
       if (soloHas('raigeki')) {
@@ -1693,6 +1695,15 @@ function renderSoloPanel() {
       const st = soloStats(m, f);
       return renderSoloPanelShell(`📉 ${m.icon} ${m.name} <span class="text-xs text-slate-400">ATK ${st.atk} · DEF ${st.def}</span>`, soloCutControls() +
         soloKeypad(`Lower its ${soloUi.cut.stat.toUpperCase()} by`, coopBtn('← Back', 'setSoloPanel({ uid: null })') + coopBtn('📉 Lower', 'confirmSoloCut()', 'primary', !soloUi.input)));
+    }
+    if (panel.kind === 'pos') {
+      const option = m => {
+        const st = soloStats(m, f);
+        const sub = m.pos === 'atk' ? `Attack → Defense Position (${st.def} DEF)` : `Defense → Attack Position (${st.atk} ATK)`;
+        return coopOption({ icon: m.icon, label: m.name, sub }, `confirmSoloPos(${m.uid})`);
+      };
+      return renderSoloPanelShell('🔄 Change which monster\'s position?', f.monsters.map(option).join('') +
+        `<div class="flex">${coopBtn('← Back', 'setSoloPanel({ kind: null })')}</div>`);
     }
     if (panel.kind === 'burn') {
       return renderSoloPanelShell('🔥 Burn damage', soloKeypad('Damage on the card',
@@ -1758,7 +1769,7 @@ function renderSoloStepCard() {
       (waboku ? text('🛐 Waboku protects you this turn: no battle damage.', 'text-xs text-emerald-300') : '') +
       row([step.toon ? '' : coopBtn('🛡️ Block with a monster', 'startSoloBlock()', 'primary'), waboku ? coopBtn('🛐 Take 0', 'soloTakeHitClick()') : coopBtn(`💔 Take ${step.atk}`, 'soloTakeHitClick()', 'danger')]) +
       row([coopBtn('<span class="ce-emoji">🪤</span> Trap: negate attack', "soloTrapDefendClick('negate')"), coopBtn('<span class="ce-emoji">🪞</span> Trap: destroy attacker', "soloTrapDefendClick('destroy')")]) +
-      row([coopBtn('<span class="ce-emoji">📉</span> Lower ATK/DEF', 'startSoloCut()'), ...relics]);
+      row([coopBtn('<span class="ce-emoji">📉</span> Lower ATK/DEF', 'startSoloCut()'), coopBtn('<span class="ce-emoji">🔄</span> To Defense Position', 'soloPosAttackerClick()'), ...relics]);
   } else if (step.kind === 'crush') {
     body = title + text(`His Millennium Eye reads your hand and names <b>${step.cardType}</b>. Discard a ${step.cardType} card.`) +
       text(step.bluffNote, 'text-xs text-rose-300') +

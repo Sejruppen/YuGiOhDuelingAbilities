@@ -774,6 +774,15 @@ function soloCutMonster(m, stat, amount, lasting) {
   return { tone: 'good', text: `📉 ${m.name} loses ${amount} ${name} ${lasting ? 'while it stays on the field' : 'until the end of this turn'}: now ${soloStats(m, f)[stat]} ${name}.` };
 }
 
+// Your card changes an enemy monster's battle position (Book of Moon, Stop Defense…).
+// The enemy never turns it back on its own.
+function soloChangePos(m) {
+  m.pos = m.pos === 'atk' ? 'def' : 'atk';
+  playSound({ name: 'co-reposition' });
+  const st = soloStats(m);
+  return { tone: 'good', text: `🔄 ${m.name} switches to ${m.pos === 'atk' ? `Attack Position: ${st.atk} ATK` : `Defense Position: ${st.def} DEF`}.` };
+}
+
 // Equip cards: m.equips = [{ uid, name, atk }]. Each one sits in a Spell/Trap zone.
 const soloEquipAtk = m => (m.equips || []).reduce((sum, e) => sum + e.atk, 0);
 const soloSpellCount = f => f.monsters.reduce((n, m) => n + (m.equips?.length || 0), 0) + (f.trap ? 1 : 0) + (soloToonWorldUp(f) ? 1 : 0);
@@ -1365,6 +1374,18 @@ function soloCutAttacker(stat, amount, lasting) {
   const result = soloCutMonster(m, stat, amount, lasting);
   step.atk = soloAttackAtk(step, m, solo.fight);
   step.cutNote = [step.cutNote, result.text].filter(Boolean).join('<br>');
+}
+
+// Mid-attack, the attacker switches to Defense Position and its attack stops.
+// Its other hits (Toon Gemini Elf) are skipped too, since it no longer attacks.
+function soloPosAttacker() {
+  const step = soloStep();
+  if (!step || step.kind !== 'attack' || step.sub) return;
+  const m = soloMonster(step.uid);
+  if (!m) return;
+  const result = soloChangePos(m);
+  result.text += ' The attack stops: you take 0.';
+  finishSoloStep(result);
 }
 
 // You block an enemy attack with one of your monsters (normal battle rules).
