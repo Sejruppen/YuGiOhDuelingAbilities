@@ -15,7 +15,7 @@ const APP_THEMES = [
   { id: 'light', label: 'Light', metaColor: '#f1f5f9' },
   { id: 'poc', label: 'Power of Chaos', metaColor: '#c99a52' },
   { id: 'gold', label: 'Treasure', metaColor: '#0d0a08', secret: true },
-  { id: 'millennium', label: 'Millennium', metaColor: '#0a1030', unlock: 'nightmare', unlockClears: 3 },
+  { id: 'millennium', label: 'Millennium', metaColor: '#0a1030', unlock: 'nightmare', unlockClears: 0 }, // TEMP for testing: restore unlockClears: 3
   { id: 'halloween', label: 'Halloween', metaColor: '#120a1a', season: { month: 9, emoji: '🎃', monthName: 'October' } },
   { id: 'xmas', label: 'Christmas', metaColor: '#081410', season: { month: 11, emoji: '🎄', monthName: 'December' } }
 ];
@@ -42,7 +42,7 @@ function readSoloClears(difficulty) {
 const isThemeAvailable = theme =>
   (!theme.secret || isTreasureThemeUnlocked()) &&
   (!theme.season || isSeasonActive(theme)) &&
-  (!theme.unlock || readSoloClears(theme.unlock) >= (theme.unlockClears || 1));
+  (!theme.unlock || readSoloClears(theme.unlock) >= (theme.unlockClears ?? 1));
 
 function getAppTheme() {
   let savedId = null;

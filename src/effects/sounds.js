@@ -3956,16 +3956,158 @@ SOUND_KITS.xmas = {
 };
 
 // --- Millennium (Solo reward: the Millennium Eye, beat Pegasus 3 times on Nightmare). ---
-// The dark kit with the Millennium Eye's hum and bells in an Egyptian scale.
+// Stone, sand and gold in the Hijaz scale (SU_SCALE). Each Millennium Item
+// has its own voice: the Puzzle's pieces click into place with a gong, the
+// Ring whirls and its pointers chime as they settle, the Scale creaks and its
+// pans ring until they balance, the Necklace breathes a vision and the Rod
+// hums on a heal.
+
+// Stone grinding over stone.
+function stoneSlide(t, dur = 0.35, gain = 0.07, from = 700, to = 250) {
+  noise({ t, dur, gain, type: 'bandpass', freq: from, to, q: 0.8, attack: 0.03 });
+  noise({ t, dur: dur * 0.8, gain: gain * 0.6, type: 'lowpass', freq: 300, to: 120, attack: 0.04 });
+}
+
+// A trickle of sand: a soft hiss with scattered grains.
+function sandPour(t, dur = 0.8, gain = 0.035) {
+  noise({ t, dur, gain, type: 'highpass', freq: 4500, to: 2500, attack: 0.08 });
+  for (let i = 0; i < 10; i++) noise({ t: t + rnd(0, dur), dur: 0.02, gain: gain * 0.8, freq: rnd(3000, 7000), q: 4 });
+}
+
+const milBell = (t, n, dur = 1.2, gain = 0.035, out) => bell({ t, freq: midi(n), dur, gain, out });
+
+// Three pieces clicking together, then the Puzzle's gong and hum.
+function milPuzzleSound(t) {
+  const room = darkBus({ reverb: 0.5 });
+  [0.42, 0.5, 0.58].forEach((d, i) => {
+    noise({ t: t + d, dur: 0.03, gain: 0.09, freq: 2600 + i * 500, q: 3 });
+    tone({ t: t + d, freq: 1400 + i * 200, dur: 0.04, type: 'square', gain: 0.02, filter: 3000 });
+  });
+  boom(t + 0.6, 0.35, room);
+  milBell(t + 0.6, 50, 2.2, 0.06, room);
+  milBell(t + 0.62, 74, 1.6, 0.035, room);
+  puzzleHum(t + 0.6, 1.4, 0.05, room);
+}
+
+// The Ring whirling in, then its five pointers chiming as they settle.
+function milRingSound(t) {
+  const room = darkBus({ reverb: 0.45 });
+  eyeHum(t, 1.6, 0.05, room);
+  ceWhoosh(t, 0.7, 0.05, 300, 2200, room);
+  for (let i = 0; i < 8; i++) milBell(t + 0.05 + i * 0.075, SU_SCALE[(i * 3) % SU_SCALE.length] + 12, 0.5, 0.02, room);
+  [74, 72, 70, 69, 66].forEach((n, i) => milBell(t + 0.95 + i * 0.06, n + 12, 1.1, 0.03, room));
+  tone({ t: t + 0.95, freq: midi(38), dur: 1.4, gain: 0.08, attack: 0.05, out: room });
+}
+
+// The Scale creaking as it tips, its pans ringing until it balances.
+function milScaleSound(t) {
+  const room = darkBus({ reverb: 0.55 });
+  for (let i = 0; i < 3; i++) tone({ t: t + 0.12 + i * 0.3, freq: rnd(180, 240), to: rnd(120, 160), dur: 0.22, type: 'sawtooth', gain: 0.018, filter: 900, q: 6 });
+  [[0.37, 79], [0.68, 74], [0.94, 78], [1.12, 74]].forEach(([d, n]) => milBell(t + d, n, 1, 0.035, room));
+  healPad({ t: t + 1.25, notes: [50, 57, 62, 66], dur: 1.8, gain: 0.025, attack: 0.15, out: room });
+  arpeggio(t + 1.3, [74, 75, 78, 79, 81, 78], 0.14, (at, n) => ney(at, n, 0.3, 0.025, room));
+}
+
 SOUND_KITS.millennium = {
   ...SOUND_KITS.dark,
+  tap: t => noise({ t, dur: 0.03, gain: 0.04, freq: 1800, q: 2 }),
   theme: t => {
     eyeHum(t, 1.2, 0.05);
-    arpeggio(t + 0.1, [62, 63, 66, 69, 74], 0.1, (at, n) => bell({ t: at, freq: midi(n + 12), dur: 1.2, gain: 0.035 }));
+    arpeggio(t + 0.1, [62, 63, 66, 69, 74], 0.1, (at, n) => milBell(at, n + 12));
   },
-  'quest-complete': t => {
-    eyeHum(t, 1.6, 0.05);
-    arpeggio(t + 0.1, [62, 66, 67, 70, 74, 78], 0.12, (at, n) => bell({ t: at, freq: midi(n + 12), dur: 1.5, gain: 0.04 }));
+  // The tomb doors are played by spawnMillenniumDoors ('mil-doors').
+  'screen-enter': () => {},
+  // The tomb doors (millennium-theme.js): grinding shut over the old screen and
+  // slamming, then the Eye seal's chime, the bolt and stone grinding open.
+  'mil-doors': (t, e) => {
+    if (e.close) {
+      stoneSlide(t, 0.4, 0.045, 160, 420);
+      t += 0.4;
+      tone({ t, freq: 70, to: 35, dur: 0.3, gain: 0.14 });
+      noise({ t, dur: 0.12, gain: 0.06, type: 'lowpass', freq: 600, to: 150 });
+    }
+    milBell(t, 74, 0.8, 0.02);
+    tone({ t: t + 0.12, freq: 90, to: 48, dur: 0.22, gain: 0.08 });
+    stoneSlide(t + 0.16, 0.55, 0.045, 420, 140);
+  },
+  'modal-open': t => stoneSlide(t, 0.22, 0.06, 500, 900),
+  'modal-close': t => stoneSlide(t, 0.2, 0.05, 900, 400),
+  pick: t => {
+    milBell(t, 78, 0.6, 0.03);
+    milBell(t + 0.07, 81, 0.8, 0.03);
+  },
+  // The Necklace: a breath of wind, a low hum and a glimpse of chimes.
+  peek: t => {
+    const room = darkBus({ reverb: 0.5 });
+    noise({ t, dur: 0.6, gain: 0.04, freq: 900, to: 2400, q: 1.5, attack: 0.15, out: room });
+    eyeHum(t, 0.8, 0.03, room);
+    arpeggio(t + 0.15, [86, 87, 90], 0.08, (at, n) => milBell(at, n, 0.8, 0.018, room));
+  },
+  unpeek: t => {
+    noise({ t, dur: 0.25, gain: 0.03, freq: 2200, to: 700, q: 1.5 });
+    milBell(t, 74, 0.5, 0.015);
+  },
+  activate: (t, e) => {
+    if (e.type === 'comeback') milRingSound(t);
+    else if (e.type === 'quest') milScaleSound(t);
+    else milPuzzleSound(t);
+  },
+  'quest-complete': t => milScaleSound(t),
+  deactivate: t => {
+    stoneSlide(t, 0.4, 0.06, 800, 200);
+    tone({ t, freq: midi(62), to: midi(50), dur: 0.4, type: 'triangle', gain: 0.03 });
+  },
+  use: t => {
+    milBell(t, 81, 0.5, 0.035);
+    noise({ t, dur: 0.05, gain: 0.04, freq: 3000, q: 3 });
+  },
+  'use-undo': t => milBell(t, 74, 0.35, 0.025),
+  exhaust: t => {
+    for (let i = 0; i < 6; i++) noise({ t: t + i * 0.045 + rnd(0, 0.02), dur: 0.05, gain: 0.07, freq: rnd(600, 2000), q: 2 });
+    stoneSlide(t + 0.1, 0.4, 0.05, 400, 150);
+    SOUND_KITS.millennium.stamp(t + 0.35);
+  },
+  // A chisel carving into stone.
+  stamp: t => {
+    [0, 0.09, 0.18].forEach(d => noise({ t: t + d, dur: 0.04, gain: 0.1, freq: 3500, q: 5 }));
+    tone({ t: t + 0.18, freq: 120, to: 50, dur: 0.25, gain: 0.18 });
+  },
+  restore: t => arpeggio(t, [62, 66, 69, 74], 0.06, (at, n) => milBell(at, n + 12, 0.8, 0.03)),
+  'lp-swap': t => stoneSlide(t, 0.25, 0.06, 1200, 500),
+  damage: (t, e) => {
+    const k = Math.min(1, 0.45 + e.amount / 4000);
+    tone({ t, freq: 110, to: 36, dur: 0.5, gain: 0.3 * k });
+    noise({ t, dur: 0.25, gain: 0.1 * k, type: 'lowpass', freq: 1500, to: 200 });
+    sandPour(t + 0.1, 0.5 + 0.6 * k, 0.03 * k + 0.01);
+  },
+  // The Rod's glow: a warm hum with rising bells.
+  heal: t => {
+    const room = darkBus({ reverb: 0.4 });
+    healPad({ t, notes: [62, 69, 74], dur: 1, gain: 0.025, attack: 0.15, out: room });
+    arpeggio(t + 0.05, [74, 78, 81, 86], 0.07, (at, n) => milBell(at, n, 1, 0.03, room));
+  },
+  // The tablets slide shut, then the Key turns.
+  'duel-reset': t => {
+    stoneSlide(t, 0.5, 0.08, 1000, 200);
+    tone({ t: t + 0.45, freq: 90, to: 40, dur: 0.4, gain: 0.25 });
+    noise({ t: t + 0.7, dur: 0.04, gain: 0.08, freq: 2500, q: 4 });
+    milBell(t + 0.75, 74, 1.4, 0.04, darkBus({ reverb: 0.5 }));
+  },
+  // Falling under 1000 LP (millennium-theme.js): the Shadow Game begins, a dark
+  // chord and a tolling tritone under the Eye's hum, after the damage hit.
+  'mil-shadow-game': t => {
+    const room = darkBus({ reverb: 0.7 });
+    t += 0.35;
+    darkCluster({ t, notes: [38, 44, 49], dur: 2.4, gain: 0.03, attack: 0.5, out: room });
+    eyeHum(t, 2.2, 0.05, room);
+    milBell(t + 0.25, 62, 2.2, 0.035, room);
+    milBell(t + 0.25, 68, 2.2, 0.025, room);
+  },
+  defeat: t => {
+    const room = darkBus({ reverb: 0.6 });
+    sandPour(t, 1.6, 0.035);
+    tone({ t, freq: midi(50), to: midi(38), dur: 2, type: 'triangle', gain: 0.07, out: room });
+    arpeggio(t + 0.3, [74, 72, 70, 67, 63, 62], 0.22, (at, n) => ney(at, n, 0.35, 0.025, room));
   }
 };
 

@@ -30,6 +30,7 @@ function renderHiddenCard({ type, label, actionLabel, theme }) {
   const actionClass = egg ? egg.press : '';
   return `
     <div data-fx-card="${type}" class="duel-card-hidden fx-c-${type} flex-1 rounded-2xl border-2 border-dashed border-slate-700 bg-slate-900/50 p-4 flex flex-col items-center justify-center text-center">
+      ${millenniumEtch(MIL_CARD_ITEMS[type])}
       <div onclick="tapLockMedallion('${type}', this)" class="lock-medallion w-11 h-11 mb-2 rounded-full bg-slate-800 border border-slate-700 flex items-center justify-center text-slate-400 shadow-inner">
         ${LOCK_ICON}
       </div>
@@ -51,9 +52,10 @@ function renderPeekCard(abilityType, ability) {
   return `
     <div data-fx-card="${type}" class="duel-card-peek fx-c-${type} flex-1 rounded-2xl border border-slate-600 bg-slate-800 p-3.5 flex flex-col justify-center overflow-y-auto relative shadow-inner">
       <div class="absolute inset-0 bg-slate-950/50 pointer-events-none rounded-2xl"></div>
+      ${millenniumEtch('necklace')}
       <div class="relative z-10 flex flex-col h-full">
         <div class="flex items-center justify-between mb-1.5">
-          <span class="text-xs font-extrabold uppercase tracking-wider px-2 py-0.5 rounded bg-slate-700 text-slate-200 border border-slate-600">Sneak Peek</span>
+          <span class="text-xs font-extrabold uppercase tracking-wider px-2 py-0.5 rounded bg-slate-700 text-slate-200 border border-slate-600">${isMillenniumTheme() ? 'Necklace Vision' : 'Sneak Peek'}</span>
           ${usesBadge}
         </div>
         <h3 class="text-lg font-bold text-white mb-1 leading-snug">${ability.name}</h3>

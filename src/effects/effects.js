@@ -119,6 +119,7 @@ function beforeRenderEffects(app) {
   // Lets infinite "ambient" animations keep their phase across re-renders
   // (see `animation-delay: calc(var(--fx-t) * -1ms)` in styles.css).
   document.documentElement.style.setProperty('--fx-t', Math.round(performance.now()));
+  captureMillenniumGhost(app);
   return { modal: app.querySelector('.modal-backdrop') };
 }
 
@@ -126,6 +127,7 @@ function afterRenderEffects(app, before) {
   const prev = fxLastSnapshot;
   const next = captureFxSnapshot();
   fxLastSnapshot = next;
+  syncMillenniumEye();
 
   let events = [...fxQueue.splice(0), ...detectEffects(prev, next)];
 
@@ -168,6 +170,7 @@ function playEffect(app, event) {
   switch (event.name) {
     case 'screen-enter':
       restartClass(app, `fx-screen-${event.direction}`, 900);
+      spawnMillenniumDoors();
       break;
 
     case 'modal-open':
@@ -200,6 +203,7 @@ function playEffect(app, event) {
       spawnOverlay('activate', event.type, 1500);
       spawnBanner(BANNER_TEXT[event.type], event.type);
       spawnParticles(card, { type: event.type, mode: 'burst', count: 26 });
+      spawnMillenniumItem(card, event.type);
       break;
 
     case 'quest-complete':
@@ -208,6 +212,7 @@ function playEffect(app, event) {
       spawnBanner(BANNER_TEXT.quest, event.type);
       spawnParticles(card, { type: event.type, mode: 'burst', count: 20 });
       spawnParticles(null, { type: event.type, mode: 'rain', count: 70 });
+      spawnMillenniumItem(card, event.type);
       break;
 
     case 'deactivate':
@@ -256,6 +261,7 @@ function playLpChange(app, lpBar, { from, to, silent, shadowRealm }) {
   const anchor = ui.lpModalOpen ? app.querySelector('.modal-panel .lp-value') : lpBar;
 
   addFx(lpBar, isDamage ? 'fx-lp-damage' : 'fx-lp-heal');
+  spawnMillenniumLp(lpBar, from, to);
   spawnFloatText(anchor, `${delta > 0 ? '+' : ''}${delta}`, isDamage ? 'damage' : 'heal');
 
   if (isDamage) {
@@ -346,7 +352,7 @@ function getFxLayer() {
 
 // Seasonal themes (and the Millennium theme): a persistent particle layer (outside #app,
 // below #fx-layer) that lives as long as the theme is active: snow for Christmas, rising
-// embers for Halloween, drifting gold dust for Millennium. Skipped under reduced motion.
+// embers for Halloween, drifting gold dust and torchlight for Millennium. Skipped under reduced motion.
 const SEASON_FX_THEMES = ['xmas', 'halloween', 'millennium'];
 
 function syncSeasonFx() {
@@ -360,7 +366,7 @@ function syncSeasonFx() {
   layer.id = 'season-fx';
   layer.className = `season-fx--${theme}`;
   layer.setAttribute('aria-hidden', 'true');
-  layer.innerHTML = Array.from({ length: fxCount(36) }, () => {
+  layer.innerHTML = (theme === 'millennium' ? millenniumSeasonHtml() : '') + Array.from({ length: fxCount(36) }, () => {
     const vars = `--x:${rand(0, 100).toFixed(1)}%;--s:${rand(3, 8).toFixed(1)}px;--o:${rand(0.45, 0.95).toFixed(2)};` +
       `--d:${rand(8, 16).toFixed(1)}s;--delay:${(-rand(0, 16)).toFixed(1)}s;--w:${rand(-40, 40).toFixed(0)}px`;
     return `<i style="${vars}"></i>`;

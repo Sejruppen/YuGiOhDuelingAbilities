@@ -16680,6 +16680,637 @@ html[data-theme="millennium"]::view-transition-new(root) { animation: vt-eye 1s 
   to { clip-path: ellipse(150% 150% at 50% 50%); filter: brightness(1) sepia(0); }
 }
 
+/* =========================================================================
+   MILLENNIUM THEME – DUEL (src/effects/millennium-theme.js)
+   Stone tablets, Necklace visions, Item summons on activation, sand pouring
+   out of the LP cartouche, the Rod on heals and the Millennium Eye that opens
+   as your LP drops. Static looks live in styles.css.
+   ========================================================================= */
+
+@property --lp-sand { syntax: '<number>'; inherits: true; initial-value: 1; }
+
+html[data-theme="millennium"] button:active { transform: scale(0.96); }
+
+/* Screens: stone doors grind open (fx-mil-doors, below) and the screen rises out of the sand behind them. */
+html[data-theme="millennium"] #app.fx-screen-forward,
+html[data-theme="millennium"] #app.fx-screen-back { animation: mil-screen-in 0.4s ease-out backwards; }
+html[data-theme="millennium"] #app:is(.fx-screen-forward, .fx-screen-back) .fx-stagger > *,
+html[data-theme="millennium"] .fx-deal > * {
+  animation: mil-rise 0.5s cubic-bezier(0.2, 0.8, 0.2, 1) backwards;
+  animation-delay: calc(var(--i) * 50ms + 80ms);
+}
+html[data-theme="millennium"] #app:is(.fx-screen-forward, .fx-screen-back) .fx-stagger > * { animation-delay: calc(var(--i) * 50ms + 260ms); }
+@keyframes mil-screen-in { from { opacity: 0; filter: sepia(0.8) brightness(1.4); } }
+@keyframes mil-rise { from { opacity: 0; transform: translateY(22px); filter: sepia(1) blur(3px); } }
+
+/* Popups: a stone tablet sliding up, and back down. */
+html[data-theme="millennium"] .fx-modal-in .modal-panel { animation: mil-modal-in 0.36s cubic-bezier(0.2, 0.9, 0.3, 1.1) backwards; }
+html[data-theme="millennium"] .fx-modal-out .modal-panel { animation: mil-modal-out 0.25s ease-in both; }
+@keyframes mil-modal-in { from { opacity: 0; transform: translateY(40px); filter: sepia(1) brightness(0.6); } }
+@keyframes mil-modal-out { to { opacity: 0; transform: translateY(30px); filter: sepia(1) brightness(0.6); } }
+
+/* Peek: the Necklace's vision opens like an eye, with a shimmer of sand. */
+html[data-theme="millennium"] .fx-peek { animation: mil-vision 0.6s cubic-bezier(0.3, 0.8, 0.3, 1) backwards; }
+html[data-theme="millennium"] .fx-peek::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: 20;
+  pointer-events: none;
+  border-radius: inherit;
+  background: linear-gradient(115deg, transparent 40%, rgba(253, 230, 138, 0.45) 50%, transparent 60%) no-repeat;
+  background-size: 300% 100%;
+  animation: fx-sweep 0.9s 0.25s ease-out both;
+}
+html[data-theme="millennium"] .fx-unpeek,
+html[data-theme="millennium"] .fx-undo { animation: mil-reseal 0.45s ease-out backwards; }
+@keyframes mil-vision {
+  from { clip-path: ellipse(60% 0% at 50% 50%); filter: sepia(1) brightness(1.8); }
+  60% { filter: sepia(0.4) brightness(1.2); }
+  to { clip-path: ellipse(120% 120% at 50% 50%); }
+}
+@keyframes mil-reseal { from { opacity: 0.3; transform: translateY(-10px); filter: sepia(1) brightness(1.5); } }
+
+/* Activate: a golden glow (the Item itself appears over the card, below). */
+html[data-theme="millennium"] .fx-activate { animation: mil-activate 0.9s cubic-bezier(0.2, 0.8, 0.2, 1) backwards; }
+@keyframes mil-activate {
+  0% { transform: scale(0.95); filter: sepia(0.8) brightness(1.9); box-shadow: 0 0 0 0 rgba(251, 191, 36, 0.9); }
+  40% { transform: scale(1.02); filter: brightness(1.2); box-shadow: 0 0 0 12px rgba(251, 191, 36, 0), 0 0 40px rgba(251, 191, 36, 0.55); }
+}
+
+html[data-theme="millennium"] .fx-use { animation: mil-use 0.5s ease-out backwards; }
+html[data-theme="millennium"] .fx-bump { animation: mil-bump 0.4s ease-out backwards; }
+@keyframes mil-use { from { filter: brightness(1.5) sepia(0.5); box-shadow: inset 0 0 0 2px #fbbf24, 0 0 22px rgba(251, 191, 36, 0.5); } }
+@keyframes mil-bump { from { transform: scale(1.7); color: #fde68a; text-shadow: 0 0 10px #fbbf24; } }
+
+/* Exhaust: the tablet cracks and crumbles; "USED" is carved in. */
+html[data-theme="millennium"] .fx-exhaust { animation: mil-crumble 0.6s ease-out backwards; }
+html[data-theme="millennium"] .fx-stamp { animation: mil-carve 0.5s 0.15s cubic-bezier(0.3, 1.4, 0.5, 1) backwards; }
+html[data-theme="millennium"] .fx-stamp-late { animation: mil-carve 0.5s 0.8s cubic-bezier(0.3, 1.4, 0.5, 1) backwards; }
+@keyframes mil-crumble {
+  0% { filter: sepia(1) brightness(1.3); }
+  15% { transform: translate(-3px, 1px) rotate(-0.6deg); }
+  30% { transform: translate(3px, 2px) rotate(0.5deg); }
+  45% { transform: translate(-1px, 3px); filter: sepia(1) grayscale(0.5) brightness(0.7); }
+  70% { transform: translateY(2px); }
+}
+@keyframes mil-carve {
+  from { transform: scale(1.8); opacity: 0; filter: blur(3px); }
+  50% { color: rgba(253, 230, 138, 0.7); }
+}
+
+html[data-theme="millennium"] .fx-pick { animation: mil-pick 0.5s ease-out backwards; }
+@keyframes mil-pick { from { transform: scale(0.985); box-shadow: 0 0 0 0 rgba(251, 191, 36, 0.7), 0 0 30px rgba(251, 191, 36, 0.45); } to { box-shadow: 0 0 0 10px rgba(251, 191, 36, 0); } }
+
+/* Life Points. When the sand level moves (.mil-sand-shift) both animations
+   must be listed together, since each sets the animation shorthand. */
+html[data-theme="millennium"] .lp-bar.fx-lp-damage { animation: mil-lp-hit 0.5s ease-out backwards; }
+html[data-theme="millennium"] .lp-bar.fx-lp-heal { animation: mil-lp-heal 0.8s ease-out backwards; }
+html[data-theme="millennium"] .lp-bar.mil-sand-shift { animation: mil-sand 1.1s cubic-bezier(0.3, 0.6, 0.4, 1) backwards; }
+html[data-theme="millennium"] .lp-bar.fx-lp-damage.mil-sand-shift {
+  animation: mil-lp-hit 0.5s ease-out backwards, mil-sand 1.1s 0.1s cubic-bezier(0.3, 0.6, 0.4, 1) backwards;
+}
+html[data-theme="millennium"] .lp-bar.fx-lp-heal.mil-sand-shift {
+  animation: mil-lp-heal 0.8s ease-out backwards, mil-sand 1s cubic-bezier(0.3, 0.6, 0.4, 1) backwards;
+}
+html[data-theme="millennium"] .fx-lp-swap { animation: mil-lp-swap 0.45s cubic-bezier(0.2, 0.9, 0.3, 1.2) backwards; }
+html[data-theme="millennium"] #app.fx-shake { animation: dk-shake 0.4s ease-out; }
+html[data-theme="millennium"] .lp-bar.lp-critical::after { box-shadow: inset 0 0 22px rgba(239, 68, 68, 0.55), 0 0 0 1px rgba(251, 191, 36, 0.6); }
+html[data-theme="millennium"] .lp-bar > button {
+  background: linear-gradient(180deg, #2a3a7a, #121c4a);
+  border-color: rgba(212, 165, 55, 0.6);
+  color: #fde68a;
+}
+@keyframes mil-sand { from { --lp-sand: var(--lp-sand-from, 1); } }
+@keyframes mil-lp-hit {
+  0% { box-shadow: inset 0 0 36px rgba(239, 68, 68, 0.85); filter: sepia(0.6) brightness(1.5); }
+  20% { transform: translateX(-4px); }
+  40% { transform: translateX(3px); }
+  60% { transform: translateX(-2px); }
+}
+@keyframes mil-lp-heal { from { box-shadow: inset 0 0 36px rgba(253, 230, 138, 0.8), 0 0 26px rgba(251, 191, 36, 0.7); filter: brightness(1.5); } }
+@keyframes mil-lp-swap { from { opacity: 0; transform: translateY(-30px); filter: sepia(1); } }
+
+/* The carved digits: on damage they shake and crumble, then are chiselled
+   back in from the first digit; on a heal they're re-carved in bright gold.
+   The filter lists match the plaque's (styles.css) so they interpolate. */
+html[data-theme="millennium"] .lp-bar.fx-lp-damage .lp-value { animation: mil-digits-crumble 1s ease-out backwards; }
+html[data-theme="millennium"] .lp-bar.fx-lp-heal .lp-value { animation: mil-digits-gild 0.9s ease-out backwards; }
+@keyframes mil-digits-crumble {
+  0% { clip-path: inset(0 0 0 0); }
+  10% { transform: translate(-2px, 1px) rotate(-2deg); }
+  22% { transform: translate(2px, 3px) rotate(1.5deg); opacity: 0.3; clip-path: inset(0 0 0 0); }
+  30% { transform: none; opacity: 1; clip-path: inset(0 100% 0 0); }
+  100% { clip-path: inset(0 0 0 0); }
+}
+@keyframes mil-digits-gild {
+  0% {
+    clip-path: inset(0 100% 0 0);
+    filter: drop-shadow(0 -1px 0 rgba(0, 0, 0, 0.95)) drop-shadow(0 1px 0 rgba(255, 240, 200, 0.25)) drop-shadow(0 0 14px rgba(253, 230, 138, 1));
+  }
+  60% { clip-path: inset(0 0 0 0); }
+}
+.fx-mil-chips { position: fixed; inset: 0; z-index: 3; }
+.fx-mil-chips i {
+  position: fixed;
+  left: var(--cx);
+  top: var(--cy);
+  width: var(--cs);
+  height: var(--cs);
+  background: linear-gradient(135deg, #6b5a3a, #3d3524);
+  clip-path: polygon(0 20%, 60% 0, 100% 45%, 75% 100%, 10% 85%);
+  box-shadow: inset 0 0 0 1px rgba(242, 201, 76, 0.6);
+  animation: mil-chip 1s var(--cd) cubic-bezier(0.3, 0, 0.8, 0.6) both;
+}
+.fx-mil-chips i:nth-child(3n) { background: #f2c94c; }
+@keyframes mil-chip {
+  from { transform: translate(0, 0) rotate(0); opacity: 1; }
+  80% { opacity: 1; }
+  to { transform: translate(var(--dx), var(--dy)) rotate(var(--rot)); opacity: 0; }
+}
+
+/* Banner: gold hieroglyph-trimmed lapis band. */
+html[data-theme="millennium"] .fx-banner::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 50%;
+  height: 4.2rem;
+  margin-top: -2.1rem;
+  background:
+    repeating-linear-gradient(90deg, #d4a537 0 10px, #1e3a8a 10px 16px) top / 100% 4px no-repeat,
+    repeating-linear-gradient(90deg, #d4a537 0 10px, #1e3a8a 10px 16px) bottom / 100% 4px no-repeat,
+    linear-gradient(180deg, rgba(23, 37, 84, 0.92), rgba(11, 18, 48, 0.92));
+  box-shadow: 0 0 30px rgba(251, 191, 36, 0.35);
+  animation: mil-band 1.9s ease-in-out both;
+}
+html[data-theme="millennium"] .fx-banner-text {
+  position: relative;
+  padding: 0.5rem 1rem;
+  font: 900 1.35rem/1.2 'Cinzel Decorative', 'Cinzel', Georgia, serif;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  white-space: nowrap;
+  color: transparent;
+  background: linear-gradient(110deg, #d4a537 0 38%, #fffbe6 47%, #ffffff 50%, #fffbe6 53%, #d4a537 62% 100%);
+  background-size: 250% 100%;
+  -webkit-background-clip: text;
+  background-clip: text;
+  filter: drop-shadow(0 2px 0 #3b2a0c) drop-shadow(0 0 10px rgba(251, 191, 36, 0.6));
+  animation: gl-banner 1.9s cubic-bezier(0.2, 0.8, 0.2, 1) both;
+}
+html[data-theme="millennium"] .fx-banner-text::before {
+  content: '';
+  display: block;
+  width: 2.4em;
+  height: 1.5em;
+  margin: -1.6em auto 0.25em;
+  background: var(--mil-eye-img) center / contain no-repeat;
+}
+@keyframes mil-band {
+  0% { transform: scaleY(0); opacity: 0; }
+  18% { transform: scaleY(1); opacity: 1; }
+  75% { opacity: 1; }
+  100% { transform: scaleY(0.6); opacity: 0; }
+}
+
+/* Overlays */
+html[data-theme="millennium"] .fx-overlay--activate { background: radial-gradient(circle, rgba(251, 191, 36, 0.32), transparent 65%); animation: fx-flash 1.1s ease-out both; }
+html[data-theme="millennium"] .fx-overlay--quest { background: radial-gradient(circle, rgba(253, 230, 138, 0.42), transparent 75%); animation: fx-flash 1.8s ease-out both; }
+html[data-theme="millennium"] .fx-overlay--damage { box-shadow: inset 0 0 90px 10px rgba(185, 28, 28, 0.6); animation: fx-flash 0.6s ease-out both; }
+html[data-theme="millennium"] .fx-overlay--reset {
+  background-color: rgba(214, 170, 90, 0.08);
+  background-image: linear-gradient(to bottom, transparent, rgba(214, 170, 90, 0.35) 46%, rgba(253, 230, 138, 0.6) 50%, rgba(214, 170, 90, 0.35) 54%, transparent);
+  background-size: 100% 35%;
+  background-repeat: no-repeat;
+  animation: dk-scanreset 1s ease-in-out both;
+}
+html[data-theme="millennium"] .fx-overlay--defeat {
+  background: radial-gradient(circle, transparent 30%, rgba(41, 26, 6, 0.75));
+  backdrop-filter: sepia(1) brightness(0.55);
+  -webkit-backdrop-filter: sepia(1) brightness(0.55);
+  animation: dk-defeat 2.2s ease-in-out both;
+}
+
+/* Particles: gold sparks and lapis chips; rain is falling sand. */
+html[data-theme="millennium"] .fx-particle {
+  border-radius: 1px;
+  background: linear-gradient(135deg, #fef3c7, #fbbf24 50%, #b45309);
+  box-shadow: 0 0 6px rgba(251, 191, 36, 0.8);
+}
+html[data-theme="millennium"] .fx-particle:nth-child(4n) { background: #2f4fb5; box-shadow: 0 0 5px rgba(59, 130, 246, 0.7); }
+html[data-theme="millennium"] .fx-particle--rain { width: 3px; height: 3px; border-radius: 50%; animation-name: dk-fall; }
+
+/* +1 burst, LP numbers, taps */
+html[data-theme="millennium"] .fx-burst { animation: dk-burst 0.9s ease-out both; }
+html[data-theme="millennium"] .fx-burst-text { font: 900 1.5rem/1 'Cinzel', Georgia, serif; color: #fde68a; text-shadow: 0 2px 0 #3b2a0c, 0 0 14px rgba(251, 191, 36, 0.9); }
+html[data-theme="millennium"] .fx-burst::before {
+  content: '';
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 56px;
+  height: 56px;
+  margin: -28px 0 0 -28px;
+  border-radius: 50%;
+  border: 2px solid #fbbf24;
+  box-shadow: 0 0 12px rgba(251, 191, 36, 0.8);
+  animation: dk-ring 0.6s ease-out both;
+}
+html[data-theme="millennium"] .fx-float { font: 900 1.9rem/1 'Cinzel', Georgia, serif; animation: dk-float-up 1.3s ease-out both; }
+html[data-theme="millennium"] .fx-float--damage { color: #fecaca; -webkit-text-stroke: 1px #450a0a; text-shadow: 0 0 12px rgba(220, 38, 38, 0.9); }
+html[data-theme="millennium"] .fx-float--heal { color: #fde68a; -webkit-text-stroke: 1px #3b2a0c; text-shadow: 0 0 12px rgba(251, 191, 36, 0.95); }
+html[data-theme="millennium"] .fx-tap {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  border: 2px solid rgba(251, 191, 36, 0.7);
+  box-shadow: 0 0 12px rgba(251, 191, 36, 0.45);
+  animation: dk-ring 0.45s ease-out both;
+}
+
+/* Ambient: the Key glints and the etched Items breathe. */
+html[data-theme="millennium"] .duel-card-hidden .lock-medallion:not(.puzzle-lit) {
+  animation: mil-glint 4s ease-in-out infinite;
+  animation-delay: calc(var(--fx-t, 0) * -1ms);
+}
+html[data-theme="millennium"] .mil-etch svg {
+  animation: mil-breathe 6s ease-in-out infinite;
+  animation-delay: calc(var(--fx-t, 0) * -1ms);
+}
+html[data-theme="millennium"] .duel-card-hidden .lock-medallion.puzzle-lit {
+  background-image:
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cg fill='%231c1003'%3E%3Cpath fill-rule='evenodd' d='M12 1C9.4 1 7.6 3.4 7.6 6.2S9.4 11.4 12 11.4 16.4 9 16.4 6.2 14.6 1 12 1Zm0 2.6c1.1 0 1.8 1.2 1.8 2.6S13.1 8.8 12 8.8 10.2 7.6 10.2 6.2 10.9 3.6 12 3.6Z'/%3E%3Crect x='4.5' y='11' width='15' height='3' rx='1.3'/%3E%3Cpath d='M10.4 13.5h3.2l0.9 9h-5Z'/%3E%3C/g%3E%3C/svg%3E"),
+    radial-gradient(circle, #fff2b8, #fbbf24 45%, #b45309);
+  color: transparent;
+}
+@keyframes mil-glint {
+  0%, 70%, 100% { box-shadow: 0 0 0 2px #3b2a0c, 0 0 14px rgba(251, 191, 36, 0.4), inset 0 -3px 6px rgba(0, 0, 0, 0.35); }
+  82% { box-shadow: 0 0 0 2px #3b2a0c, 0 0 24px rgba(253, 230, 138, 0.85), inset 0 -3px 6px rgba(0, 0, 0, 0.2); }
+}
+@keyframes mil-breathe { 0%, 100% { opacity: 0.13; } 50% { opacity: 0.2; } }
+
+/* --- Item summons: fx-mil-item at the activated card's centre --- */
+.fx-mil-item {
+  --snap: 0.6s;
+  position: fixed;
+  left: var(--x);
+  top: var(--y);
+  width: var(--size);
+  height: var(--size);
+  translate: -50% -50%;
+  z-index: 4;
+  animation: mil-item-life 2s ease-in both;
+}
+.fx-mil-item--ring,
+.fx-mil-item--scale { animation-duration: 2.4s; }
+.fx-mil-item--ring { --snap: 1.1s; }
+.fx-mil-item--scale { --snap: 1.2s; }
+.mil-item-art,
+.mil-piece { position: absolute; inset: 0; }
+.mil-item-art svg {
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+  filter: drop-shadow(0 4px 6px rgba(0, 0, 0, 0.6)) drop-shadow(0 0 14px rgba(251, 191, 36, 0.6));
+}
+.mil-item-glow {
+  position: absolute;
+  inset: -35%;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(255, 251, 230, 0.95), rgba(251, 191, 36, 0.55) 30%, transparent 65%);
+  opacity: 0;
+  animation: mil-glow 0.9s var(--snap) ease-out both;
+}
+@keyframes mil-item-life {
+  0% { opacity: 0; }
+  8%, 78% { opacity: 1; transform: none; }
+  100% { opacity: 0; transform: translateY(-18px) scale(1.05); }
+}
+@keyframes mil-glow {
+  0% { opacity: 0; transform: scale(0.3); }
+  25% { opacity: 1; }
+  100% { opacity: 0; transform: scale(1.4); }
+}
+
+/* Puzzle: three pieces fly in and snap together. */
+.mil-piece--1 { --from: translate(-75%, -60%) rotate(-28deg); clip-path: polygon(0 0, 100% 0, 100% 36%, 0 36%); }
+.mil-piece--2 { --from: translate(80%, 5%) rotate(32deg); clip-path: polygon(0 35%, 100% 35%, 100% 64%, 0 64%); animation-delay: 0.05s; }
+.mil-piece--3 { --from: translate(-35%, 80%) rotate(-18deg); clip-path: polygon(0 63%, 100% 63%, 100% 100%, 0 100%); animation-delay: 0.1s; }
+.mil-piece { animation: mil-piece-in 0.5s cubic-bezier(0.55, 0, 0.8, 0.5) backwards; }
+.fx-mil-item--puzzle .mil-item-art { animation: mil-snap 0.45s var(--snap) ease-out both; }
+@keyframes mil-piece-in { from { transform: var(--from); opacity: 0; } 30% { opacity: 1; } }
+@keyframes mil-snap { 0% { transform: scale(1); } 30% { transform: scale(1.12); } 100% { transform: scale(1); } }
+
+/* Ring: whirls in; its five pointers swing and settle. */
+.fx-mil-item--ring .mil-item-art { animation: mil-ring-in 0.95s cubic-bezier(0.2, 0.8, 0.3, 1) backwards; }
+.fx-mil-item--ring g polygon {
+  transform-box: fill-box;
+  transform-origin: 50% 0;
+  animation: mil-swing 1.3s 0.2s ease-out backwards;
+}
+.fx-mil-item--ring g polygon:nth-child(2) { animation-delay: 0.26s; }
+.fx-mil-item--ring g polygon:nth-child(3) { animation-delay: 0.32s; }
+.fx-mil-item--ring g polygon:nth-child(4) { animation-delay: 0.38s; }
+.fx-mil-item--ring g polygon:nth-child(5) { animation-delay: 0.44s; }
+@keyframes mil-ring-in { from { transform: rotate(-720deg) scale(0.2); opacity: 0; } 40% { opacity: 1; } }
+@keyframes mil-swing {
+  0% { transform: rotate(80deg); }
+  25% { transform: rotate(-50deg); }
+  45% { transform: rotate(28deg); }
+  65% { transform: rotate(-12deg); }
+  82% { transform: rotate(5deg); }
+  100% { transform: rotate(0); }
+}
+
+/* Scale: drops in, tips and finds its balance. */
+.fx-mil-item--scale .mil-item-art { animation: mil-drop 0.45s cubic-bezier(0.3, 1.4, 0.5, 1) backwards; }
+.fx-mil-item--scale .mil-beam {
+  transform-box: view-box;
+  transform-origin: 20px 10px;
+  animation: mil-tilt 1.1s 0.15s ease-in-out backwards;
+}
+.fx-mil-item--scale .mil-pan { transform-box: view-box; animation: mil-tilt-back 1.1s 0.15s ease-in-out backwards; }
+.fx-mil-item--scale .mil-pan--l { transform-origin: 6px 12px; }
+.fx-mil-item--scale .mil-pan--r { transform-origin: 34px 12px; }
+@keyframes mil-drop { from { transform: translateY(-40%) scale(0.6); opacity: 0; } }
+@keyframes mil-tilt {
+  0% { transform: rotate(-16deg); }
+  30% { transform: rotate(11deg); }
+  55% { transform: rotate(-5deg); }
+  78% { transform: rotate(2deg); }
+  100% { transform: rotate(0); }
+}
+@keyframes mil-tilt-back {
+  0% { transform: rotate(16deg); }
+  30% { transform: rotate(-11deg); }
+  55% { transform: rotate(5deg); }
+  78% { transform: rotate(-2deg); }
+  100% { transform: rotate(0); }
+}
+
+/* --- LP: sand pours inside the cartouche; the Rod rises on a heal --- */
+.fx-mil-sand { position: fixed; inset: 0; z-index: 3; }
+.fx-mil-sand i {
+  position: fixed;
+  left: var(--gx);
+  top: var(--gy);
+  width: var(--gs);
+  height: var(--gs);
+  border-radius: 50%;
+  background: #e8c478;
+  box-shadow: 0 0 3px rgba(251, 191, 36, 0.7);
+  animation: mil-grain 1.1s var(--gd) cubic-bezier(0.5, 0, 0.9, 0.6) both;
+}
+@keyframes mil-grain {
+  from { transform: translateY(0); opacity: 0; }
+  10% { opacity: 1; }
+  85% { opacity: 1; }
+  to { transform: translateY(var(--fall)); opacity: 0; }
+}
+.fx-mil-rod {
+  position: fixed;
+  left: var(--x);
+  top: var(--y);
+  width: 96px;
+  height: 96px;
+  translate: -50% -50%;
+  z-index: 3;
+  animation: mil-rod 1.5s ease-out both;
+}
+.fx-mil-rod svg { width: 100%; height: 100%; filter: drop-shadow(0 0 12px rgba(253, 230, 138, 0.9)) drop-shadow(0 0 26px rgba(251, 191, 36, 0.6)); }
+@keyframes mil-rod {
+  0% { opacity: 0; transform: translateY(40px) scale(0.7); }
+  30% { opacity: 1; transform: translateY(0) scale(1); }
+  70% { opacity: 1; }
+  100% { opacity: 0; transform: translateY(-36px) scale(1.05); }
+}
+
+/* --- The Millennium Eye (#mil-eye): opens wider the lower your LP --- */
+#mil-eye {
+  position: fixed;
+  left: 50%;
+  top: 52%;
+  width: min(86vw, 440px);
+  translate: -50% -50%;
+  z-index: 45;
+  pointer-events: none;
+  mix-blend-mode: screen;
+  opacity: 0.07;
+  transition: opacity 1.2s ease;
+}
+#mil-eye svg { display: block; width: 100%; height: auto; overflow: visible; }
+#mil-eye .mil-eye-lid,
+#mil-eye .mil-eye-iris {
+  transform-box: view-box;
+  transform-origin: 50px 31px;
+  transition: transform 1.2s cubic-bezier(0.3, 0.8, 0.3, 1), opacity 1.2s ease;
+}
+#mil-eye .mil-eye-lid { transform: scaleY(0.06); }
+#mil-eye .mil-eye-iris { transform: scale(0.3); opacity: 0; }
+#mil-eye[data-open="1"] { opacity: 0.09; }
+#mil-eye[data-open="1"] .mil-eye-lid { transform: scaleY(0.3); }
+#mil-eye[data-open="1"] .mil-eye-iris { transform: scale(0.45, 0.3); opacity: 0.6; }
+#mil-eye[data-open="2"] { opacity: 0.12; }
+#mil-eye[data-open="2"] .mil-eye-lid { transform: scaleY(0.65); }
+#mil-eye[data-open="2"] .mil-eye-iris { transform: scale(0.75, 0.65); opacity: 1; }
+#mil-eye[data-open="3"] { opacity: 0.17; animation: mil-eye-pulse 2.4s ease-in-out infinite; animation-delay: calc(var(--fx-t, 0) * -1ms); }
+#mil-eye[data-open="3"] .mil-eye-lid { transform: none; }
+#mil-eye[data-open="3"] .mil-eye-iris { transform: none; opacity: 1; }
+@keyframes mil-eye-pulse {
+  0%, 100% { filter: drop-shadow(0 0 0 rgba(251, 191, 36, 0)); }
+  50% { filter: drop-shadow(0 0 18px rgba(251, 191, 36, 0.9)); }
+}
+html.fx-lite #mil-eye { animation: none; }
+
+/* --- Shadow Game (under 1000 LP): purple mist creeps in and the Eye burns red --- */
+#mil-eye[data-shadow] { opacity: 0.32; animation: mil-eye-shadow 2s ease-in-out infinite; animation-delay: calc(var(--fx-t, 0) * -1ms); }
+#mil-eye .mil-eye-iris circle:first-child,
+#mil-eye .mil-eye-lid path { transition: fill 1.2s ease; }
+#mil-eye[data-shadow] .mil-eye-iris circle:first-child { fill: #ef4444; }
+#mil-eye[data-shadow] .mil-eye-lid path { fill: rgba(127, 29, 29, 0.4); }
+@keyframes mil-eye-shadow {
+  0%, 100% { filter: drop-shadow(0 0 6px rgba(239, 68, 68, 0.5)); }
+  50% { filter: drop-shadow(0 0 24px rgba(239, 68, 68, 1)); }
+}
+#mil-shadow {
+  position: fixed;
+  inset: 0;
+  z-index: 44;
+  overflow: hidden;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 1.6s ease;
+}
+#mil-shadow.mil-shadow--on { opacity: 1; }
+#mil-shadow::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(ellipse at 50% 50%, transparent 45%, rgba(46, 16, 101, 0.35) 75%, rgba(12, 3, 32, 0.65));
+}
+.mil-mist {
+  position: absolute;
+  inset: -20%;
+  background:
+    radial-gradient(circle at 12% 18%, rgba(126, 34, 206, 0.3), transparent 26%),
+    radial-gradient(circle at 88% 32%, rgba(88, 28, 135, 0.35), transparent 24%),
+    radial-gradient(circle at 18% 78%, rgba(88, 28, 135, 0.35), transparent 26%),
+    radial-gradient(circle at 84% 86%, rgba(126, 34, 206, 0.3), transparent 24%);
+  animation: mil-mist-drift 14s ease-in-out infinite alternate;
+}
+.mil-mist--2 {
+  transform: rotate(180deg);
+  animation-duration: 19s;
+  animation-direction: alternate-reverse;
+}
+@keyframes mil-mist-drift {
+  from { translate: -4% 3%; scale: 1; }
+  to { translate: 4% -3%; scale: 1.1; }
+}
+html.fx-lite .mil-mist--2 { display: none; }
+/* The moment it begins: shadows rush in from the edges. */
+.fx-mil-shadow-in {
+  position: fixed;
+  inset: 0;
+  z-index: 2;
+  animation: mil-shadow-in 1.8s ease-out both;
+}
+@keyframes mil-shadow-in {
+  0% { box-shadow: inset 0 0 0 0 rgba(88, 28, 135, 0); }
+  30% { box-shadow: inset 0 0 160px 70px rgba(88, 28, 135, 0.85); }
+  100% { box-shadow: inset 0 0 120px 40px rgba(88, 28, 135, 0); }
+}
+
+/* --- Stone doors (fx-mil-doors): sealed with the Eye, they grind open on every screen change --- */
+.fx-mil-doors { position: fixed; inset: 0; z-index: 1; overflow: hidden; }
+.mil-door {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 50.5%;
+  background:
+    var(--mil-frieze-v) 0 0 / 18px 108px repeat-y,
+    radial-gradient(circle at 30% 20%, rgba(0, 0, 0, 0.25), transparent 40%),
+    radial-gradient(circle at 70% 75%, rgba(0, 0, 0, 0.2), transparent 35%),
+    linear-gradient(170deg, #3d3524, #262016 60%, #1b170f);
+  box-shadow: inset 0 0 0 10px #1d1910, inset 0 0 0 12px rgba(212, 165, 55, 0.55), inset 0 0 60px rgba(0, 0, 0, 0.6);
+  animation: mil-door-l 0.85s cubic-bezier(0.6, 0, 0.3, 1) both;
+}
+.mil-door--l { left: 0; background-position: right 22px top 0, 0 0, 0 0, 0 0; }
+.mil-door--r { right: 0; background-position: left 22px top 54px, 0 0, 0 0, 0 0; animation-name: mil-door-r; }
+@keyframes mil-door-l { 0%, 22% { transform: none; } 100% { transform: translateX(-102%); } }
+@keyframes mil-door-r { 0%, 22% { transform: none; } 100% { transform: translateX(102%); } }
+.mil-door-seal {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: min(42vmin, 200px);
+  aspect-ratio: 100 / 62;
+  translate: -50% -50%;
+  background: var(--mil-eye-img) center / contain no-repeat;
+  animation: mil-seal 0.85s ease-out both;
+}
+@keyframes mil-seal {
+  0% { filter: drop-shadow(0 0 4px rgba(251, 191, 36, 0.5)); }
+  18% { transform: scale(1.08); filter: drop-shadow(0 0 22px rgba(253, 230, 138, 1)) brightness(1.5); opacity: 1; }
+  40% { transform: scale(1.3); opacity: 0; }
+  100% { opacity: 0; }
+}
+
+/* Leaving a screen (.fx-mil-doors--close): a copy of the old screen stays under
+   the doors as they slam shut, then the seal is stamped and they open. The ghost
+   is see-through (the real #app is hidden until the doors meet), so the tomb
+   background, gold dust and torchlight keep showing behind it. */
+.mil-door-ghost {
+  position: fixed;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  animation: mil-ghost 1.25s step-end both;
+}
+@keyframes mil-ghost { 0% { opacity: 1; } 32%, 100% { opacity: 0; } }
+.fx-mil-doors--close .mil-door { animation: mil-door-l-close 1.25s cubic-bezier(0.6, 0, 0.3, 1) both; }
+.fx-mil-doors--close .mil-door--r { animation-name: mil-door-r-close; }
+.fx-mil-doors--close .mil-door-seal { animation: mil-seal-close 1.25s ease-out both; }
+@keyframes mil-door-l-close {
+  0% { transform: translateX(-102%); animation-timing-function: cubic-bezier(0.55, 0, 0.9, 0.5); }
+  32% { transform: none; }
+  34.5% { transform: translateX(-1.2%); }
+  37%, 45% { transform: none; }
+  100% { transform: translateX(-102%); }
+}
+@keyframes mil-door-r-close {
+  0% { transform: translateX(102%); animation-timing-function: cubic-bezier(0.55, 0, 0.9, 0.5); }
+  32% { transform: none; }
+  34.5% { transform: translateX(1.2%); }
+  37%, 45% { transform: none; }
+  100% { transform: translateX(102%); }
+}
+@keyframes mil-seal-close {
+  0%, 31% { opacity: 0; transform: scale(1.6); }
+  36% { opacity: 1; transform: scale(1); filter: drop-shadow(0 0 4px rgba(251, 191, 36, 0.5)) brightness(1); }
+  46% { opacity: 1; transform: scale(1.08); filter: drop-shadow(0 0 22px rgba(253, 230, 138, 1)) brightness(1.5); }
+  58% { opacity: 0; transform: scale(1.3); }
+  100% { opacity: 0; }
+}
+html.mil-doors-closing[data-theme="millennium"] #app#app { animation: mil-app-behind-doors 1.25s step-end both; }
+html.mil-doors-closing[data-theme="millennium"] #app:is(.fx-screen-forward, .fx-screen-back) .fx-stagger > * { animation: none; }
+@keyframes mil-app-behind-doors { 0% { opacity: 0; } 32%, 100% { opacity: 1; } }
+
+/* --- Torchlight (#season-fx, millennium-theme.js millenniumSeasonHtml): flickering at both edges, embers rising --- */
+.mil-torch { position: absolute; width: 0; height: 0; --dir: 1; }
+.mil-torch--l { left: 0; top: 30%; }
+.mil-torch--r { right: 0; top: 70%; --dir: -1; }
+.mil-torch-light {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 75vmin;
+  height: 75vmin;
+  translate: -50% -50%;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(255, 170, 60, 0.22), rgba(255, 120, 30, 0.08) 40%, transparent 68%);
+  animation: mil-flicker 2.3s linear infinite;
+}
+.mil-torch--r .mil-torch-light { translate: 50% -50%; left: auto; right: 0; animation-duration: 2.9s; animation-delay: -1.1s; }
+@keyframes mil-flicker {
+  0%, 100% { opacity: 0.85; transform: scale(1); }
+  12% { opacity: 1; transform: scale(1.04); }
+  20% { opacity: 0.7; }
+  34% { opacity: 0.95; transform: scale(0.98); }
+  47% { opacity: 0.78; }
+  60% { opacity: 1; transform: scale(1.03); }
+  72% { opacity: 0.74; }
+  86% { opacity: 0.92; transform: scale(1); }
+}
+.mil-ember {
+  position: absolute;
+  left: var(--ex);
+  top: 0;
+  width: 3px;
+  height: 3px;
+  border-radius: 50%;
+  background: #ffd08a;
+  box-shadow: 0 0 6px 2px rgba(255, 140, 40, 0.8);
+  opacity: 0;
+  animation: mil-ember var(--ed) ease-out var(--edelay) infinite;
+}
+.mil-torch--r .mil-ember { left: auto; right: var(--ex); }
+@keyframes mil-ember {
+  0% { transform: translate(0, 20px); opacity: 0; }
+  15% { opacity: 0.9; }
+  100% { transform: translate(calc(var(--ew) * var(--dir)), -28vh); opacity: 0; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  #mil-eye { animation: none !important; }
+  .mil-mist { animation: none; }
+  html[data-theme="millennium"] .duel-card-hidden .lock-medallion,
+  html[data-theme="millennium"] .mil-etch svg { animation: none; }
+}
+
 /* --- Solo menu: the Millennium Items shelf (solo-view.js renderSoloShelf) ---
    Items light up with wins against Pegasus; the end screen's unlock note. --- */
 .solo-shelf { display: flex; flex-direction: column; align-items: center; gap: 0.35rem; }

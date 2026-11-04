@@ -461,9 +461,22 @@ html[data-theme="halloween"] .modal-panel {
 /* ===================================================================== */
 /* MILLENNIUM THEME (Solo reward: beat Pegasus on Nightmare)             */
 /* A lapis-lazuli night over the desert: gold trim, gold buttons and a   */
-/* faint Eye of Wdjat watching from the sky. Gold dust is #season-fx and */
-/* the theme tile / Eye-opening switch are in effects.css.               */
+/* faint Millennium Eye watching from the sky. Gold dust is #season-fx   */
+/* and the theme tile / Eye-opening switch are in effects.css.           */
 /* ===================================================================== */
+
+/* The Millennium Eye emblem (gold, outlined) and a faint watermark of it,
+   reused across the theme: buttons, the LP cartouche, popups, banners and
+   the sky. Same shape as MIL_EYE_SVG (src/effects/millennium-theme.js). */
+:root {
+  --mil-eye-img: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 62'%3E%3Cpath d='M26 26A26 26 0 0 1 74 26V36A26 26 0 0 1 26 36Z' fill='%231c1003'/%3E%3Cpath d='M7 26H26A26 26 0 0 1 74 26H93M7 36H26A26 26 0 0 0 74 36H93' fill='none' stroke='%231c1003' stroke-width='13' stroke-linecap='round' stroke-linejoin='round'/%3E%3Cpath d='M7 26H26A26 26 0 0 1 74 26H93M7 36H26A26 26 0 0 0 74 36H93' fill='none' stroke='%23f2c94c' stroke-width='8' stroke-linecap='round' stroke-linejoin='round'/%3E%3Ccircle cx='50' cy='31' r='14.5' fill='%23f2c94c' stroke='%231c1003' stroke-width='3'/%3E%3Ccircle cx='50' cy='31' r='6' fill='%231c1003'/%3E%3C/svg%3E");
+  --mil-eye-faint: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 62'%3E%3Cg opacity='0.08'%3E%3Cpath d='M7 26H26A26 26 0 0 1 74 26H93M7 36H26A26 26 0 0 0 74 36H93' fill='none' stroke='%23fbbf24' stroke-width='8' stroke-linecap='round' stroke-linejoin='round'/%3E%3Ccircle cx='50' cy='31' r='14.5' fill='%23fbbf24'/%3E%3Ccircle cx='50' cy='31' r='6' fill='%23080d24'/%3E%3C/g%3E%3C/svg%3E");
+  /* Hieroglyph friezes: ankh, Eye, water, Ma'at's feather, djed pillar and
+     sun disc, as a vertical column (-v) and a horizontal band (-h). */
+  --mil-frieze-v: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 120'%3E%3Cg fill='none' stroke='%23d4a537' stroke-width='1.3' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M0.6 0V120M19.4 0V120' stroke-width='1'/%3E%3Cellipse cx='10' cy='7.5' rx='3' ry='4'/%3E%3Cpath d='M5 12.5H15M10 11.5V23'/%3E%3Cpath d='M3 33Q10 27 17 33Q10 38 3 33ZM3.5 28.5Q10 24.5 16.5 28.5M8 37L6.5 42.5M12 37Q14 41 16 40'/%3E%3Ccircle cx='10' cy='32.6' r='1.8' fill='%23d4a537'/%3E%3Cpath d='M2.5 51l2.5-2.5 2.5 2.5 2.5-2.5 2.5 2.5 2.5-2.5 2.5 2.5M2.5 57l2.5-2.5 2.5 2.5 2.5-2.5 2.5 2.5 2.5-2.5 2.5 2.5'/%3E%3Cpath d='M9 85V65Q15 68 14.5 75Q14 81 9 85M7 85H12'/%3E%3Cpath d='M10 92V107M6 92.5H14M6 95.5H14M6 98.5H14M7 107H13'/%3E%3Ccircle cx='10' cy='113.5' r='4'/%3E%3Ccircle cx='10' cy='113.5' r='1' fill='%23d4a537'/%3E%3C/g%3E%3C/svg%3E");
+  --mil-frieze-h: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 120 24'%3E%3Cg fill='none' stroke='%23d4a537' stroke-width='1.3' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M0 0.6H120M0 23.4H120' stroke-width='1'/%3E%3Cellipse cx='10' cy='7.5' rx='3' ry='4'/%3E%3Cpath d='M5 12.5H15M10 11.5V22'/%3E%3Cg transform='translate(20 -21)'%3E%3Cpath d='M3 33Q10 27 17 33Q10 38 3 33ZM3.5 28.5Q10 24.5 16.5 28.5M8 37L6.5 42.5M12 37Q14 41 16 40'/%3E%3Ccircle cx='10' cy='32.6' r='1.8' fill='%23d4a537'/%3E%3C/g%3E%3Cpath transform='translate(40 -41)' d='M2.5 51l2.5-2.5 2.5 2.5 2.5-2.5 2.5 2.5 2.5-2.5 2.5 2.5M2.5 57l2.5-2.5 2.5 2.5 2.5-2.5 2.5 2.5 2.5-2.5 2.5 2.5'/%3E%3Cpath transform='translate(60 -63)' d='M9 85V65Q15 68 14.5 75Q14 81 9 85M7 85H12'/%3E%3Cpath transform='translate(80 -87.5)' d='M10 92V107M6 92.5H14M6 95.5H14M6 98.5H14M7 107H13'/%3E%3Cg transform='translate(100 -101.5)'%3E%3Ccircle cx='10' cy='113.5' r='4'/%3E%3Ccircle cx='10' cy='113.5' r='1' fill='%23d4a537'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+}
+
 html[data-theme="millennium"] {
   --app-bg: 8 13 36;
   --app-fg: 254 247 224;
@@ -483,7 +496,7 @@ html[data-theme="millennium"] {
 
 html[data-theme="millennium"] body {
   background-image:
-    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='90 50 180 220'%3E%3Cg fill='none' stroke='%23fbbf24' stroke-width='6' stroke-linecap='round' stroke-opacity='0.07'%3E%3Cpath d='M110 150Q180 90 250 150Q180 196 110 150Z'/%3E%3Ccircle cx='180' cy='146' r='18' fill='%23fbbf24' fill-opacity='0.07'/%3E%3Cpath d='M100 124Q180 60 260 122'/%3E%3Cpath d='M166 186L156 240Q152 256 168 256'/%3E%3Cpath d='M198 186Q226 232 262 220'/%3E%3C/g%3E%3C/svg%3E"),
+    var(--mil-eye-faint),
     radial-gradient(ellipse at 50% -10%, rgba(251, 191, 36, 0.16), transparent 60%),
     linear-gradient(180deg, #14205a, #080d24);
   background-repeat: no-repeat;
@@ -511,6 +524,33 @@ html[data-theme="millennium"] .start-screen img {
   box-shadow: 0 0 0 3px #d4a537, 0 0 0 6px #1e3a8a, 0 0 26px rgba(251, 191, 36, 0.5);
 }
 
+/* Home and Settings: carved hieroglyph columns down both sides, like a tomb wall. */
+html[data-theme="millennium"] .start-screen {
+  position: relative;
+}
+
+html[data-theme="millennium"] .start-screen > header {
+  position: relative;
+  z-index: 2;
+}
+
+html[data-theme="millennium"] .start-screen::before,
+html[data-theme="millennium"] .start-screen::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 15px;
+  z-index: 1;
+  pointer-events: none;
+  background: var(--mil-frieze-v) 0 0 / 15px 90px repeat-y;
+  opacity: 0.5;
+  filter: drop-shadow(0 1px 0 rgba(0, 0, 0, 0.9));
+}
+
+html[data-theme="millennium"] .start-screen::before { left: 4px; }
+html[data-theme="millennium"] .start-screen::after { right: 4px; background-position: 0 45px; }
+
 html[data-theme="millennium"] .border-slate-800,
 html[data-theme="millennium"] .border-slate-700 {
   border-color: rgba(212, 165, 55, 0.3);
@@ -526,12 +566,47 @@ html[data-theme="millennium"] footer {
   border-image: repeating-linear-gradient(90deg, #d4a537 0 14px, #1e3a8a 14px 18px, #0f766e 18px 22px, #1e3a8a 22px 26px) 1;
 }
 
-/* Primary buttons: polished gold with a dark label. */
+/* Buttons: a thick gold outline. Primary buttons are polished gold with a
+   dark label. The main ones (rounded-xl gold buttons and the duel's
+   Activate / Complete) wear a Millennium Eye clasped onto their top border. */
+html[data-theme="millennium"] button:is(.bg-slate-800, .bg-slate-700, .bg-sky-600, .bg-rose-600, .bg-amber-600) {
+  border: 2px solid #d4a537;
+}
+
 html[data-theme="millennium"] .bg-amber-500 {
+  overflow: visible;
   background-image: linear-gradient(to bottom, #fde68a, #f2c94c 40%, #b8860b);
-  border: 1px solid #fff2b8;
+  border: 2px solid #fff2b8;
   color: #1c1003;
-  box-shadow: 0 0 0 1.5px #0b1a4a, 0 6px 22px rgba(251, 191, 36, 0.4);
+  box-shadow: 0 0 0 2px #5c3d06, 0 0 0 3.5px #d4a537, 0 6px 22px rgba(251, 191, 36, 0.4);
+}
+
+/* The sheen sweeps its background (not itself), so the button can show the clasp outside its edge. */
+html[data-theme="millennium"] .bg-amber-500::after {
+  border-radius: inherit;
+  transform: none;
+  background: linear-gradient(110deg, transparent 35%, rgba(255, 255, 255, 0.45) 50%, transparent 65%) no-repeat;
+  background-size: 300% 100%;
+  animation-name: gl-sweep-loop;
+}
+
+html[data-theme="millennium"] :is(.duel-card-hidden, .duel-card-peek) button:is(.bg-sky-600, .bg-rose-600, .bg-amber-600) {
+  position: relative;
+  box-shadow: inset 0 0 0 1px rgba(28, 16, 3, 0.6), 0 0 10px rgba(251, 191, 36, 0.3);
+}
+
+html[data-theme="millennium"] :is(.duel-card-hidden, .duel-card-peek) button:is(.bg-sky-600, .bg-rose-600, .bg-amber-600)::before,
+html[data-theme="millennium"] button.bg-amber-500.rounded-xl::before {
+  content: '';
+  position: absolute;
+  left: 50%;
+  top: 0;
+  width: 2rem;
+  height: 1.24rem;
+  translate: -50% calc(-50% - 1px);
+  pointer-events: none;
+  background: var(--mil-eye-img) center / contain no-repeat;
+  filter: drop-shadow(0 0 3px rgba(251, 191, 36, 0.6));
 }
 
 html[data-theme="millennium"] .hover\:bg-amber-400:hover {
@@ -540,7 +615,224 @@ html[data-theme="millennium"] .hover\:bg-amber-400:hover {
 
 html[data-theme="millennium"] .modal-panel {
   border: 2px solid rgba(212, 165, 55, 0.6);
+  background-color: #1f1a12;
+  background-image:
+    var(--mil-eye-faint),
+    radial-gradient(ellipse at 50% 0%, rgba(253, 230, 138, 0.12), transparent 60%),
+    linear-gradient(170deg, #2f291c, #1a160f 70%);
+  background-position: 50% 60%, 0 0, 0 0;
+  background-size: 85% auto, 100% 100%, 100% 100%;
+  background-repeat: no-repeat;
   box-shadow: 0 0 0 2px rgba(30, 58, 138, 0.7), 0 0 24px rgba(251, 191, 36, 0.2), 0 20px 40px rgba(0, 0, 0, 0.6);
+}
+
+/* Popups: a hieroglyph band carved along the top and bottom edges. */
+html[data-theme="millennium"] .modal-panel {
+  position: relative;
+}
+
+html[data-theme="millennium"] .modal-panel::before,
+html[data-theme="millennium"] .modal-panel::after {
+  content: '';
+  position: absolute;
+  left: 1.1rem;
+  right: 1.1rem;
+  height: 0.6rem;
+  pointer-events: none;
+  background: var(--mil-frieze-h) center / auto 100% round no-repeat;
+  opacity: 0.5;
+}
+
+html[data-theme="millennium"] .modal-panel::before { top: 0.2rem; }
+html[data-theme="millennium"] .modal-panel::after { bottom: 0.2rem; }
+
+/* Stone popups: carved sandstone buttons, gold numerals on the LP keypad. */
+html[data-theme="millennium"] .modal-panel button.bg-slate-800 {
+  background-color: #3a3122;
+  background-image: linear-gradient(180deg, #4a3f2b, #2c2518);
+  border-color: rgba(212, 165, 55, 0.85);
+  box-shadow: inset 0 1px 0 rgba(255, 240, 200, 0.12), inset 0 -2px 0 rgba(0, 0, 0, 0.35);
+}
+
+html[data-theme="millennium"] .modal-panel .grid-cols-4 > button {
+  border: 2px solid rgba(212, 165, 55, 0.7);
+  font-family: 'Cinzel', Georgia, serif;
+  color: #f2c94c;
+  text-shadow: 0 1px 0 #000, 0 0 8px rgba(251, 191, 36, 0.35);
+}
+
+/* Hidden abilities: stone tablets etched with their Millennium Item
+   (.mil-etch, src/effects/millennium-theme.js) and locked by the Key's ankh. */
+html[data-theme="millennium"] .duel-card-hidden {
+  border: 2px solid #8a6a2e;
+  border-radius: 2.25rem 2.25rem 1rem 1rem;
+  overflow: hidden;
+  isolation: isolate;
+  background-color: #241f15;
+  background-image:
+    radial-gradient(ellipse at 50% 0%, rgba(253, 230, 138, 0.14), transparent 65%),
+    radial-gradient(circle at 18% 82%, rgba(0, 0, 0, 0.25), transparent 40%),
+    radial-gradient(circle at 86% 28%, rgba(0, 0, 0, 0.2), transparent 35%),
+    linear-gradient(170deg, #3d3524, #262016 60%, #1b170f);
+  box-shadow: inset 0 0 0 4px #1d1910, inset 0 0 0 5px rgba(212, 165, 55, 0.5), inset 0 10px 26px rgba(0, 0, 0, 0.55), 0 4px 14px rgba(0, 0, 0, 0.5);
+}
+
+html[data-theme="millennium"] .duel-card-hidden > :not(.mil-etch) {
+  position: relative;
+  z-index: 1;
+}
+
+html[data-theme="millennium"] .duel-card-hidden h3 {
+  font-family: 'Cinzel', Georgia, serif;
+  color: #ead7a0;
+  text-shadow: 0 -1px 0 rgba(0, 0, 0, 0.8), 0 1px 0 rgba(255, 240, 200, 0.15);
+}
+
+.mil-etch {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+}
+
+.mil-etch svg {
+  width: auto;
+  height: 86%;
+  max-width: 72%;
+  opacity: 0.16;
+  filter: sepia(0.5) drop-shadow(0 1px 0 rgba(255, 240, 200, 0.35)) drop-shadow(0 -1px 0 rgba(0, 0, 0, 0.9));
+}
+
+html[data-theme="millennium"] .duel-card-hidden .lock-medallion {
+  border: 2px solid #fde68a;
+  color: transparent;
+  background-color: #b8860b;
+  background-image:
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cg fill='%231c1003'%3E%3Cpath fill-rule='evenodd' d='M12 1C9.4 1 7.6 3.4 7.6 6.2S9.4 11.4 12 11.4 16.4 9 16.4 6.2 14.6 1 12 1Zm0 2.6c1.1 0 1.8 1.2 1.8 2.6S13.1 8.8 12 8.8 10.2 7.6 10.2 6.2 10.9 3.6 12 3.6Z'/%3E%3Crect x='4.5' y='11' width='15' height='3' rx='1.3'/%3E%3Cpath d='M10.4 13.5h3.2l0.9 9h-5Z'/%3E%3C/g%3E%3C/svg%3E"),
+    radial-gradient(circle at 35% 28%, #fff2b8, #f2c94c 35%, #b8860b 70%, #6b4508);
+  background-size: 64% 64%, 100% 100%;
+  background-position: center;
+  background-repeat: no-repeat;
+  box-shadow: 0 0 0 2px #3b2a0c, 0 0 16px rgba(251, 191, 36, 0.45), inset 0 -3px 6px rgba(0, 0, 0, 0.35);
+}
+
+html[data-theme="millennium"] .duel-card-hidden .lock-medallion > svg {
+  visibility: hidden;
+}
+
+/* A peek is a vision from the Millennium Necklace: sandy, misty and gold. */
+html[data-theme="millennium"] .duel-card-peek {
+  border-color: rgba(232, 196, 120, 0.6);
+  background-color: #1c1a24;
+  background-image:
+    radial-gradient(ellipse at 50% 45%, rgba(253, 230, 138, 0.16), transparent 70%),
+    linear-gradient(165deg, #3a3020, #161a36 70%);
+  box-shadow: inset 0 0 26px rgba(232, 196, 120, 0.35), 0 0 16px rgba(251, 191, 36, 0.2);
+}
+
+html[data-theme="millennium"] .duel-card-peek .mil-etch svg {
+  opacity: 0.14;
+}
+
+/* Life Points in a royal cartouche: hieroglyph trim down both sides, sand
+   filled to your LP (--lp-sand from lp-bar.js) and the Millennium Eye at the foot. */
+html[data-theme="millennium"] .lp-bar {
+  border: 2px solid #d4a537;
+  border-radius: 999px;
+  padding-bottom: 1.6rem;
+  background-color: #0b1230;
+  background-image:
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 10 40'%3E%3Cg fill='none' stroke='%23d4a537' stroke-opacity='0.5' stroke-width='1.1' stroke-linecap='round'%3E%3Cellipse cx='5' cy='4' rx='2' ry='2.5'/%3E%3Cpath d='M1.8 7.4H8.2M5 7.4V13.5'/%3E%3Cpath d='M1.5 21Q5 18 8.5 21Q5 24 1.5 21Z'/%3E%3Cpath d='M4 24L3.2 27M6 24Q7.5 27 8.5 26'/%3E%3Cpath d='M5 30V38M5 30Q8.5 31 7.5 35'/%3E%3C/g%3E%3C/svg%3E"),
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 10 40'%3E%3Cg fill='none' stroke='%23d4a537' stroke-opacity='0.5' stroke-width='1.1' stroke-linecap='round'%3E%3Cellipse cx='5' cy='4' rx='2' ry='2.5'/%3E%3Cpath d='M1.8 7.4H8.2M5 7.4V13.5'/%3E%3Cpath d='M1.5 21Q5 18 8.5 21Q5 24 1.5 21Z'/%3E%3Cpath d='M4 24L3.2 27M6 24Q7.5 27 8.5 26'/%3E%3Cpath d='M5 30V38M5 30Q8.5 31 7.5 35'/%3E%3C/g%3E%3C/svg%3E"),
+    linear-gradient(to top, rgba(232, 196, 120, 0.4), rgba(214, 170, 90, 0.18)),
+    linear-gradient(180deg, #1a2a66, #0b1230 55%, #141f52);
+  background-size: 8px 32px, 8px 32px, 100% calc(var(--lp-sand, 1) * 100%), 100% 100%;
+  background-position: left 5px top 0, right 5px top 16px, 0 100%, 0 0;
+  background-repeat: repeat-y, repeat-y, no-repeat, no-repeat;
+  box-shadow: inset 0 0 0 3px #0b1230, inset 0 0 0 4px rgba(253, 230, 138, 0.4), 0 4px 14px rgba(0, 0, 0, 0.6);
+}
+
+html[data-theme="millennium"] .lp-bar::before {
+  content: '';
+  position: absolute;
+  left: 50%;
+  bottom: 0.3rem;
+  width: 2rem;
+  height: 1.25rem;
+  translate: -50% 0;
+  pointer-events: none;
+  background: var(--mil-eye-img) center / contain no-repeat;
+  filter: drop-shadow(0 0 4px rgba(251, 191, 36, 0.55));
+}
+
+html[data-theme="millennium"] .lp-bar > span,
+html[data-theme="millennium"] .lp-bar .text-slate-400 {
+  color: #e9c96a;
+}
+
+html[data-theme="millennium"] .lp-value {
+  font-family: 'Cinzel', Georgia, serif;
+  letter-spacing: 0.02em;
+}
+
+/* Your LP carved into a stone plaque set in the cartouche, the digits inlaid
+   with gold (copper below 4000, carnelian below 2000). */
+html[data-theme="millennium"] .lp-bar > .flex-1 > div {
+  padding: 0.15rem 0.6rem 0.2rem;
+  border-radius: 0.4rem;
+  background: linear-gradient(180deg, #3d3524, #262016 60%, #1b170f);
+  box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.75), inset 0 -1px 0 rgba(255, 240, 200, 0.15), 0 0 0 1.5px rgba(212, 165, 55, 0.75), 0 0 0 3px #0b1230;
+}
+
+html[data-theme="millennium"] .lp-bar .lp-value {
+  font-size: 1.9rem;
+  line-height: 1.15;
+  color: transparent;
+  background-image: linear-gradient(180deg, #fff2b8, #f2c94c 42%, #9a6a08 54%, #e9b949 72%, #fde68a);
+  -webkit-background-clip: text;
+  background-clip: text;
+  filter: drop-shadow(0 -1px 0 rgba(0, 0, 0, 0.95)) drop-shadow(0 1px 0 rgba(255, 240, 200, 0.25)) drop-shadow(0 0 6px rgba(251, 191, 36, 0.35));
+}
+
+html[data-theme="millennium"] .lp-bar.text-amber-400 .lp-value {
+  background-image: linear-gradient(180deg, #fde4c0, #f59e0b 42%, #8a3a0a 54%, #e8892a 72%, #fcd34d);
+}
+
+html[data-theme="millennium"] .lp-bar.text-rose-400 .lp-value {
+  background-image: linear-gradient(180deg, #fecaca, #ef4444 42%, #7f1d1d 54%, #dc4a4a 72%, #fca5a5);
+  filter: drop-shadow(0 -1px 0 rgba(0, 0, 0, 0.95)) drop-shadow(0 1px 0 rgba(255, 240, 200, 0.2)) drop-shadow(0 0 7px rgba(239, 68, 68, 0.55));
+}
+
+/* The duelist's name in a royal cartouche, its knot bar at the end. */
+html[data-theme="millennium"] header .heart-press {
+  position: relative;
+  padding: 0.2rem 1.5rem 0.25rem 1.1rem;
+  border-radius: 999px;
+  border: 1.5px solid #d4a537;
+  background:
+    radial-gradient(ellipse at 50% 0%, rgba(253, 230, 138, 0.16), transparent 70%),
+    linear-gradient(180deg, #1a2a66, #0b1230);
+  box-shadow: inset 0 0 0 2px #0b1230, inset 0 0 0 3px rgba(253, 230, 138, 0.35), 0 0 12px rgba(251, 191, 36, 0.2);
+}
+
+html[data-theme="millennium"] header .heart-press::after {
+  content: '';
+  position: absolute;
+  top: 20%;
+  bottom: 20%;
+  right: 0.6rem;
+  width: 3px;
+  border-radius: 2px;
+  background: linear-gradient(#fde68a, #b8860b);
+}
+
+html[data-theme="millennium"] header .heart-press > :first-child {
+  font-family: 'Cinzel', Georgia, serif;
+  color: #fde68a;
+  text-shadow: 0 0 8px rgba(251, 191, 36, 0.45);
 }
 
 /* ===================================================================== */
