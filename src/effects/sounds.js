@@ -2369,6 +2369,11 @@ const COOP_SOUNDS = {
     bell({ t: t + 0.2, freq: midi(88), dur: 0.8, gain: 0.04, out: room });
     noise({ t: t + 0.2, dur: 0.3, gain: 0.05, type: 'highpass', freq: 4000, attack: 0.005, out: room });
   },
+  'co-weaken': t => {
+    const room = darkBus({ reverb: 0.35 });
+    tone({ t, freq: 900, to: 160, dur: 0.45, type: 'sawtooth', gain: 0.035, filter: [2400, 500], attack: 0.01, out: room });
+    arpeggio(t + 0.05, [79, 75, 72, 67], 0.07, (tt, n) => bell({ t: tt, freq: midi(n), dur: 0.4, gain: 0.025, out: room }));
+  },
   'co-shield': t => {
     const room = darkBus({ reverb: 0.4 });
     chord({ t, notes: [67, 71, 74], dur: 0.6, gain: 0.025, attack: 0.02, filter: 2400 });

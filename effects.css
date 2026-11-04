@@ -15614,6 +15614,8 @@ html.fx-lite .solo-node-frame::before { animation: none; }
 .solo-plate--def .solo-stat-def { color: #7dd3fc; }
 .solo-plate--atk .solo-stat-def,
 .solo-plate--def .solo-stat-atk { opacity: 0.5; }
+.solo-plate .solo-stat--cut { color: #c4b5fd; }
+.solo-plate .solo-stat--cut::after { content: '▾'; margin-left: 0.05em; }
 .solo-card--toon { border-color: #be185d; background: linear-gradient(160deg, #f9a8d4, #be185d); }
 .solo-card--spell { border-color: #0f766e; background: linear-gradient(160deg, #2dd4bf, #0f766e); color: #042f2e; }
 /* The classic brown card back with its dark oval. */

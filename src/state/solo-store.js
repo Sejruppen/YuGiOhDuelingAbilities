@@ -751,7 +751,27 @@ const soloBoosted = (fight, m) => soloRegion(fight.region).types.includes(m.type
 
 function soloStats(m, fight = solo.fight) {
   const atk = soloBoosted(fight, m) ? Math.round(m.atk * (1 + SOLO_FIELD_BONUS)) : m.atk;
-  return { atk: atk + soloEquipAtk(m), def: m.def };
+  return { atk: Math.max(0, atk + soloEquipAtk(m) - soloCut(m, 'atk', fight)), def: Math.max(0, m.def - soloCut(m, 'def', fight)) };
+}
+
+// ATK/DEF cuts from your own cards (Shadow Spell…): m.cuts = [{ stat, amount, turn }].
+// `turn` is the soloTurnKey the cut ends with; null lasts while the monster is on the field.
+const soloTurnKey = f => `${f.round}:${f.turn}`;
+const soloActiveCuts = (m, f = solo.fight) => (m.cuts || []).filter(c => !c.turn || c.turn === soloTurnKey(f));
+const soloCut = (m, stat, f = solo.fight) => soloActiveCuts(m, f).reduce((sum, c) => sum + (c.stat === stat ? c.amount : 0), 0);
+
+function soloPruneCuts(f) {
+  f.monsters.forEach(m => {
+    if (m.cuts) m.cuts = soloActiveCuts(m, f);
+  });
+}
+
+function soloCutMonster(m, stat, amount, lasting) {
+  const f = solo.fight;
+  m.cuts = [...soloActiveCuts(m, f), { stat, amount, turn: lasting ? null : soloTurnKey(f) }];
+  playSound({ name: 'co-weaken' });
+  const name = stat.toUpperCase();
+  return { tone: 'good', text: `📉 ${m.name} loses ${amount} ${name} ${lasting ? 'while it stays on the field' : 'until the end of this turn'}: now ${soloStats(m, f)[stat]} ${name}.` };
 }
 
 // Equip cards: m.equips = [{ uid, name, atk }]. Each one sits in a Spell/Trap zone.
@@ -1027,6 +1047,7 @@ function startSoloEnemyTurn() {
   const f = solo.fight;
   const g = f.gimmick || {};
   f.turn = 'enemy';
+  soloPruneCuts(f);
   const pre = [];
   if (f.grave?.length) pre.push({ type: 'rise' });
   f.monsters.filter(m => m.hatch).forEach(m => {
@@ -1046,6 +1067,7 @@ function endSoloEnemyTurn() {
   const f = solo.fight;
   f.turn = 'player';
   f.round++;
+  soloPruneCuts(f);
   f.battleOver = false;
   f.steps = [];
   f.stepIndex = 0;
@@ -1093,6 +1115,9 @@ function prepareSoloStep() {
 const soloAttackSteps = m => (m.barrels ? [{ type: 'barrel', uid: m.uid }]
   : m.hits ? Array.from({ length: m.hits }, (_, i) => ({ type: 'attack', uid: m.uid, hit: i + 1 }))
   : [{ type: 'attack', uid: m.uid }]);
+
+// The ATK an attack step hits with. Toon Gemini Elf's hits use their own ATK.
+const soloAttackAtk = (step, m, f) => (step.hit ? Math.max(0, m.hitAtk + soloEquipAtk(m) - soloCut(m, 'atk', f)) : soloStats(m, f).atk);
 
 function prepareSoloStepType(step, f) {
   const info = (icon, title, text, note = '') => Object.assign(step, { kind: 'info', icon, title, text, note: [note, step.bluffNote].filter(Boolean).join('<br>') });
@@ -1167,7 +1192,7 @@ function prepareSoloStepType(step, f) {
     case 'attack': {
       const m = soloMonster(step.uid);
       if (!m || m.pos !== 'atk' || m.bound) return false;
-      const atk = step.hit ? m.hitAtk + soloEquipAtk(m) : soloStats(m, f).atk;
+      const atk = soloAttackAtk(step, m, f);
       const title = `${m.name} attacks directly!${step.hit ? ` (${step.hit}/${m.hits})` : ''}`;
       Object.assign(step, { kind: 'attack', icon: m.icon, title, atk, sub: null, rex: f.elite === 'rex' && m.type === 'Dinosaur', toon: !!m.toon, note: m.seal ? soloToonSeal(f) : '' });
       return true;
@@ -1328,6 +1353,18 @@ function soloRexAgain(empty) {
   if (solo.phase === 'fight') {
     finishSoloStep(dealt ? { tone: 'bad', text: `🦖 It attacks again! You take ${dealt} more.` } : { tone: 'good', text: '🛐 It attacks again, but Waboku protects you.' });
   }
+}
+
+// A card from your own hand lowers the attacker's ATK or DEF mid-attack. The attack goes on with the new ATK.
+function soloCutAttacker(stat, amount, lasting) {
+  const step = soloStep();
+  if (!step || step.kind !== 'attack' || step.sub !== 'cut') return;
+  const m = soloMonster(step.uid);
+  step.sub = null;
+  if (!m) return;
+  const result = soloCutMonster(m, stat, amount, lasting);
+  step.atk = soloAttackAtk(step, m, solo.fight);
+  step.cutNote = [step.cutNote, result.text].filter(Boolean).join('<br>');
 }
 
 // You block an enemy attack with one of your monsters (normal battle rules).

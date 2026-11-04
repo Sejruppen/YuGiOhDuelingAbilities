@@ -26,6 +26,9 @@ const soloUi = {
   // The input already has the +30% field bonus added (used as-is, no implied "00").
   inputBoosted: false,
   blockPos: 'atk',
+  // Lowering an enemy monster's stat: which one, and whether it lasts while the monster is on the field.
+  // Kept between uses, so your last choice is the default.
+  cut: { stat: 'atk', lasting: false },
   toast: null,
   confirmAbandon: false,
   // Snapshots of `solo` taken before each fight action, for Undo.
@@ -787,6 +790,40 @@ function confirmSoloBlock() {
   commitSolo();
 }
 
+// --- Fight: lowering ATK/DEF ----------------------------------------------------------
+// On your turn: Effect → Lower ATK/DEF → a monster (panel.uid) → the amount.
+// On the enemy's turn the attack step's 'cut' sub lowers the attacker.
+
+function setSoloCut(patch) {
+  Object.assign(soloUi.cut, patch);
+  render();
+}
+
+function confirmSoloCut() {
+  const m = soloMonster(soloUi.panel?.uid);
+  if (!m || !soloUi.input) return;
+  const amount = soloInputValue();
+  const { stat, lasting } = soloUi.cut;
+  soloAct(() => soloCutMonster(m, stat, amount, lasting));
+}
+
+function startSoloCut() {
+  const step = soloStep();
+  if (!step || step.kind !== 'attack' || step.sub) return;
+  step.sub = 'cut';
+  soloUi.input = '';
+  commitSolo();
+}
+
+function confirmSoloCutAttacker() {
+  if (!soloUi.input) return;
+  const amount = soloInputValue();
+  soloSnapshot();
+  soloCutAttacker(soloUi.cut.stat, amount, soloUi.cut.lasting);
+  soloUi.input = '';
+  commitSolo();
+}
+
 // --- Fight: Pegasus -----------------------------------------------------------------
 
 function dismissSoloCutscene() {
@@ -828,11 +865,13 @@ function backInSolo() {
     if (solo.fight.cutscene) return dismissSoloCutscene();
     if (soloUi.panel) {
       const p = soloUi.panel;
+      if (p.kind === 'cut' && p.uid) return setSoloPanel({ uid: null });
       soloUi.panel = p.type !== 'attack' && p.kind ? { ...p, kind: null } : null;
       soloUi.input = '';
       return render();
     }
-    if (soloStep()?.sub === 'block') return cancelSoloBlock();
+    const sub = soloStep()?.sub;
+    if (sub === 'block' || sub === 'cut') return cancelSoloBlock();
   }
   showSoloMenu();
 }

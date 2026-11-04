@@ -436,6 +436,7 @@ function renderSoloIntro() {
         <li><span class="ce-emoji">❤️</span> You start with ${SOLO_START_LP} LP, and it carries over between duels. Campfires <span class="ce-emoji">🔥</span> along the way let you rest, train or polish a relic.</li>
         <li><span class="ce-emoji">👁️</span> The enemy shows what kind of move it will make next turn. Plan around it!</li>
         <li><span class="ce-emoji">⚔️</span> Attack on the phone: pick a target and enter your monster's ATK. Normal battle rules apply.</li>
+        <li><span class="ce-emoji">📉</span> Played a card that lowers ATK or DEF? Use <b>Effect</b> on your turn, or <b>Lower ATK/DEF</b> when a monster attacks you. Pick whether it lasts until the end of the turn or while the monster stays on the field.</li>
         <li><span class="ce-emoji">🛡️</span> Enemy monsters attack you directly. Block with one of your monsters (each one blocks once per turn) or take the hit. Or spring a Trap Card from your hand to negate the attack or destroy the attacker. When the enemy summons a monster, you can also spring a Trap Card to destroy it. Negate a Spell the enemy plays (equip, removal, healing, Toon World) with a card from your hand, and when you attack, negate their face-down Trap before it springs.</li>
         <li><span class="ce-emoji">🌲</span> Each region has a field: matching monsters gain ${SOLO_FIELD_BONUS * 100}% ATK. That goes for yours too!</li>
         <li><span class="ce-emoji">⭐</span> Start with ${SOLO_START_CHIPS} Star Chips. A duelist gives +1, an elite +2. With fewer than ${SOLO_GATE_CHIPS}, you must go through the Labyrinth.</li>
@@ -1380,10 +1381,11 @@ function renderSoloMonsterCard(m, f, cls = '', ghost = false) {
 
 const soloZone = inner => `<div class="solo-zone">${inner}</div>`;
 
-// The monster's ATK/DEF under its zone; the one its position uses is lit.
+// The monster's ATK/DEF under its zone; the one its position uses is lit, and lowered ones are marked.
 function soloStatPlate(m, f) {
   const st = soloStats(m, f);
-  return `<span aria-hidden="true" class="solo-plate solo-plate--${m.pos}"><b class="solo-stat-atk">${st.atk}</b><i>/</i><b class="solo-stat-def">${st.def}</b></span>`;
+  const cut = stat => (soloCut(m, stat, f) ? ' solo-stat--cut' : '');
+  return `<span aria-hidden="true" class="solo-plate solo-plate--${m.pos}"><b class="solo-stat-atk${cut('atk')}">${st.atk}</b><i>/</i><b class="solo-stat-def${cut('def')}">${st.def}</b></span>`;
 }
 
 // A Spell/Trap row card (see soloBackItems). `ghost` draws it breaking (not tappable).
@@ -1445,10 +1447,13 @@ function soloCardDetail() {
     if (!m) return null;
     const st = soloStats(m, f);
     const boosted = soloBoosted(f, m);
+    const cuts = soloActiveCuts(m, f);
+    const defCut = cuts.some(c => c.stat === 'def');
     const lines = [
-      `<b class="${m.pos === 'atk' ? 'text-rose-300' : 'text-slate-300'}">ATK ${st.atk}</b> · <b class="${m.pos === 'def' ? 'text-sky-300' : 'text-slate-300'}">DEF ${st.def}</b>${boosted || m.equips?.length ? ` <span class="text-slate-400">(printed ${m.atk} ATK)</span>` : ''}`,
+      `<b class="${m.pos === 'atk' ? 'text-rose-300' : 'text-slate-300'}">ATK ${st.atk}</b> · <b class="${m.pos === 'def' ? 'text-sky-300' : 'text-slate-300'}">DEF ${st.def}</b>${boosted || m.equips?.length || cuts.length ? ` <span class="text-slate-400">(printed ${m.atk} ATK${defCut ? ` / ${m.def} DEF` : ''})</span>` : ''}`,
       boosted && `<span class="ce-emoji">${r.icon}</span> ${r.card}: +${SOLO_FIELD_BONUS * 100}% ATK.`,
       ...(m.equips || []).map(e => `<span class="ce-emoji">⚔️</span> ${soloEscape(e.name)}: +${e.atk} ATK.`),
+      ...cuts.map(c => `<span class="ce-emoji">📉</span> −${c.amount} ${c.stat.toUpperCase()} ${c.turn ? 'until the end of this turn' : 'while it stays on the field'}.`),
       m.bound && `<span class="ce-emoji">🔯</span> Spellbinding Circle: it can't attack.`,
       m.hatch && `<span class="ce-emoji">🦋</span> Hatches into Great Moth in ${m.hatch} turn${m.hatch === 1 ? '' : 's'}.`,
       m.risen && `<span class="ce-emoji">🧟</span> Risen from the Graveyard: it stays dead next time.`,
@@ -1623,6 +1628,14 @@ const soloMonsterOption = (m, onclick) => {
   return coopOption({ icon: m.icon, label: m.name, sub }, onclick);
 };
 
+// The ATK/DEF and duration toggles for lowering an enemy monster (soloUi.cut).
+function soloCutControls() {
+  const { stat, lasting } = soloUi.cut;
+  const pill = (on, label, onclick) => `<button onclick="${onclick}" aria-pressed="${on}" class="flex-1 py-1.5 rounded-lg text-xs font-bold ${on ? 'bg-amber-500 text-slate-950' : 'bg-slate-800 text-slate-300'}">${label}</button>`;
+  return `<div class="flex gap-2">${pill(stat === 'atk', 'ATK', "setSoloCut({ stat: 'atk' })")}${pill(stat === 'def', 'DEF', "setSoloCut({ stat: 'def' })")}</div>` +
+    `<div class="flex gap-2">${pill(!lasting, 'Until end of turn', 'setSoloCut({ lasting: false })')}${pill(lasting, 'While on the field', 'setSoloCut({ lasting: true })')}</div>`;
+}
+
 function renderSoloPanel() {
   const f = solo.fight;
   const panel = soloUi.panel;
@@ -1652,6 +1665,7 @@ function renderSoloPanel() {
       const options = [
         coopOption({ icon: '💥', label: 'Destroy a monster', sub: 'Raigeki, Fissure, Dark Hole…', disabled: !f.monsters.length, reason: 'The enemy has no monsters' }, "setSoloPanel({ kind: 'destroy' })"),
         coopOption({ icon: '🌪️', label: 'Destroy a Spell/Trap', sub: 'Mystical Space Typhoon, Harpie\'s Feather Duster…', disabled: !f.trap && !soloToonWorldUp(f) && !f.monsters.some(m => m.equips?.length), reason: 'The enemy has no face-down, equip or Toon World card' }, "setSoloPanel({ kind: 'spelltrap' })"),
+        coopOption({ icon: '📉', label: 'Lower ATK/DEF', sub: 'Shadow Spell, Shrink, Mystic Plasma Zone…', disabled: !f.monsters.length, reason: 'The enemy has no monsters' }, "setSoloPanel({ kind: 'cut', uid: null })"),
         coopOption({ icon: '🔥', label: 'Burn damage', sub: 'Damage straight to the enemy\'s LP', disabled: soloToonWorldUp(f), reason: 'Toon World shields Pegasus: tear out all its pages first' }, "setSoloPanel({ kind: 'burn' })")
       ];
       if (soloHas('raigeki')) {
@@ -1669,6 +1683,16 @@ function renderSoloPanel() {
       const equips = f.monsters.flatMap(m => (m.equips || []).map(e => coopOption({ icon: '⚔️', label: soloEscape(e.name), sub: `+${e.atk} ATK on ${soloEscape(m.name)}` }, `confirmSoloDestroyEquip(${e.uid})`))).join('');
       return renderSoloPanelShell('🌪️ Destroy which card?', book + trap + equips +
         `<div class="flex">${coopBtn('← Back', 'setSoloPanel({ kind: null })')}</div>`);
+    }
+    if (panel.kind === 'cut') {
+      const m = panel.uid && soloMonster(panel.uid);
+      if (!m) {
+        return renderSoloPanelShell('📉 Lower which monster?', f.monsters.map(x => soloMonsterOption(x, `setSoloPanel({ uid: ${x.uid} })`)).join('') +
+          `<div class="flex">${coopBtn('← Back', 'setSoloPanel({ kind: null })')}</div>`);
+      }
+      const st = soloStats(m, f);
+      return renderSoloPanelShell(`📉 ${m.icon} ${m.name} <span class="text-xs text-slate-400">ATK ${st.atk} · DEF ${st.def}</span>`, soloCutControls() +
+        soloKeypad(`Lower its ${soloUi.cut.stat.toUpperCase()} by`, coopBtn('← Back', 'setSoloPanel({ uid: null })') + coopBtn('📉 Lower', 'confirmSoloCut()', 'primary', !soloUi.input)));
     }
     if (panel.kind === 'burn') {
       return renderSoloPanelShell('🔥 Burn damage', soloKeypad('Damage on the card',
@@ -1719,16 +1743,22 @@ function renderSoloStepCard() {
     const toggle = ['atk', 'def'].map(p => `<button onclick="setSoloBlockPos('${p}')" class="flex-1 py-1.5 rounded-lg text-xs font-bold ${pos === p ? 'bg-amber-500 text-slate-950' : 'bg-slate-800 text-slate-300'}">${p === 'atk' ? 'Attack position' : 'Defense position'}</button>`).join('');
     body = `<p class="text-sm font-bold text-white text-center"><span class="ce-emoji">${step.icon}</span> ${step.title.replace(' directly!', '')} (${step.atk})</p><div class="flex gap-2">${toggle}</div>` +
       soloKeypad(`Your blocking monster's ${pos.toUpperCase()}`, coopBtn('← Back', 'cancelSoloBlock()') + coopBtn('🛡️ Block', 'confirmSoloBlock()', 'primary', !soloUi.input), pos === 'atk');
+  } else if (step.kind === 'attack' && step.sub === 'cut') {
+    const m = soloMonster(step.uid);
+    const def = m ? ` · DEF ${soloStats(m, f).def}` : '';
+    body = `<p class="text-sm font-bold text-white text-center"><span class="ce-emoji">${step.icon}</span> ${step.title.replace(' directly!', '')} (ATK ${step.atk}${def})</p>` + soloCutControls() +
+      soloKeypad(`Lower its ${soloUi.cut.stat.toUpperCase()} by`, coopBtn('← Back', 'cancelSoloBlock()') + coopBtn('📉 Lower', 'confirmSoloCutAttacker()', 'primary', !soloUi.input));
   } else if (step.kind === 'attack') {
     const waboku = soloWabokuActive();
     const relics = SOLO_DEFENSE_RELICS.filter(soloRelicReady).map(id => coopBtn(`<span class="ce-emoji">${SOLO_RELICS[id].icon}</span> ${SOLO_RELICS[id].name}`, `soloRelicDefendClick('${id}')`));
     if (f.swarm) relics.push(coopBtn('<span class="ce-emoji">🧸</span> Kuriboh Swarm', "soloRelicDefendClick('swarm')"));
     body = title + text(step.toon ? `ATK <b class="text-rose-300">${step.atk}</b>. <span class="ce-emoji">🤪</span> Toons can't be blocked!` : `ATK <b class="text-rose-300">${step.atk}</b>. Each of your monsters can block once per turn.`) +
       text(step.note, 'text-xs text-fuchsia-300') +
+      text(step.cutNote, 'text-xs text-emerald-300') +
       (waboku ? text('🛐 Waboku protects you this turn: no battle damage.', 'text-xs text-emerald-300') : '') +
       row([step.toon ? '' : coopBtn('🛡️ Block with a monster', 'startSoloBlock()', 'primary'), waboku ? coopBtn('🛐 Take 0', 'soloTakeHitClick()') : coopBtn(`💔 Take ${step.atk}`, 'soloTakeHitClick()', 'danger')]) +
       row([coopBtn('<span class="ce-emoji">🪤</span> Trap: negate attack', "soloTrapDefendClick('negate')"), coopBtn('<span class="ce-emoji">🪞</span> Trap: destroy attacker', "soloTrapDefendClick('destroy')")]) +
-      (relics.length ? row(relics) : '');
+      row([coopBtn('<span class="ce-emoji">📉</span> Lower ATK/DEF', 'startSoloCut()'), ...relics]);
   } else if (step.kind === 'crush') {
     body = title + text(`His Millennium Eye reads your hand and names <b>${step.cardType}</b>. Discard a ${step.cardType} card.`) +
       text(step.bluffNote, 'text-xs text-rose-300') +
